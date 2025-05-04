@@ -58,38 +58,56 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Tantrum Factor</span>
-                  <span className="ml-2 text-sm font-medium">{show.tantrumFactor}/10</span>
+                  <span className="text-sm text-gray-500">Stimulation Score</span>
+                  <span className="ml-2 text-sm font-medium">{show.stimulationScore}/5</span>
                 </div>
                 <RatingBar 
-                  value={show.tantrumFactor} 
-                  max={10}
-                  colorClass={show.tantrumFactor <= 3 ? 'green-rating' : show.tantrumFactor <= 7 ? 'yellow-rating' : 'red-rating'}
+                  value={show.stimulationScore} 
+                  max={5}
+                  colorClass={show.stimulationScore <= 2 ? 'green-rating' : show.stimulationScore <= 4 ? 'yellow-rating' : 'red-rating'}
                 />
               </div>
               
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Educational Value</span>
-                  <span className="ml-2 text-sm font-medium">{show.educationalValue}/10</span>
+                  <span className="text-sm text-gray-500">Interactivity</span>
+                  <span className="ml-2 text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
                 </div>
-                <RatingBar 
-                  value={show.educationalValue} 
-                  max={10}
-                  colorClass={show.educationalValue >= 8 ? 'purple-rating' : show.educationalValue >= 5 ? 'yellow-rating' : 'red-rating'}
-                />
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full purple-rating" 
+                    style={{ 
+                      width: `${
+                        show.interactivityLevel === 'Low' ? '20%' :
+                        show.interactivityLevel === 'Moderate-Low' ? '40%' :
+                        show.interactivityLevel === 'Moderate' ? '60%' :
+                        show.interactivityLevel === 'Moderate-High' ? '80%' :
+                        show.interactivityLevel === 'High' ? '100%' : '60%'
+                      }`
+                    }}
+                  ></div>
+                </div>
               </div>
               
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Parent Enjoyment</span>
-                  <span className="ml-2 text-sm font-medium">{show.parentEnjoyment}/10</span>
+                  <span className="text-sm text-gray-500">Dialogue Intensity</span>
+                  <span className="ml-2 text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
                 </div>
-                <RatingBar 
-                  value={show.parentEnjoyment} 
-                  max={10}
-                  colorClass={show.parentEnjoyment >= 8 ? 'purple-rating' : show.parentEnjoyment >= 5 ? 'yellow-rating' : 'red-rating'}
-                />
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full yellow-rating" 
+                    style={{ 
+                      width: `${
+                        show.dialogueIntensity === 'Low' ? '20%' :
+                        show.dialogueIntensity === 'Moderate-Low' ? '40%' :
+                        show.dialogueIntensity === 'Moderate' ? '60%' :
+                        show.dialogueIntensity === 'Moderate-High' ? '80%' :
+                        show.dialogueIntensity === 'High' ? '100%' : '60%'
+                      }`
+                    }}
+                  ></div>
+                </div>
               </div>
               
               <div className="flex items-center mt-auto">
@@ -142,38 +160,56 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
         
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Tantrum Factor</span>
+            <span className="text-sm text-gray-500">Stimulation Score</span>
             <div className="flex items-center">
               <RatingBar 
-                value={show.tantrumFactor} 
-                max={10}
-                colorClass={show.tantrumFactor <= 3 ? 'green-rating' : show.tantrumFactor <= 7 ? 'yellow-rating' : 'red-rating'}
+                value={show.stimulationScore} 
+                max={5}
+                colorClass={show.stimulationScore <= 2 ? 'green-rating' : show.stimulationScore <= 4 ? 'yellow-rating' : 'red-rating'}
               />
-              <span className="ml-2 text-sm font-medium">{show.tantrumFactor}/10</span>
+              <span className="ml-2 text-sm font-medium">{show.stimulationScore}/5</span>
             </div>
           </div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Educational Value</span>
+            <span className="text-sm text-gray-500">Interactivity</span>
             <div className="flex items-center">
-              <RatingBar 
-                value={show.educationalValue} 
-                max={10}
-                colorClass={show.educationalValue >= 8 ? 'purple-rating' : show.educationalValue >= 5 ? 'yellow-rating' : 'red-rating'}
-              />
-              <span className="ml-2 text-sm font-medium">{show.educationalValue}/10</span>
+              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden mr-2">
+                <div 
+                  className="h-full purple-rating" 
+                  style={{ 
+                    width: `${
+                      show.interactivityLevel === 'Low' ? '20%' :
+                      show.interactivityLevel === 'Moderate-Low' ? '40%' :
+                      show.interactivityLevel === 'Moderate' ? '60%' :
+                      show.interactivityLevel === 'Moderate-High' ? '80%' :
+                      show.interactivityLevel === 'High' ? '100%' : '60%'
+                    }`
+                  }}
+                ></div>
+              </div>
+              <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
             </div>
           </div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Parent Enjoyment</span>
+            <span className="text-sm text-gray-500">Dialogue</span>
             <div className="flex items-center">
-              <RatingBar 
-                value={show.parentEnjoyment} 
-                max={10}
-                colorClass={show.parentEnjoyment >= 8 ? 'purple-rating' : show.parentEnjoyment >= 5 ? 'yellow-rating' : 'red-rating'}
-              />
-              <span className="ml-2 text-sm font-medium">{show.parentEnjoyment}/10</span>
+              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden mr-2">
+                <div 
+                  className="h-full yellow-rating" 
+                  style={{ 
+                    width: `${
+                      show.dialogueIntensity === 'Low' ? '20%' :
+                      show.dialogueIntensity === 'Moderate-Low' ? '40%' :
+                      show.dialogueIntensity === 'Moderate' ? '60%' :
+                      show.dialogueIntensity === 'Moderate-High' ? '80%' :
+                      show.dialogueIntensity === 'High' ? '100%' : '60%'
+                    }`
+                  }}
+                ></div>
+              </div>
+              <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
             </div>
           </div>
         </div>
