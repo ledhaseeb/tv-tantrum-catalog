@@ -10,8 +10,8 @@ export class GitHubService {
   constructor(
     githubToken?: string,
     owner: string = "ledhaseeb",
-    repo: string = "tvtantrumManager",
-    dataPath: string = "Database"
+    repo: string = "tvtantrum",
+    dataPath: string = "database"
   ) {
     this.octokit = new Octokit({ auth: githubToken });
     this.owner = owner;
@@ -48,8 +48,10 @@ export class GitHubService {
             for (const item of jsonData) {
               const validatedShow = this.validateTvShow(item);
               if (validatedShow) {
-                // Add image URL using the format from the repository
-                validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/Client/public/images/${validatedShow.id}.jpg`;
+                // Add image URL using the format from the repository - using show name as filename
+                // Note: Images are stored with show name, not by ID
+                const showNameForImage = validatedShow.name.toLowerCase().replace(/\s+/g, '-');
+                validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/client/public/images/${showNameForImage}.jpg`;
                 showsData.push(validatedShow);
               }
             }
@@ -57,7 +59,8 @@ export class GitHubService {
             // It's a single show object
             const validatedShow = this.validateTvShow(jsonData);
             if (validatedShow) {
-              validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/Client/public/images/${validatedShow.id}.jpg`;
+              const showNameForImage = validatedShow.name.toLowerCase().replace(/\s+/g, '-');
+              validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/client/public/images/${showNameForImage}.jpg`;
               showsData.push(validatedShow);
             }
           }
