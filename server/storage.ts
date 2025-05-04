@@ -139,7 +139,19 @@ export class MemStorage implements IStorage {
 
   async addTvShow(show: InsertTvShow): Promise<TvShow> {
     const id = this.tvShowCurrentId++;
-    const tvShow: TvShow = { ...show, id };
+    // Ensure all fields match the schema by explicitly setting null for undefined optional fields
+    const processedShow = {
+      ...show,
+      creator: show.creator ?? null,
+      startYear: show.startYear ?? null,
+      endYear: show.endYear ?? null,
+      isOngoing: show.isOngoing ?? true,
+      imageUrl: show.imageUrl ?? null,
+      availableOn: show.availableOn ?? []
+    };
+    
+    // Use explicit casting to TvShow to handle any type issues
+    const tvShow = { ...processedShow, id } as TvShow;
     this.tvShows.set(id, tvShow);
     return tvShow;
   }
@@ -210,13 +222,13 @@ export class MemStorage implements IStorage {
         }
       }
       
-      // Create and add the TV show
+      // Create and add the TV show - ensuring all types match the schema
       const tvShow = await this.addTvShow({
         name: show.title,
         description: `${show.title} is a ${show.animation_style} show for ${show.target_age_group} year olds. It features ${show.themes.join(", ")} themes.`,
         ageRange: show.target_age_group,
         episodeLength: episodeLength,
-        creator: '',
+        creator: null, // explicitly set to null rather than empty string
         startYear: null,
         endYear: null,
         isOngoing: true,
@@ -226,7 +238,7 @@ export class MemStorage implements IStorage {
         repeatWatchability: repeatWatchability,
         overallRating: overallRating,
         availableOn: [show.platform],
-        imageUrl: show.imageUrl ?? null,
+        imageUrl: show.imageUrl ? show.imageUrl : null, // explicit null check
       });
       
       // Generate some sample reviews
