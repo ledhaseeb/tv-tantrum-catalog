@@ -89,17 +89,17 @@ export class MemStorage implements IStorage {
       });
     }
     
-    // Filter by tantrum factor
+    // Filter by stimulation score (replacing tantrum factor)
     if (filters.tantrumFactor) {
       switch (filters.tantrumFactor) {
         case 'low':
-          shows = shows.filter(show => show.tantrumFactor >= 1 && show.tantrumFactor <= 3);
+          shows = shows.filter(show => show.stimulationScore <= 2); // Low stimulation
           break;
         case 'medium':
-          shows = shows.filter(show => show.tantrumFactor >= 4 && show.tantrumFactor <= 7);
+          shows = shows.filter(show => show.stimulationScore > 2 && show.stimulationScore <= 4); // Medium stimulation
           break;
         case 'high':
-          shows = shows.filter(show => show.tantrumFactor >= 8 && show.tantrumFactor <= 10);
+          shows = shows.filter(show => show.stimulationScore > 4); // High stimulation
           break;
       }
     }
@@ -119,14 +119,38 @@ export class MemStorage implements IStorage {
         case 'name':
           shows.sort((a, b) => a.name.localeCompare(b.name));
           break;
-        case 'tantrum-factor':
-          shows.sort((a, b) => a.tantrumFactor - b.tantrumFactor);
+        case 'stimulation-score':
+          shows.sort((a, b) => a.stimulationScore - b.stimulationScore); // Lower is better
           break;
-        case 'educational-value':
-          shows.sort((a, b) => b.educationalValue - a.educationalValue);
+        case 'interactivity-level':
+          // Sort by interactivity level - Low, Moderate, High
+          shows.sort((a, b) => {
+            const levelMap: {[key: string]: number} = {
+              'Low': 1,
+              'Moderate-Low': 2,
+              'Moderate': 3,
+              'Moderate-High': 4,
+              'High': 5
+            };
+            const aLevel = levelMap[a.interactivityLevel || 'Moderate'] || 3;
+            const bLevel = levelMap[b.interactivityLevel || 'Moderate'] || 3;
+            return aLevel - bLevel;
+          });
           break;
-        case 'parent-enjoyment':
-          shows.sort((a, b) => b.parentEnjoyment - a.parentEnjoyment);
+        case 'dialogue-intensity':
+          // Sort by dialogue intensity
+          shows.sort((a, b) => {
+            const levelMap: {[key: string]: number} = {
+              'Low': 1,
+              'Moderate-Low': 2,
+              'Moderate': 3,
+              'Moderate-High': 4,
+              'High': 5
+            };
+            const aLevel = levelMap[a.dialogueIntensity || 'Moderate'] || 3;
+            const bLevel = levelMap[b.dialogueIntensity || 'Moderate'] || 3;
+            return aLevel - bLevel;
+          });
           break;
         case 'overall-rating':
           shows.sort((a, b) => b.overallRating - a.overallRating);
@@ -187,28 +211,10 @@ export class MemStorage implements IStorage {
     const importedShows: TvShow[] = [];
     
     for (const show of shows) {
-      // Map the GitHub data structure to our application's data structure
-      // Convert stimulation_score to tantrum factor (1-10 scale)
-      const tantrumFactor = Math.max(1, Math.min(10, show.stimulation_score * 2));
-      
-      // Generate values based on themes and other data
-      const educationalValue = show.themes.includes("STEM") || 
-                              show.themes.includes("Science") || 
-                              show.themes.includes("Educational") ? 
-                              Math.floor(Math.random() * 3) + 7 : // 7-10 for educational shows
-                              Math.floor(Math.random() * 5) + 3;  // 3-8 for others
-      
-      const parentEnjoyment = show.themes.includes("Positive Role Models") || 
-                             show.themes.includes("Family Values") ?
-                             Math.floor(Math.random() * 3) + 7 : // 7-10 for family-friendly shows
-                             Math.floor(Math.random() * 7) + 2;  // 2-9 for others
-      
-      const repeatWatchability = show.themes.includes("Relatable Situations") || 
-                               show.themes.includes("Problem Solving") ?
-                               Math.floor(Math.random() * 3) + 7 : // 7-10 for engaging shows
-                               Math.floor(Math.random() * 5) + 3;  // 3-8 for others
-      
-      const overallRating = Math.round((educationalValue + parentEnjoyment + (10 - tantrumFactor) + repeatWatchability) / 8 * 5);
+      // Calculate an overall rating based on stimulation score
+      // Lower stimulation score is better for calmness, so we invert it for rating
+      // (This is just a placeholder calculation method)
+      const overallRating = Math.max(1, Math.min(5, Math.round(6 - show.stimulation_score)));
       
       // Extract episode length in minutes if available
       let episodeLength = 15; // Default
@@ -222,23 +228,33 @@ export class MemStorage implements IStorage {
         }
       }
       
-      // Create and add the TV show - ensuring all types match the schema
+      // Create and add the TV show - using the metrics directly from GitHub data
       const tvShow = await this.addTvShow({
         name: show.title,
         description: `${show.title} is a ${show.animation_style} show for ${show.target_age_group} year olds. It features ${show.themes.join(", ")} themes.`,
         ageRange: show.target_age_group,
         episodeLength: episodeLength,
-        creator: null, // explicitly set to null rather than empty string
+        creator: null,
         startYear: null,
         endYear: null,
         isOngoing: true,
-        tantrumFactor: tantrumFactor,
-        educationalValue: educationalValue,
-        parentEnjoyment: parentEnjoyment,
-        repeatWatchability: repeatWatchability,
+        
+        // Direct metrics from GitHub
+        stimulationScore: show.stimulation_score,
+        interactivityLevel: show.interactivity_level,
+        dialogueIntensity: show.dialogue_intensity,
+        soundEffectsLevel: show.sound_effects_level,
+        musicTempo: show.music_tempo,
+        totalMusicLevel: show.total_music_level,
+        totalSoundEffectTimeLevel: show.total_sound_effect_time_level,
+        sceneFrequency: show.scene_frequency,
+        animationStyle: show.animation_style,
+        themes: show.themes,
+        
+        // Derived fields
         overallRating: overallRating,
         availableOn: [show.platform],
-        imageUrl: show.imageUrl ? show.imageUrl : null, // explicit null check
+        imageUrl: show.imageUrl ? show.imageUrl : null,
       });
       
       // Generate some sample reviews

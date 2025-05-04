@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 
 interface FiltersType {
   ageGroup?: string;
-  tantrumFactor?: string;
+  tantrumFactor?: string; // We'll continue using this field name for continuity, but it maps to stimulationScore
   sortBy?: string;
   search?: string;
 }
@@ -67,17 +67,17 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         return `Age: ${value}`;
       case 'tantrumFactor':
         switch (value) {
-          case 'low': return 'Low Tantrum Factor';
-          case 'medium': return 'Medium Tantrum Factor';
-          case 'high': return 'High Tantrum Factor';
+          case 'low': return 'Low Stimulation Score (1-2)';
+          case 'medium': return 'Medium Stimulation Score (3-4)';
+          case 'high': return 'High Stimulation Score (5+)';
           default: return value;
         }
       case 'sortBy':
         switch (value) {
           case 'name': return 'Sorted by Name';
-          case 'tantrum-factor': return 'Sorted by Tantrum Factor';
-          case 'educational-value': return 'Sorted by Educational Value';
-          case 'parent-enjoyment': return 'Sorted by Parent Enjoyment';
+          case 'stimulation-score': return 'Sorted by Stimulation Score';
+          case 'interactivity-level': return 'Sorted by Interactivity Level';
+          case 'dialogue-intensity': return 'Sorted by Dialogue Intensity';
           case 'overall-rating': return 'Sorted by Rating';
           default: return value;
         }
@@ -117,7 +117,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             
             <div>
               <Label htmlFor="tantrum-factor" className="block text-sm font-medium text-gray-700 mb-1">
-                Tantrum Factor
+                Stimulation Score
               </Label>
               <Select 
                 value={filters.tantrumFactor} 
@@ -128,9 +128,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any Level</SelectItem>
-                  <SelectItem value="low">Low (1-3)</SelectItem>
-                  <SelectItem value="medium">Medium (4-7)</SelectItem>
-                  <SelectItem value="high">High (8-10)</SelectItem>
+                  <SelectItem value="low">Low (1-2)</SelectItem>
+                  <SelectItem value="medium">Medium (3-4)</SelectItem>
+                  <SelectItem value="high">High (5+)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -148,9 +148,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="tantrum-factor">Tantrum Factor</SelectItem>
-                  <SelectItem value="educational-value">Educational Value</SelectItem>
-                  <SelectItem value="parent-enjoyment">Parent Enjoyment</SelectItem>
+                  <SelectItem value="stimulation-score">Stimulation Score</SelectItem>
+                  <SelectItem value="interactivity-level">Interactivity Level</SelectItem>
+                  <SelectItem value="dialogue-intensity">Dialogue Intensity</SelectItem>
                   <SelectItem value="overall-rating">Overall Rating</SelectItem>
                 </SelectContent>
               </Select>

@@ -16,7 +16,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// TV Shows Schema
+// TV Shows Schema - Updated to match the GitHub data structure
 export const tvShows = pgTable("tv_shows", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -27,12 +27,26 @@ export const tvShows = pgTable("tv_shows", {
   startYear: integer("start_year"),
   endYear: integer("end_year"),
   isOngoing: boolean("is_ongoing").default(true),
-  tantrumFactor: integer("tantrum_factor").notNull(), // 1-10 scale
-  educationalValue: integer("educational_value").notNull(), // 1-10 scale
-  parentEnjoyment: integer("parent_enjoyment").notNull(), // 1-10 scale
-  repeatWatchability: integer("repeat_watchability").notNull(), // 1-10 scale
+  
+  // Core metrics from GitHub data
+  stimulationScore: integer("stimulation_score").notNull(), // Direct from GitHub data
+  interactivityLevel: text("interactivity_level"),
+  dialogueIntensity: text("dialogue_intensity"), 
+  soundEffectsLevel: text("sound_effects_level"),
+  musicTempo: text("music_tempo"),
+  totalMusicLevel: text("total_music_level"),
+  totalSoundEffectTimeLevel: text("total_sound_effect_time_level"),
+  sceneFrequency: text("scene_frequency"),
+  
+  // Overall rating still useful for comparison
   overallRating: integer("overall_rating").notNull(), // 1-5 scale
-  availableOn: text("available_on").array(),  // Using array() method on the column type
+  
+  // Platform and themes
+  availableOn: text("available_on").array(),
+  themes: text("themes").array(),
+  
+  // Other fields
+  animationStyle: text("animation_style"),
   imageUrl: text("image_url"),
 });
 
