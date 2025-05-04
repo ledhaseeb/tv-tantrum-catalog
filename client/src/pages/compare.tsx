@@ -185,20 +185,20 @@ export default function Compare() {
                   <td className="py-4 px-6 text-center">-</td>
                 </tr>
                 
-                {/* Tantrum Factor */}
+                {/* Stimulation Score */}
                 <tr className="border-b border-gray-200">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Tantrum Factor</td>
+                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Stimulation Score</td>
                   {selectedShows.map(show => (
                     <td key={show.id} className="py-4 px-6">
                       <div className="flex flex-col items-center">
                         <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
                           <div 
-                            className={`h-full ${show.tantrumFactor <= 3 ? 'bg-green-500' : show.tantrumFactor <= 7 ? 'bg-yellow-500' : 'bg-red-500'} rounded-full`} 
-                            style={{ width: `${show.tantrumFactor * 10}%` }}
+                            className={`h-full ${show.stimulationScore <= 2 ? 'bg-green-500' : show.stimulationScore <= 4 ? 'bg-yellow-500' : 'bg-red-500'} rounded-full`} 
+                            style={{ width: `${show.stimulationScore * 20}%` }}
                           ></div>
                         </div>
-                        <span className={`${show.tantrumFactor <= 3 ? 'text-green-600' : show.tantrumFactor <= 7 ? 'text-yellow-600' : 'text-red-600'} font-medium`}>
-                          {show.tantrumFactor}/10
+                        <span className={`${show.stimulationScore <= 2 ? 'text-green-600' : show.stimulationScore <= 4 ? 'text-yellow-600' : 'text-red-600'} font-medium`}>
+                          {show.stimulationScore}/5
                         </span>
                       </div>
                     </td>
@@ -206,20 +206,28 @@ export default function Compare() {
                   <td className="py-4 px-6 text-center">-</td>
                 </tr>
                 
-                {/* Educational Value */}
+                {/* Interactivity Level */}
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Educational Value</td>
+                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Interactivity Level</td>
                   {selectedShows.map(show => (
                     <td key={show.id} className="py-4 px-6">
                       <div className="flex flex-col items-center">
                         <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
                           <div 
-                            className={`h-full ${show.educationalValue >= 8 ? 'bg-primary' : show.educationalValue >= 5 ? 'bg-secondary-500' : 'bg-red-500'} rounded-full`} 
-                            style={{ width: `${show.educationalValue * 10}%` }}
+                            className="h-full bg-primary rounded-full" 
+                            style={{ 
+                              width: `${
+                                show.interactivityLevel === 'Low' ? '20%' :
+                                show.interactivityLevel === 'Moderate-Low' ? '40%' :
+                                show.interactivityLevel === 'Moderate' ? '60%' :
+                                show.interactivityLevel === 'Moderate-High' ? '80%' :
+                                show.interactivityLevel === 'High' ? '100%' : '60%'
+                              }`
+                            }}
                           ></div>
                         </div>
-                        <span className={`${show.educationalValue >= 8 ? 'text-primary-600' : show.educationalValue >= 5 ? 'text-secondary-600' : 'text-red-600'} font-medium`}>
-                          {show.educationalValue}/10
+                        <span className="text-primary-600 font-medium">
+                          {show.interactivityLevel || 'Moderate'}
                         </span>
                       </div>
                     </td>
@@ -227,20 +235,28 @@ export default function Compare() {
                   <td className="py-4 px-6 text-center">-</td>
                 </tr>
                 
-                {/* Parent Enjoyment */}
+                {/* Dialogue Intensity */}
                 <tr className="border-b border-gray-200">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Parent Enjoyment</td>
+                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Dialogue Intensity</td>
                   {selectedShows.map(show => (
                     <td key={show.id} className="py-4 px-6">
                       <div className="flex flex-col items-center">
                         <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
                           <div 
-                            className={`h-full ${show.parentEnjoyment >= 8 ? 'bg-primary' : show.parentEnjoyment >= 5 ? 'bg-secondary-500' : 'bg-red-500'} rounded-full`} 
-                            style={{ width: `${show.parentEnjoyment * 10}%` }}
+                            className="h-full bg-secondary-500 rounded-full" 
+                            style={{ 
+                              width: `${
+                                show.dialogueIntensity === 'Low' ? '20%' :
+                                show.dialogueIntensity === 'Moderate-Low' ? '40%' :
+                                show.dialogueIntensity === 'Moderate' ? '60%' :
+                                show.dialogueIntensity === 'Moderate-High' ? '80%' :
+                                show.dialogueIntensity === 'High' ? '100%' : '60%'
+                              }`
+                            }}
                           ></div>
                         </div>
-                        <span className={`${show.parentEnjoyment >= 8 ? 'text-primary-600' : show.parentEnjoyment >= 5 ? 'text-secondary-600' : 'text-red-600'} font-medium`}>
-                          {show.parentEnjoyment}/10
+                        <span className="text-secondary-600 font-medium">
+                          {show.dialogueIntensity || 'Moderate'}
                         </span>
                       </div>
                     </td>
@@ -248,20 +264,28 @@ export default function Compare() {
                   <td className="py-4 px-6 text-center">-</td>
                 </tr>
                 
-                {/* Repeat Watchability */}
+                {/* Sound Effects Level */}
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Repeat Watchability</td>
+                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Sound Effects Level</td>
                   {selectedShows.map(show => (
                     <td key={show.id} className="py-4 px-6">
                       <div className="flex flex-col items-center">
                         <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
                           <div 
-                            className={`h-full ${show.repeatWatchability >= 8 ? 'bg-primary' : show.repeatWatchability >= 5 ? 'bg-secondary-500' : 'bg-red-500'} rounded-full`} 
-                            style={{ width: `${show.repeatWatchability * 10}%` }}
+                            className="h-full bg-red-500 rounded-full" 
+                            style={{ 
+                              width: `${
+                                show.soundEffectsLevel === 'Low' ? '20%' :
+                                show.soundEffectsLevel === 'Moderate-Low' ? '40%' :
+                                show.soundEffectsLevel === 'Moderate' ? '60%' :
+                                show.soundEffectsLevel === 'Moderate-High' ? '80%' :
+                                show.soundEffectsLevel === 'High' ? '100%' : '60%'
+                              }`
+                            }}
                           ></div>
                         </div>
-                        <span className={`${show.repeatWatchability >= 8 ? 'text-primary-600' : show.repeatWatchability >= 5 ? 'text-secondary-600' : 'text-red-600'} font-medium`}>
-                          {show.repeatWatchability}/10
+                        <span className="text-red-600 font-medium">
+                          {show.soundEffectsLevel || 'Moderate'}
                         </span>
                       </div>
                     </td>

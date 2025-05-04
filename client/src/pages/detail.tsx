@@ -136,11 +136,15 @@ export default function Detail() {
                 <div>
                   <h3 className="font-heading font-bold text-gray-900">Available On</h3>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {showDetail.availableOn.map((platform, index) => (
-                      <Badge key={index} variant="outline" className="bg-gray-100 text-gray-800 text-sm font-medium">
-                        {platform}
-                      </Badge>
-                    ))}
+                    {showDetail.availableOn && showDetail.availableOn.length > 0 ? (
+                      showDetail.availableOn.map((platform, index) => (
+                        <Badge key={index} variant="outline" className="bg-gray-100 text-gray-800 text-sm font-medium">
+                          {platform}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-500">No platform information available</span>
+                    )}
                   </div>
                 </div>
                 
@@ -157,85 +161,130 @@ export default function Detail() {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Tantrum Factor</span>
-                    <span className={`font-medium ${showDetail.tantrumFactor <= 3 ? 'text-green-600' : showDetail.tantrumFactor <= 7 ? 'text-yellow-600' : 'text-red-600'}`}>
-                      {showDetail.tantrumFactor}/10 ({showDetail.tantrumFactor <= 3 ? 'Low' : showDetail.tantrumFactor <= 7 ? 'Medium' : 'High'})
+                    <span className="text-gray-700">Stimulation Score</span>
+                    <span className={`font-medium ${showDetail.stimulationScore <= 2 ? 'text-green-600' : showDetail.stimulationScore <= 4 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      {showDetail.stimulationScore}/5 ({showDetail.stimulationScore <= 2 ? 'Low' : showDetail.stimulationScore <= 4 ? 'Medium' : 'High'})
                     </span>
                   </div>
                   <RatingBar 
-                    value={showDetail.tantrumFactor} 
-                    max={10} 
-                    colorClass={showDetail.tantrumFactor <= 3 ? 'green-rating' : showDetail.tantrumFactor <= 7 ? 'yellow-rating' : 'red-rating'}
+                    value={showDetail.stimulationScore} 
+                    max={5} 
+                    colorClass={showDetail.stimulationScore <= 2 ? 'green-rating' : showDetail.stimulationScore <= 4 ? 'yellow-rating' : 'red-rating'}
                   />
                   <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.tantrumFactor <= 3 
-                      ? "Children are unlikely to throw tantrums when this show ends." 
-                      : showDetail.tantrumFactor <= 7 
-                        ? "May cause some resistance when it's time to turn off the TV."
-                        : "High likelihood of meltdowns when the show is over."}
+                    {showDetail.stimulationScore <= 2 
+                      ? "Low stimulation - calming content with gentle pacing." 
+                      : showDetail.stimulationScore <= 4 
+                        ? "Medium stimulation - balanced content with moderate energy."
+                        : "High stimulation - energetic content that may be overstimulating for some children."}
                   </p>
                 </div>
                 
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Educational Value</span>
-                    <span className={`font-medium ${showDetail.educationalValue >= 8 ? 'text-primary-600' : showDetail.educationalValue >= 5 ? 'text-secondary-600' : 'text-red-600'}`}>
-                      {showDetail.educationalValue}/10 ({showDetail.educationalValue >= 8 ? 'High' : showDetail.educationalValue >= 5 ? 'Medium' : 'Low'})
+                    <span className="text-gray-700">Interactivity Level</span>
+                    <span className="font-medium text-primary-600">
+                      {showDetail.interactivityLevel || 'Moderate'}
                     </span>
                   </div>
-                  <RatingBar 
-                    value={showDetail.educationalValue} 
-                    max={10} 
-                    colorClass={showDetail.educationalValue >= 8 ? 'purple-rating' : showDetail.educationalValue >= 5 ? 'yellow-rating' : 'red-rating'}
-                  />
+                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full purple-rating`} 
+                      style={{ 
+                        width: `${
+                          showDetail.interactivityLevel === 'Low' ? '20%' :
+                          showDetail.interactivityLevel === 'Moderate-Low' ? '40%' :
+                          showDetail.interactivityLevel === 'Moderate' ? '60%' :
+                          showDetail.interactivityLevel === 'Moderate-High' ? '80%' :
+                          showDetail.interactivityLevel === 'High' ? '100%' : '60%'
+                        }`
+                      }}
+                    ></div>
+                  </div>
                   <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.educationalValue >= 8 
-                      ? "Excellent educational content that teaches valuable skills and concepts."
-                      : showDetail.educationalValue >= 5 
-                        ? "Contains some educational elements mixed with entertainment."
-                        : "Primarily entertainment with limited educational content."}
+                    {showDetail.interactivityLevel === 'Low'
+                      ? "Minimal audience interaction, children mostly observe passively."
+                      : showDetail.interactivityLevel === 'Moderate-Low'
+                        ? "Some audience engagement, primarily through questions or simple responses."
+                        : showDetail.interactivityLevel === 'Moderate'
+                          ? "Balanced audience engagement with regular interaction throughout the show."
+                          : showDetail.interactivityLevel === 'Moderate-High'
+                            ? "Frequent audience engagement with multiple interactive elements."
+                            : showDetail.interactivityLevel === 'High'
+                              ? "Very interactive format that encourages active participation throughout."
+                              : "Moderate level of interactivity."}
                   </p>
                 </div>
                 
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Parent Enjoyment</span>
-                    <span className={`font-medium ${showDetail.parentEnjoyment >= 8 ? 'text-primary-600' : showDetail.parentEnjoyment >= 5 ? 'text-secondary-600' : 'text-red-600'}`}>
-                      {showDetail.parentEnjoyment}/10 ({showDetail.parentEnjoyment >= 8 ? 'High' : showDetail.parentEnjoyment >= 5 ? 'Medium' : 'Low'})
+                    <span className="text-gray-700">Dialogue Intensity</span>
+                    <span className="font-medium text-primary-600">
+                      {showDetail.dialogueIntensity || 'Moderate'}
                     </span>
                   </div>
-                  <RatingBar 
-                    value={showDetail.parentEnjoyment} 
-                    max={10} 
-                    colorClass={showDetail.parentEnjoyment >= 8 ? 'purple-rating' : showDetail.parentEnjoyment >= 5 ? 'yellow-rating' : 'red-rating'}
-                  />
+                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full yellow-rating`} 
+                      style={{ 
+                        width: `${
+                          showDetail.dialogueIntensity === 'Low' ? '20%' :
+                          showDetail.dialogueIntensity === 'Moderate-Low' ? '40%' :
+                          showDetail.dialogueIntensity === 'Moderate' ? '60%' :
+                          showDetail.dialogueIntensity === 'Moderate-High' ? '80%' :
+                          showDetail.dialogueIntensity === 'High' ? '100%' : '60%'
+                        }`
+                      }}
+                    ></div>
+                  </div>
                   <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.parentEnjoyment >= 8 
-                      ? "Includes humor and themes that adults can enjoy along with their children."
-                      : showDetail.parentEnjoyment >= 5 
-                        ? "Moderately entertaining for adults, with some enjoyable elements."
-                        : "Parents may find this show difficult to watch repeatedly."}
+                    {showDetail.dialogueIntensity === 'Low'
+                      ? "Minimal dialogue, relies more on visuals and music."
+                      : showDetail.dialogueIntensity === 'Moderate-Low'
+                        ? "Simple dialogue with plenty of pauses and visual storytelling."
+                        : showDetail.dialogueIntensity === 'Moderate'
+                          ? "Balanced dialogue that's appropriate for the target age group."
+                          : showDetail.dialogueIntensity === 'Moderate-High'
+                            ? "Conversation-heavy with more complex language patterns."
+                            : showDetail.dialogueIntensity === 'High'
+                              ? "Very dialogue-rich content with complex vocabulary or frequent conversations."
+                              : "Moderate level of dialogue."}
                   </p>
                 </div>
                 
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Repeat Watchability</span>
-                    <span className={`font-medium ${showDetail.repeatWatchability >= 8 ? 'text-primary-600' : showDetail.repeatWatchability >= 5 ? 'text-secondary-600' : 'text-red-600'}`}>
-                      {showDetail.repeatWatchability}/10 ({showDetail.repeatWatchability >= 8 ? 'High' : showDetail.repeatWatchability >= 5 ? 'Medium' : 'Low'})
+                    <span className="text-gray-700">Sound Effects Level</span>
+                    <span className="font-medium text-primary-600">
+                      {showDetail.soundEffectsLevel || 'Moderate'}
                     </span>
                   </div>
-                  <RatingBar 
-                    value={showDetail.repeatWatchability} 
-                    max={10} 
-                    colorClass={showDetail.repeatWatchability >= 8 ? 'purple-rating' : showDetail.repeatWatchability >= 5 ? 'yellow-rating' : 'red-rating'}
-                  />
+                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full red-rating`} 
+                      style={{ 
+                        width: `${
+                          showDetail.soundEffectsLevel === 'Low' ? '20%' :
+                          showDetail.soundEffectsLevel === 'Moderate-Low' ? '40%' :
+                          showDetail.soundEffectsLevel === 'Moderate' ? '60%' :
+                          showDetail.soundEffectsLevel === 'Moderate-High' ? '80%' :
+                          showDetail.soundEffectsLevel === 'High' ? '100%' : '60%'
+                        }`
+                      }}
+                    ></div>
+                  </div>
                   <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.repeatWatchability >= 8 
-                      ? "Episodes remain entertaining even after multiple viewings."
-                      : showDetail.repeatWatchability >= 5 
-                        ? "Can be watched multiple times without significant parent fatigue."
-                        : "May become tiresome for parents after repeated viewings."}
+                    {showDetail.soundEffectsLevel === 'Low'
+                      ? "Minimal sound effects, creating a calm viewing experience."
+                      : showDetail.soundEffectsLevel === 'Moderate-Low'
+                        ? "Gentle sound effects that enhance the content without overwhelming."
+                        : showDetail.soundEffectsLevel === 'Moderate'
+                          ? "Balanced use of sound effects to support the storytelling."
+                          : showDetail.soundEffectsLevel === 'Moderate-High'
+                            ? "Frequent sound effects that play a significant role in the experience."
+                            : showDetail.soundEffectsLevel === 'High'
+                              ? "Sound effect-heavy show with prominent audio elements throughout."
+                              : "Moderate level of sound effects."}
                   </p>
                 </div>
               </div>

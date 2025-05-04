@@ -1,72 +1,94 @@
 import { TvShow } from "@shared/schema";
 
 /**
- * Returns a color class based on the tantrum factor value
+ * Returns a color class based on the stimulation score value
+ * Lower stimulation score is better for calmness
  */
-export function getTantrumFactorColor(value: number): string {
-  if (value <= 3) return "green-rating";
-  if (value <= 7) return "yellow-rating";
+export function getStimulationScoreColor(value: number): string {
+  if (value <= 2) return "green-rating";
+  if (value <= 4) return "yellow-rating";
   return "red-rating";
 }
 
 /**
- * Returns a color class based on the educational value or parent enjoyment
+ * Returns a color class based on overall rating
  */
 export function getPositiveRatingColor(value: number): string {
-  if (value >= 8) return "purple-rating";
-  if (value >= 5) return "yellow-rating";
+  if (value >= 4) return "purple-rating";
+  if (value >= 3) return "yellow-rating";
   return "red-rating";
 }
 
 /**
- * Returns a text description for the tantrum factor
+ * Returns a text description for the stimulation score
  */
-export function getTantrumFactorDescription(value: number): string {
-  if (value <= 3) {
-    return "Children are unlikely to throw tantrums when this show ends.";
-  } else if (value <= 7) {
-    return "May cause some resistance when it's time to turn off the TV.";
+export function getStimulationScoreDescription(value: number): string {
+  if (value <= 2) {
+    return "Low stimulation - calming content with gentle pacing.";
+  } else if (value <= 4) {
+    return "Medium stimulation - balanced content with moderate energy.";
   } else {
-    return "High likelihood of meltdowns when the show is over.";
+    return "High stimulation - energetic content that may be overstimulating for some children.";
   }
 }
 
 /**
- * Returns a text description for the educational value
+ * Returns a description for interactivity level
  */
-export function getEducationalValueDescription(value: number): string {
-  if (value >= 8) {
-    return "Excellent educational content that teaches valuable skills and concepts.";
-  } else if (value >= 5) {
-    return "Contains some educational elements mixed with entertainment.";
-  } else {
-    return "Primarily entertainment with limited educational content.";
+export function getInteractivityLevelDescription(value: string): string {
+  switch (value) {
+    case "Low":
+      return "Minimal audience interaction, children mostly observe passively.";
+    case "Moderate-Low":
+      return "Some audience engagement, primarily through questions or simple responses.";
+    case "Moderate":
+      return "Balanced audience engagement with regular interaction throughout the show.";
+    case "Moderate-High":
+      return "Frequent audience engagement with multiple interactive elements.";
+    case "High":
+      return "Very interactive format that encourages active participation throughout.";
+    default:
+      return "Moderate level of interactivity.";
   }
 }
 
 /**
- * Returns a text description for the parent enjoyment
+ * Returns a description for dialogue intensity
  */
-export function getParentEnjoymentDescription(value: number): string {
-  if (value >= 8) {
-    return "Includes humor and themes that adults can enjoy along with their children.";
-  } else if (value >= 5) {
-    return "Moderately entertaining for adults, with some enjoyable elements.";
-  } else {
-    return "Parents may find this show difficult to watch repeatedly.";
+export function getDialogueIntensityDescription(value: string): string {
+  switch (value) {
+    case "Low":
+      return "Minimal dialogue, relies more on visuals and music.";
+    case "Moderate-Low":
+      return "Simple dialogue with plenty of pauses and visual storytelling.";
+    case "Moderate":
+      return "Balanced dialogue that's appropriate for the target age group.";
+    case "Moderate-High":
+      return "Conversation-heavy with more complex language patterns.";
+    case "High":
+      return "Very dialogue-rich content with complex vocabulary or frequent conversations.";
+    default:
+      return "Moderate level of dialogue.";
   }
 }
 
 /**
- * Returns a text description for the repeat watchability
+ * Returns a description for sound effects level
  */
-export function getRepeatWatchabilityDescription(value: number): string {
-  if (value >= 8) {
-    return "Episodes remain entertaining even after multiple viewings.";
-  } else if (value >= 5) {
-    return "Can be watched multiple times without significant parent fatigue.";
-  } else {
-    return "May become tiresome for parents after repeated viewings.";
+export function getSoundEffectsLevelDescription(value: string): string {
+  switch (value) {
+    case "Low":
+      return "Minimal sound effects, creating a calm viewing experience.";
+    case "Moderate-Low":
+      return "Gentle sound effects that enhance the content without overwhelming.";
+    case "Moderate":
+      return "Balanced use of sound effects to support the storytelling.";
+    case "Moderate-High":
+      return "Frequent sound effects that play a significant role in the experience.";
+    case "High":
+      return "Sound effect-heavy show with prominent audio elements throughout.";
+    default:
+      return "Moderate level of sound effects.";
   }
 }
 
@@ -102,21 +124,21 @@ export function filterShows(
       }
     }
     
-    // Filter by tantrum factor
+    // Filter by stimulation score (using the existing tantrumFactor filter name for compatibility)
     if (filters.tantrumFactor) {
       switch (filters.tantrumFactor) {
         case 'low':
-          if (!(show.tantrumFactor >= 1 && show.tantrumFactor <= 3)) {
+          if (!(show.stimulationScore <= 2)) {
             return false;
           }
           break;
         case 'medium':
-          if (!(show.tantrumFactor >= 4 && show.tantrumFactor <= 7)) {
+          if (!(show.stimulationScore > 2 && show.stimulationScore <= 4)) {
             return false;
           }
           break;
         case 'high':
-          if (!(show.tantrumFactor >= 8 && show.tantrumFactor <= 10)) {
+          if (!(show.stimulationScore > 4)) {
             return false;
           }
           break;
@@ -149,12 +171,32 @@ export function sortShows(
     switch (sortBy) {
       case 'name':
         return a.name.localeCompare(b.name);
-      case 'tantrum-factor':
-        return a.tantrumFactor - b.tantrumFactor;
-      case 'educational-value':
-        return b.educationalValue - a.educationalValue;
-      case 'parent-enjoyment':
-        return b.parentEnjoyment - a.parentEnjoyment;
+      case 'stimulation-score':
+        return a.stimulationScore - b.stimulationScore; // Lower is better
+      case 'interactivity-level':
+        // Sort by interactivity level - Low, Moderate, High
+        const levelMap: {[key: string]: number} = {
+          'Low': 1,
+          'Moderate-Low': 2,
+          'Moderate': 3,
+          'Moderate-High': 4,
+          'High': 5
+        };
+        const aLevel = levelMap[a.interactivityLevel || 'Moderate'] || 3;
+        const bLevel = levelMap[b.interactivityLevel || 'Moderate'] || 3;
+        return aLevel - bLevel;
+      case 'dialogue-intensity':
+        // Sort by dialogue intensity using the same level map
+        const dlevelMap: {[key: string]: number} = {
+          'Low': 1,
+          'Moderate-Low': 2,
+          'Moderate': 3,
+          'Moderate-High': 4,
+          'High': 5
+        };
+        const adLevel = dlevelMap[a.dialogueIntensity || 'Moderate'] || 3;
+        const bdLevel = dlevelMap[b.dialogueIntensity || 'Moderate'] || 3;
+        return adLevel - bdLevel;
       case 'overall-rating':
         return b.overallRating - a.overallRating;
       default:
