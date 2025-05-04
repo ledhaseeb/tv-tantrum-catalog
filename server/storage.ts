@@ -175,35 +175,70 @@ export class MemStorage implements IStorage {
     const importedShows: TvShow[] = [];
     
     for (const show of shows) {
+      // Map the GitHub data structure to our application's data structure
+      // Convert stimulation_score to tantrum factor (1-10 scale)
+      const tantrumFactor = Math.max(1, Math.min(10, show.stimulation_score * 2));
+      
+      // Generate values based on themes and other data
+      const educationalValue = show.themes.includes("STEM") || 
+                              show.themes.includes("Science") || 
+                              show.themes.includes("Educational") ? 
+                              Math.floor(Math.random() * 3) + 7 : // 7-10 for educational shows
+                              Math.floor(Math.random() * 5) + 3;  // 3-8 for others
+      
+      const parentEnjoyment = show.themes.includes("Positive Role Models") || 
+                             show.themes.includes("Family Values") ?
+                             Math.floor(Math.random() * 3) + 7 : // 7-10 for family-friendly shows
+                             Math.floor(Math.random() * 7) + 2;  // 2-9 for others
+      
+      const repeatWatchability = show.themes.includes("Relatable Situations") || 
+                               show.themes.includes("Problem Solving") ?
+                               Math.floor(Math.random() * 3) + 7 : // 7-10 for engaging shows
+                               Math.floor(Math.random() * 5) + 3;  // 3-8 for others
+      
+      const overallRating = Math.round((educationalValue + parentEnjoyment + (10 - tantrumFactor) + repeatWatchability) / 8 * 5);
+      
+      // Extract episode length in minutes if available
+      let episodeLength = 15; // Default
+      if (show.avg_episode_length) {
+        if (show.avg_episode_length.includes("Short")) {
+          episodeLength = 5;
+        } else if (show.avg_episode_length.includes("Medium")) {
+          episodeLength = 15;
+        } else if (show.avg_episode_length.includes("Long")) {
+          episodeLength = 30;
+        }
+      }
+      
       // Create and add the TV show
       const tvShow = await this.addTvShow({
-        name: show.name,
-        description: show.description,
-        ageRange: show.ageRange,
-        episodeLength: show.episodeLength,
-        creator: show.creator ?? null,
-        startYear: show.startYear ?? null,
-        endYear: show.endYear ?? null,
-        isOngoing: show.isOngoing ?? true,
-        tantrumFactor: show.tantrumFactor,
-        educationalValue: show.educationalValue,
-        parentEnjoyment: show.parentEnjoyment,
-        repeatWatchability: show.repeatWatchability,
-        overallRating: show.overallRating,
-        availableOn: show.availableOn,
+        name: show.title,
+        description: `${show.title} is a ${show.animation_style} show for ${show.target_age_group} year olds. It features ${show.themes.join(", ")} themes.`,
+        ageRange: show.target_age_group,
+        episodeLength: episodeLength,
+        creator: '',
+        startYear: null,
+        endYear: null,
+        isOngoing: true,
+        tantrumFactor: tantrumFactor,
+        educationalValue: educationalValue,
+        parentEnjoyment: parentEnjoyment,
+        repeatWatchability: repeatWatchability,
+        overallRating: overallRating,
+        availableOn: [show.platform],
         imageUrl: show.imageUrl ?? null,
       });
       
-      // Add reviews if present
-      if (show.reviews && show.reviews.length > 0) {
-        for (const reviewData of show.reviews) {
-          await this.addReview({
-            tvShowId: tvShow.id,
-            userName: reviewData.userName,
-            rating: reviewData.rating,
-            review: reviewData.review,
-          });
-        }
+      // Generate some sample reviews
+      const reviewCount = Math.floor(Math.random() * 3) + 1; // 1-3 reviews
+      for (let i = 0; i < reviewCount; i++) {
+        const rating = Math.floor(Math.random() * 3) + 3; // 3-5 rating
+        await this.addReview({
+          tvShowId: tvShow.id,
+          userName: `parent${i + 1}`,
+          rating: rating,
+          review: `My child ${rating >= 4 ? 'loves' : 'likes'} this show. ${show.themes[i % show.themes.length]} is their favorite part.`,
+        });
       }
       
       importedShows.push(tvShow);

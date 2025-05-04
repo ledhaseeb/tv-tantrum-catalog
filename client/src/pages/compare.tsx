@@ -275,7 +275,7 @@ export default function Compare() {
                   {selectedShows.map(show => (
                     <td key={show.id} className="py-4 px-6">
                       <div className="flex flex-wrap justify-center gap-1">
-                        {show.availableOn.map((platform, index) => (
+                        {show.availableOn && show.availableOn.map((platform, index) => (
                           <Badge key={index} variant="outline" className="bg-gray-100 text-gray-800 text-xs font-medium">
                             {platform}
                           </Badge>

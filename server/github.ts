@@ -48,10 +48,8 @@ export class GitHubService {
             for (const item of jsonData) {
               const validatedShow = this.validateTvShow(item);
               if (validatedShow) {
-                // Add image URL using the format from the repository - using show name as filename
-                // Note: Images are stored with show name, not by ID
-                const showNameForImage = validatedShow.name.toLowerCase().replace(/\s+/g, '-');
-                validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/client/public/images/${showNameForImage}.jpg`;
+                // Images are stored directly by filename in the data
+                validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/client/public/images/${validatedShow.image_filename}`;
                 showsData.push(validatedShow);
               }
             }
@@ -59,8 +57,8 @@ export class GitHubService {
             // It's a single show object
             const validatedShow = this.validateTvShow(jsonData);
             if (validatedShow) {
-              const showNameForImage = validatedShow.name.toLowerCase().replace(/\s+/g, '-');
-              validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/client/public/images/${showNameForImage}.jpg`;
+              // Images are stored directly by filename in the data
+              validatedShow.imageUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/client/public/images/${validatedShow.image_filename}`;
               showsData.push(validatedShow);
             }
           }

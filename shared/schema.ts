@@ -57,29 +57,27 @@ export type TvShow = typeof tvShows.$inferSelect;
 export type InsertTvShowReview = z.infer<typeof insertTvShowReviewSchema>;
 export type TvShowReview = typeof tvShowReviews.$inferSelect;
 
-// GitHub show format
+// GitHub show format based on actual data structure
 export const tvShowGitHubSchema = z.object({
-  id: z.number().or(z.string().transform(val => Number(val))),
-  name: z.string(),
-  description: z.string(),
-  ageRange: z.string(),
-  episodeLength: z.number(),
-  creator: z.string().optional(),
-  startYear: z.number().optional(),
-  endYear: z.number().optional(),
-  isOngoing: z.boolean().optional(),
-  tantrumFactor: z.number(),
-  educationalValue: z.number(),
-  parentEnjoyment: z.number(),
-  repeatWatchability: z.number(),
-  overallRating: z.number(),
-  availableOn: z.array(z.string()),
+  title: z.string(),
+  stimulation_score: z.number(),
+  platform: z.string(),
+  target_age_group: z.string(),
+  seasons: z.string().nullable(),
+  avg_episode_length: z.string().nullable(),
+  themes: z.array(z.string()),
+  interactivity_level: z.string(),
+  animation_style: z.string(),
+  dialogue_intensity: z.string(),
+  sound_effects_level: z.string(),
+  music_tempo: z.string(),
+  total_music_level: z.string(),
+  total_sound_effect_time_level: z.string(),
+  scene_frequency: z.string(),
+  image_filename: z.string(),
+  // We'll add these derived fields for our application
+  id: z.number().optional().default(() => Math.floor(Math.random() * 10000)),
   imageUrl: z.string().optional(),
-  reviews: z.array(z.object({
-    userName: z.string(),
-    rating: z.number(),
-    review: z.string(),
-  })).optional(),
 });
 
 export type TvShowGitHub = z.infer<typeof tvShowGitHubSchema>;
