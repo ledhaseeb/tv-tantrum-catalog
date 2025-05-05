@@ -116,7 +116,7 @@ export default function Detail({ id }: DetailProps) {
                 <h2 className="text-2xl font-heading font-bold text-gray-900">{showDetail.name}</h2>
                 <p className="text-gray-600">
                   {showDetail.creator && `Created by ${showDetail.creator}`} 
-                  {showDetail.startYear && `(${showDetail.startYear}${showDetail.isOngoing ? "-Present" : showDetail.endYear ? `-${showDetail.endYear}` : ""})`}
+                  {showDetail.releaseYear && `(${showDetail.releaseYear}${showDetail.isOngoing ? "-Present" : showDetail.endYear ? `-${showDetail.endYear}` : ""})`}
                 </p>
               </div>
               <div className="flex items-center">

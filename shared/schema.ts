@@ -24,7 +24,7 @@ export const tvShows = pgTable("tv_shows", {
   ageRange: text("age_range").notNull(),
   episodeLength: integer("episode_length").notNull(), // in minutes
   creator: text("creator"),
-  startYear: integer("start_year"),
+  releaseYear: integer("release_year"),
   endYear: integer("end_year"),
   isOngoing: boolean("is_ongoing").default(true),
   
@@ -37,6 +37,14 @@ export const tvShows = pgTable("tv_shows", {
   totalMusicLevel: text("total_music_level"),
   totalSoundEffectTimeLevel: text("total_sound_effect_time_level"),
   sceneFrequency: text("scene_frequency"),
+  
+  // Additional categorized ratings for specific aspects (1-5 scale)
+  friendshipRating: integer("friendship_rating"),
+  problemSolvingRating: integer("problem_solving_rating"),
+  relatableSituationsRating: integer("relatable_situations_rating"),
+  emotionalIntelligenceRating: integer("emotional_intelligence_rating"),
+  creativityRating: integer("creativity_rating"),
+  educationalValueRating: integer("educational_value_rating"),
   
   // Overall rating still useful for comparison
   overallRating: integer("overall_rating").notNull(), // 1-5 scale
@@ -89,6 +97,8 @@ export const tvShowGitHubSchema = z.object({
   total_sound_effect_time_level: z.string(),
   scene_frequency: z.string(),
   image_filename: z.string(),
+  release_year: z.number().optional(),
+  end_year: z.number().optional(),
   // We'll add these derived fields for our application
   id: z.number().optional().default(() => Math.floor(Math.random() * 10000)),
   imageUrl: z.string().optional(),

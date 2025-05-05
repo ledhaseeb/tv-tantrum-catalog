@@ -75,6 +75,11 @@ export class MemStorage implements IStorage {
     tantrumFactor?: string; 
     sortBy?: string;
     search?: string;
+    themes?: string[];
+    interactionLevel?: string;
+    dialogueIntensity?: string;
+    soundFrequency?: string;
+    stimulationScoreRange?: {min: number, max: number};
   }): Promise<TvShow[]> {
     let shows = Array.from(this.tvShows.values());
     
@@ -110,6 +115,52 @@ export class MemStorage implements IStorage {
       shows = shows.filter(show => 
         show.name.toLowerCase().includes(searchTerm) || 
         show.description.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Filter by themes
+    if (filters.themes && filters.themes.length > 0) {
+      shows = shows.filter(show => {
+        // Convert both arrays to lowercase for case-insensitive comparison
+        const showThemesLower = show.themes?.map(t => t.toLowerCase()) || [];
+        const filterThemesLower = filters.themes!.map(t => t.toLowerCase());
+        
+        // Check if show has at least one of the selected themes
+        return filterThemesLower.some(theme => 
+          showThemesLower.some(showTheme => showTheme.includes(theme))
+        );
+      });
+    }
+    
+    // Filter by interaction level
+    if (filters.interactionLevel) {
+      shows = shows.filter(show => 
+        show.interactivityLevel === filters.interactionLevel || 
+        filters.interactionLevel === 'Any'
+      );
+    }
+    
+    // Filter by dialogue intensity
+    if (filters.dialogueIntensity) {
+      shows = shows.filter(show => 
+        show.dialogueIntensity === filters.dialogueIntensity || 
+        filters.dialogueIntensity === 'Any'
+      );
+    }
+    
+    // Filter by sound frequency
+    if (filters.soundFrequency) {
+      shows = shows.filter(show => 
+        show.soundEffectsLevel === filters.soundFrequency || 
+        filters.soundFrequency === 'Any'
+      );
+    }
+    
+    // Filter by stimulation score range
+    if (filters.stimulationScoreRange) {
+      shows = shows.filter(show => 
+        show.stimulationScore >= filters.stimulationScoreRange!.min && 
+        show.stimulationScore <= filters.stimulationScoreRange!.max
       );
     }
     
@@ -167,11 +218,17 @@ export class MemStorage implements IStorage {
     const processedShow = {
       ...show,
       creator: show.creator ?? null,
-      startYear: show.startYear ?? null,
+      releaseYear: show.releaseYear ?? null,
       endYear: show.endYear ?? null,
       isOngoing: show.isOngoing ?? true,
       imageUrl: show.imageUrl ?? null,
-      availableOn: show.availableOn ?? []
+      availableOn: show.availableOn ?? [],
+      friendshipRating: show.friendshipRating ?? null,
+      problemSolvingRating: show.problemSolvingRating ?? null,
+      relatableSituationsRating: show.relatableSituationsRating ?? null,
+      emotionalIntelligenceRating: show.emotionalIntelligenceRating ?? null,
+      creativityRating: show.creativityRating ?? null,
+      educationalValueRating: show.educationalValueRating ?? null
     };
     
     // Use explicit casting to TvShow to handle any type issues
@@ -228,6 +285,35 @@ export class MemStorage implements IStorage {
         }
       }
       
+      // Determine topic-specific ratings based on themes and other metrics
+      const hasFriendshipTheme = show.themes.some(theme => 
+        theme.toLowerCase().includes('friendship') || 
+        theme.toLowerCase().includes('relationships'));
+      
+      const hasProblemSolvingTheme = show.themes.some(theme => 
+        theme.toLowerCase().includes('problem solving') || 
+        theme.toLowerCase().includes('critical thinking'));
+      
+      const hasRelatableTheme = show.themes.some(theme => 
+        theme.toLowerCase().includes('relatable') || 
+        theme.toLowerCase().includes('social') || 
+        theme.toLowerCase().includes('life lessons'));
+      
+      const hasEmotionalIntelligenceTheme = show.themes.some(theme => 
+        theme.toLowerCase().includes('emotional intelligence') || 
+        theme.toLowerCase().includes('feelings'));
+      
+      const hasCreativeTheme = show.themes.some(theme => 
+        theme.toLowerCase().includes('creativity') || 
+        theme.toLowerCase().includes('imagination') ||
+        theme.toLowerCase().includes('art'));
+      
+      const hasEducationalTheme = show.themes.some(theme => 
+        theme.toLowerCase().includes('educational') || 
+        theme.toLowerCase().includes('stem') || 
+        theme.toLowerCase().includes('learning') || 
+        theme.toLowerCase().includes('school'));
+        
       // Create and add the TV show - using the metrics directly from GitHub data
       const tvShow = await this.addTvShow({
         name: show.title,
@@ -235,8 +321,8 @@ export class MemStorage implements IStorage {
         ageRange: show.target_age_group,
         episodeLength: episodeLength,
         creator: null,
-        startYear: null,
-        endYear: null,
+        releaseYear: show.release_year || null,
+        endYear: show.end_year || null,
         isOngoing: true,
         
         // Direct metrics from GitHub
@@ -250,6 +336,14 @@ export class MemStorage implements IStorage {
         sceneFrequency: show.scene_frequency,
         animationStyle: show.animation_style,
         themes: show.themes,
+        
+        // Topic-specific ratings based on themes
+        friendshipRating: hasFriendshipTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
+        problemSolvingRating: hasProblemSolvingTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
+        relatableSituationsRating: hasRelatableTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
+        emotionalIntelligenceRating: hasEmotionalIntelligenceTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
+        creativityRating: hasCreativeTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
+        educationalValueRating: hasEducationalTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
         
         // Derived fields
         overallRating: overallRating,
