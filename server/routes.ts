@@ -3,7 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { githubService } from "./github";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema } from "@shared/schema";
+import { insertTvShowReviewSchema, TvShowGitHub } from "@shared/schema";
+import fs from 'fs';
+import { parse } from 'csv-parse/sync';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize the data from GitHub on server start
@@ -115,6 +117,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error refreshing data:", error);
       res.status(500).json({ message: "Failed to refresh data" });
+    }
+  });
+
+  // Import data from CSV file
+  app.post("/api/import-csv", async (req: Request, res: Response) => {
+    try {
+      // Check if CSV file exists
+      const csvFilePath = 'tvshow_sensory_data.csv';
+      if (!fs.existsSync(csvFilePath)) {
+        return res.status(404).json({ message: "CSV file not found" });
+      }
+
+      // Read and parse CSV file
+      const fileContent = fs.readFileSync(csvFilePath, 'utf8');
+      const records = parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true
+      });
+
+      console.log(`Parsed ${records.length} records from CSV`);
+      
+      // Transform CSV data to GitHub format
+      const transformedShows: TvShowGitHub[] = records.map((record: any, index: number) => {
+        // Split the themes into an array and trim each value
+        const themes = record['Themes, Teachings, Guidance'] 
+          ? record['Themes, Teachings, Guidance'].split(',').map((t: string) => t.trim())
+          : [];
+
+        // Convert string numbers to actual numbers
+        const stimulationScore = parseInt(record['Stimulation Score']) || 3;
+
+        return {
+          title: record['Programs'] || `Show ${index + 1}`,
+          stimulation_score: stimulationScore,
+          platform: record['TV or YouTube'] || 'TV',
+          target_age_group: record['Target Age Group'] || '4-8',
+          seasons: record['Seasons'] || null,
+          avg_episode_length: record['Avg. Epsiode'] || null,
+          themes: themes,
+          interactivity_level: record['Interactivity Level'] || 'Moderate',
+          animation_style: record['Animation Styles'] || 'Traditional 2D',
+          dialogue_intensity: record['Dialougue Intensity'] || 'Moderate',
+          sound_effects_level: record['Sound Effects'] || 'Moderate',
+          music_tempo: record['Music Tempo'] || 'Moderate',
+          total_music_level: record['Total Music'] || 'Moderate',
+          total_sound_effect_time_level: record['Total Sound Effect Time'] || 'Moderate',
+          scene_frequency: record['Scene Frequency'] || 'Moderate',
+          image_filename: 'default.jpg', // Placeholder for image filename
+          id: index + 1
+        };
+      });
+
+      // Import processed data to storage
+      const importedShows = await storage.importShowsFromGitHub(transformedShows);
+      console.log(`Imported ${importedShows.length} TV shows from CSV`);
+      
+      res.json({ 
+        message: "CSV data imported successfully", 
+        count: importedShows.length 
+      });
+    } catch (error) {
+      console.error('Error importing CSV data:', error);
+      res.status(500).json({ 
+        message: "Failed to import CSV data", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 
