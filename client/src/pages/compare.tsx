@@ -42,9 +42,10 @@ export default function Compare() {
     setSelectedShowIds(prev => prev.filter(showId => showId !== id));
   };
 
-  const handleAddShow = () => {
-    if (showToAdd && !selectedShowIds.includes(Number(showToAdd))) {
-      setSelectedShowIds(prev => [...prev, Number(showToAdd)]);
+  // Update to immediately add show when selected from dropdown
+  const handleAddShow = (value: string) => {
+    if (value && !selectedShowIds.includes(Number(value))) {
+      setSelectedShowIds(prev => [...prev, Number(value)]);
       setShowToAdd("");
     }
   };
@@ -165,7 +166,7 @@ export default function Compare() {
                       <div className="w-full">
                         <Select
                           value={showToAdd}
-                          onValueChange={setShowToAdd}
+                          onValueChange={(value) => handleAddShow(value)}
                         >
                           <SelectTrigger className="bg-white">
                             <SelectValue placeholder="Select a show" />
@@ -184,15 +185,6 @@ export default function Compare() {
                             )}
                           </SelectContent>
                         </Select>
-                        {showToAdd && (
-                          <Button
-                            size="sm"
-                            className="w-full mt-2"
-                            onClick={handleAddShow}
-                          >
-                            Add
-                          </Button>
-                        )}
                       </div>
                     )}
                   </div>
@@ -375,6 +367,121 @@ export default function Compare() {
                           <div 
                             className="h-full bg-red-500 rounded-l"
                             style={{ width: getLevelWidth(show.soundEffectsLevel || 'Moderate') }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Educational Value */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Educational Value</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-green-500 rounded-l"
+                            style={{ width: `${(show.educationalValueRating || 3) * 20}%` }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Friendship Rating */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Friendship Themes</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-pink-500 rounded-l"
+                            style={{ width: `${(show.friendshipRating || 3) * 20}%` }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Problem Solving Rating */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Problem Solving</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-yellow-500 rounded-l"
+                            style={{ width: `${(show.problemSolvingRating || 3) * 20}%` }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Creativity Rating */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Creativity</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-indigo-500 rounded-l"
+                            style={{ width: `${(show.creativityRating || 3) * 20}%` }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Emotional Intelligence Rating */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Emotional Intelligence</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-teal-500 rounded-l"
+                            style={{ width: `${(show.emotionalIntelligenceRating || 3) * 20}%` }}
                           />
                         </div>
                         <div className="text-center text-sm">{show.name}</div>
