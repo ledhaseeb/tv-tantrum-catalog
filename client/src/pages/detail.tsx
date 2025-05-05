@@ -8,8 +8,11 @@ import { TvShow, TvShowReview } from "@shared/schema";
 
 type ShowDetailResponse = TvShow & { reviews: TvShowReview[] };
 
-export default function Detail() {
-  const { id } = useParams<{ id: string }>();
+type DetailProps = {
+  id: number;
+}
+
+export default function Detail({ id }: DetailProps) {
   const [_, setLocation] = useLocation();
   
   const { data: showDetail, isLoading, error } = useQuery<ShowDetailResponse>({

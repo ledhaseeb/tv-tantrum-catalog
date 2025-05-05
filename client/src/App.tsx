@@ -18,14 +18,24 @@ function Router() {
       <Navbar />
       <div className="flex-grow">
         <Switch>
-          <Route path="/" exact component={Home} />
-          <Route path="/browse" component={Browse} />
+          <Route path="/">
+            <Home />
+          </Route>
+          <Route path="/browse">
+            <Browse />
+          </Route>
           <Route path="/shows/:id">
             {(params) => <Detail id={parseInt(params.id, 10)} />}
           </Route>
-          <Route path="/compare" component={Compare} />
-          <Route path="/about" component={About} />
-          <Route component={NotFound} />
+          <Route path="/compare">
+            <Compare />
+          </Route>
+          <Route path="/about">
+            <About />
+          </Route>
+          <Route>
+            <NotFound />
+          </Route>
         </Switch>
       </div>
       <Footer />

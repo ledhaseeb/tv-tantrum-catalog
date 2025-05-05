@@ -17,22 +17,21 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Explore</h3>
               <ul className="space-y-2">
-                <li><Link href="/"><a className="text-gray-300 hover:text-white">Browse Shows</a></Link></li>
-                <li><Link href="/compare"><a className="text-gray-300 hover:text-white">Compare Shows</a></Link></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">Top Rated</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">Recently Added</a></li>
+                <li><Link href="/" className="text-gray-300 hover:text-white">Home</Link></li>
+                <li><Link href="/browse" className="text-gray-300 hover:text-white">Browse Shows</Link></li>
+                <li><Link href="/compare" className="text-gray-300 hover:text-white">Compare Shows</Link></li>
+                <li><Link href="/browse?sortBy=overallRating" className="text-gray-300 hover:text-white">Top Rated</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Resources</h3>
               <ul className="space-y-2">
-                <li><Link href="/about"><a className="text-gray-300 hover:text-white">About Us</a></Link></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">FAQ</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">Contribute</a></li>
+                <li><Link href="/about" className="text-gray-300 hover:text-white">About Us</Link></li>
+                <li><Link href="/about#faq" className="text-gray-300 hover:text-white">FAQ</Link></li>
                 <li>
                   <a 
-                    href="https://github.com/tvtantrum/tvtantrum" 
+                    href="https://github.com/ledhaseeb/tvtantrum" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-gray-300 hover:text-white"
@@ -46,11 +45,10 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Connect</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-300 hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">Twitter</a></li>
+                <li><Link href="/about#contact" className="text-gray-300 hover:text-white">Contact Us</Link></li>
                 <li>
                   <a 
-                    href="https://github.com/tvtantrum/tvtantrum" 
+                    href="https://github.com/ledhaseeb/tvtantrum" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-gray-300 hover:text-white"
@@ -66,18 +64,12 @@ export default function Footer() {
         <div className="mt-8 pt-8 border-t border-gray-700 md:flex md:items-center md:justify-between">
           <div className="flex space-x-6 md:order-2">
             <a 
-              href="https://github.com/tvtantrum/tvtantrum" 
+              href="https://github.com/ledhaseeb/tvtantrum" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-gray-400 hover:text-gray-300"
             >
               <i className="fab fa-github"></i>
-            </a>
-            <a href="#" className="text-gray-400 hover:text-gray-300">
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a href="#" className="text-gray-400 hover:text-gray-300">
-              <i className="fab fa-linkedin"></i>
             </a>
           </div>
           <p className="mt-8 md:mt-0 md:order-1 text-gray-400">
