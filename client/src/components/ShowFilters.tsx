@@ -222,133 +222,103 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             <Label htmlFor="show-name" className="block text-sm font-medium text-gray-700 mb-2">
               Show Name
             </Label>
-            <Popover open={openAutoComplete} onOpenChange={setOpenAutoComplete}>
-              <PopoverTrigger asChild>
-                <div className="relative w-full">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-                  <Input
-                    id="show-name"
-                    placeholder="Enter show title..."
-                    value={searchInput}
-                    onChange={(e) => {
-                      setSearchInput(e.target.value);
-                      if (e.target.value.length > 0) {
-                        setOpenAutoComplete(true);
-                      }
-                    }}
-                    onFocus={() => {
-                      if (searchInput.length > 0) {
-                        setOpenAutoComplete(true);
-                      }
-                    }}
-                    className="w-full pl-8"
-                  />
+            
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                id="show-name"
+                placeholder="Enter show title..."
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  handleFilterChange('search', e.target.value);
+                }}
+                className="w-full pl-8"
+              />
+            </div>
+              
+            {/* Show matching results based on searchInput */}
+            {searchInput.trim().length > 0 && (
+              <div className="relative mt-1">
+                <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-gray-200">
+                  <div className="py-1">
+                    {shows
+                      ?.filter(show => {
+                        // Skip if no search input
+                        if (!searchInput.trim()) return false;
+                        
+                        const searchLower = searchInput.toLowerCase().trim();
+                        const nameLower = show.name.toLowerCase();
+                        
+                        // Direct match in name
+                        if (nameLower.includes(searchLower)) return true;
+                        
+                        // Handle shows with year ranges (e.g., "Show Name 2018-present")
+                        const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
+                        if (nameWithoutYears.includes(searchLower)) return true;
+                        
+                        // Match any part of a word (for show names like "Blue's Clues")
+                        const words = nameLower.split(/\s+/);
+                        if (words.some(word => word.includes(searchLower))) return true;
+                        
+                        // Handle apostrophes and special characters
+                        const simplifiedName = nameLower.replace(/[''\.]/g, '');
+                        if (simplifiedName.includes(searchLower)) return true;
+                        
+                        return false;
+                      })
+                      .slice(0, 8)
+                      .map(show => (
+                        <div
+                          key={show.id}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setSearchInput(show.name);
+                            handleFilterChange('search', show.name);
+                            onFilterChange({
+                              ...filters,
+                              search: show.name
+                            });
+                          }}
+                        >
+                          <div className="font-medium">{show.name}</div>
+                          <div className="text-xs text-gray-500">
+                            Ages: {show.ageRange || 'Unknown'} 
+                            {show.releaseYear ? ` • (${show.releaseYear})` : ''}
+                          </div>
+                        </div>
+                      ))
+                    }
+                    
+                    {shows?.filter(show => {
+                      const searchLower = searchInput.toLowerCase().trim();
+                      const nameLower = show.name.toLowerCase();
+                      
+                      // Direct match
+                      if (nameLower.includes(searchLower)) return true;
+                      
+                      // Without years
+                      const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
+                      if (nameWithoutYears.includes(searchLower)) return true;
+                      
+                      // Within words
+                      const words = nameLower.split(/\s+/);
+                      if (words.some(word => word.includes(searchLower))) return true;
+                      
+                      // Simplified name
+                      const simplifiedName = nameLower.replace(/[''\.]/g, '');
+                      if (simplifiedName.includes(searchLower)) return true;
+                      
+                      return false;
+                    }).length === 0 && (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        No shows match your search
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </PopoverTrigger>
-              <PopoverContent className="p-0 w-[300px]" align="start">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search shows..." 
-                    value={searchInput}
-                    onValueChange={setSearchInput}
-                  />
-                  <CommandList>
-                    <CommandEmpty>
-                      {searchInput.trim().length === 0 
-                        ? "Start typing to search for shows..." 
-                        : "No shows found matching your search."}
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {shows
-                        ?.filter(show => {
-                          const lowerCaseInput = searchInput.toLowerCase().trim();
-                          if (lowerCaseInput.length === 0) return false;
-                          
-                          // Try each potential match pattern
-                          const showName = show.name.toLowerCase();
-                          
-                          // Direct match in full name (most obvious)
-                          if (showName.includes(lowerCaseInput)) return true;
-                          
-                          // Remove year ranges for comparison (e.g., "Show Name 2018-present")
-                          const nameWithoutYears = showName.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
-                          if (nameWithoutYears.includes(lowerCaseInput)) return true;
-                          
-                          // Match at the beginning of any word
-                          const words = showName.split(/\s+/);
-                          if (words.some(word => word.startsWith(lowerCaseInput))) return true;
-                          
-                          // Match any part of a word (important for names like "Blue's Clues")
-                          if (words.some(word => word.includes(lowerCaseInput))) return true;
-                          
-                          // Try matching on clean name (without years)
-                          const cleanWords = nameWithoutYears.split(/\s+/);
-                          if (cleanWords.some(word => word.startsWith(lowerCaseInput))) return true;
-                          
-                          // Handle apostrophes and special characters by trying with simplified text
-                          const simplifiedName = showName.replace(/[''\.]/g, '');
-                          if (simplifiedName.includes(lowerCaseInput)) return true;
-                          
-                          return false;
-                        })
-                        .sort((a, b) => {
-                          // Sort exact matches first
-                          const aName = a.name.toLowerCase();
-                          const bName = b.name.toLowerCase();
-                          const input = searchInput.toLowerCase().trim();
-                          
-                          const aExact = aName === input;
-                          const bExact = bName === input;
-                          
-                          if (aExact && !bExact) return -1;
-                          if (!aExact && bExact) return 1;
-                          
-                          // Then sort by starts with
-                          const aStartsWith = aName.startsWith(input);
-                          const bStartsWith = bName.startsWith(input);
-                          
-                          if (aStartsWith && !bStartsWith) return -1;
-                          if (!aStartsWith && bStartsWith) return 1;
-                          
-                          // Finally sort alphabetically
-                          return aName.localeCompare(bName);
-                        })
-                        .slice(0, 12) // Show more suggestions
-                        .map(show => (
-                          <CommandItem
-                            key={show.id}
-                            onSelect={() => {
-                              setSearchInput(show.name);
-                              setOpenAutoComplete(false);
-                              handleFilterChange('search', show.name);
-                              // Auto-apply the filter so results update right away
-                              onFilterChange({ 
-                                ...filters, 
-                                search: show.name,
-                                themes: selectedThemes.length ? selectedThemes : undefined
-                              });
-                            }}
-                            className="flex items-center"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-medium">
-                                {show.name}
-                                {show.name.toLowerCase().includes(searchInput.toLowerCase().trim()) && 
-                                 !/^\s*\d{4}/.test(searchInput) && 
-                                 show.name.toLowerCase() !== searchInput.toLowerCase().trim() && 
-                                 (<span className="ml-1 text-xs font-normal text-green-600">(Match)</span>)}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Ages: {show.ageRange} • {show.releaseYear ? `(${show.releaseYear})` : ''}
-                              </span>
-                            </div>
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+              </div>
+            )}
           </div>
           
           {/* Age Range Radio Buttons */}
