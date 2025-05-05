@@ -43,26 +43,49 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
     return 'bg-gray-100 text-gray-800';
   };
   
-  // Get stimulation score color
-  const getStimRatingColorClass = () => {
-    const scoreColors = ["bg-green-500", "bg-green-500", "bg-yellow-500", "bg-yellow-500", "bg-red-500"];
-    return scoreColors[Math.min(Math.floor(show.stimulationScore), 5) - 1] || "bg-gray-400";
+  // Get stimulation score colors based on index
+  const getStimulationDotColor = (index: number) => {
+    // Match the colors from details page
+    const bgColors = [
+      'bg-green-500',    // green for 1
+      'bg-yellow-500',   // yellow for 2
+      'bg-orange-500',   // orange for 3
+      'bg-orange-600',   // dark orange for 4
+      'bg-red-500'       // red for 5
+    ];
+    
+    const borderColors = [
+      'border-green-500',    // green for 1
+      'border-yellow-500',   // yellow for 2
+      'border-orange-500',   // orange for 3
+      'border-orange-600',   // dark orange for 4
+      'border-red-500'       // red for 5
+    ];
+    
+    return { bgColor: bgColors[index], borderColor: borderColors[index] };
   };
   
-  // Get rating circles based on score
-  const renderRatingCircles = (score: number, maxScore: number = 5) => {
-    const circles = [];
-    const scoreColors = ["bg-orange-500", "bg-orange-400", "bg-orange-300", "bg-gray-300", "bg-gray-300"];
+  // Render stimulation score dots
+  const renderStimulationDots = () => {
+    const dots = [];
+    const score = show.stimulationScore;
     
-    for (let i = 0; i < maxScore; i++) {
-      circles.push(
+    for (let i = 0; i < 5; i++) {
+      const { bgColor, borderColor } = getStimulationDotColor(i);
+      dots.push(
         <div 
           key={i} 
-          className={`h-2 w-2 rounded-full mx-0.5 ${i < score ? scoreColors[i] : 'bg-gray-200'}`}
-        ></div>
+          className={`w-3 h-3 rounded-full mx-0.5 ${
+            // Active dots show their own color
+            i < score 
+              ? bgColor 
+              // Inactive dots are outlined with their corresponding color
+              : `border-2 ${borderColor} bg-white`
+          }`} 
+        />
       );
     }
-    return circles;
+    return dots;
   };
   
   if (viewMode === "list") {
@@ -121,11 +144,13 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             
             <div className="flex justify-between items-center mt-2">
               <div className="flex items-center">
-                <div className={`w-3 h-3 rounded-full mr-1 ${getStimRatingColorClass()}`}></div>
+                <div className="flex items-center mr-2">
+                  {renderStimulationDots()}
+                </div>
                 <span className="text-sm text-gray-600">
                   {show.stimulationScore <= 2 ? 'Low' : 
                   show.stimulationScore <= 4 ? 'Medium' : 
-                  'High'} Stimulation ({show.stimulationScore}/5)
+                  'High'} Stimulation
                 </span>
               </div>
               
@@ -188,11 +213,13 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
           {/* Stimulation score indicator */}
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-1">
-              <div className={`w-3 h-3 rounded-full ${getStimRatingColorClass()}`}></div>
+              <div className="flex items-center scale-75 mr-1">
+                {renderStimulationDots()}
+              </div>
               <span className="text-xs text-gray-600">
                 {show.stimulationScore <= 2 ? 'Low' : 
                  show.stimulationScore <= 4 ? 'Medium' : 
-                 'High'} Stimulation ({show.stimulationScore}/5)
+                 'High'} Stimulation
               </span>
             </div>
             <Button 
