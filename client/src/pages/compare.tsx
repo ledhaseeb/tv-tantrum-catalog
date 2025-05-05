@@ -486,15 +486,15 @@ export default function Compare() {
                   </div>
                 </div>
                 
-                {/* Total Music Level */}
+                {/* Scene Frequency */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Total Music Level:</h4>
+                  <h4 className="font-medium mb-2">Scene Frequency:</h4>
                   <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
                         <div className="flex justify-between mb-1">
                           <span className="text-sm">{show.name}</span>
-                          <span className="text-sm font-medium">Moderate</span>
+                          <span className="text-sm font-medium">{show.sceneFrequency || 'Moderate'}</span>
                         </div>
                         <div className="w-full h-6 relative">
                           <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
@@ -509,7 +509,7 @@ export default function Compare() {
                             style={{ 
                               width: '4px', 
                               backgroundColor: 'black',
-                              left: `calc(60% - 2px)`,
+                              left: `calc(${getLevelPercentage(show.sceneFrequency || 'Moderate')}% - 2px)`,
                               top: 0
                             }}
                           ></div>
@@ -524,15 +524,15 @@ export default function Compare() {
                   </div>
                 </div>
 
-                {/* Educational Value */}
+                {/* Music Tempo */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Educational Value:</h4>
+                  <h4 className="font-medium mb-2">Music Tempo:</h4>
                   <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
                         <div className="flex justify-between mb-1">
                           <span className="text-sm">{show.name}</span>
-                          <span className="text-sm font-medium">Moderate</span>
+                          <span className="text-sm font-medium">{show.musicTempo || 'Moderate'}</span>
                         </div>
                         <div className="w-full h-6 relative">
                           <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
@@ -547,7 +547,7 @@ export default function Compare() {
                             style={{ 
                               width: '4px', 
                               backgroundColor: 'black',
-                              left: `calc(${(show.educationalValueRating || 3) * 20}% - 2px)`,
+                              left: `calc(${getLevelPercentage(show.musicTempo || 'Moderate')}% - 2px)`,
                               top: 0
                             }}
                           ></div>
@@ -562,15 +562,15 @@ export default function Compare() {
                   </div>
                 </div>
                 
-                {/* Friendship Rating */}
+                {/* Total Music Level */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Friendship Themes:</h4>
+                  <h4 className="font-medium mb-2">Total Music Level:</h4>
                   <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
                         <div className="flex justify-between mb-1">
                           <span className="text-sm">{show.name}</span>
-                          <span className="text-sm font-medium">Moderate</span>
+                          <span className="text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</span>
                         </div>
                         <div className="w-full h-6 relative">
                           <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
@@ -585,7 +585,7 @@ export default function Compare() {
                             style={{ 
                               width: '4px', 
                               backgroundColor: 'black',
-                              left: `calc(${(show.friendshipRating || 3) * 20}% - 2px)`,
+                              left: `calc(${getLevelPercentage(show.totalMusicLevel || 'Moderate')}% - 2px)`,
                               top: 0
                             }}
                           ></div>
