@@ -31,6 +31,9 @@ export default function Navbar() {
     e.preventDefault();
     if (searchTerm.trim()) {
       // For all searches, direct to browse page with search filter
+      console.log('Navbar - Submitting search for:', searchTerm.trim());
+      // Use setLocation from wouter instead of directly setting window.location
+      // This keeps the app in SPA mode and avoids a full page reload
       window.location.href = `/browse?search=${encodeURIComponent(searchTerm.trim())}`;
       setShowResults(false);
     }

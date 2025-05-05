@@ -26,14 +26,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows
   app.get("/api/shows", async (req: Request, res: Response) => {
     try {
-      const { ageGroup, tantrumFactor, sortBy, search } = req.query;
+      // Debug what's coming in as query parameters
+      console.log("Shows API - Query params:", req.query);
+      
+      const { 
+        ageGroup, 
+        tantrumFactor, 
+        sortBy, 
+        search, 
+        themes,
+        interactionLevel,
+        dialogueIntensity,
+        soundFrequency,
+        stimulationScoreRange
+      } = req.query;
+      
+      // Process themes - can be comma-separated string
+      let processedThemes: string[] | undefined = undefined;
+      if (typeof themes === 'string' && themes.trim()) {
+        processedThemes = themes.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      
+      // Process stimulationScoreRange - can be JSON string
+      let processedStimulationScoreRange: { min: number, max: number } | undefined = undefined;
+      if (typeof stimulationScoreRange === 'string' && stimulationScoreRange.trim()) {
+        try {
+          processedStimulationScoreRange = JSON.parse(stimulationScoreRange);
+        } catch (e) {
+          console.error("Failed to parse stimulationScoreRange:", e);
+        }
+      }
       
       const filters = {
         ageGroup: typeof ageGroup === 'string' ? ageGroup : undefined,
         tantrumFactor: typeof tantrumFactor === 'string' ? tantrumFactor : undefined,
         sortBy: typeof sortBy === 'string' ? sortBy : undefined,
-        search: typeof search === 'string' ? search : undefined
+        search: typeof search === 'string' ? search : undefined,
+        themes: processedThemes,
+        interactionLevel: typeof interactionLevel === 'string' ? interactionLevel : undefined,
+        dialogueIntensity: typeof dialogueIntensity === 'string' ? dialogueIntensity : undefined,
+        soundFrequency: typeof soundFrequency === 'string' ? soundFrequency : undefined,
+        stimulationScoreRange: processedStimulationScoreRange
       };
+      
+      console.log("Shows API - Processed filters:", filters);
       
       const shows = await storage.getTvShowsByFilter(filters);
       res.json(shows);

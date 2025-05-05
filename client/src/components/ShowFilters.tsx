@@ -293,12 +293,15 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                           key={show.id}
                           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                           onClick={() => {
+                            console.log('Selecting show from dropdown:', show.name);
                             setSearchInput(show.name);
                             handleFilterChange('search', show.name);
-                            onFilterChange({
+                            const updatedFilters = {
                               ...filters,
                               search: show.name
-                            });
+                            };
+                            console.log('Applying updated filters from dropdown selection:', updatedFilters);
+                            onFilterChange(updatedFilters);
                           }}
                         >
                           <div className="font-medium">{show.name}</div>
