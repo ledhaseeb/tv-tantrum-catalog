@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiGet } from "@/lib/queryClient";
 import { Search } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 
@@ -17,8 +17,12 @@ export default function Navbar() {
   const { data: shows } = useQuery({
     queryKey: ['/api/shows'],
     queryFn: async () => {
-      const response = await apiRequest('/api/shows');
-      return response as TvShow[];
+      const response = await fetch('/api/shows');
+      if (!response.ok) {
+        throw new Error('Failed to fetch shows');
+      }
+      const data = await response.json();
+      return data as TvShow[];
     },
     staleTime: 60000, // 1 minute
   });

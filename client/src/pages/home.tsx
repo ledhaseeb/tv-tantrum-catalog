@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import ShowCard from "@/components/ShowCard";
 import { TvShow } from "@shared/schema";
+import { Search } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -18,6 +19,14 @@ import {
 export default function Home() {
   const [_, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  
+  // Hide results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowResults(false);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
   
   // Fetch all TV shows
   const { data: allShows, isLoading } = useQuery<TvShow[]>({
@@ -61,10 +70,36 @@ export default function Home() {
     (show.ageRange && parseInt(show.ageRange.split('-')[0]) <= 4)
   ).slice(0, 8);
   
+  // Filter shows based on search term
+  const filteredShows = allShows?.filter((show: TvShow) => {
+    if (!searchQuery.trim()) return false;
+    
+    const searchLower = searchQuery.toLowerCase().trim();
+    const nameLower = show.name.toLowerCase();
+    
+    // Direct match in name
+    if (nameLower.includes(searchLower)) return true;
+    
+    // Handle shows with year ranges
+    const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
+    if (nameWithoutYears.includes(searchLower)) return true;
+    
+    // Match any part of a word
+    const words = nameLower.split(/\s+/);
+    if (words.some((word: string) => word.includes(searchLower))) return true;
+    
+    // Handle apostrophes and special characters
+    const simplifiedName = nameLower.replace(/[''\.]/g, '');
+    if (simplifiedName.includes(searchLower)) return true;
+    
+    return false;
+  }).slice(0, 6);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setLocation(`/browse?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowResults(false);
     }
   };
   
@@ -141,17 +176,66 @@ export default function Home() {
           that fits your child's needs.
         </p>
         
-        <form onSubmit={handleSearch} className="flex max-w-md mx-auto">
-          <Input 
-            type="text" 
-            placeholder="Search show by name, theme, platform..." 
-            className="rounded-r-none"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Button type="submit" className="rounded-l-none">
-            <i className="fas fa-search mr-2"></i> Search
-          </Button>
+        <form onSubmit={handleSearch} className="relative max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="flex">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+              <Input 
+                type="text" 
+                placeholder="Search show by name, theme, platform..." 
+                className="rounded-r-none pl-10"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // Show results dropdown if there's text to search
+                  if (e.target.value.trim().length > 0) {
+                    setShowResults(true);
+                  } else {
+                    setShowResults(false);
+                  }
+                }}
+                onFocus={() => {
+                  if (searchQuery.trim().length > 0) {
+                    setShowResults(true);
+                  }
+                }}
+              />
+              
+              {/* Search Results Dropdown */}
+              {showResults && searchQuery.trim().length > 0 && (
+                <div className="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-gray-200">
+                  <div className="py-1">
+                    {filteredShows?.length ? (
+                      filteredShows.map((show: TvShow) => (
+                        <div
+                          key={show.id}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setSearchQuery(show.name);
+                            setShowResults(false);
+                            handleShowCardClick(show.id);
+                          }}
+                        >
+                          <div className="font-medium">{show.name}</div>
+                          <div className="text-xs text-gray-500">
+                            Ages: {show.ageRange || 'Unknown'} 
+                            {show.stimulationScore ? ` • Stimulation: ${show.stimulationScore}` : ''}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        No shows match your search
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button type="submit" className="rounded-l-none">
+              <i className="fas fa-search mr-2"></i> Search
+            </Button>
+          </div>
         </form>
       </div>
       
