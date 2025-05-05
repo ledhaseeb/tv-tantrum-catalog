@@ -249,11 +249,14 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 type="button" 
                 className="rounded-l-none"
                 onClick={() => {
+                  console.log('Search button clicked with term:', searchInput);
                   handleFilterChange('search', searchInput);
-                  onFilterChange({
+                  const updatedFilters = {
                     ...filters,
                     search: searchInput
-                  });
+                  };
+                  console.log('Applying filters:', updatedFilters);
+                  onFilterChange(updatedFilters);
                 }}
               >
                 Search

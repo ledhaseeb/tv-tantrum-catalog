@@ -70,6 +70,7 @@ export default function Browse() {
   }, [search]);
 
   // Fetch TV shows with applied filters
+  console.log('Browse page - activeFilters:', activeFilters);
   const { data: shows, isLoading, error } = useQuery<TvShow[]>({
     queryKey: ['/api/shows', activeFilters],
     staleTime: 60000, // 1 minute
