@@ -151,7 +151,7 @@ export function filterShows(
       const showName = show.name.toLowerCase();
       const showDescription = show.description.toLowerCase();
       
-      // Try direct matching in name or description
+      // Try direct matching in name or description (most common case)
       if (showName.includes(searchTerm) || showDescription.includes(searchTerm)) {
         return true;
       }
@@ -162,15 +162,31 @@ export function filterShows(
         return true;
       }
       
-      // Try word-by-word matching for names
+      // Match at the beginning of any word
       const words = showName.split(/\s+/);
       if (words.some(word => word.startsWith(searchTerm))) {
+        return true;
+      }
+      
+      // Match any part of a word (important for names like "Blue's Clues")
+      if (words.some(word => word.includes(searchTerm))) {
         return true;
       }
       
       // Try matching on clean name (without years)
       const cleanWords = nameWithoutYears.split(/\s+/);
       if (cleanWords.some(word => word.startsWith(searchTerm))) {
+        return true;
+      }
+      
+      // Handle apostrophes and special characters by trying with simplified text
+      const simplifiedName = showName.replace(/[''\.]/g, '');
+      if (simplifiedName.includes(searchTerm)) {
+        return true;
+      }
+      
+      // Also check show description to find content matches
+      if (showDescription.split(/\s+/).some(word => word.startsWith(searchTerm))) {
         return true;
       }
       

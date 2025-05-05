@@ -264,21 +264,32 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                           const lowerCaseInput = searchInput.toLowerCase().trim();
                           if (lowerCaseInput.length === 0) return false;
                           
-                          // Try to match by full name or partial words in the name
+                          // Try each potential match pattern
                           const showName = show.name.toLowerCase();
+                          
+                          // Direct match in full name (most obvious)
                           if (showName.includes(lowerCaseInput)) return true;
                           
                           // Remove year ranges for comparison (e.g., "Show Name 2018-present")
                           const nameWithoutYears = showName.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
                           if (nameWithoutYears.includes(lowerCaseInput)) return true;
                           
-                          // Split on spaces and try to match any word that starts with the input
+                          // Match at the beginning of any word
                           const words = showName.split(/\s+/);
                           if (words.some(word => word.startsWith(lowerCaseInput))) return true;
                           
+                          // Match any part of a word (important for names like "Blue's Clues")
+                          if (words.some(word => word.includes(lowerCaseInput))) return true;
+                          
                           // Try matching on clean name (without years)
                           const cleanWords = nameWithoutYears.split(/\s+/);
-                          return cleanWords.some(word => word.startsWith(lowerCaseInput));
+                          if (cleanWords.some(word => word.startsWith(lowerCaseInput))) return true;
+                          
+                          // Handle apostrophes and special characters by trying with simplified text
+                          const simplifiedName = showName.replace(/[''\.]/g, '');
+                          if (simplifiedName.includes(lowerCaseInput)) return true;
+                          
+                          return false;
                         })
                         .sort((a, b) => {
                           // Sort exact matches first
