@@ -222,12 +222,28 @@ export default function Detail({ id }: DetailProps) {
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        const level = 
-                          showDetail.dialogueIntensity === 'Low' ? 1 :
-                          showDetail.dialogueIntensity === 'Moderate-Low' ? 2 :
-                          showDetail.dialogueIntensity === 'Moderate' ? 3 :
-                          showDetail.dialogueIntensity === 'Moderate-High' ? 4 :
-                          showDetail.dialogueIntensity === 'High' ? 5 : 3;
+                        let level = 3; // Default level
+                        
+                        // Handle all possible rating values from the spreadsheet
+                        if (showDetail.dialogueIntensity) {
+                          if (showDetail.dialogueIntensity.includes('Low-Moderate') || 
+                              showDetail.dialogueIntensity.includes('Low to Moderate')) {
+                            level = 2;
+                          } else if (showDetail.dialogueIntensity.includes('Moderate-Low')) {
+                            level = 2;
+                          } else if (showDetail.dialogueIntensity.includes('Moderate-High') || 
+                                    showDetail.dialogueIntensity.includes('Moderate to High')) {
+                            level = 4;
+                          } else if (showDetail.dialogueIntensity.includes('Mod-High')) {
+                            level = 4;
+                          } else if (showDetail.dialogueIntensity === 'Low') {
+                            level = 1;
+                          } else if (showDetail.dialogueIntensity === 'Moderate') {
+                            level = 3;
+                          } else if (showDetail.dialogueIntensity === 'High') {
+                            level = 5;
+                          }
+                        }
                           
                         const color = 
                           segment === 1 ? 'bg-green-500' : 
@@ -254,12 +270,28 @@ export default function Detail({ id }: DetailProps) {
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        const level = 
-                          showDetail.sceneFrequency === 'Low' ? 1 :
-                          showDetail.sceneFrequency === 'Moderate-Low' ? 2 :
-                          showDetail.sceneFrequency === 'Moderate' ? 3 :
-                          showDetail.sceneFrequency === 'Moderate-High' ? 4 :
-                          showDetail.sceneFrequency === 'High' ? 5 : 5;
+                        let level = 3; // Default to moderate
+                        
+                        // Handle all possible rating values from the spreadsheet
+                        if (showDetail.sceneFrequency) {
+                          if (showDetail.sceneFrequency.includes('Low-Moderate') || 
+                              showDetail.sceneFrequency.includes('Low to Moderate')) {
+                            level = 2;
+                          } else if (showDetail.sceneFrequency.includes('Moderate-Low')) {
+                            level = 2;
+                          } else if (showDetail.sceneFrequency.includes('Moderate-High') || 
+                                     showDetail.sceneFrequency.includes('Moderate to High')) {
+                            level = 4;
+                          } else if (showDetail.sceneFrequency.includes('Mod-High')) {
+                            level = 4;
+                          } else if (showDetail.sceneFrequency === 'Low') {
+                            level = 1;
+                          } else if (showDetail.sceneFrequency === 'Moderate') {
+                            level = 3;
+                          } else if (showDetail.sceneFrequency === 'High') {
+                            level = 5;
+                          }
+                        }
                           
                         const color = 
                           segment === 1 ? 'bg-green-500' : 
@@ -286,12 +318,28 @@ export default function Detail({ id }: DetailProps) {
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        const level = 
-                          showDetail.soundEffectsLevel === 'Low' ? 1 :
-                          showDetail.soundEffectsLevel === 'Moderate-Low' ? 2 :
-                          showDetail.soundEffectsLevel === 'Moderate' ? 3 :
-                          showDetail.soundEffectsLevel === 'Moderate-High' ? 4 :
-                          showDetail.soundEffectsLevel === 'High' ? 5 : 5;
+                        let level = 3; // Default to moderate
+                        
+                        // Handle all possible rating values from the spreadsheet
+                        if (showDetail.soundEffectsLevel) {
+                          if (showDetail.soundEffectsLevel.includes('Low-Moderate') || 
+                              showDetail.soundEffectsLevel.includes('Low to Moderate')) {
+                            level = 2;
+                          } else if (showDetail.soundEffectsLevel.includes('Moderate-Low')) {
+                            level = 2;
+                          } else if (showDetail.soundEffectsLevel.includes('Moderate-High') || 
+                                     showDetail.soundEffectsLevel.includes('Moderate to High')) {
+                            level = 4;
+                          } else if (showDetail.soundEffectsLevel.includes('Mod-High')) {
+                            level = 4;
+                          } else if (showDetail.soundEffectsLevel === 'Low') {
+                            level = 1;
+                          } else if (showDetail.soundEffectsLevel === 'Moderate') {
+                            level = 3;
+                          } else if (showDetail.soundEffectsLevel === 'High') {
+                            level = 5;
+                          }
+                        }
                           
                         const color = 
                           segment === 1 ? 'bg-green-500' : 
@@ -326,12 +374,28 @@ export default function Detail({ id }: DetailProps) {
                     ) : (
                       <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                         {[1, 2, 3, 4, 5].map((segment) => {
-                          const level = 
-                            showDetail.musicTempo === 'Low' ? 1 :
-                            showDetail.musicTempo === 'Moderate-Low' ? 2 :
-                            showDetail.musicTempo === 'Moderate' ? 3 :
-                            showDetail.musicTempo === 'Moderate-High' ? 4 :
-                            showDetail.musicTempo === 'High' ? 5 : 3;
+                          let level = 3; // Default to moderate
+                        
+                          // Handle all possible rating values from the spreadsheet
+                          if (showDetail.musicTempo) {
+                            if (showDetail.musicTempo.includes('Low-Moderate') || 
+                                showDetail.musicTempo.includes('Low to Moderate')) {
+                              level = 2;
+                            } else if (showDetail.musicTempo.includes('Moderate-Low')) {
+                              level = 2;
+                            } else if (showDetail.musicTempo.includes('Moderate-High') || 
+                                       showDetail.musicTempo.includes('Moderate to High')) {
+                              level = 4;
+                            } else if (showDetail.musicTempo.includes('Mod-High')) {
+                              level = 4;
+                            } else if (showDetail.musicTempo === 'Low') {
+                              level = 1;
+                            } else if (showDetail.musicTempo === 'Moderate') {
+                              level = 3;
+                            } else if (showDetail.musicTempo === 'High') {
+                              level = 5;
+                            }
+                          }
                             
                           const color = 
                             segment === 1 ? 'bg-green-500' : 
@@ -359,12 +423,28 @@ export default function Detail({ id }: DetailProps) {
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        const level = 
-                          showDetail.totalMusicLevel === 'Low' ? 1 :
-                          showDetail.totalMusicLevel === 'Moderate-Low' ? 2 :
-                          showDetail.totalMusicLevel === 'Moderate' ? 3 :
-                          showDetail.totalMusicLevel === 'Moderate-High' ? 4 :
-                          showDetail.totalMusicLevel === 'High' ? 5 : 5;
+                        let level = 3; // Default to moderate
+                        
+                        // Handle all possible rating values from the spreadsheet
+                        if (showDetail.totalMusicLevel) {
+                          if (showDetail.totalMusicLevel.includes('Low-Moderate') || 
+                              showDetail.totalMusicLevel.includes('Low to Moderate')) {
+                            level = 2;
+                          } else if (showDetail.totalMusicLevel.includes('Moderate-Low')) {
+                            level = 2;
+                          } else if (showDetail.totalMusicLevel.includes('Moderate-High') || 
+                                     showDetail.totalMusicLevel.includes('Moderate to High')) {
+                            level = 4;
+                          } else if (showDetail.totalMusicLevel.includes('Mod-High')) {
+                            level = 4;
+                          } else if (showDetail.totalMusicLevel === 'Low') {
+                            level = 1;
+                          } else if (showDetail.totalMusicLevel === 'Moderate') {
+                            level = 3;
+                          } else if (showDetail.totalMusicLevel === 'High') {
+                            level = 5;
+                          }
+                        }
                           
                         const color = 
                           segment === 1 ? 'bg-green-500' : 
@@ -391,12 +471,30 @@ export default function Detail({ id }: DetailProps) {
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        const level = 
-                          showDetail.interactivityLevel === 'Low' ? 1 :
-                          showDetail.interactivityLevel === 'Moderate-Low' ? 2 :
-                          showDetail.interactivityLevel === 'Moderate' ? 3 :
-                          showDetail.interactivityLevel === 'Moderate-High' ? 4 :
-                          showDetail.interactivityLevel === 'High' ? 5 : 1;
+                        let level = 3; // Default to moderate
+                        
+                        // Handle all possible rating values from the spreadsheet
+                        if (showDetail.interactivityLevel) {
+                          if (showDetail.interactivityLevel.includes('Low-Moderate') || 
+                              showDetail.interactivityLevel.includes('Low to Moderate')) {
+                            level = 2;
+                          } else if (showDetail.interactivityLevel.includes('Moderate-Low')) {
+                            level = 2;
+                          } else if (showDetail.interactivityLevel.includes('Moderate-High') || 
+                                    showDetail.interactivityLevel.includes('Moderate to High')) {
+                            level = 4;
+                          } else if (showDetail.interactivityLevel.includes('Mod-High')) {
+                            level = 4;
+                          } else if (showDetail.interactivityLevel === 'Low') {
+                            level = 1;
+                          } else if (showDetail.interactivityLevel === 'Moderate') {
+                            level = 3;
+                          } else if (showDetail.interactivityLevel === 'High') {
+                            level = 5;
+                          } else if (showDetail.interactivityLevel === 'Limited') {
+                            level = 1;
+                          }
+                        }
                           
                         const color = 
                           segment === 1 ? 'bg-green-500' : 
