@@ -79,18 +79,41 @@ export default function Compare() {
     show => !selectedShowIds.includes(show.id)
   );
 
-  // Helper function to get level width for bar charts
-  const getLevelWidth = (level: string) => {
+  // Helper function to get level percentage for bar charts
+  const getLevelPercentage = (level: string) => {
     switch(level) {
-      case 'Low': return '20%';
-      case 'Limited': return '20%';
-      case 'Minimal': return '20%';
-      case 'Moderate-Low': return '40%';
-      case 'Moderate': return '60%';
-      case 'Moderate-High': return '80%';
-      case 'High': return '100%';
-      default: return '60%';
+      case 'Low': return 20;
+      case 'Limited': return 20;
+      case 'Minimal': return 20;
+      case 'Moderate-Low': return 40;
+      case 'Moderate': return 60;
+      case 'Moderate-High': return 80;
+      case 'High': return 100;
+      default: return 60;
     }
+  };
+  
+  // Function to render segmented bar like on the details page
+  const renderSegmentedBar = (level: string) => {
+    const percentage = getLevelPercentage(level);
+    
+    return (
+      <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+        <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+        <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+        <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+        <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+        <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+        <div 
+          className="absolute h-full flex items-center" 
+          style={{ 
+            width: '4px', 
+            backgroundColor: 'black',
+            left: `calc(${percentage}% - 2px)`,
+          }}
+        ></div>
+      </div>
+    );
   };
 
   // Helper function to get stimulation score dots
@@ -313,17 +336,32 @@ export default function Compare() {
                 
                 {/* Interactivity Level */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Interactivity Level</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                  <h4 className="font-medium mb-2">Interaction Level:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-blue-500 rounded-l"
-                            style={{ width: getLevelWidth(show.interactivityLevel || 'Moderate') }}
-                          />
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
                         </div>
-                        <div className="text-center text-sm">{show.name}</div>
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
+                          <div 
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(${getLevelPercentage(show.interactivityLevel || 'Moderate')}% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
+                        </div>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -336,17 +374,32 @@ export default function Compare() {
                 
                 {/* Dialogue Intensity */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Dialogue Intensity</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                  <h4 className="font-medium mb-2">Dialogue Intensity:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-purple-500 rounded-l"
-                            style={{ width: getLevelWidth(show.dialogueIntensity || 'Moderate') }}
-                          />
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
                         </div>
-                        <div className="text-center text-sm">{show.name}</div>
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
+                          <div 
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(${getLevelPercentage(show.dialogueIntensity || 'Moderate')}% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
+                        </div>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -359,17 +412,32 @@ export default function Compare() {
                 
                 {/* Sound Effects Level */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Sound Effects Level</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                  <h4 className="font-medium mb-2">Sound Effects Level:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-red-500 rounded-l"
-                            style={{ width: getLevelWidth(show.soundEffectsLevel || 'Moderate') }}
-                          />
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</span>
                         </div>
-                        <div className="text-center text-sm">{show.name}</div>
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
+                          <div 
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(${getLevelPercentage(show.soundEffectsLevel || 'Moderate')}% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
+                        </div>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -380,19 +448,110 @@ export default function Compare() {
                   </div>
                 </div>
                 
+                {/* Music Tempo */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Music Tempo:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">Moderate</span>
+                        </div>
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
+                          <div 
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(60% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Total Music Level */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Total Music Level:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">Moderate</span>
+                        </div>
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
+                          <div 
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(60% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Educational Value */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Educational Value</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                  <h4 className="font-medium mb-2">Educational Value:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-green-500 rounded-l"
-                            style={{ width: `${(show.educationalValueRating || 3) * 20}%` }}
-                          />
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">Moderate</span>
                         </div>
-                        <div className="text-center text-sm">{show.name}</div>
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
+                          <div 
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(${(show.educationalValueRating || 3) * 20}% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
+                        </div>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -405,86 +564,32 @@ export default function Compare() {
                 
                 {/* Friendship Rating */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Friendship Themes</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                  <h4 className="font-medium mb-2">Friendship Themes:</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
                     {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-pink-500 rounded-l"
-                            style={{ width: `${(show.friendshipRating || 3) * 20}%` }}
-                          />
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">{show.name}</span>
+                          <span className="text-sm font-medium">Moderate</span>
                         </div>
-                        <div className="text-center text-sm">{show.name}</div>
-                      </div>
-                    ))}
-                    {selectedShows.length < 3 && (
-                      <div className="flex items-center justify-center">
-                        <div className="text-gray-400">-</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Problem Solving Rating */}
-                <div className="mb-6">
-                  <h4 className="font-medium mb-2">Problem Solving</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
-                    {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                        <div className="w-full h-6 relative">
+                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
+                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+                          </div>
                           <div 
-                            className="h-full bg-yellow-500 rounded-l"
-                            style={{ width: `${(show.problemSolvingRating || 3) * 20}%` }}
-                          />
+                            className="absolute h-full flex items-center" 
+                            style={{ 
+                              width: '4px', 
+                              backgroundColor: 'black',
+                              left: `calc(${(show.friendshipRating || 3) * 20}% - 2px)`,
+                              top: 0
+                            }}
+                          ></div>
                         </div>
-                        <div className="text-center text-sm">{show.name}</div>
-                      </div>
-                    ))}
-                    {selectedShows.length < 3 && (
-                      <div className="flex items-center justify-center">
-                        <div className="text-gray-400">-</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Creativity Rating */}
-                <div className="mb-6">
-                  <h4 className="font-medium mb-2">Creativity</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
-                    {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-indigo-500 rounded-l"
-                            style={{ width: `${(show.creativityRating || 3) * 20}%` }}
-                          />
-                        </div>
-                        <div className="text-center text-sm">{show.name}</div>
-                      </div>
-                    ))}
-                    {selectedShows.length < 3 && (
-                      <div className="flex items-center justify-center">
-                        <div className="text-gray-400">-</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Emotional Intelligence Rating */}
-                <div className="mb-6">
-                  <h4 className="font-medium mb-2">Emotional Intelligence</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
-                    {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col items-center">
-                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-teal-500 rounded-l"
-                            style={{ width: `${(show.emotionalIntelligenceRating || 3) * 20}%` }}
-                          />
-                        </div>
-                        <div className="text-center text-sm">{show.name}</div>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
