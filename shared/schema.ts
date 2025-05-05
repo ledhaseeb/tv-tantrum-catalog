@@ -28,6 +28,9 @@ export const tvShows = pgTable("tv_shows", {
   endYear: integer("end_year"),
   isOngoing: boolean("is_ongoing").default(true),
   
+  // Number of seasons
+  seasons: integer("seasons"),
+  
   // Core metrics from GitHub data
   stimulationScore: integer("stimulation_score").notNull(), // Direct from GitHub data
   interactivityLevel: text("interactivity_level"),

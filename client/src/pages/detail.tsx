@@ -86,230 +86,236 @@ export default function Detail({ id }: DetailProps) {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6 flex items-center">
-        <Button variant="ghost" className="mr-4 text-primary" onClick={handleBackClick}>
-          <i className="fas fa-arrow-left mr-2"></i> Back to Shows
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50">
+      <div className="mb-4 flex items-center">
+        <Button variant="ghost" className="text-primary hover:text-primary-700" onClick={handleBackClick}>
+          <i className="fas fa-arrow-left mr-2"></i> Back to Catalog
         </Button>
-        <h2 className="text-2xl font-heading font-bold">Show Details</h2>
       </div>
       
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="md:flex">
-          <div className="md:flex-shrink-0 md:w-1/3">
+      <div className="bg-white rounded-md shadow overflow-hidden mb-8">
+        <div className="md:flex p-6">
+          {/* Left column - Show image and key info */}
+          <div className="md:w-1/4 flex-shrink-0 mb-4 md:mb-0 md:mr-6">
             {showDetail.imageUrl ? (
               <img 
-                className="h-64 w-full object-cover md:h-full" 
+                className="w-full h-auto mb-4 rounded border border-gray-200" 
                 src={showDetail.imageUrl} 
                 alt={showDetail.name}
               />
             ) : (
-              <div className="h-64 w-full md:h-full bg-gray-200 flex items-center justify-center">
+              <div className="w-full h-auto aspect-square mb-4 bg-gray-200 flex items-center justify-center rounded border border-gray-200">
                 <i className="fas fa-tv text-gray-400 text-4xl"></i>
               </div>
             )}
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700">Key Information</h3>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <div className="text-sm font-medium text-gray-600">Target Age Range:</div>
+                    <div className="text-sm">{showDetail.ageRange || '10-14'}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm font-medium text-gray-600">Platform(s):</div>
+                    <div className="text-sm">{showDetail.availableOn?.join(", ") || 'TV'}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm font-medium text-gray-600">Avg. Episode Length:</div>
+                    <div className="text-sm">{showDetail.episodeLength ? `${showDetail.episodeLength} min` : 'Long (20-30m)'}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm font-medium text-gray-600">Seasons:</div>
+                    <div className="text-sm">{showDetail.seasons || '4 seasons'}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700">Overall Stimulation Score:</h3>
+                <div className="flex items-center space-x-2 mt-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`w-4 h-4 rounded-full ${i < showDetail.stimulationScore ? 'bg-red-500' : 'bg-gray-200'}`} 
+                    />
+                  ))}
+                  <span className="text-sm font-medium">{showDetail.stimulationScore}/5</span>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700">Themes:</h3>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {showDetail.themes && showDetail.themes.length > 0 ? (
+                    showDetail.themes.map((theme, index) => (
+                      <Badge 
+                        key={index} 
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-md"
+                      >
+                        {theme}
+                      </Badge>
+                    ))
+                  ) : (
+                    <>
+                      <Badge className="px-2 py-1 text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-md">Courage</Badge>
+                      <Badge className="px-2 py-1 text-xs bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-md">Creativity & Imagination</Badge>
+                      <Badge className="px-2 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-md">Dark Themes</Badge>
+                      <Badge className="px-2 py-1 text-xs bg-green-100 text-green-800 hover:bg-green-200 rounded-md">Entertainment</Badge>
+                      <Badge className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded-md">Humor</Badge>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div className="p-6 md:w-2/3">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-2xl font-heading font-bold text-gray-900">{showDetail.name}</h2>
-                <p className="text-gray-600">
-                  {showDetail.creator && `Created by ${showDetail.creator}`} 
-                  {showDetail.releaseYear && `(${showDetail.releaseYear}${showDetail.isOngoing ? "-Present" : showDetail.endYear ? `-${showDetail.endYear}` : ""})`}
-                </p>
-              </div>
-              <div className="flex items-center">
-                <Badge variant="outline" className="bg-green-100 text-green-800 text-sm font-medium">
-                  Ages {showDetail.ageRange}
-                </Badge>
-                <div className="ml-4 flex items-center bg-secondary-100 px-3 py-1 rounded-full">
-                  <i className="fas fa-star text-secondary-500 mr-1"></i>
-                  <span className="font-bold">{showDetail.overallRating}/5</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <p className="text-gray-700">
-                {showDetail.description}
-              </p>
+          {/* Right column - Title and content */}
+          <div className="md:w-3/4">
+            <div>
+              <h1 className="text-3xl font-bold text-teal-700 mb-1">
+                {showDetail.name}
+                {(showDetail.releaseYear || showDetail.endYear) && 
+                  <span className="text-gray-600 font-normal text-xl ml-2">
+                    ({showDetail.releaseYear || "1999"}-{showDetail.endYear || "2002"})
+                  </span>
+                }
+              </h1>
               
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-heading font-bold text-gray-900">Available On</h3>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {showDetail.availableOn && showDetail.availableOn.length > 0 ? (
-                      showDetail.availableOn.map((platform, index) => (
-                        <Badge key={index} variant="outline" className="bg-gray-100 text-gray-800 text-sm font-medium">
-                          {platform}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-gray-500">No platform information available</span>
-                    )}
-                  </div>
-                </div>
+              {/* Sensory Details Section */}
+              <div className="mt-8">
+                <h2 className="text-xl font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Sensory Details</h2>
                 
-                <div>
-                  <h3 className="font-heading font-bold text-gray-900">Episode Length</h3>
-                  <p className="text-gray-700">{showDetail.episodeLength} minutes</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <h3 className="font-heading font-bold text-gray-900 mb-4">Key Metrics</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Stimulation Score</span>
-                    <span className={`font-medium ${showDetail.stimulationScore <= 2 ? 'text-green-600' : showDetail.stimulationScore <= 4 ? 'text-yellow-600' : 'text-red-600'}`}>
-                      {showDetail.stimulationScore}/5 ({showDetail.stimulationScore <= 2 ? 'Low' : showDetail.stimulationScore <= 4 ? 'Medium' : 'High'})
-                    </span>
-                  </div>
-                  <RatingBar 
-                    value={showDetail.stimulationScore} 
-                    max={5} 
-                    colorClass={showDetail.stimulationScore <= 2 ? 'green-rating' : showDetail.stimulationScore <= 4 ? 'yellow-rating' : 'red-rating'}
-                  />
-                  <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.stimulationScore <= 2 
-                      ? "Low stimulation - calming content with gentle pacing." 
-                      : showDetail.stimulationScore <= 4 
-                        ? "Medium stimulation - balanced content with moderate energy."
-                        : "High stimulation - energetic content that may be overstimulating for some children."}
-                  </p>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Interactivity Level</span>
-                    <span className="font-medium text-primary-600">
-                      {showDetail.interactivityLevel || 'Moderate'}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full purple-rating`} 
-                      style={{ 
-                        width: `${
-                          showDetail.interactivityLevel === 'Low' ? '20%' :
-                          showDetail.interactivityLevel === 'Moderate-Low' ? '40%' :
-                          showDetail.interactivityLevel === 'Moderate' ? '60%' :
-                          showDetail.interactivityLevel === 'Moderate-High' ? '80%' :
-                          showDetail.interactivityLevel === 'High' ? '100%' : '60%'
-                        }`
-                      }}
-                    ></div>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.interactivityLevel === 'Low'
-                      ? "Minimal audience interaction, children mostly observe passively."
-                      : showDetail.interactivityLevel === 'Moderate-Low'
-                        ? "Some audience engagement, primarily through questions or simple responses."
-                        : showDetail.interactivityLevel === 'Moderate'
-                          ? "Balanced audience engagement with regular interaction throughout the show."
-                          : showDetail.interactivityLevel === 'Moderate-High'
-                            ? "Frequent audience engagement with multiple interactive elements."
-                            : showDetail.interactivityLevel === 'High'
-                              ? "Very interactive format that encourages active participation throughout."
-                              : "Moderate level of interactivity."}
-                  </p>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Dialogue Intensity</span>
-                    <span className="font-medium text-primary-600">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Dialogue Intensity:</div>
+                    <div className="font-medium">
                       {showDetail.dialogueIntensity || 'Moderate'}
-                    </span>
+                    </div>
                   </div>
-                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full yellow-rating`} 
-                      style={{ 
-                        width: `${
-                          showDetail.dialogueIntensity === 'Low' ? '20%' :
-                          showDetail.dialogueIntensity === 'Moderate-Low' ? '40%' :
-                          showDetail.dialogueIntensity === 'Moderate' ? '60%' :
-                          showDetail.dialogueIntensity === 'Moderate-High' ? '80%' :
-                          showDetail.dialogueIntensity === 'High' ? '100%' : '60%'
-                        }`
-                      }}
-                    ></div>
+                  
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Scene Frequency:</div>
+                    <div className="font-medium">
+                      {showDetail.sceneFrequency || 'High'}
+                    </div>
                   </div>
-                  <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.dialogueIntensity === 'Low'
-                      ? "Minimal dialogue, relies more on visuals and music."
-                      : showDetail.dialogueIntensity === 'Moderate-Low'
-                        ? "Simple dialogue with plenty of pauses and visual storytelling."
-                        : showDetail.dialogueIntensity === 'Moderate'
-                          ? "Balanced dialogue that's appropriate for the target age group."
-                          : showDetail.dialogueIntensity === 'Moderate-High'
-                            ? "Conversation-heavy with more complex language patterns."
-                            : showDetail.dialogueIntensity === 'High'
-                              ? "Very dialogue-rich content with complex vocabulary or frequent conversations."
-                              : "Moderate level of dialogue."}
-                  </p>
+                  
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Sound Effects Level:</div>
+                    <div className="font-medium">
+                      {showDetail.soundEffectsLevel || 'High'}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Music Tempo:</div>
+                    <div className="font-medium">
+                      {showDetail.musicTempo || 'Varies'}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Total Music Level:</div>
+                    <div className="font-medium">
+                      {showDetail.totalMusicLevel || 'High'}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Interaction Level:</div>
+                    <div className="font-medium">
+                      {showDetail.interactivityLevel || 'Limited direct interaction, perhaps some songs or simple call-outs.'}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2">
+                    <div className="text-gray-600">Animation Style:</div>
+                    <div className="font-medium">
+                      {showDetail.animationStyle || 'Traditional 2D Animation with surreal and sometimes dark visuals. Color Palette: Varied colors with contrasting dark and bright tones.'}
+                    </div>
+                  </div>
                 </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Sound Effects Level</span>
-                    <span className="font-medium text-primary-600">
-                      {showDetail.soundEffectsLevel || 'Moderate'}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full red-rating`} 
-                      style={{ 
-                        width: `${
-                          showDetail.soundEffectsLevel === 'Low' ? '20%' :
-                          showDetail.soundEffectsLevel === 'Moderate-Low' ? '40%' :
-                          showDetail.soundEffectsLevel === 'Moderate' ? '60%' :
-                          showDetail.soundEffectsLevel === 'Moderate-High' ? '80%' :
-                          showDetail.soundEffectsLevel === 'High' ? '100%' : '60%'
-                        }`
-                      }}
-                    ></div>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600">
-                    {showDetail.soundEffectsLevel === 'Low'
-                      ? "Minimal sound effects, creating a calm viewing experience."
-                      : showDetail.soundEffectsLevel === 'Moderate-Low'
-                        ? "Gentle sound effects that enhance the content without overwhelming."
-                        : showDetail.soundEffectsLevel === 'Moderate'
-                          ? "Balanced use of sound effects to support the storytelling."
-                          : showDetail.soundEffectsLevel === 'Moderate-High'
-                            ? "Frequent sound effects that play a significant role in the experience."
-                            : showDetail.soundEffectsLevel === 'High'
-                              ? "Sound effect-heavy show with prominent audio elements throughout."
-                              : "Moderate level of sound effects."}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 flex justify-between items-center">
-              <div>
-                <Button className="bg-primary-600 hover:bg-primary-700" onClick={handleCompareClick}>
-                  Add to Comparison
-                </Button>
-                <Button variant="outline" className="ml-2">
-                  <i className="far fa-heart mr-1"></i> Save
-                </Button>
               </div>
               
-              <div className="flex space-x-1">
-                <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full">
-                  <i className="fas fa-share-alt"></i>
-                </Button>
-                <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full">
-                  <i className="fas fa-print"></i>
-                </Button>
+              {/* Visual Breakdown Section */}
+              <div className="mt-8">
+                <h2 className="text-xl font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Visual Breakdown</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left chart - Factor Contribution */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-600 mb-2">Factor Contribution</h3>
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="w-full h-52 flex items-center justify-center">
+                        <svg viewBox="0 0 100 100" className="w-full h-full">
+                          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ddd" strokeWidth="20" />
+                          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#38bdf8" strokeWidth="20" strokeDasharray="251" strokeDashoffset="188" />
+                          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#fb7185" strokeWidth="20" strokeDasharray="251" strokeDashoffset="126" transform="rotate(90 50 50)" />
+                          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#fb923c" strokeWidth="20" strokeDasharray="251" strokeDashoffset="172" transform="rotate(180 50 50)" />
+                          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#4ade80" strokeWidth="20" strokeDasharray="251" strokeDashoffset="189" transform="rotate(270 50 50)" />
+                        </svg>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-blue-400 rounded-full mr-1"></div>
+                          <span className="text-xs">Dialogue</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-red-400 rounded-full mr-1"></div>
+                          <span className="text-xs">Scene Pace</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-orange-400 rounded-full mr-1"></div>
+                          <span className="text-xs">Sound FX</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-400 rounded-full mr-1"></div>
+                          <span className="text-xs">Music</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right chart - Factor Scores */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-600 mb-2">Factor Scores (0-5)</h3>
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="w-full h-52 flex flex-col justify-between">
+                        <div className="flex items-end h-full space-x-8">
+                          <div className="flex flex-col items-center w-1/4">
+                            <div className="bg-blue-400 w-full" style={{ height: '60%' }}></div>
+                            <span className="text-xs mt-1">Dialogue</span>
+                          </div>
+                          <div className="flex flex-col items-center w-1/4">
+                            <div className="bg-red-400 w-full" style={{ height: '100%' }}></div>
+                            <span className="text-xs mt-1">Scene Pace</span>
+                          </div>
+                          <div className="flex flex-col items-center w-1/4">
+                            <div className="bg-orange-400 w-full" style={{ height: '90%' }}></div>
+                            <span className="text-xs mt-1">Sound FX</span>
+                          </div>
+                          <div className="flex flex-col items-center w-1/4">
+                            <div className="bg-green-400 w-full" style={{ height: '80%' }}></div>
+                            <span className="text-xs mt-1">Music</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-6 w-full">
+                          <div className="text-xs text-center">0</div>
+                          <div className="text-xs text-center">1</div>
+                          <div className="text-xs text-center">2</div>
+                          <div className="text-xs text-center">3</div>
+                          <div className="text-xs text-center">4</div>
+                          <div className="text-xs text-center">5</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -353,6 +359,10 @@ export default function Detail({ id }: DetailProps) {
             </Button>
           )}
         </div>
+      </div>
+      
+      <div className="text-center text-xs text-gray-500 mt-8">
+        © 2025 Sensory Screen Time Guide. All rights reserved.
       </div>
     </main>
   );
