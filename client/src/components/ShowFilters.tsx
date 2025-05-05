@@ -38,7 +38,6 @@ interface ShowFiltersProps {
 export default function ShowFilters({ activeFilters, onFilterChange, onClearFilters }: ShowFiltersProps) {
   const [filters, setFilters] = useState<FiltersType>(activeFilters);
   const [searchInput, setSearchInput] = useState(activeFilters.search || "");
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [selectedThemes, setSelectedThemes] = useState<string[]>(activeFilters.themes || []);
   
   // Common themes from the database
@@ -268,137 +267,119 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             </div>
           </div>
           
-          {/* Additional filter selects */}
-          <div className={isFiltersExpanded ? "block" : "hidden"}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="interaction-level" className="block text-sm font-medium text-gray-700 mb-1">
-                  Interaction Level
-                </Label>
-                <Select 
-                  value={filters.interactionLevel} 
-                  onValueChange={(value) => handleFilterChange('interactionLevel', value)}
-                >
-                  <SelectTrigger id="interaction-level">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Any">Any</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
-                    <SelectItem value="Moderate">Moderate</SelectItem>
-                    <SelectItem value="Moderate-High">Moderate-High</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Interaction Level */}
+          <div>
+            <Label htmlFor="interaction-level" className="block text-sm font-medium text-gray-700 mb-1">
+              Interaction Level
+            </Label>
+            <Select 
+              value={filters.interactionLevel} 
+              onValueChange={(value) => handleFilterChange('interactionLevel', value)}
+            >
+              <SelectTrigger id="interaction-level">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Any">Any</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
+                <SelectItem value="Moderate">Moderate</SelectItem>
+                <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              <div>
-                <Label htmlFor="dialogue-intensity" className="block text-sm font-medium text-gray-700 mb-1">
-                  Dialogue Intensity
-                </Label>
-                <Select 
-                  value={filters.dialogueIntensity} 
-                  onValueChange={(value) => handleFilterChange('dialogueIntensity', value)}
-                >
-                  <SelectTrigger id="dialogue-intensity">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Any">Any</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
-                    <SelectItem value="Moderate">Moderate</SelectItem>
-                    <SelectItem value="Moderate-High">Moderate-High</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Dialogue Intensity */}
+          <div>
+            <Label htmlFor="dialogue-intensity" className="block text-sm font-medium text-gray-700 mb-1">
+              Dialogue Intensity
+            </Label>
+            <Select 
+              value={filters.dialogueIntensity} 
+              onValueChange={(value) => handleFilterChange('dialogueIntensity', value)}
+            >
+              <SelectTrigger id="dialogue-intensity">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Any">Any</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
+                <SelectItem value="Moderate">Moderate</SelectItem>
+                <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
+          {/* Sound Frequency */}
+          <div>
+            <Label htmlFor="sound-frequency" className="block text-sm font-medium text-gray-700 mb-1">
+              Sound Frequency
+            </Label>
+            <Select 
+              value={filters.soundFrequency} 
+              onValueChange={(value) => handleFilterChange('soundFrequency', value)}
+            >
+              <SelectTrigger id="sound-frequency">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Any">Any</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
+                <SelectItem value="Moderate">Moderate</SelectItem>
+                <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Stimulation Score Range - always visible */}
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">
+              Stimulation Score Range
+            </Label>
+            <div className="flex flex-col space-y-2">
               <div>
-                <Label htmlFor="sound-frequency" className="block text-sm font-medium text-gray-700 mb-1">
-                  Sound Frequency
-                </Label>
-                <Select 
-                  value={filters.soundFrequency} 
-                  onValueChange={(value) => handleFilterChange('soundFrequency', value)}
-                >
-                  <SelectTrigger id="sound-frequency">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Any">Any</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
-                    <SelectItem value="Moderate">Moderate</SelectItem>
-                    <SelectItem value="Moderate-High">Moderate-High</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stimulation Score Range
-                </Label>
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1">
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="5" 
-                      step="1" 
-                      value={filters.stimulationScoreRange?.min || 1}
-                      onChange={(e) => handleFilterChange('stimulationScoreRange', {
-                        min: parseInt(e.target.value),
-                        max: filters.stimulationScoreRange?.max || 5
-                      })}
-                      className="w-full" 
-                    />
-                    <div className="flex justify-between">
-                      <span className="text-xs">Min: {filters.stimulationScoreRange?.min || 1}</span>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="5" 
-                      step="1" 
-                      value={filters.stimulationScoreRange?.max || 5}
-                      onChange={(e) => handleFilterChange('stimulationScoreRange', {
-                        min: filters.stimulationScoreRange?.min || 1,
-                        max: parseInt(e.target.value)
-                      })}
-                      className="w-full" 
-                    />
-                    <div className="flex justify-between">
-                      <span className="text-xs">Max: {filters.stimulationScoreRange?.max || 5}</span>
-                    </div>
-                  </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs">Min: {filters.stimulationScoreRange?.min || 1}</span>
+                  <span className="text-xs">Max: {filters.stimulationScoreRange?.max || 5}</span>
                 </div>
+                <div className="relative pt-1">
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="5" 
+                    step="1" 
+                    value={filters.stimulationScoreRange?.min || 1}
+                    onChange={(e) => handleFilterChange('stimulationScoreRange', {
+                      min: parseInt(e.target.value),
+                      max: filters.stimulationScoreRange?.max || 5
+                    })}
+                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none" 
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between text-xs text-gray-600">
+                <span>Low</span>
+                <span>Medium</span>
+                <span>High</span>
               </div>
             </div>
           </div>
           
           <div className="flex flex-col gap-3">
-            <Button type="button" onClick={handleApplyFilters} className="w-full">
+            <Button type="button" onClick={handleApplyFilters} className="w-full bg-green-600 hover:bg-green-700">
               Apply Filters
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setIsFiltersExpanded(!isFiltersExpanded)} 
-              className="w-full"
-            >
-              {isFiltersExpanded ? "Show Less Filters" : "Show More Filters"}
             </Button>
             {Object.keys(filters).length > 0 && (
               <Button 
                 type="button" 
-                variant="link" 
+                variant="outline" 
                 onClick={onClearFilters} 
-                className="text-primary-600 hover:text-primary-800"
+                className="w-full"
               >
                 Reset All Filters
               </Button>
