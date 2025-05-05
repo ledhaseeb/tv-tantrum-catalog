@@ -147,6 +147,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Convert string numbers to actual numbers
         const stimulationScore = parseInt(record['Stimulation Score']) || 3;
+        
+        // Debug the CSV data for Arthur
+        if (record['Programs'] === 'Arthur') {
+          console.log('Arthur data in CSV:', {
+            title: record['Programs'],
+            sound_effects: record['Sound Effects'],
+            dialogue: record['Dialougue Intensity']
+          });
+        }
 
         return {
           title: record['Programs'] || `Show ${index + 1}`,
