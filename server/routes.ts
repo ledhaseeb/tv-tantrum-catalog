@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { githubService } from "./github";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema } from "@shared/schema";
+import { updateTvShowsFromSpreadsheet } from "./google-sheets";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize the data from GitHub on server start
@@ -115,6 +116,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error refreshing data:", error);
       res.status(500).json({ message: "Failed to refresh data" });
+    }
+  });
+
+  // Import data from Google Sheets
+  app.post("/api/import-from-spreadsheet", async (req: Request, res: Response) => {
+    try {
+      // Extract credentials from the request body
+      const { client_email, private_key } = req.body;
+      
+      if (!client_email || !private_key) {
+        return res.status(400).json({ 
+          message: "Missing credentials", 
+          details: "Both client_email and private_key are required" 
+        });
+      }
+      
+      // Update TV shows with data from the spreadsheet
+      await updateTvShowsFromSpreadsheet(client_email, private_key);
+      
+      res.json({ 
+        message: "Successfully updated shows with data from Google Spreadsheet" 
+      });
+    } catch (error) {
+      console.error("Failed to import data from Google Spreadsheet:", error);
+      res.status(500).json({ 
+        message: "Failed to import data from Google Spreadsheet",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
