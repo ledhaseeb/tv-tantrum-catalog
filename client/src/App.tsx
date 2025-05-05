@@ -33,6 +33,9 @@ function Router() {
           <Route path="/about">
             <About />
           </Route>
+          <Route path="/admin">
+            <Admin />
+          </Route>
           <Route>
             <NotFound />
           </Route>
