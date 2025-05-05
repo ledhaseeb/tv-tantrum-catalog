@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +16,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { useQuery } from "@tanstack/react-query";
+import { TvShow } from "@shared/schema";
+import { Search, CheckIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface FiltersType {
   ageGroup?: string;
@@ -39,6 +51,13 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const [filters, setFilters] = useState<FiltersType>(activeFilters);
   const [searchInput, setSearchInput] = useState(activeFilters.search || "");
   const [selectedThemes, setSelectedThemes] = useState<string[]>(activeFilters.themes || []);
+  const [openAutoComplete, setOpenAutoComplete] = useState(false);
+  
+  // Fetch shows for autocomplete
+  const { data: shows } = useQuery<TvShow[]>({
+    queryKey: ['/api/shows'],
+    staleTime: 300000, // 5 minutes
+  });
   
   // Common themes from the database
   const commonThemes = [
@@ -198,19 +217,78 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         <h2 className="text-xl font-heading font-bold mb-6">Filters</h2>
         
         <div className="space-y-6">
-          {/* Search by show name */}
+          {/* Search by show name with autocomplete */}
           <div>
             <Label htmlFor="show-name" className="block text-sm font-medium text-gray-700 mb-2">
               Show Name
             </Label>
-            <Input
-              id="show-name"
-              type="search"
-              placeholder="Enter title..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full"
-            />
+            <Popover open={openAutoComplete} onOpenChange={setOpenAutoComplete}>
+              <PopoverTrigger asChild>
+                <div className="relative w-full">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="show-name"
+                    placeholder="Enter show title..."
+                    value={searchInput}
+                    onChange={(e) => {
+                      setSearchInput(e.target.value);
+                      if (e.target.value.length > 0) {
+                        setOpenAutoComplete(true);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (searchInput.length > 0) {
+                        setOpenAutoComplete(true);
+                      }
+                    }}
+                    className="w-full pl-8"
+                  />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="p-0 w-[300px]" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Search shows..." 
+                    value={searchInput}
+                    onValueChange={setSearchInput}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No shows found.</CommandEmpty>
+                    <CommandGroup>
+                      {shows
+                        ?.filter(show => 
+                          show.name.toLowerCase().includes(searchInput.toLowerCase())
+                        )
+                        .slice(0, 8)
+                        .map(show => (
+                          <CommandItem
+                            key={show.id}
+                            onSelect={() => {
+                              setSearchInput(show.name);
+                              setOpenAutoComplete(false);
+                              handleFilterChange('search', show.name);
+                              // Auto-apply the filter so results update right away
+                              onFilterChange({ 
+                                ...filters, 
+                                search: show.name,
+                                themes: selectedThemes.length ? selectedThemes : undefined
+                              });
+                            }}
+                            className="flex items-center"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">{show.name}</span>
+                              <span className="text-xs text-gray-500">
+                                Ages: {show.ageRange} • {show.releaseYear ? `(${show.releaseYear})` : ''}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           
           {/* Age Range Radio Buttons */}
