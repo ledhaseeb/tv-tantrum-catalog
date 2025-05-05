@@ -41,99 +41,87 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-heading font-bold mb-1">{show.name}</h3>
-                <Badge variant="outline" className="bg-green-100 text-green-800 text-xs font-medium mb-2">
-                  Ages {show.ageRange}
-                </Badge>
+                <div className="flex items-center flex-wrap gap-2 mb-2">
+                  <Badge variant="outline" className="bg-green-100 text-green-800 text-xs font-medium">
+                    Ages {show.ageRange}
+                  </Badge>
+                  {show.availableOn && show.availableOn.length > 0 && (
+                    <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs font-medium">
+                      {show.availableOn[0]}{show.availableOn.length > 1 ? "+" : ""}
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                   {show.description}
                 </p>
+                
+                {/* Theme tags */}
                 {show.themes && show.themes.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1 mb-2">
-                    {show.themes.slice(0, 3).map((theme, index) => (
-                      <Badge key={index} variant="outline" className="bg-gray-100 text-gray-600 text-xs">
-                        {theme}
-                      </Badge>
-                    ))}
-                    {show.themes.length > 3 && (
-                      <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
-                        +{show.themes.length - 3}
+                  <div className="flex flex-wrap gap-1 mt-2 mb-3">
+                    {show.themes.slice(0, 5).map((theme, index) => {
+                      // Assign different colors based on theme
+                      const themeColors = {
+                        "Educational": "bg-indigo-100 text-indigo-800",
+                        "Adventure": "bg-amber-100 text-amber-800",
+                        "Fantasy": "bg-purple-100 text-purple-800",
+                        "Comedy": "bg-green-100 text-green-800",
+                        "Music": "bg-pink-100 text-pink-800",
+                      };
+                      
+                      const colorClass = themeColors[theme as keyof typeof themeColors] || "bg-gray-100 text-gray-800";
+                      
+                      return (
+                        <Badge key={index} variant="outline" className={`${colorClass} text-xs`}>
+                          {theme}
+                        </Badge>
+                      );
+                    })}
+                    {show.themes.length > 5 && (
+                      <Badge variant="outline" className="bg-gray-100 text-gray-800 text-xs">
+                        +{show.themes.length - 5}
                       </Badge>
                     )}
                   </div>
                 )}
               </div>
-              
-              <div className="flex items-center bg-white bg-opacity-90 px-2 py-1 rounded-full shadow-sm">
-                <i className="fas fa-star text-secondary-500 mr-1"></i>
-                <span className="font-bold text-sm">{show.overallRating}</span>
-              </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Stimulation Score</span>
-                  <span className="ml-2 text-sm font-medium">{show.stimulationScore}/5</span>
+            <div className="flex justify-between items-center mt-2">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <div className={`w-3 h-3 rounded-full mr-1 ${
+                    show.stimulationScore <= 2 ? 'bg-green-500' : 
+                    show.stimulationScore <= 4 ? 'bg-yellow-500' : 
+                    'bg-red-500'
+                  }`}></div>
+                  <span className="text-sm text-gray-600">
+                    {show.stimulationScore <= 2 ? 'Low' : 
+                    show.stimulationScore <= 4 ? 'Medium' : 
+                    'High'} Stimulation
+                  </span>
                 </div>
-                <RatingBar 
-                  value={show.stimulationScore} 
-                  max={5}
-                  colorClass={show.stimulationScore <= 2 ? 'green-rating' : show.stimulationScore <= 4 ? 'yellow-rating' : 'red-rating'}
-                />
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Interactivity</span>
-                  <span className="ml-2 text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
-                </div>
-                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full purple-rating" 
-                    style={{ 
-                      width: `${
-                        show.interactivityLevel === 'Low' ? '20%' :
-                        show.interactivityLevel === 'Moderate-Low' ? '40%' :
-                        show.interactivityLevel === 'Moderate' ? '60%' :
-                        show.interactivityLevel === 'Moderate-High' ? '80%' :
-                        show.interactivityLevel === 'High' ? '100%' : '60%'
-                      }`
-                    }}
-                  ></div>
+                
+                <div className="flex items-center">
+                  <i className="fas fa-star text-secondary-500 text-sm mr-1"></i>
+                  <span className="text-sm font-medium">{show.overallRating}/5</span>
                 </div>
               </div>
               
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Dialogue Intensity</span>
-                  <span className="ml-2 text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
-                </div>
-                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full yellow-rating" 
-                    style={{ 
-                      width: `${
-                        show.dialogueIntensity === 'Low' ? '20%' :
-                        show.dialogueIntensity === 'Moderate-Low' ? '40%' :
-                        show.dialogueIntensity === 'Moderate' ? '60%' :
-                        show.dialogueIntensity === 'Moderate-High' ? '80%' :
-                        show.dialogueIntensity === 'High' ? '100%' : '60%'
-                      }`
-                    }}
-                  ></div>
-                </div>
-              </div>
-              
-              <div className="flex items-center mt-auto">
+              <div className="flex items-center space-x-2">
                 <Button 
                   variant="ghost" 
-                  size="icon" 
-                  className={`${isFavorite ? 'text-secondary-500' : 'text-gray-500 hover:text-secondary-500'}`}
+                  size="sm"
+                  className={`${isFavorite ? 'text-secondary-500' : 'text-gray-400 hover:text-secondary-500'}`}
                   onClick={toggleFavorite}
                 >
-                  <i className={`${isFavorite ? 'fas' : 'far'} fa-heart`}></i>
+                  <i className={`${isFavorite ? 'fas' : 'far'} fa-heart mr-1`}></i>
+                  Save
                 </Button>
-                <Button variant="link" size="sm" className="text-primary-600 hover:text-primary-800 ml-auto">
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-primary-600 hover:bg-primary-700 text-white"
+                >
                   View Details
                 </Button>
               </div>
@@ -145,115 +133,92 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
   }
   
   return (
-    <Card className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={onClick}>
+    <Card className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full" onClick={onClick}>
       <div className="relative">
         {show.imageUrl ? (
           <img 
-            className="h-48 w-full object-cover"
+            className="h-44 w-full object-cover"
             src={show.imageUrl}
             alt={show.name}
           />
         ) : (
-          <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
+          <div className="h-44 w-full bg-gray-200 flex items-center justify-center">
             <i className="fas fa-tv text-gray-400 text-4xl"></i>
           </div>
         )}
-        <div className="absolute top-2 right-2 flex items-center bg-white bg-opacity-90 px-2 py-1 rounded-full">
-          <i className="fas fa-star text-secondary-500 mr-1"></i>
-          <span className="font-bold text-sm">{show.overallRating}</span>
-        </div>
       </div>
       
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-heading font-bold">{show.name}</h3>
+      <CardContent className="p-3 pb-4">
+        <h3 className="text-md font-heading font-bold mb-1 line-clamp-1">{show.name}</h3>
+        
+        <div className="flex items-center space-x-2 mb-2">
           <Badge variant="outline" className="bg-green-100 text-green-800 text-xs font-medium">
             Ages {show.ageRange}
           </Badge>
+          {/* Platform info */}
+          {show.availableOn && show.availableOn.length > 0 && (
+            <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs font-medium">
+              {show.availableOn[0]}{show.availableOn.length > 1 ? "+" : ""}
+            </Badge>
+          )}
         </div>
         
+        {/* Theme tags */}
         {show.themes && show.themes.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {show.themes.slice(0, 2).map((theme, index) => (
-              <Badge key={index} variant="outline" className="bg-gray-100 text-gray-600 text-xs">
-                {theme}
-              </Badge>
-            ))}
-            {show.themes.length > 2 && (
-              <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
-                +{show.themes.length - 2}
+          <div className="flex flex-wrap gap-1 mb-3">
+            {show.themes.slice(0, 3).map((theme, index) => {
+              // Assign different colors based on theme
+              const themeColors = {
+                "Educational": "bg-indigo-100 text-indigo-800",
+                "Adventure": "bg-amber-100 text-amber-800",
+                "Fantasy": "bg-purple-100 text-purple-800",
+                "Comedy": "bg-green-100 text-green-800",
+                "Music": "bg-pink-100 text-pink-800",
+              };
+              
+              const colorClass = themeColors[theme as keyof typeof themeColors] || "bg-gray-100 text-gray-800";
+              
+              return (
+                <Badge key={index} variant="outline" className={`${colorClass} text-xs`}>
+                  {theme}
+                </Badge>
+              );
+            })}
+            {show.themes.length > 3 && (
+              <Badge variant="outline" className="bg-gray-100 text-gray-800 text-xs">
+                +{show.themes.length - 3}
               </Badge>
             )}
           </div>
         )}
         
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Stimulation Score</span>
-            <div className="flex items-center">
-              <RatingBar 
-                value={show.stimulationScore} 
-                max={5}
-                colorClass={show.stimulationScore <= 2 ? 'green-rating' : show.stimulationScore <= 4 ? 'yellow-rating' : 'red-rating'}
-              />
-              <span className="ml-2 text-sm font-medium">{show.stimulationScore}/5</span>
-            </div>
+        {/* Rating section at bottom */}
+        <div className="flex justify-between items-center mt-auto">
+          <div className="flex items-center">
+            <div className={`w-3 h-3 rounded-full mr-1 ${
+              show.stimulationScore <= 2 ? 'bg-green-500' : 
+              show.stimulationScore <= 4 ? 'bg-yellow-500' : 
+              'bg-red-500'
+            }`}></div>
+            <span className="text-xs text-gray-600">
+              {show.stimulationScore <= 2 ? 'Low' : 
+               show.stimulationScore <= 4 ? 'Medium' : 
+               'High'} Stim
+            </span>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Interactivity</span>
-            <div className="flex items-center">
-              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden mr-2">
-                <div 
-                  className="h-full purple-rating" 
-                  style={{ 
-                    width: `${
-                      show.interactivityLevel === 'Low' ? '20%' :
-                      show.interactivityLevel === 'Moderate-Low' ? '40%' :
-                      show.interactivityLevel === 'Moderate' ? '60%' :
-                      show.interactivityLevel === 'Moderate-High' ? '80%' :
-                      show.interactivityLevel === 'High' ? '100%' : '60%'
-                    }`
-                  }}
-                ></div>
-              </div>
-              <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
-            </div>
+          <div className="flex items-center">
+            <i className="fas fa-star text-secondary-500 text-xs mr-1"></i>
+            <span className="text-xs font-medium">{show.overallRating}/5</span>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Dialogue</span>
-            <div className="flex items-center">
-              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden mr-2">
-                <div 
-                  className="h-full yellow-rating" 
-                  style={{ 
-                    width: `${
-                      show.dialogueIntensity === 'Low' ? '20%' :
-                      show.dialogueIntensity === 'Moderate-Low' ? '40%' :
-                      show.dialogueIntensity === 'Moderate' ? '60%' :
-                      show.dialogueIntensity === 'Moderate-High' ? '80%' :
-                      show.dialogueIntensity === 'High' ? '100%' : '60%'
-                    }`
-                  }}
-                ></div>
-              </div>
-              <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-4 flex justify-between">
-          <Button variant="link" className="text-primary-600 hover:text-primary-800 text-sm font-medium p-0">
-            View Details
-          </Button>
           <Button 
             variant="ghost" 
-            size="icon" 
-            className={`${isFavorite ? 'text-secondary-500' : 'text-gray-500 hover:text-secondary-500'}`}
+            size="sm"
+            className={`${isFavorite ? 'text-secondary-500' : 'text-gray-400 hover:text-secondary-500'} p-1`}
             onClick={toggleFavorite}
           >
-            <i className={`${isFavorite ? 'fas' : 'far'} fa-heart`}></i>
+            <i className={`${isFavorite ? 'fas' : 'far'} fa-heart text-xs`}></i>
           </Button>
         </div>
       </CardContent>
