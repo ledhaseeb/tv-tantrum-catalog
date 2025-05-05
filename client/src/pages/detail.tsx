@@ -190,51 +190,180 @@ export default function Detail({ id }: DetailProps) {
               <div className="mt-8">
                 <h2 className="text-xl font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Sensory Details</h2>
                 
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Dialogue Intensity:</div>
-                    <div className="font-medium">
-                      {showDetail.dialogueIntensity || 'Moderate'}
+                <div className="space-y-5">
+                  {/* Dialogue Intensity Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Dialogue Intensity:</div>
+                      <div className="font-medium">{showDetail.dialogueIntensity || 'Moderate'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          showDetail.dialogueIntensity === 'Low' ? 'bg-green-500' :
+                          showDetail.dialogueIntensity === 'Moderate-Low' ? 'bg-green-400' :
+                          showDetail.dialogueIntensity === 'Moderate' ? 'bg-yellow-500' :
+                          showDetail.dialogueIntensity === 'Moderate-High' ? 'bg-yellow-600' :
+                          showDetail.dialogueIntensity === 'High' ? 'bg-red-500' : 'bg-yellow-500'
+                        }`} 
+                        style={{ 
+                          width: `${
+                            showDetail.dialogueIntensity === 'Low' ? '20%' :
+                            showDetail.dialogueIntensity === 'Moderate-Low' ? '40%' :
+                            showDetail.dialogueIntensity === 'Moderate' ? '60%' :
+                            showDetail.dialogueIntensity === 'Moderate-High' ? '80%' :
+                            showDetail.dialogueIntensity === 'High' ? '100%' : '60%'
+                          }`
+                        }}
+                      ></div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Scene Frequency:</div>
-                    <div className="font-medium">
-                      {showDetail.sceneFrequency || 'High'}
+                  {/* Scene Frequency Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Scene Frequency:</div>
+                      <div className="font-medium">{showDetail.sceneFrequency || 'High'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          showDetail.sceneFrequency === 'Low' ? 'bg-green-500' :
+                          showDetail.sceneFrequency === 'Moderate-Low' ? 'bg-green-400' :
+                          showDetail.sceneFrequency === 'Moderate' ? 'bg-yellow-500' :
+                          showDetail.sceneFrequency === 'Moderate-High' ? 'bg-yellow-600' :
+                          showDetail.sceneFrequency === 'High' ? 'bg-red-500' : 'bg-red-500'
+                        }`} 
+                        style={{ 
+                          width: `${
+                            showDetail.sceneFrequency === 'Low' ? '20%' :
+                            showDetail.sceneFrequency === 'Moderate-Low' ? '40%' :
+                            showDetail.sceneFrequency === 'Moderate' ? '60%' :
+                            showDetail.sceneFrequency === 'Moderate-High' ? '80%' :
+                            showDetail.sceneFrequency === 'High' ? '100%' : '100%'
+                          }`
+                        }}
+                      ></div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Sound Effects Level:</div>
-                    <div className="font-medium">
-                      {showDetail.soundEffectsLevel || 'High'}
+                  {/* Sound Effects Level Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Sound Effects Level:</div>
+                      <div className="font-medium">{showDetail.soundEffectsLevel || 'High'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          showDetail.soundEffectsLevel === 'Low' ? 'bg-green-500' :
+                          showDetail.soundEffectsLevel === 'Moderate-Low' ? 'bg-green-400' :
+                          showDetail.soundEffectsLevel === 'Moderate' ? 'bg-yellow-500' :
+                          showDetail.soundEffectsLevel === 'Moderate-High' ? 'bg-yellow-600' :
+                          showDetail.soundEffectsLevel === 'High' ? 'bg-red-500' : 'bg-red-500'
+                        }`} 
+                        style={{ 
+                          width: `${
+                            showDetail.soundEffectsLevel === 'Low' ? '20%' :
+                            showDetail.soundEffectsLevel === 'Moderate-Low' ? '40%' :
+                            showDetail.soundEffectsLevel === 'Moderate' ? '60%' :
+                            showDetail.soundEffectsLevel === 'Moderate-High' ? '80%' :
+                            showDetail.soundEffectsLevel === 'High' ? '100%' : '100%'
+                          }`
+                        }}
+                      ></div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Music Tempo:</div>
-                    <div className="font-medium">
-                      {showDetail.musicTempo || 'Varies'}
+                  {/* Music Tempo Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Music Tempo:</div>
+                      <div className="font-medium">{showDetail.musicTempo || 'Varies'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          showDetail.musicTempo === 'Low' ? 'bg-green-500' :
+                          showDetail.musicTempo === 'Moderate-Low' ? 'bg-green-400' :
+                          showDetail.musicTempo === 'Moderate' ? 'bg-yellow-500' :
+                          showDetail.musicTempo === 'Moderate-High' ? 'bg-yellow-600' :
+                          showDetail.musicTempo === 'High' ? 'bg-red-500' :
+                          showDetail.musicTempo === 'Varies' ? 'bg-gradient-to-r from-green-500 via-yellow-500 to-red-500' : 'bg-gradient-to-r from-green-500 via-yellow-500 to-red-500'
+                        }`} 
+                        style={{ 
+                          width: `${
+                            showDetail.musicTempo === 'Low' ? '20%' :
+                            showDetail.musicTempo === 'Moderate-Low' ? '40%' :
+                            showDetail.musicTempo === 'Moderate' ? '60%' :
+                            showDetail.musicTempo === 'Moderate-High' ? '80%' :
+                            showDetail.musicTempo === 'High' ? '100%' :
+                            showDetail.musicTempo === 'Varies' ? '100%' : '100%'
+                          }`
+                        }}
+                      ></div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Total Music Level:</div>
-                    <div className="font-medium">
-                      {showDetail.totalMusicLevel || 'High'}
+                  {/* Total Music Level Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Total Music Level:</div>
+                      <div className="font-medium">{showDetail.totalMusicLevel || 'High'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          showDetail.totalMusicLevel === 'Low' ? 'bg-green-500' :
+                          showDetail.totalMusicLevel === 'Moderate-Low' ? 'bg-green-400' :
+                          showDetail.totalMusicLevel === 'Moderate' ? 'bg-yellow-500' :
+                          showDetail.totalMusicLevel === 'Moderate-High' ? 'bg-yellow-600' :
+                          showDetail.totalMusicLevel === 'High' ? 'bg-red-500' : 'bg-red-500'
+                        }`} 
+                        style={{ 
+                          width: `${
+                            showDetail.totalMusicLevel === 'Low' ? '20%' :
+                            showDetail.totalMusicLevel === 'Moderate-Low' ? '40%' :
+                            showDetail.totalMusicLevel === 'Moderate' ? '60%' :
+                            showDetail.totalMusicLevel === 'Moderate-High' ? '80%' :
+                            showDetail.totalMusicLevel === 'High' ? '100%' : '100%'
+                          }`
+                        }}
+                      ></div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Interaction Level:</div>
-                    <div className="font-medium">
-                      {showDetail.interactivityLevel || 'Limited direct interaction, perhaps some songs or simple call-outs.'}
+                  {/* Interaction Level Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Interaction Level:</div>
+                      <div className="font-medium">{showDetail.interactivityLevel || 'Limited'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          showDetail.interactivityLevel === 'Low' ? 'bg-green-500' :
+                          showDetail.interactivityLevel === 'Moderate-Low' ? 'bg-green-400' :
+                          showDetail.interactivityLevel === 'Moderate' ? 'bg-yellow-500' :
+                          showDetail.interactivityLevel === 'Moderate-High' ? 'bg-yellow-600' :
+                          showDetail.interactivityLevel === 'High' ? 'bg-red-500' : 'bg-green-500'
+                        }`} 
+                        style={{ 
+                          width: `${
+                            showDetail.interactivityLevel === 'Low' ? '20%' :
+                            showDetail.interactivityLevel === 'Moderate-Low' ? '40%' :
+                            showDetail.interactivityLevel === 'Moderate' ? '60%' :
+                            showDetail.interactivityLevel === 'Moderate-High' ? '80%' :
+                            showDetail.interactivityLevel === 'High' ? '100%' : '20%'
+                          }`
+                        }}
+                      ></div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2">
-                    <div className="text-gray-600">Animation Style:</div>
+                  {/* Animation Style */}
+                  <div className="grid grid-cols-1">
+                    <div className="text-gray-600 mb-1">Animation Style:</div>
                     <div className="font-medium">
                       {showDetail.animationStyle || 'Traditional 2D Animation with surreal and sometimes dark visuals. Color Palette: Varied colors with contrasting dark and bright tones.'}
                     </div>
