@@ -110,83 +110,149 @@ export function filterShows(
     ageGroup?: string;
     tantrumFactor?: string;
     search?: string;
+    themes?: string[];
+    interactionLevel?: string;
+    dialogueIntensity?: string;
+    soundFrequency?: string;
+    stimulationScoreRange?: {min: number, max: number};
   }
 ): TvShow[] {
   return shows.filter(show => {
     // Filter by age group
-    if (filters.ageGroup) {
-      const [min, max] = filters.ageGroup.split('-').map(Number);
-      const [showMin, showMax] = show.ageRange.split('-').map(Number);
-      
-      // Check if there's any overlap between the filter range and the show's range
-      if (!(showMin <= max && showMax >= min)) {
+    if (filters.ageGroup && show.ageRange) {
+      if (filters.ageGroup === 'Toddler' && !show.ageRange.match(/^[0-3]|toddler/i)) {
+        return false;
+      }
+      if (filters.ageGroup === 'Preschool' && !show.ageRange.match(/^[2-5]|preschool/i)) {
+        return false;
+      }
+      if (filters.ageGroup === 'School-Age' && !show.ageRange.match(/^[5-9]|school/i)) {
+        return false;
+      }
+      if (filters.ageGroup === 'Tween' && !show.ageRange.match(/^[8-9]|10-1[2-3]|tween/i)) {
         return false;
       }
     }
     
-    // Filter by stimulation score (using the existing tantrumFactor filter name for compatibility)
+    // Filter by tantrum factor (stimulation score)
     if (filters.tantrumFactor) {
-      switch (filters.tantrumFactor) {
-        case 'low':
-          if (!(show.stimulationScore <= 2)) {
-            return false;
-          }
-          break;
-        case 'medium':
-          if (!(show.stimulationScore > 2 && show.stimulationScore <= 4)) {
-            return false;
-          }
-          break;
-        case 'high':
-          if (!(show.stimulationScore > 4)) {
-            return false;
-          }
-          break;
+      if (filters.tantrumFactor.toLowerCase() === 'low' && show.stimulationScore > 2) {
+        return false;
+      }
+      if (filters.tantrumFactor.toLowerCase() === 'moderate' && (show.stimulationScore < 3 || show.stimulationScore > 3)) {
+        return false;
+      }
+      if (filters.tantrumFactor.toLowerCase() === 'high' && show.stimulationScore < 4) {
+        return false;
       }
     }
     
-    // Filter by search term
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase().trim();
-      const showName = show.name.toLowerCase();
-      const showDescription = show.description.toLowerCase();
+    // Filter by themes
+    if (filters.themes && filters.themes.length > 0) {
+      if (!show.themes || show.themes.length === 0) {
+        return false;
+      }
       
-      // Try direct matching in name or description (most common case)
+      // Check if ALL selected themes are present in the show's themes
+      const showThemesLower = show.themes.map(t => t.toLowerCase());
+      if (!filters.themes.every(theme => showThemesLower.some(t => t.includes(theme.toLowerCase())))) {
+        return false;
+      }
+    }
+    
+    // Filter by interactivity level
+    if (filters.interactionLevel && show.interactivityLevel) {
+      // Handle exact match or level-based match
+      if (filters.interactionLevel === 'Low' && 
+          !['Low', 'Limited', 'Minimal'].some(term => show.interactivityLevel?.includes(term))) {
+        return false;
+      }
+      if (filters.interactionLevel === 'Moderate' && 
+          !['Moderate', 'Medium', 'Some'].some(term => show.interactivityLevel?.includes(term))) {
+        return false;
+      }
+      if (filters.interactionLevel === 'High' && 
+          !['High', 'Heavy', 'Strong', 'Frequent'].some(term => show.interactivityLevel?.includes(term))) {
+        return false;
+      }
+    }
+    
+    // Filter by dialogue intensity
+    if (filters.dialogueIntensity && show.dialogueIntensity) {
+      if (filters.dialogueIntensity === 'Low' && 
+          !['Low', 'Limited', 'Minimal'].some(term => show.dialogueIntensity?.includes(term))) {
+        return false;
+      }
+      if (filters.dialogueIntensity === 'Moderate' && 
+          !['Moderate', 'Medium', 'Some'].some(term => show.dialogueIntensity?.includes(term))) {
+        return false;
+      }
+      if (filters.dialogueIntensity === 'High' && 
+          !['High', 'Heavy', 'Strong', 'Frequent'].some(term => show.dialogueIntensity?.includes(term))) {
+        return false;
+      }
+    }
+    
+    // Filter by sound effects frequency
+    if (filters.soundFrequency && show.soundEffectsLevel) {
+      if (filters.soundFrequency === 'Low' && 
+          !['Low', 'Limited', 'Minimal'].some(term => show.soundEffectsLevel?.includes(term))) {
+        return false;
+      }
+      if (filters.soundFrequency === 'Moderate' && 
+          !['Moderate', 'Medium', 'Some'].some(term => show.soundEffectsLevel?.includes(term))) {
+        return false;
+      }
+      if (filters.soundFrequency === 'High' && 
+          !['High', 'Heavy', 'Strong', 'Frequent'].some(term => show.soundEffectsLevel?.includes(term))) {
+        return false;
+      }
+    }
+    
+    // Filter by stimulation score range
+    if (filters.stimulationScoreRange && show.stimulationScore) {
+      if (show.stimulationScore < filters.stimulationScoreRange.min || 
+          show.stimulationScore > filters.stimulationScoreRange.max) {
+        return false;
+      }
+    }
+    
+    // Search by show name or description
+    if (filters.search && filters.search.trim()) {
+      const searchTerm = filters.search.trim().toLowerCase();
+      const showName = show.name.toLowerCase();
+      const showDescription = (show.description || '').toLowerCase();
+
+      // Check for exact match first - highest priority
+      if (showName === searchTerm) {
+        return true;
+      }
+      
+      // Direct match in name or description
       if (showName.includes(searchTerm) || showDescription.includes(searchTerm)) {
         return true;
       }
       
-      // Remove year ranges for comparison (e.g., "Show Name 2018-present")
+      // Handle shows with year ranges (e.g., "Show Name 2018-present")
       const nameWithoutYears = showName.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
       if (nameWithoutYears.includes(searchTerm)) {
         return true;
       }
       
-      // Match at the beginning of any word
+      // Match any part of a word (for show names like "Blue's Clues")
       const words = showName.split(/\s+/);
-      if (words.some(word => word.startsWith(searchTerm))) {
-        return true;
-      }
-      
-      // Match any part of a word (important for names like "Blue's Clues")
       if (words.some(word => word.includes(searchTerm))) {
         return true;
       }
       
-      // Try matching on clean name (without years)
-      const cleanWords = nameWithoutYears.split(/\s+/);
-      if (cleanWords.some(word => word.startsWith(searchTerm))) {
-        return true;
-      }
-      
-      // Handle apostrophes and special characters by trying with simplified text
+      // Handle apostrophes and special characters
       const simplifiedName = showName.replace(/[''\.]/g, '');
       if (simplifiedName.includes(searchTerm)) {
         return true;
       }
       
-      // Also check show description to find content matches
-      if (showDescription.split(/\s+/).some(word => word.startsWith(searchTerm))) {
+      // Check themes for matches
+      if (show.themes && show.themes.some(theme => theme.toLowerCase().includes(searchTerm))) {
         return true;
       }
       

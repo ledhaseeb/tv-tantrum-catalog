@@ -98,7 +98,19 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      setLocation(`/browse?search=${encodeURIComponent(searchQuery.trim())}`);
+      // Find exact match first to enable direct navigation
+      const exactMatch = allShows?.find(show => 
+        show.name.toLowerCase() === searchQuery.trim().toLowerCase() ||
+        show.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      );
+      
+      if (exactMatch) {
+        // If exact match found, go directly to that show
+        handleShowCardClick(exactMatch.id);
+      } else {
+        // Otherwise go to search results
+        setLocation(`/browse?search=${encodeURIComponent(searchQuery.trim())}`);
+      }
       setShowResults(false);
     }
   };
