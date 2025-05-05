@@ -39,6 +39,28 @@ export default function Home() {
     show => show.interactivityLevel === 'High' || show.interactivityLevel === 'Moderate-High'
   ).slice(0, 8);
   
+  // Find shows by popular themes
+  const educationalShows = allShows?.filter(show => 
+    show.themes?.some(theme => theme.toLowerCase().includes('education') || theme.toLowerCase().includes('learning'))
+  ).slice(0, 8);
+  
+  const adventureShows = allShows?.filter(show => 
+    show.themes?.some(theme => theme.toLowerCase().includes('adventure'))
+  ).slice(0, 8);
+  
+  const musicalShows = allShows?.filter(show => 
+    show.themes?.some(theme => theme.toLowerCase().includes('music'))
+  ).slice(0, 8);
+  
+  const fantasyShows = allShows?.filter(show => 
+    show.themes?.some(theme => theme.toLowerCase().includes('fantasy'))
+  ).slice(0, 8);
+  
+  const preschoolerShows = allShows?.filter(show => 
+    show.ageRange?.toLowerCase().includes('preschool') || 
+    (show.ageRange && parseInt(show.ageRange.split('-')[0]) <= 4)
+  ).slice(0, 8);
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -258,10 +280,10 @@ export default function Home() {
       
       {/* Highly Rated */}
       {renderCategorySection(
-        "Highly Rated (Stim Score 1)",
-        "Top-rated shows with the lowest stimulation scores", 
-        highlyRatedShows?.filter(show => show.stimulationScore === 1),
-        "/browse?tantrumFactor=VeryLow"
+        "Highly Rated Shows",
+        "Top-rated shows across all categories", 
+        highlyRatedShows,
+        "/browse?sortBy=overallRating"
       )}
       
       {/* Lower Stimulation */}
@@ -278,6 +300,46 @@ export default function Home() {
         "Shows that encourage audience participation and engagement", 
         highInteractionShows, 
         "/browse?interactivityLevel=High"
+      )}
+      
+      {/* Educational Shows */}
+      {educationalShows && educationalShows.length > 0 && renderCategorySection(
+        "Educational Shows",
+        "Shows that focus on learning and educational content", 
+        educationalShows, 
+        "/browse?search=education"
+      )}
+      
+      {/* Adventure Shows */}
+      {adventureShows && adventureShows.length > 0 && renderCategorySection(
+        "Adventure Shows",
+        "Shows focused on exploration, excitement and adventures", 
+        adventureShows, 
+        "/browse?search=adventure"
+      )}
+      
+      {/* Musical Shows */}
+      {musicalShows && musicalShows.length > 0 && renderCategorySection(
+        "Musical Shows",
+        "Shows featuring songs, musical numbers and rhythmic content", 
+        musicalShows, 
+        "/browse?search=music"
+      )}
+      
+      {/* Fantasy Shows */}
+      {fantasyShows && fantasyShows.length > 0 && renderCategorySection(
+        "Fantasy Shows",
+        "Shows with magical, imaginative and fantasy elements", 
+        fantasyShows, 
+        "/browse?search=fantasy"
+      )}
+      
+      {/* Preschooler Shows */}
+      {preschoolerShows && preschoolerShows.length > 0 && renderCategorySection(
+        "Preschooler Favorites",
+        "Shows specifically designed for children ages 2-4", 
+        preschoolerShows, 
+        "/browse?ageGroup=Preschool"
       )}
     </main>
   );

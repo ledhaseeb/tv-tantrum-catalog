@@ -18,9 +18,11 @@ function Router() {
       <Navbar />
       <div className="flex-grow">
         <Switch>
-          <Route path="/" component={Home} />
+          <Route path="/" exact component={Home} />
           <Route path="/browse" component={Browse} />
-          <Route path="/shows/:id" component={Detail} />
+          <Route path="/shows/:id">
+            {(params) => <Detail id={parseInt(params.id, 10)} />}
+          </Route>
           <Route path="/compare" component={Compare} />
           <Route path="/about" component={About} />
           <Route component={NotFound} />

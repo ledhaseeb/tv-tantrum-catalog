@@ -24,25 +24,29 @@ export default function Navbar() {
               <h1 className="text-2xl font-heading font-bold text-primary-600">KidTV Guide</h1>
             </Link>
             <nav className="hidden md:ml-10 md:flex space-x-8">
-              <Link href="/">
-                <a className={`${location === '/' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}>
-                  Home
-                </a>
+              <Link 
+                href="/"
+                className={`${location === '/' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+              >
+                Home
               </Link>
-              <Link href="/browse">
-                <a className={`${location === '/browse' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}>
-                  Browse Shows
-                </a>
+              <Link 
+                href="/browse"
+                className={`${location === '/browse' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+              >
+                Browse Shows
               </Link>
-              <Link href="/compare">
-                <a className={`${location === '/compare' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}>
-                  Compare Shows
-                </a>
+              <Link 
+                href="/compare"
+                className={`${location === '/compare' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+              >
+                Compare Shows
               </Link>
-              <Link href="/about">
-                <a className={`${location === '/about' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}>
-                  About
-                </a>
+              <Link 
+                href="/about"
+                className={`${location === '/about' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+              >
+                About
               </Link>
             </nav>
           </div>
@@ -72,25 +76,29 @@ export default function Navbar() {
               <SheetContent side="left">
                 <div className="px-2 pt-4 pb-3 space-y-1">
                   <h2 className="text-lg font-bold mb-4">KidTV Guide</h2>
-                  <Link href="/">
-                    <a className={`block px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}>
-                      Home
-                    </a>
+                  <Link 
+                    href="/"
+                    className={`block px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                  >
+                    Home
                   </Link>
-                  <Link href="/browse">
-                    <a className={`block px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}>
-                      Browse Shows
-                    </a>
+                  <Link 
+                    href="/browse"
+                    className={`block px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                  >
+                    Browse Shows
                   </Link>
-                  <Link href="/compare">
-                    <a className={`block px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}>
-                      Compare Shows
-                    </a>
+                  <Link 
+                    href="/compare"
+                    className={`block px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                  >
+                    Compare Shows
                   </Link>
-                  <Link href="/about">
-                    <a className={`block px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}>
-                      About
-                    </a>
+                  <Link 
+                    href="/about"
+                    className={`block px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                  >
+                    About
                   </Link>
                 </div>
                 <div className="pt-4 pb-3 border-t border-gray-200">
