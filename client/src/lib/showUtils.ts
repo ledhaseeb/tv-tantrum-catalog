@@ -156,9 +156,21 @@ export function filterShows(
         return true;
       }
       
+      // Remove year ranges for comparison (e.g., "Show Name 2018-present")
+      const nameWithoutYears = showName.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
+      if (nameWithoutYears.includes(searchTerm)) {
+        return true;
+      }
+      
       // Try word-by-word matching for names
       const words = showName.split(/\s+/);
       if (words.some(word => word.startsWith(searchTerm))) {
+        return true;
+      }
+      
+      // Try matching on clean name (without years)
+      const cleanWords = nameWithoutYears.split(/\s+/);
+      if (cleanWords.some(word => word.startsWith(searchTerm))) {
         return true;
       }
       

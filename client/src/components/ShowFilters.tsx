@@ -320,7 +320,13 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                             className="flex items-center"
                           >
                             <div className="flex flex-col">
-                              <span className="font-medium">{show.name}</span>
+                              <span className="font-medium">
+                                {show.name}
+                                {show.name.toLowerCase().includes(searchInput.toLowerCase().trim()) && 
+                                 !/^\s*\d{4}/.test(searchInput) && 
+                                 show.name.toLowerCase() !== searchInput.toLowerCase().trim() && 
+                                 (<span className="ml-1 text-xs font-normal text-green-600">(Match)</span>)}
+                              </span>
                               <span className="text-xs text-gray-500">
                                 Ages: {show.ageRange} • {show.releaseYear ? `(${show.releaseYear})` : ''}
                               </span>
