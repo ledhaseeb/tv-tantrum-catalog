@@ -109,75 +109,101 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // Enhanced search by name with debugging
+    // Enhanced search by name with ranking and sorting
     if (filters.search) {
       console.log(`Storage: Processing search term: "${filters.search}"`);
       const searchTerm = filters.search.toLowerCase().trim();
       
       if (searchTerm.length > 0) {
         const preFilterCount = shows.length;
-        shows = shows.filter(show => {
+        
+        // Instead of just filtering, we'll score each show and then sort by relevance
+        interface ScoredShow {
+          show: typeof shows[0];
+          score: number;
+          matchType: string;
+        }
+        
+        // Calculate relevance score for each show
+        const scoredShows: ScoredShow[] = shows.map(show => {
           const nameLower = show.name.toLowerCase();
           const descLower = show.description?.toLowerCase() || '';
           const themesLower = show.themes?.map(t => t.toLowerCase()) || [];
           
-          // Track when show is matched
-          let isMatch = false;
-          let matchReason = '';
+          // Default score and match type
+          let score = 0;
+          let matchType = 'none';
           
-          // Direct match in name or description
-          if (nameLower.includes(searchTerm)) {
-            isMatch = true;
-            matchReason = 'name-direct';
-          } else if (descLower.includes(searchTerm)) {
-            isMatch = true; 
-            matchReason = 'description';
+          // Exact match has highest score - if show name is exactly the search term
+          if (nameLower === searchTerm) {
+            score = 100;
+            matchType = 'exact-match';
           }
-          
-          // Check if any theme contains the search term
-          else if (themesLower.some(theme => theme.includes(searchTerm))) {
-            isMatch = true;
-            matchReason = 'theme';
+          // Show name starts with the search term
+          else if (nameLower.startsWith(searchTerm)) {
+            score = 90;
+            matchType = 'starts-with';
           }
-          
-          // Handle shows with year ranges
+          // Words in the show name start with the search term 
+          else if (nameLower.split(/\s+/).some(word => word.startsWith(searchTerm))) {
+            score = 80;
+            matchType = 'word-starts-with';
+          }
+          // Direct match anywhere in the name
+          else if (nameLower.includes(searchTerm)) {
+            score = 70;
+            matchType = 'name-contains';
+          }
+          // Show name without years contains search term
           else {
             const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
             if (nameWithoutYears.includes(searchTerm)) {
-              isMatch = true;
-              matchReason = 'name-without-years';
+              score = 60;
+              matchType = 'name-without-years';
             }
-            
-            // Match any part of a word in the name
+            // Words in the name include the search term
+            else if (nameLower.split(/\s+/).some(word => word.includes(searchTerm))) {
+              score = 50;
+              matchType = 'word-contains';
+            }
+            // Description contains the search term
+            else if (descLower.includes(searchTerm)) {
+              score = 40;
+              matchType = 'description';
+            }
+            // Themes contain the search term
+            else if (themesLower.some(theme => theme.includes(searchTerm))) {
+              score = 30;
+              matchType = 'theme';
+            }
+            // Simplified name (no special chars) contains the search term
             else {
-              const words = nameLower.split(/\s+/);
-              if (words.some(word => word.includes(searchTerm))) {
-                isMatch = true;
-                matchReason = 'word-fragment';
-              }
-              
-              // Handle apostrophes and special characters
-              else {
-                const simplifiedName = nameLower.replace(/[''\.]/g, '');
-                if (simplifiedName.includes(searchTerm)) {
-                  isMatch = true;
-                  matchReason = 'simplified-name';
-                }
+              const simplifiedName = nameLower.replace(/[''\.]/g, '');
+              if (simplifiedName.includes(searchTerm)) {
+                score = 20;
+                matchType = 'simplified-name';
               }
             }
           }
           
-          // Print debugging info for the first few matches
-          const showMatched = isMatch ? "MATCH" : "NO MATCH";
-          
-          return isMatch;
+          return { show, score, matchType };
         });
+        
+        // Filter out shows with no match (score = 0)
+        const matchedShows = scoredShows.filter(item => item.score > 0);
+        
+        // Sort by score (highest first)
+        matchedShows.sort((a, b) => b.score - a.score);
+        
+        // Extract just the shows from the scored results
+        shows = matchedShows.map(item => item.show);
         
         console.log(`Storage: Search for "${searchTerm}" filtered ${preFilterCount} shows to ${shows.length} matches`);
         
-        // Log the first 5 shows that matched
+        // Debug log for top matches
         if (shows.length > 0) {
           console.log(`Storage: First matches: ${shows.slice(0, 5).map(s => s.name).join(', ')}`);
+          console.log(`Storage: Match types: ${matchedShows.slice(0, 5).map(s => s.matchType).join(', ')}`);
         }
       }
     }
