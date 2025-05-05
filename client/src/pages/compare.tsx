@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getStimulationScoreColor } from "@/lib/showUtils";
 import RatingBar from "@/components/RatingBar";
 import { TvShow } from "@shared/schema";
 
@@ -77,13 +78,50 @@ export default function Compare() {
     show => !selectedShowIds.includes(show.id)
   );
 
+  // Helper function to get level width for bar charts
+  const getLevelWidth = (level: string) => {
+    switch(level) {
+      case 'Low': return '20%';
+      case 'Limited': return '20%';
+      case 'Minimal': return '20%';
+      case 'Moderate-Low': return '40%';
+      case 'Moderate': return '60%';
+      case 'Moderate-High': return '80%';
+      case 'High': return '100%';
+      default: return '60%';
+    }
+  };
+
+  // Helper function to get stimulation score dots
+  const getStimulationScoreDots = (score: number) => {
+    return (
+      <div className="flex justify-center gap-1 mb-1">
+        {[1, 2, 3, 4, 5].map((dot) => {
+          let bgColor = '';
+          if (dot <= 2) bgColor = 'bg-green-500';
+          else if (dot <= 4) bgColor = 'bg-yellow-500';
+          else bgColor = 'bg-red-500';
+          
+          return (
+            <div 
+              key={dot} 
+              className={`w-4 h-4 rounded-full ${dot <= score ? bgColor : 'border border-gray-300'}`}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6 flex items-center">
-        <Button variant="ghost" className="mr-4 text-primary" onClick={handleBackClick}>
-          <i className="fas fa-arrow-left mr-2"></i> Back to Shows
-        </Button>
-        <h2 className="text-2xl font-heading font-bold">Compare Shows</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Button variant="ghost" className="mr-4 text-primary" onClick={handleBackClick}>
+            <i className="fas fa-arrow-left mr-2"></i> Back
+          </Button>
+          <h2 className="text-2xl font-heading font-bold">Compare Shows</h2>
+        </div>
       </div>
       
       {isLoading ? (
@@ -91,52 +129,46 @@ export default function Compare() {
           <Skeleton className="h-96 w-full" />
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden overflow-x-auto">
-          {selectedShows && selectedShows.length > 0 ? (
-            <table className="min-w-full">
-              <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="py-4 px-6 font-heading font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 sticky left-0 bg-gray-50">
-                    Features
-                  </th>
-                  
-                  {selectedShows.map(show => (
-                    <th key={show.id} className="py-4 px-6 font-heading font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                      <div className="flex flex-col items-center">
-                        {show.imageUrl ? (
-                          <img 
-                            className="w-20 h-20 object-cover rounded-full mb-2" 
-                            src={show.imageUrl} 
-                            alt={show.name}
-                          />
-                        ) : (
-                          <div className="w-20 h-20 bg-gray-200 rounded-full mb-2 flex items-center justify-center">
-                            <i className="fas fa-tv text-gray-400 text-xl"></i>
-                          </div>
-                        )}
-                        <span>{show.name}</span>
-                        <button 
-                          className="mt-1 text-sm text-red-500 hover:text-red-700"
-                          onClick={() => handleRemoveShow(show.id)}
-                        >
-                          <i className="fas fa-times"></i> Remove
-                        </button>
-                      </div>
-                    </th>
-                  ))}
-                  
-                  <th className="py-4 px-6 font-heading font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center mb-2">
-                        <i className="fas fa-plus text-gray-400 text-2xl"></i>
-                      </div>
-                      <div className="w-40">
-                        <Select 
-                          value={showToAdd} 
+        <div>
+          {/* Show selector area */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[0, 1, 2].map((index) => {
+              const show = selectedShows && selectedShows[index];
+              return (
+                <div key={index} className="bg-white rounded-lg shadow-md p-4">
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm text-gray-500 mb-2">Show {index + 1}</p>
+                    {show ? (
+                      <>
+                        <div className="relative mb-2">
+                          {show.imageUrl ? (
+                            <img
+                              src={show.imageUrl}
+                              alt={show.name}
+                              className="w-24 h-24 object-cover rounded-lg"
+                            />
+                          ) : (
+                            <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                              <i className="fas fa-tv text-gray-400 text-2xl"></i>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => handleRemoveShow(show.id)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                          >
+                            <i className="fas fa-times text-xs"></i>
+                          </button>
+                        </div>
+                        <p className="font-medium text-center">{show.name}</p>
+                      </>
+                    ) : (
+                      <div className="w-full">
+                        <Select
+                          value={showToAdd}
                           onValueChange={setShowToAdd}
                         >
                           <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Add Show" />
+                            <SelectValue placeholder="Select a show" />
                           </SelectTrigger>
                           <SelectContent>
                             {availableShows && availableShows.length > 0 ? (
@@ -153,8 +185,8 @@ export default function Compare() {
                           </SelectContent>
                         </Select>
                         {showToAdd && (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             className="w-full mt-2"
                             onClick={handleAddShow}
                           >
@@ -162,180 +194,203 @@ export default function Compare() {
                           </Button>
                         )}
                       </div>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Age Range */}
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Age Range</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6 text-center">{show.ageRange} years</td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
-                
-                {/* Episode Length */}
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Episode Length</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6 text-center">{show.episodeLength} minutes</td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {selectedShows && selectedShows.length > 0 ? (
+            <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
+              <h3 className="text-xl font-bold mb-6">Compare Shows</h3>
+              
+              {/* Comparison table with the modern layout */}
+              <div className="grid grid-cols-[150px_1fr_1fr_1fr] gap-4 mb-8">
+                <div className="font-medium">Feature</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="font-medium text-center">{show.name}</div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="font-medium text-center text-gray-400">-</div>
+                )}
                 
                 {/* Stimulation Score */}
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Stimulation Score</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6">
-                      <div className="flex flex-col items-center">
-                        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
-                          <div 
-                            className={`h-full ${show.stimulationScore <= 2 ? 'bg-green-500' : show.stimulationScore <= 4 ? 'bg-yellow-500' : 'bg-red-500'} rounded-full`} 
-                            style={{ width: `${show.stimulationScore * 20}%` }}
-                          ></div>
-                        </div>
-                        <span className={`${show.stimulationScore <= 2 ? 'text-green-600' : show.stimulationScore <= 4 ? 'text-yellow-600' : 'text-red-600'} font-medium`}>
-                          {show.stimulationScore}/5
-                        </span>
-                      </div>
-                    </td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
+                <div className="font-medium py-2">Stimulation Score</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="flex flex-col items-center py-2">
+                    {getStimulationScoreDots(show.stimulationScore)}
+                    <div className="text-center text-sm font-medium">
+                      {show.stimulationScore}/5
+                    </div>
+                  </div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
                 
-                {/* Interactivity Level */}
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Interactivity Level</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6">
-                      <div className="flex flex-col items-center">
-                        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-primary rounded-full" 
-                            style={{ 
-                              width: `${
-                                show.interactivityLevel === 'Low' ? '20%' :
-                                show.interactivityLevel === 'Moderate-Low' ? '40%' :
-                                show.interactivityLevel === 'Moderate' ? '60%' :
-                                show.interactivityLevel === 'Moderate-High' ? '80%' :
-                                show.interactivityLevel === 'High' ? '100%' : '60%'
-                              }`
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-primary-600 font-medium">
-                          {show.interactivityLevel || 'Moderate'}
-                        </span>
-                      </div>
-                    </td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
+                {/* Target Age */}
+                <div className="font-medium py-2">Target Age</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="text-center py-2">{show.ageRange}</div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
+                
+                {/* Interactivity */}
+                <div className="font-medium py-2">Interactivity</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="text-center py-2">{show.interactivityLevel || 'Moderate'}</div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
                 
                 {/* Dialogue Intensity */}
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Dialogue Intensity</td>
+                <div className="font-medium py-2">Dialogue Intensity</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="text-center py-2">{show.dialogueIntensity || 'Moderate'}</div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
+                
+                {/* Sound Frequency */}
+                <div className="font-medium py-2">Sound Frequency</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="text-center py-2">{show.soundEffectsLevel || 'Moderate'}</div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
+                
+                {/* Animation Style */}
+                <div className="font-medium py-2">Animation Style</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="text-center py-2">
+                    {show.animationStyle || 'Traditional Animation'}
+                  </div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
+                
+                {/* Themes */}
+                <div className="font-medium py-2">Themes</div>
+                {selectedShows.map(show => (
+                  <div key={show.id} className="flex flex-wrap justify-center gap-1 py-2">
+                    {show.themes && show.themes.map((theme, index) => (
+                      <Badge key={index} className="bg-blue-100 text-blue-800 text-xs font-medium">
+                        {theme}
+                      </Badge>
+                    ))}
+                  </div>
+                ))}
+                {selectedShows.length < 3 && (
+                  <div className="text-center py-2 text-gray-400">-</div>
+                )}
+              </div>
+              
+              {/* Bar charts for metrics */}
+              <div className="mb-8">
+                <h3 className="text-lg font-bold mb-4">Overall Stimulation Score Comparison</h3>
+                <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
                   {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6">
-                      <div className="flex flex-col items-center">
-                        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
-                          <div 
-                            className="h-full bg-secondary-500 rounded-full" 
-                            style={{ 
-                              width: `${
-                                show.dialogueIntensity === 'Low' ? '20%' :
-                                show.dialogueIntensity === 'Moderate-Low' ? '40%' :
-                                show.dialogueIntensity === 'Moderate' ? '60%' :
-                                show.dialogueIntensity === 'Moderate-High' ? '80%' :
-                                show.dialogueIntensity === 'High' ? '100%' : '60%'
-                              }`
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-secondary-600 font-medium">
-                          {show.dialogueIntensity || 'Moderate'}
-                        </span>
+                    <div key={show.id} className="flex flex-col items-center">
+                      <div className="w-full h-10 mb-2">
+                        <div 
+                          className={`h-full ${show.stimulationScore <= 2 ? 'bg-green-400' : show.stimulationScore <= 4 ? 'bg-yellow-400' : 'bg-red-400'} rounded`}
+                          style={{ width: `${show.stimulationScore * 20}%` }}
+                        />
                       </div>
-                    </td>
+                      <div className="text-center text-sm">{show.name}</div>
+                    </div>
                   ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
+                  {selectedShows.length < 3 && (
+                    <div className="flex items-center justify-center">
+                      <div className="text-gray-400">-</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Sensory Metrics with Bar Charts */}
+              <div className="mb-4">
+                <h3 className="text-lg font-bold mb-4">Sensory Metrics Comparison</h3>
+                
+                {/* Interactivity Level */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Interactivity Level</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-blue-500 rounded-l"
+                            style={{ width: getLevelWidth(show.interactivityLevel || 'Moderate') }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Dialogue Intensity */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Dialogue Intensity</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
+                          <div 
+                            className="h-full bg-purple-500 rounded-l"
+                            style={{ width: getLevelWidth(show.dialogueIntensity || 'Moderate') }}
+                          />
+                        </div>
+                        <div className="text-center text-sm">{show.name}</div>
+                      </div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 
                 {/* Sound Effects Level */}
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Sound Effects Level</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6">
-                      <div className="flex flex-col items-center">
-                        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-1">
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Sound Effects Level</h4>
+                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col items-center">
+                        <div className="w-full h-8 bg-gray-200 rounded overflow-hidden mb-1">
                           <div 
-                            className="h-full bg-red-500 rounded-full" 
-                            style={{ 
-                              width: `${
-                                show.soundEffectsLevel === 'Low' ? '20%' :
-                                show.soundEffectsLevel === 'Moderate-Low' ? '40%' :
-                                show.soundEffectsLevel === 'Moderate' ? '60%' :
-                                show.soundEffectsLevel === 'Moderate-High' ? '80%' :
-                                show.soundEffectsLevel === 'High' ? '100%' : '60%'
-                              }`
-                            }}
-                          ></div>
+                            className="h-full bg-red-500 rounded-l"
+                            style={{ width: getLevelWidth(show.soundEffectsLevel || 'Moderate') }}
+                          />
                         </div>
-                        <span className="text-red-600 font-medium">
-                          {show.soundEffectsLevel || 'Moderate'}
-                        </span>
+                        <div className="text-center text-sm">{show.name}</div>
                       </div>
-                    </td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
-                
-                {/* Available On */}
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-white">Available On</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6">
-                      <div className="flex flex-wrap justify-center gap-1">
-                        {show.availableOn && show.availableOn.map((platform, index) => (
-                          <Badge key={index} variant="outline" className="bg-gray-100 text-gray-800 text-xs font-medium">
-                            {platform}
-                          </Badge>
-                        ))}
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
                       </div>
-                    </td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
-                
-                {/* Overall Rating */}
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-4 px-6 font-medium sticky left-0 bg-gray-50">Overall Rating</td>
-                  {selectedShows.map(show => (
-                    <td key={show.id} className="py-4 px-6 text-center">
-                      <div className="flex justify-center">
-                        {[...Array(5)].map((_, i) => (
-                          <i 
-                            key={i} 
-                            className={`${i < Math.floor(show.overallRating) 
-                              ? 'fas fa-star' 
-                              : i < Math.floor(show.overallRating) + 0.5 
-                                ? 'fas fa-star-half-alt' 
-                                : 'far fa-star'} text-secondary-500`}
-                          ></i>
-                        ))}
-                      </div>
-                      <span className="font-bold text-lg">{show.overallRating}/5</span>
-                    </td>
-                  ))}
-                  <td className="py-4 px-6 text-center">-</td>
-                </tr>
-              </tbody>
-            </table>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
-            <div className="p-8 text-center">
+            <div className="p-8 text-center bg-white rounded-xl shadow-md">
               <div className="mb-4 text-gray-400">
                 <i className="fas fa-search text-5xl"></i>
               </div>
@@ -348,20 +403,6 @@ export default function Compare() {
               </Button>
             </div>
           )}
-        </div>
-      )}
-      
-      {selectedShows && selectedShows.length > 0 && (
-        <div className="mt-6 flex">
-          <Button className="mr-4">
-            Save Comparison
-          </Button>
-          <Button variant="outline">
-            <i className="fas fa-share-alt mr-1"></i> Share
-          </Button>
-          <Button variant="outline" className="ml-auto">
-            <i className="fas fa-print mr-1"></i> Print
-          </Button>
         </div>
       )}
     </main>
