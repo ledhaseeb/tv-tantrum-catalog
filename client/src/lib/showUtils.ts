@@ -147,11 +147,23 @@ export function filterShows(
     
     // Filter by search term
     if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      if (!(show.name.toLowerCase().includes(searchTerm) || 
-            show.description.toLowerCase().includes(searchTerm))) {
-        return false;
+      const searchTerm = filters.search.toLowerCase().trim();
+      const showName = show.name.toLowerCase();
+      const showDescription = show.description.toLowerCase();
+      
+      // Try direct matching in name or description
+      if (showName.includes(searchTerm) || showDescription.includes(searchTerm)) {
+        return true;
       }
+      
+      // Try word-by-word matching for names
+      const words = showName.split(/\s+/);
+      if (words.some(word => word.startsWith(searchTerm))) {
+        return true;
+      }
+      
+      // If no match found, exclude this show
+      return false;
     }
     
     return true;

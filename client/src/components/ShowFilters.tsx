@@ -253,13 +253,56 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                     onValueChange={setSearchInput}
                   />
                   <CommandList>
-                    <CommandEmpty>No shows found.</CommandEmpty>
+                    <CommandEmpty>
+                      {searchInput.trim().length === 0 
+                        ? "Start typing to search for shows..." 
+                        : "No shows found matching your search."}
+                    </CommandEmpty>
                     <CommandGroup>
                       {shows
-                        ?.filter(show => 
-                          show.name.toLowerCase().includes(searchInput.toLowerCase())
-                        )
-                        .slice(0, 8)
+                        ?.filter(show => {
+                          const lowerCaseInput = searchInput.toLowerCase().trim();
+                          if (lowerCaseInput.length === 0) return false;
+                          
+                          // Try to match by full name or partial words in the name
+                          const showName = show.name.toLowerCase();
+                          if (showName.includes(lowerCaseInput)) return true;
+                          
+                          // Remove year ranges for comparison (e.g., "Show Name 2018-present")
+                          const nameWithoutYears = showName.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
+                          if (nameWithoutYears.includes(lowerCaseInput)) return true;
+                          
+                          // Split on spaces and try to match any word that starts with the input
+                          const words = showName.split(/\s+/);
+                          if (words.some(word => word.startsWith(lowerCaseInput))) return true;
+                          
+                          // Try matching on clean name (without years)
+                          const cleanWords = nameWithoutYears.split(/\s+/);
+                          return cleanWords.some(word => word.startsWith(lowerCaseInput));
+                        })
+                        .sort((a, b) => {
+                          // Sort exact matches first
+                          const aName = a.name.toLowerCase();
+                          const bName = b.name.toLowerCase();
+                          const input = searchInput.toLowerCase().trim();
+                          
+                          const aExact = aName === input;
+                          const bExact = bName === input;
+                          
+                          if (aExact && !bExact) return -1;
+                          if (!aExact && bExact) return 1;
+                          
+                          // Then sort by starts with
+                          const aStartsWith = aName.startsWith(input);
+                          const bStartsWith = bName.startsWith(input);
+                          
+                          if (aStartsWith && !bStartsWith) return -1;
+                          if (!aStartsWith && bStartsWith) return 1;
+                          
+                          // Finally sort alphabetically
+                          return aName.localeCompare(bName);
+                        })
+                        .slice(0, 12) // Show more suggestions
                         .map(show => (
                           <CommandItem
                             key={show.id}
