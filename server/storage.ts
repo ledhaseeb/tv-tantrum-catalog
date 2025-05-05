@@ -267,6 +267,13 @@ export class MemStorage implements IStorage {
   async importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]> {
     const importedShows: TvShow[] = [];
     
+    // Clear existing shows to prevent duplicates
+    // This is a temporary solution to fix duplicate data
+    this.tvShows.clear();
+    this.tvShowReviews.clear();
+    this.tvShowCurrentId = 1;
+    this.reviewCurrentId = 1;
+    
     for (const show of shows) {
       // Calculate an overall rating based on stimulation score
       // Lower stimulation score is better for calmness, so we invert it for rating
