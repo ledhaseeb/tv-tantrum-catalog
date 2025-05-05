@@ -138,12 +138,22 @@ export default function Detail({ id }: DetailProps) {
               <div>
                 <h3 className="text-sm font-semibold text-gray-700">Overall Stimulation Score:</h3>
                 <div className="flex items-center space-x-2 mt-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`w-4 h-4 rounded-full ${i < showDetail.stimulationScore ? 'bg-red-500' : 'bg-gray-200'}`} 
-                    />
-                  ))}
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const score = i + 1; // 1-5 score range
+                    const bgColor = 
+                      score === 1 ? 'bg-green-500' : // green for 1
+                      score === 2 ? 'bg-yellow-500' : // yellow for 2
+                      score === 3 ? 'bg-orange-500' : // orange for 3
+                      score === 4 ? 'bg-orange-600' : // redish orange for 4
+                      'bg-red-500'; // red for 5
+                    
+                    return (
+                      <div 
+                        key={i} 
+                        className={`w-4 h-4 rounded-full ${i < showDetail.stimulationScore ? bgColor : 'bg-gray-200'}`} 
+                      />
+                    );
+                  })}
                   <span className="text-sm font-medium">{showDetail.stimulationScore}/5</span>
                 </div>
               </div>
