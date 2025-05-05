@@ -262,7 +262,7 @@ export default function Compare() {
               <h3 className="text-xl font-bold mb-6">Compare Shows</h3>
               
               {/* Comparison table with the modern layout */}
-              <div className="grid grid-cols-[150px_1fr_1fr_1fr] gap-4 mb-8">
+              <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4 mb-8">
                 <div className="font-medium">Feature</div>
                 {selectedShows.map(show => (
                   <div key={show.id} className="font-medium text-center">{show.name}</div>
@@ -271,51 +271,10 @@ export default function Compare() {
                   <div className="font-medium text-center text-gray-400">-</div>
                 )}
                 
-                {/* Stimulation Score */}
-                <div className="font-medium py-2">Stimulation Score</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="flex flex-col items-center py-2">
-                    {getStimulationScoreDots(show.stimulationScore)}
-                    <div className="text-center text-sm font-medium">
-                      {show.stimulationScore}/5
-                    </div>
-                  </div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
-                )}
-                
                 {/* Target Age */}
                 <div className="font-medium py-2">Target Age</div>
                 {selectedShows.map(show => (
                   <div key={show.id} className="text-center py-2">{show.ageRange}</div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
-                )}
-                
-                {/* Interactivity */}
-                <div className="font-medium py-2">Interactivity</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="text-center py-2">{show.interactivityLevel || 'Moderate'}</div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
-                )}
-                
-                {/* Dialogue Intensity */}
-                <div className="font-medium py-2">Dialogue Intensity</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="text-center py-2">{show.dialogueIntensity || 'Moderate'}</div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
-                )}
-                
-                {/* Sound Frequency */}
-                <div className="font-medium py-2">Sound Frequency</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="text-center py-2">{show.soundEffectsLevel || 'Moderate'}</div>
                 ))}
                 {selectedShows.length < 3 && (
                   <div className="text-center py-2 text-gray-400">-</div>
@@ -348,25 +307,29 @@ export default function Compare() {
                 )}
               </div>
               
-              {/* Bar charts for metrics */}
+              {/* Stimulation Score Comparison using dots */}
               <div className="mb-8">
-                <h3 className="text-lg font-bold mb-4">Overall Stimulation Score Comparison</h3>
-                <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+                <h3 className="text-lg font-bold mb-4">Stimulation Score Comparison</h3>
+                <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                  <div></div>
                   {selectedShows.map(show => (
-                    <div key={show.id} className="flex flex-col items-center">
-                      <div className="w-full h-10 mb-2">
-                        <div 
-                          className={`h-full ${show.stimulationScore <= 2 ? 'bg-green-400' : show.stimulationScore <= 4 ? 'bg-yellow-400' : 'bg-red-400'} rounded`}
-                          style={{ width: `${show.stimulationScore * 20}%` }}
-                        />
+                    <div key={show.id} className="font-medium text-center">{show.name}</div>
+                  ))}
+                  {selectedShows.length < 3 && (
+                    <div className="font-medium text-center text-gray-400">-</div>
+                  )}
+                  
+                  <div className="font-medium py-2">Stimulation Score</div>
+                  {selectedShows.map(show => (
+                    <div key={show.id} className="flex flex-col items-center py-2">
+                      {getStimulationScoreDots(show.stimulationScore)}
+                      <div className="text-center text-sm font-medium">
+                        {show.stimulationScore}/5
                       </div>
-                      <div className="text-center text-sm">{show.name}</div>
                     </div>
                   ))}
                   {selectedShows.length < 3 && (
-                    <div className="flex items-center justify-center">
-                      <div className="text-gray-400">-</div>
-                    </div>
+                    <div className="text-center py-2 text-gray-400">-</div>
                   )}
                 </div>
               </div>
@@ -375,14 +338,23 @@ export default function Compare() {
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-4">Sensory Metrics Comparison</h3>
                 
+                <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4 mb-3">
+                  <div></div>
+                  {selectedShows.map(show => (
+                    <div key={show.id} className="font-medium text-center">{show.name}</div>
+                  ))}
+                  {selectedShows.length < 3 && (
+                    <div className="font-medium text-center text-gray-400">-</div>
+                  )}
+                </div>
+                
                 {/* Interactivity Level */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Interaction Level:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Interaction Level:</div>
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.interactivityLevel)}
@@ -398,12 +370,11 @@ export default function Compare() {
                 
                 {/* Dialogue Intensity */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Dialogue Intensity:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Dialogue Intensity:</div>
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.dialogueIntensity)}
@@ -419,12 +390,11 @@ export default function Compare() {
                 
                 {/* Sound Effects Level */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Sound Effects Level:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Sound Effects Level:</div>
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.soundEffectsLevel)}
@@ -440,12 +410,11 @@ export default function Compare() {
                 
                 {/* Scene Frequency */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Scene Frequency:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Scene Frequency:</div>
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.sceneFrequency || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.sceneFrequency)}
@@ -461,12 +430,11 @@ export default function Compare() {
 
                 {/* Music Tempo */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Music Tempo:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Music Tempo:</div>
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.musicTempo || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.musicTempo)}
@@ -482,12 +450,11 @@ export default function Compare() {
                 
                 {/* Total Music Level */}
                 <div className="mb-6">
-                  <h4 className="font-medium mb-2">Total Music Level:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Total Music Level:</div>
                     {selectedShows.map(show => (
                       <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.totalMusicLevel)}
