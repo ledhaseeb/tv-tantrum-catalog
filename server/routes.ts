@@ -173,8 +173,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           total_music_level: record['Total Music'] || 'Moderate',
           total_sound_effect_time_level: record['Total Sound Effect Time'] || 'Moderate',
           scene_frequency: record['Scene Frequency'] || 'Moderate',
-          image_filename: 'default.jpg', // Placeholder for image filename
-          id: index + 1
+          image_filename: `${record['Programs']?.toLowerCase().replace(/[^a-z0-9]/g, '')}.jpg` || 'default.jpg',
+          id: index + 1,
+          // Add image URL based on the show title for GitHub repo format
+          imageUrl: `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${record['Programs']?.toLowerCase().replace(/[^a-z0-9]/g, '')}.jpg`
         };
       });
 
