@@ -93,23 +93,64 @@ export default function Compare() {
     }
   };
   
+  // Helper function to determine rating level based on text
+  const getRatingLevel = (rating: string | null | undefined): number => {
+    if (!rating) return 3; // Default to moderate
+    
+    if (rating.includes('Low-Moderate') || rating.includes('Low to Moderate')) {
+      return 2;
+    } else if (rating.includes('Moderate-Low')) {
+      return 2;
+    } else if (rating.includes('Moderate-High') || rating.includes('Moderate to High')) {
+      return 4;
+    } else if (rating.includes('Mod-High')) {
+      return 4;
+    } else if (rating === 'Low') {
+      return 1;
+    } else if (rating === 'Moderate') {
+      return 3;
+    } else if (rating === 'High') {
+      return 5;
+    } else if (rating === 'Limited') {
+      return 1;
+    } else if (rating === 'Minimal') {
+      return 1;
+    }
+    
+    return 3; // Default to moderate
+  };
+  
   // Function to render segmented bar like on the details page
-  const renderSegmentedBar = (level: string) => {
-    const percentage = getLevelPercentage(level);
+  const renderSegmentedBar = (ratingText: string | null | undefined) => {
+    const level = getRatingLevel(ratingText);
+    const percentage = level * 20;
     
     return (
-      <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-        <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-        <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-        <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-        <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-        <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
+      <div className="w-full h-6 relative">
+        <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+          {[1, 2, 3, 4, 5].map((segment) => {
+            const color = 
+              segment === 1 ? 'bg-green-500' : 
+              segment === 2 ? 'bg-yellow-500' : 
+              segment === 3 ? 'bg-orange-500' : 
+              segment === 4 ? 'bg-orange-600' : 
+              'bg-red-500';
+            
+            return (
+              <div
+                key={segment}
+                className={`h-full w-1/5 ${segment <= level ? color : 'bg-gray-200'}`}
+              />
+            );
+          })}
+        </div>
         <div 
           className="absolute h-full flex items-center" 
           style={{ 
             width: '4px', 
             backgroundColor: 'black',
             left: `calc(${percentage}% - 2px)`,
+            top: 0
           }}
         ></div>
       </div>
@@ -344,24 +385,7 @@ export default function Compare() {
                           <span className="text-sm">{show.name}</span>
                           <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
                         </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(${getLevelPercentage(show.interactivityLevel || 'Moderate')}% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
+                        {renderSegmentedBar(show.interactivityLevel)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -382,24 +406,7 @@ export default function Compare() {
                           <span className="text-sm">{show.name}</span>
                           <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
                         </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(${getLevelPercentage(show.dialogueIntensity || 'Moderate')}% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
+                        {renderSegmentedBar(show.dialogueIntensity)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -420,62 +427,7 @@ export default function Compare() {
                           <span className="text-sm">{show.name}</span>
                           <span className="text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</span>
                         </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(${getLevelPercentage(show.soundEffectsLevel || 'Moderate')}% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
-                    {selectedShows.length < 3 && (
-                      <div className="flex items-center justify-center">
-                        <div className="text-gray-400">-</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Music Tempo */}
-                <div className="mb-6">
-                  <h4 className="font-medium mb-2">Music Tempo:</h4>
-                  <div className="grid grid-cols-[1fr_1fr_1fr] gap-6">
-                    {selectedShows.map(show => (
-                      <div key={show.id} className="flex flex-col">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{show.name}</span>
-                          <span className="text-sm font-medium">Moderate</span>
-                        </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(60% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
+                        {renderSegmentedBar(show.soundEffectsLevel)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -496,24 +448,7 @@ export default function Compare() {
                           <span className="text-sm">{show.name}</span>
                           <span className="text-sm font-medium">{show.sceneFrequency || 'Moderate'}</span>
                         </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(${getLevelPercentage(show.sceneFrequency || 'Moderate')}% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
+                        {renderSegmentedBar(show.sceneFrequency)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -534,24 +469,7 @@ export default function Compare() {
                           <span className="text-sm">{show.name}</span>
                           <span className="text-sm font-medium">{show.musicTempo || 'Moderate'}</span>
                         </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(${getLevelPercentage(show.musicTempo || 'Moderate')}% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
+                        {renderSegmentedBar(show.musicTempo)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -572,24 +490,7 @@ export default function Compare() {
                           <span className="text-sm">{show.name}</span>
                           <span className="text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</span>
                         </div>
-                        <div className="w-full h-6 relative">
-                          <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-yellow-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-orange-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-red-500" style={{ width: '20%' }}></div>
-                            <div className="h-full bg-gray-200" style={{ width: '20%' }}></div>
-                          </div>
-                          <div 
-                            className="absolute h-full flex items-center" 
-                            style={{ 
-                              width: '4px', 
-                              backgroundColor: 'black',
-                              left: `calc(${getLevelPercentage(show.totalMusicLevel || 'Moderate')}% - 2px)`,
-                              top: 0
-                            }}
-                          ></div>
-                        </div>
+                        {renderSegmentedBar(show.totalMusicLevel)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
