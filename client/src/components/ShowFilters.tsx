@@ -223,7 +223,20 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               Show Name
             </Label>
             
-            <div className="flex">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                console.log('Search form submitted with term:', searchInput);
+                handleFilterChange('search', searchInput);
+                const updatedFilters = {
+                  ...filters,
+                  search: searchInput
+                };
+                console.log('Applying filters:', updatedFilters);
+                onFilterChange(updatedFilters);
+              }}
+              className="flex"
+            >
               <div className="relative flex-grow">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
@@ -233,35 +246,16 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   onChange={(e) => {
                     setSearchInput(e.target.value);
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleFilterChange('search', searchInput);
-                      onFilterChange({
-                        ...filters,
-                        search: searchInput
-                      });
-                    }
-                  }}
                   className="w-full pl-8 rounded-r-none"
                 />
               </div>
               <Button 
-                type="button" 
+                type="submit" 
                 className="rounded-l-none"
-                onClick={() => {
-                  console.log('Search button clicked with term:', searchInput);
-                  handleFilterChange('search', searchInput);
-                  const updatedFilters = {
-                    ...filters,
-                    search: searchInput
-                  };
-                  console.log('Applying filters:', updatedFilters);
-                  onFilterChange(updatedFilters);
-                }}
               >
                 Search
               </Button>
-            </div>
+            </form>
               
             {/* Show matching results based on searchInput */}
             {searchInput.trim().length > 0 && (

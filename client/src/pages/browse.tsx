@@ -75,6 +75,20 @@ export default function Browse() {
     queryKey: ['/api/shows', activeFilters],
     staleTime: 60000, // 1 minute
   });
+  
+  // Log the results separately
+  useEffect(() => {
+    if (shows) {
+      console.log('Query success! Number of shows received:', shows.length);
+      if (shows.length > 0) {
+        console.log('First few shows:', shows.slice(0, 3).map(show => show.name));
+      }
+    }
+    
+    if (error) {
+      console.error('Query error:', error);
+    }
+  }, [shows, error]);
 
   const handleFilterChange = (filters: typeof activeFilters) => {
     setActiveFilters(filters);
