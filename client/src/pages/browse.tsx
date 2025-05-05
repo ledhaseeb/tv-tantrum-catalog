@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
 import ShowCard from "@/components/ShowCard";
 import { Button } from "@/components/ui/button";
@@ -18,15 +18,56 @@ import { TvShow } from "@shared/schema";
 
 export default function Browse() {
   const [_, setLocation] = useLocation();
+  const search = useSearch();
   const [activeFilters, setActiveFilters] = useState<{
     ageGroup?: string;
     tantrumFactor?: string;
     sortBy?: string;
     search?: string;
+    themes?: string[];
+    interactionLevel?: string;
+    dialogueIntensity?: string;
+    soundFrequency?: string;
+    stimulationScoreRange?: {min: number, max: number};
   }>({});
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const showsPerPage = 12;
+
+  // Parse URL search params to set initial filters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(search);
+    const initialFilters: typeof activeFilters = {};
+    
+    // Get search query from URL
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      initialFilters.search = searchQuery;
+    }
+    
+    // Get age group from URL
+    const ageGroup = searchParams.get('ageGroup');
+    if (ageGroup) {
+      initialFilters.ageGroup = ageGroup;
+    }
+    
+    // Get themes from URL
+    const themes = searchParams.get('themes');
+    if (themes) {
+      initialFilters.themes = themes.split(',');
+    }
+    
+    // Get sort option from URL
+    const sortBy = searchParams.get('sortBy');
+    if (sortBy) {
+      initialFilters.sortBy = sortBy;
+    }
+    
+    // Apply filters from URL if any exist
+    if (Object.keys(initialFilters).length > 0) {
+      setActiveFilters(initialFilters);
+    }
+  }, [search]);
 
   // Fetch TV shows with applied filters
   const { data: shows, isLoading, error } = useQuery<TvShow[]>({
@@ -37,11 +78,22 @@ export default function Browse() {
   const handleFilterChange = (filters: typeof activeFilters) => {
     setActiveFilters(filters);
     setCurrentPage(1); // Reset to first page when filters change
+    
+    // Update URL with new filters
+    const searchParams = new URLSearchParams();
+    if (filters.search) searchParams.set('search', filters.search);
+    if (filters.ageGroup) searchParams.set('ageGroup', filters.ageGroup);
+    if (filters.themes && filters.themes.length > 0) searchParams.set('themes', filters.themes.join(','));
+    if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
+    
+    const newSearch = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    setLocation(`/browse${newSearch}`);
   };
 
   const clearFilters = () => {
     setActiveFilters({});
     setCurrentPage(1);
+    setLocation('/browse');
   };
 
   // Calculate pagination
@@ -49,6 +101,7 @@ export default function Browse() {
   const indexOfFirstShow = indexOfLastShow - showsPerPage;
   const currentShows = shows ? shows.slice(indexOfFirstShow, indexOfLastShow) : [];
   const totalPages = shows ? Math.ceil(shows.length / showsPerPage) : 0;
+  const totalShows = shows?.length || 0;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -121,112 +174,99 @@ export default function Browse() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Filters Component */}
-      <ShowFilters 
-        activeFilters={activeFilters} 
-        onFilterChange={handleFilterChange}
-        onClearFilters={clearFilters}
-      />
-      
-      {/* Show Grid/List Header */}
-      <section className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-heading font-bold">
-            TV Shows {shows && `(${shows.length})`}
-          </h2>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="icon"
-              onClick={() => setViewMode("grid")}
-              title="Grid View"
-            >
-              <i className="fas fa-th"></i>
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="icon"
-              onClick={() => setViewMode("list")}
-              title="List View"
-            >
-              <i className="fas fa-list"></i>
-            </Button>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <h1 className="text-2xl font-heading font-bold text-primary-800 mb-4">
+          Browse Shows
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Showing {indexOfFirstShow + 1}-{Math.min(indexOfLastShow, totalShows)} of {totalShows} results
+        </p>
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left Column - Filters */}
+          <div className="md:w-1/4">
+            <ShowFilters 
+              activeFilters={activeFilters} 
+              onFilterChange={handleFilterChange}
+              onClearFilters={clearFilters}
+            />
+          </div>
+          
+          {/* Right Column - Show Grid */}
+          <div className="md:w-3/4">
+            {isLoading ? (
+              // Loading skeleton grid
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, index) => (
+                  <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <Skeleton className="h-48 w-full" />
+                    <div className="p-4">
+                      <Skeleton className="h-6 w-3/4 mb-4" />
+                      <Skeleton className="h-4 w-full mb-2" />
+                      <Skeleton className="h-4 w-full mb-2" />
+                      <Skeleton className="h-4 w-full mb-2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <p>Error loading TV shows. Please try again later.</p>
+              </div>
+            ) : shows?.length === 0 ? (
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+                <p>No TV shows found matching your filters. Try adjusting your criteria.</p>
+                {Object.keys(activeFilters).length > 0 && (
+                  <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                    Clear All Filters
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Show Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentShows.map(show => (
+                    <ShowCard 
+                      key={show.id} 
+                      show={show} 
+                      viewMode="grid"
+                      onClick={() => setLocation(`/shows/${show.id}`)}
+                    />
+                  ))}
+                </div>
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                        
+                        {renderPaginationItems()}
+                        
+                        <PaginationItem>
+                          <PaginationNext 
+                            onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
-        
-        {isLoading ? (
-          // Loading skeleton grid
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden">
-                <Skeleton className="h-48 w-full" />
-                <div className="p-4">
-                  <Skeleton className="h-6 w-3/4 mb-4" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            <p>Error loading TV shows. Please try again later.</p>
-          </div>
-        ) : shows?.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
-            <p>No TV shows found matching your filters. Try adjusting your criteria.</p>
-            {Object.keys(activeFilters).length > 0 && (
-              <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
-                Clear All Filters
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* Show Grid */}
-            <div className={`${viewMode === "grid" 
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-              : "space-y-4"}`}
-            >
-              {currentShows.map(show => (
-                <ShowCard 
-                  key={show.id} 
-                  show={show} 
-                  viewMode={viewMode}
-                  onClick={() => setLocation(`/shows/${show.id}`)}
-                />
-              ))}
-            </div>
-            
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-8">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                    
-                    {renderPaginationItems()}
-                    
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
