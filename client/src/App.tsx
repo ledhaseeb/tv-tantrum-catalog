@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Home from "@/pages/home";
 import Browse from "@/pages/browse";
 import Detail from "@/pages/detail";
 import Compare from "@/pages/compare";

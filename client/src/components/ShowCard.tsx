@@ -47,6 +47,20 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                 <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                   {show.description}
                 </p>
+                {show.themes && show.themes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                    {show.themes.slice(0, 3).map((theme, index) => (
+                      <Badge key={index} variant="outline" className="bg-gray-100 text-gray-600 text-xs">
+                        {theme}
+                      </Badge>
+                    ))}
+                    {show.themes.length > 3 && (
+                      <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
+                        +{show.themes.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
               
               <div className="flex items-center bg-white bg-opacity-90 px-2 py-1 rounded-full shadow-sm">
@@ -157,6 +171,21 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             Ages {show.ageRange}
           </Badge>
         </div>
+        
+        {show.themes && show.themes.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {show.themes.slice(0, 2).map((theme, index) => (
+              <Badge key={index} variant="outline" className="bg-gray-100 text-gray-600 text-xs">
+                {theme}
+              </Badge>
+            ))}
+            {show.themes.length > 2 && (
+              <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
+                +{show.themes.length - 2}
+              </Badge>
+            )}
+          </div>
+        )}
         
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between">
