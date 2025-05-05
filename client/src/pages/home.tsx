@@ -98,19 +98,8 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Find exact match first to enable direct navigation
-      const exactMatch = allShows?.find(show => 
-        show.name.toLowerCase() === searchQuery.trim().toLowerCase() ||
-        show.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-      );
-      
-      if (exactMatch) {
-        // If exact match found, go directly to that show
-        handleShowCardClick(exactMatch.id);
-      } else {
-        // Otherwise go to search results
-        setLocation(`/browse?search=${encodeURIComponent(searchQuery.trim())}`);
-      }
+      // For all searches, direct to browse page with search filter
+      setLocation(`/browse?search=${encodeURIComponent(searchQuery.trim())}`);
       setShowResults(false);
     }
   };
@@ -225,7 +214,7 @@ export default function Home() {
                           onClick={() => {
                             setSearchQuery(show.name);
                             setShowResults(false);
-                            handleShowCardClick(show.id);
+                            setLocation(`/browse?search=${encodeURIComponent(show.name)}`);
                           }}
                         >
                           <div className="font-medium">{show.name}</div>

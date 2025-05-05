@@ -30,19 +30,8 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      // Find exact match first to enable direct navigation
-      const exactMatch = shows?.find(show => 
-        show.name.toLowerCase() === searchTerm.trim().toLowerCase() ||
-        show.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
-      );
-      
-      if (exactMatch) {
-        // If exact match found, go directly to that show
-        window.location.href = `/shows/${exactMatch.id}`;
-      } else {
-        // Otherwise go to search results
-        window.location.href = `/browse?search=${encodeURIComponent(searchTerm.trim())}`;
-      }
+      // For all searches, direct to browse page with search filter
+      window.location.href = `/browse?search=${encodeURIComponent(searchTerm.trim())}`;
       setShowResults(false);
     }
   };
@@ -155,7 +144,7 @@ export default function Navbar() {
                             onClick={() => {
                               setSearchTerm(show.name);
                               setShowResults(false);
-                              window.location.href = `/shows/${show.id}`;
+                              window.location.href = `/browse?search=${encodeURIComponent(show.name)}`;
                             }}
                           >
                             <div className="font-medium">{show.name}</div>
