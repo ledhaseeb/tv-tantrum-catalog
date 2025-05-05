@@ -109,13 +109,34 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // Search by name
+    // Search by name with improved algorithm
     if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      shows = shows.filter(show => 
-        show.name.toLowerCase().includes(searchTerm) || 
-        show.description.toLowerCase().includes(searchTerm)
-      );
+      const searchTerm = filters.search.toLowerCase().trim();
+      shows = shows.filter(show => {
+        const nameLower = show.name.toLowerCase();
+        const descLower = show.description?.toLowerCase() || '';
+        const themesLower = show.themes?.map(t => t.toLowerCase()) || [];
+        
+        // Direct match in name or description
+        if (nameLower.includes(searchTerm) || descLower.includes(searchTerm)) return true;
+        
+        // Check if any theme contains the search term
+        if (themesLower.some(theme => theme.includes(searchTerm))) return true;
+        
+        // Handle shows with year ranges
+        const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
+        if (nameWithoutYears.includes(searchTerm)) return true;
+        
+        // Match any part of a word in the name
+        const words = nameLower.split(/\s+/);
+        if (words.some(word => word.includes(searchTerm))) return true;
+        
+        // Handle apostrophes and special characters
+        const simplifiedName = nameLower.replace(/[''\.]/g, '');
+        if (simplifiedName.includes(searchTerm)) return true;
+        
+        return false;
+      });
     }
     
     // Filter by themes
