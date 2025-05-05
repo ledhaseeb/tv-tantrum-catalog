@@ -12,7 +12,7 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Redirect to browse page with search term as query param
-    window.location.href = `/?search=${encodeURIComponent(searchTerm)}`;
+    window.location.href = `/browse?search=${encodeURIComponent(searchTerm)}`;
   };
 
   return (
@@ -26,6 +26,11 @@ export default function Navbar() {
             <nav className="hidden md:ml-10 md:flex space-x-8">
               <Link href="/">
                 <a className={`${location === '/' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}>
+                  Home
+                </a>
+              </Link>
+              <Link href="/browse">
+                <a className={`${location === '/browse' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}>
                   Browse Shows
                 </a>
               </Link>
@@ -69,6 +74,11 @@ export default function Navbar() {
                   <h2 className="text-lg font-bold mb-4">KidTV Guide</h2>
                   <Link href="/">
                     <a className={`block px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}>
+                      Home
+                    </a>
+                  </Link>
+                  <Link href="/browse">
+                    <a className={`block px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}>
                       Browse Shows
                     </a>
                   </Link>

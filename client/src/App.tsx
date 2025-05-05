@@ -18,7 +18,8 @@ function Router() {
       <Navbar />
       <div className="flex-grow">
         <Switch>
-          <Route path="/" component={Browse} />
+          <Route path="/" component={Home} />
+          <Route path="/browse" component={Browse} />
           <Route path="/shows/:id" component={Detail} />
           <Route path="/compare" component={Compare} />
           <Route path="/about" component={About} />
