@@ -120,20 +120,13 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             </div>
             
             <div className="flex justify-between items-center mt-2">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <div className={`w-3 h-3 rounded-full mr-1 ${getStimRatingColorClass()}`}></div>
-                  <span className="text-sm text-gray-600">
-                    {show.stimulationScore <= 2 ? 'Low' : 
-                    show.stimulationScore <= 4 ? 'Medium' : 
-                    'High'} Stimulation
-                  </span>
-                </div>
-                
-                <div className="flex items-center">
-                  <div className="flex mr-1">{renderRatingCircles(show.overallRating)}</div>
-                  <span className="text-sm font-medium">{show.overallRating}/5</span>
-                </div>
+              <div className="flex items-center">
+                <div className={`w-3 h-3 rounded-full mr-1 ${getStimRatingColorClass()}`}></div>
+                <span className="text-sm text-gray-600">
+                  {show.stimulationScore <= 2 ? 'Low' : 
+                  show.stimulationScore <= 4 ? 'Medium' : 
+                  'High'} Stimulation ({show.stimulationScore}/5)
+                </span>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -192,38 +185,15 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             </div>
           )}
           
-          {/* Ratings display */}
-          <div className="grid grid-cols-2 gap-1 text-xs">
-            {/* First row */}
-            <div className="flex items-center gap-1">
-              <span className="text-gray-600">Friendship</span>
-            </div>
-            <div className="flex items-center justify-end">
-              <div className="flex">{renderRatingCircles(show.friendshipRating || 3)}</div>
-            </div>
-            
-            {/* Second row */}
-            <div className="flex items-center gap-1">
-              <span className="text-gray-600">Problem Solving</span>
-            </div>
-            <div className="flex items-center justify-end">
-              <div className="flex">{renderRatingCircles(show.problemSolvingRating || 3)}</div>
-            </div>
-            
-            {/* Third row */}
-            <div className="flex items-center gap-1">
-              <span className="text-gray-600">Relatable Situations</span>
-            </div>
-            <div className="flex items-center justify-end">
-              <div className="flex">{renderRatingCircles(show.relatableSituationsRating || 3)}</div>
-            </div>
-          </div>
-          
           {/* Stimulation score indicator */}
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-1">
               <div className={`w-3 h-3 rounded-full ${getStimRatingColorClass()}`}></div>
-              <span className="text-xs text-gray-600">{show.stimulationScore}/5</span>
+              <span className="text-xs text-gray-600">
+                {show.stimulationScore <= 2 ? 'Low' : 
+                 show.stimulationScore <= 4 ? 'Medium' : 
+                 'High'} Stimulation ({show.stimulationScore}/5)
+              </span>
             </div>
             <Button 
               variant="default" 
