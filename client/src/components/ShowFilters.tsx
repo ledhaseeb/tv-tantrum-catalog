@@ -162,6 +162,13 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         return `Dialogue Intensity: ${value}`;
       case 'soundFrequency':
         return `Sound Frequency: ${value}`;
+      case 'stimulationScoreRange':
+        const range = value as {min: number, max: number};
+        if (range.min === range.max) {
+          return `Stimulation Score: ${range.min}`;
+        } else {
+          return `Stimulation Score: ${range.min}-${range.max}`;
+        }
       case 'sortBy':
         switch (value) {
           case 'name': return 'Sorted by Name';
@@ -341,11 +348,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             <Label className="block text-sm font-medium text-gray-700 mb-1">
               Stimulation Score Range
             </Label>
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-4">
+              {/* Min slider */}
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-xs">Min: {filters.stimulationScoreRange?.min || 1}</span>
-                  <span className="text-xs">Max: {filters.stimulationScoreRange?.max || 5}</span>
+                  <span className="text-xs font-medium">Minimum: {filters.stimulationScoreRange?.min || 1}</span>
                 </div>
                 <div className="relative pt-1">
                   <input 
@@ -354,18 +361,62 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                     max="5" 
                     step="1" 
                     value={filters.stimulationScoreRange?.min || 1}
-                    onChange={(e) => handleFilterChange('stimulationScoreRange', {
-                      min: parseInt(e.target.value),
-                      max: filters.stimulationScoreRange?.max || 5
-                    })}
-                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none" 
+                    onChange={(e) => {
+                      const newMin = parseInt(e.target.value);
+                      const currentMax = filters.stimulationScoreRange?.max || 5;
+                      handleFilterChange('stimulationScoreRange', {
+                        min: newMin,
+                        max: Math.max(newMin, currentMax) // Ensure max is at least equal to min
+                      });
+                    }}
+                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
                   />
                 </div>
+                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                  <span>1</span>
+                  <span>2</span>
+                  <span>3</span>
+                  <span>4</span>
+                  <span>5</span>
+                </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>Low</span>
-                <span>Medium</span>
-                <span>High</span>
+              
+              {/* Max slider */}
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs font-medium">Maximum: {filters.stimulationScoreRange?.max || 5}</span>
+                </div>
+                <div className="relative pt-1">
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="5" 
+                    step="1" 
+                    value={filters.stimulationScoreRange?.max || 5}
+                    onChange={(e) => {
+                      const newMax = parseInt(e.target.value);
+                      const currentMin = filters.stimulationScoreRange?.min || 1;
+                      handleFilterChange('stimulationScoreRange', {
+                        min: Math.min(currentMin, newMax), // Ensure min is at most equal to max
+                        max: newMax
+                      });
+                    }}
+                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                  <span>1</span>
+                  <span>2</span>
+                  <span>3</span>
+                  <span>4</span>
+                  <span>5</span>
+                </div>
+              </div>
+              
+              <div className="flex justify-between text-xs text-gray-600 mt-1">
+                <span className="font-medium text-green-600">Low</span>
+                <span className="font-medium text-yellow-600">Medium</span>
+                <span className="font-medium text-red-600">High</span>
               </div>
             </div>
           </div>
