@@ -147,10 +147,23 @@ export default function Detail({ id }: DetailProps) {
                       score === 4 ? 'bg-orange-600' : // redish orange for 4
                       'bg-red-500'; // red for 5
                     
+                    const borderColor = 
+                      score === 1 ? 'border-green-500' : // green for 1
+                      score === 2 ? 'border-yellow-500' : // yellow for 2
+                      score === 3 ? 'border-orange-500' : // orange for 3
+                      score === 4 ? 'border-orange-600' : // redish orange for 4
+                      'border-red-500'; // red for 5
+                    
                     return (
                       <div 
                         key={i} 
-                        className={`w-4 h-4 rounded-full ${i < showDetail.stimulationScore ? bgColor : 'bg-gray-200'}`} 
+                        className={`w-4 h-4 rounded-full ${
+                          // Active dots show their own color
+                          i < showDetail.stimulationScore 
+                            ? bgColor 
+                            // Inactive dots are outlined with their corresponding color
+                            : `border-2 ${borderColor} bg-white`
+                        }`} 
                       />
                     );
                   })}
