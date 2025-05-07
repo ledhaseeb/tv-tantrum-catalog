@@ -422,15 +422,15 @@ export class MemStorage implements IStorage {
         endYear: show.end_year || null,
         isOngoing: true,
         
-        // Direct metrics from GitHub
+        // Direct metrics from GitHub, normalizing "Very High" to "High"
         stimulationScore: show.stimulation_score,
-        interactivityLevel: show.interactivity_level,
-        dialogueIntensity: show.dialogue_intensity,
-        soundEffectsLevel: show.sound_effects_level,
-        musicTempo: show.music_tempo,
-        totalMusicLevel: show.total_music_level,
-        totalSoundEffectTimeLevel: show.total_sound_effect_time_level,
-        sceneFrequency: show.scene_frequency,
+        interactivityLevel: show.interactivity_level?.replace(/very high/i, "High"),
+        dialogueIntensity: show.dialogue_intensity?.replace(/very high/i, "High"),
+        soundEffectsLevel: show.sound_effects_level?.replace(/very high/i, "High"),
+        musicTempo: show.music_tempo?.replace(/very high/i, "High"),
+        totalMusicLevel: show.total_music_level?.replace(/very high/i, "High"),
+        totalSoundEffectTimeLevel: show.total_sound_effect_time_level?.replace(/very high/i, "High"),
+        sceneFrequency: show.scene_frequency?.replace(/very high/i, "High"),
         animationStyle: show.animation_style,
         themes: show.themes,
         
