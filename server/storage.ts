@@ -72,7 +72,14 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const now = new Date().toISOString();
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: now,
+      isAdmin: insertUser.isAdmin ?? false,
+      username: insertUser.username ?? null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -364,7 +371,12 @@ export class MemStorage implements IStorage {
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
     const id = this.reviewCurrentId++;
-    const newReview: TvShowReview = { ...review, id };
+    const now = new Date().toISOString();
+    const newReview: TvShowReview = { 
+      ...review, 
+      id,
+      createdAt: now
+    };
     this.tvShowReviews.set(id, newReview);
     return newReview;
   }
@@ -375,12 +387,15 @@ export class MemStorage implements IStorage {
     const existingSearch = Array.from(this.tvShowSearches.values())
       .find(search => search.tvShowId === tvShowId);
     
+    const now = new Date().toISOString();
+    
     if (existingSearch) {
       // Increment the search count
       const updatedSearch: TvShowSearch = {
         ...existingSearch,
         searchCount: existingSearch.searchCount + 1,
-        lastSearched: new Date().toISOString()
+        lastSearched: now,
+        lastViewed: existingSearch.lastViewed
       };
       this.tvShowSearches.set(existingSearch.id, updatedSearch);
     } else {
@@ -391,7 +406,8 @@ export class MemStorage implements IStorage {
         tvShowId,
         searchCount: 1,
         viewCount: 0,
-        lastSearched: new Date().toISOString()
+        lastSearched: now,
+        lastViewed: null
       };
       this.tvShowSearches.set(id, newSearch);
     }
@@ -402,12 +418,15 @@ export class MemStorage implements IStorage {
     const existingSearch = Array.from(this.tvShowSearches.values())
       .find(search => search.tvShowId === tvShowId);
     
+    const now = new Date().toISOString();
+    
     if (existingSearch) {
       // Increment the view count
       const updatedSearch: TvShowSearch = {
         ...existingSearch,
         viewCount: existingSearch.viewCount + 1,
-        lastSearched: new Date().toISOString() // Update timestamp
+        lastSearched: existingSearch.lastSearched,
+        lastViewed: now // Update timestamp for last viewed
       };
       this.tvShowSearches.set(existingSearch.id, updatedSearch);
     } else {
@@ -418,7 +437,8 @@ export class MemStorage implements IStorage {
         tvShowId,
         searchCount: 0,
         viewCount: 1,
-        lastSearched: new Date().toISOString()
+        lastSearched: now,
+        lastViewed: now
       };
       this.tvShowSearches.set(id, newSearch);
     }
