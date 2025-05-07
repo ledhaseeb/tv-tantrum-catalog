@@ -28,8 +28,6 @@ export default function Footer() {
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Resources</h3>
               <ul className="space-y-2">
                 <li><Link href="/about" className="text-white/80 hover:text-white">About Us</Link></li>
-                <li><Link href="/about#faq" className="text-white/80 hover:text-white">FAQ</Link></li>
-                <li><Link href="#" className="text-white/80 hover:text-white">Blog</Link></li>
               </ul>
             </div>
             
@@ -37,7 +35,6 @@ export default function Footer() {
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Connect</h3>
               <ul className="space-y-2">
                 <li><Link href="/about#contact" className="text-white/80 hover:text-white">Contact Us</Link></li>
-                <li><Link href="#" className="text-white/80 hover:text-white">Subscribe</Link></li>
               </ul>
             </div>
           </div>
