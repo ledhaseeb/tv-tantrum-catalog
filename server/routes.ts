@@ -9,6 +9,9 @@ import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication
+  setupAuth(app);
+  
   // Initialize the data from GitHub on server start
   try {
     console.log("Fetching TV shows data from GitHub...");
@@ -260,9 +263,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
-  // Setup authentication
-  setupAuth(app);
 
   // Add favorite routes, protected by authentication
   // Add a show to user's favorites
