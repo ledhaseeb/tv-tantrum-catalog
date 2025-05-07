@@ -17,10 +17,9 @@ export default function About() {
             Our unique rating system focuses on metrics that matter to parents, including:
           </p>
           <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
-            <li><span className="font-semibold">Tantrum Factor</span> - How likely will your child melt down when the show ends?</li>
+            <li><span className="font-semibold">Stimulation Score</span> - Measure of how visually and audibly stimulating the content is.</li>
             <li><span className="font-semibold">Themes</span> - Understand what topics and concepts are covered in each show, from adventure and creativity to social-emotional learning and problem-solving.</li>
             <li><span className="font-semibold">Interactivity Level</span> - How engaging and interactive is the content for children?</li>
-            <li><span className="font-semibold">Stimulation Score</span> - Measure of how visually and audibly stimulating the content is.</li>
           </ul>
         </div>
         
@@ -66,7 +65,7 @@ export default function About() {
               </div>
               <h3 className="text-xl font-heading font-bold mb-2">Filter</h3>
               <p className="text-gray-600">
-                Narrow down shows by age appropriateness, tantrum factor, themes, and more.
+                Narrow down shows by age appropriateness, stimulation score, themes, and more.
               </p>
             </div>
           </CardContent>
@@ -117,7 +116,7 @@ export default function About() {
         <Card className="max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
+              <div className="w-64 h-64 rounded-full overflow-hidden mx-auto mb-6">
                 <img 
                   src={haseebImage} 
                   alt="Haseeb Ibrahim" 
