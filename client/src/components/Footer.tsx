@@ -34,7 +34,7 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Connect</h3>
               <ul className="space-y-2">
-                <li><Link href="/about#contact" className="text-white/80 hover:text-white">Contact Us</Link></li>
+                <li><Link href="/about" className="text-white/80 hover:text-white">Contact Us</Link></li>
               </ul>
             </div>
           </div>
