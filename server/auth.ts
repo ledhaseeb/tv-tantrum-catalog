@@ -22,8 +22,8 @@ declare global {
     // Define what fields from the User schema should be available in req.user
     interface User {
       id: number;
-      username: string;
-      email: string | null;
+      email: string;
+      username: string | null;
       isAdmin: boolean | null;
       createdAt: string;
     }
@@ -69,20 +69,23 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      try {
-        const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false);
-        } else {
-          // Don't send back password with the user object
-          const { password: _, ...safeUser } = user;
-          return done(null, safeUser as Express.User);
+    new LocalStrategy(
+      { usernameField: 'email' },
+      async (email, password, done) => {
+        try {
+          const user = await storage.getUserByEmail(email);
+          if (!user || !(await comparePasswords(password, user.password))) {
+            return done(null, false);
+          } else {
+            // Don't send back password with the user object
+            const { password: _, ...safeUser } = user;
+            return done(null, safeUser as Express.User);
+          }
+        } catch (error) {
+          return done(error);
         }
-      } catch (error) {
-        return done(error);
       }
-    }),
+    ),
   );
 
   passport.serializeUser((user, done) => {
