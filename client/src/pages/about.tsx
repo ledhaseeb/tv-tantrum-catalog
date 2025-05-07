@@ -111,7 +111,7 @@ export default function About() {
           <div className="bg-green-100 rounded-lg p-4">
             <div className="flex items-center mb-2">
               <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">1</div>
-              <h3 className="ml-2 text-lg font-bold text-green-800">Very Low</h3>
+              <h3 className="ml-2 text-lg font-bold text-green-800">Low</h3>
             </div>
             <p className="text-green-800">
               Gentle pacing with minimal scene changes. Soft sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.
@@ -121,7 +121,7 @@ export default function About() {
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex items-center mb-2">
               <div className="w-8 h-8 rounded-full bg-green-400 flex items-center justify-center text-white font-bold">2</div>
-              <h3 className="ml-2 text-lg font-bold text-green-700">Low</h3>
+              <h3 className="ml-2 text-lg font-bold text-green-700">Low-Medium</h3>
             </div>
             <p className="text-green-700">
               Moderate pacing with occasional transitions. Mild sound effects and harmonious music. Engaging but not overwhelming content. Good for longer viewing sessions and younger children.
@@ -141,7 +141,7 @@ export default function About() {
           <div className="bg-orange-50 rounded-lg p-4">
             <div className="flex items-center mb-2">
               <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">4</div>
-              <h3 className="ml-2 text-lg font-bold text-orange-800">High</h3>
+              <h3 className="ml-2 text-lg font-bold text-orange-800">Medium-High</h3>
             </div>
             <p className="text-orange-800">
               Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better for older children and shorter viewing sessions. May feel intense to younger viewers.
@@ -151,10 +151,10 @@ export default function About() {
           <div className="bg-red-50 rounded-lg p-4">
             <div className="flex items-center mb-2">
               <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">5</div>
-              <h3 className="ml-2 text-lg font-bold text-red-800">Very High</h3>
+              <h3 className="ml-2 text-lg font-bold text-red-800">High</h3>
             </div>
             <p className="text-red-800">
-              Rapid pacing with constant scene changes. Loud sound effects and intense music. Highly energetic content with many elements competing for attention. Recommended in small doses, even for older children.
+              Rapid pacing with constant scene changes. Loud sound effects and intense music. Highly energetic content with many elements competing for attention. Use with caution.
             </p>
           </div>
         </div>
