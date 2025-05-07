@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { users, User } from "@shared/schema";
+import { users } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
@@ -16,9 +16,17 @@ export const sessionStore = new PostgresSessionStore({
   createTableIfMissing: true 
 });
 
+// No need to import User here as types are explicitly defined
 declare global {
   namespace Express {
-    interface User extends Omit<User, "password"> {}
+    // Define what fields from the User schema should be available in req.user
+    interface User {
+      id: number;
+      username: string;
+      email: string | null;
+      isAdmin: boolean | null;
+      createdAt: string;
+    }
   }
 }
 
