@@ -20,7 +20,7 @@ const loginSchema = z.object({
 
 // Schema for registration form with additional fields
 const registerSchema = loginSchema.extend({
-  username: z.string().min(3, "Username must be at least 3 characters").optional(),
+  username: z.string().min(3, "Username must be at least 3 characters"),
   confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
@@ -215,7 +215,7 @@ export default function AuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username (optional)</FormLabel>
+                            <FormLabel>Username</FormLabel>
                             <FormControl>
                               <Input 
                                 placeholder="Choose a display name"
