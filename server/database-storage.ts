@@ -1,22 +1,13 @@
 import { db } from "./db";
-import { eq, and, desc, sql, asc } from "drizzle-orm";
+import { eq, and, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
-  users, 
-  tvShows, 
-  tvShowReviews, 
-  tvShowSearches,
-  favorites,
-  type User, 
-  type InsertUser, 
-  type TvShow, 
-  type TvShowReview, 
-  type InsertTvShow, 
-  type InsertTvShowReview, 
-  type TvShowGitHub, 
-  type TvShowSearch, 
-  type InsertTvShowSearch,
-  type Favorite,
-  type InsertFavorite
+  users, favorites, tvShows, tvShowReviews, tvShowSearches,
+  type User, type InsertUser, 
+  type TvShow, type InsertTvShow, 
+  type TvShowReview, type InsertTvShowReview,
+  type TvShowSearch, type InsertTvShowSearch,
+  type Favorite, type InsertFavorite,
+  type TvShowGitHub
 } from "@shared/schema";
 
 export interface IStorage {
@@ -54,7 +45,7 @@ export interface IStorage {
   
   // Import shows from GitHub data
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
-  
+
   // Favorites methods
   addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
   removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
@@ -64,41 +55,41 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
-  
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
-  
+
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values({
-      username: insertUser.username,
-      password: insertUser.password,
-      email: insertUser.email,
-      isAdmin: false,
-    }).returning();
+    const now = new Date().toISOString();
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...insertUser,
+        createdAt: now,
+      })
+      .returning();
     return user;
   }
-  
-  // TV Shows methods
+
   async getAllTvShows(): Promise<TvShow[]> {
     return await db.select().from(tvShows);
   }
-  
+
   async getTvShowById(id: number): Promise<TvShow | undefined> {
     const [show] = await db.select().from(tvShows).where(eq(tvShows.id, id));
     return show;
   }
-  
+
   async getTvShowsByFilter(filters: { 
     ageGroup?: string; 
     tantrumFactor?: string; 
-    sortBy?: string;
+    sortBy?: string; 
     search?: string;
     themes?: string[];
     interactionLevel?: string;
@@ -106,92 +97,98 @@ export class DatabaseStorage implements IStorage {
     soundFrequency?: string;
     stimulationScoreRange?: {min: number, max: number};
   }): Promise<TvShow[]> {
+    // Build query based on filters
     let query = db.select().from(tvShows);
     
-    // Filter by age group
+    // Apply filters
+    const conditions = [];
+    
     if (filters.ageGroup) {
-      // This is a simplification - in a real DB, you'd want to use proper range logic
-      // or convert the age range into numeric fields for better querying
-      const [min, max] = filters.ageGroup.split('-').map(Number);
-      query = query.where(sql`${tvShows.ageRange} LIKE ${`%${filters.ageGroup}%`}`);
+      conditions.push(eq(tvShows.ageRange, filters.ageGroup));
     }
     
-    // Filter by stimulation score (replacing tantrum factor)
     if (filters.tantrumFactor) {
-      switch (filters.tantrumFactor) {
-        case 'low':
-          query = query.where(sql`${tvShows.stimulationScore} <= 2`);
-          break;
-        case 'medium':
-          query = query.where(sql`${tvShows.stimulationScore} > 2 AND ${tvShows.stimulationScore} <= 4`);
-          break;
-        case 'high':
-          query = query.where(sql`${tvShows.stimulationScore} > 4`);
-          break;
+      // Convert descriptive term to numerical value
+      let stimulationScore;
+      switch (filters.tantrumFactor.toLowerCase()) {
+        case 'low': stimulationScore = 1; break;
+        case 'low-medium': stimulationScore = 2; break;
+        case 'medium': stimulationScore = 3; break;
+        case 'medium-high': stimulationScore = 4; break;
+        case 'high': stimulationScore = 5; break;
+      }
+      
+      if (stimulationScore) {
+        conditions.push(eq(tvShows.stimulationScore, stimulationScore));
       }
     }
     
-    // Basic search (more advanced search would use a full-text search extension)
-    if (filters.search) {
-      const searchTerm = `%${filters.search.toLowerCase()}%`;
-      query = query.where(sql`LOWER(${tvShows.name}) LIKE ${searchTerm}`);
+    if (filters.interactionLevel) {
+      conditions.push(eq(tvShows.interactivityLevel, filters.interactionLevel));
     }
     
-    // Filter by themes - simplified for PostgreSQL
-    if (filters.themes && filters.themes.length > 0) {
-      // This is a simplification - in a real DB with array columns, 
-      // you'd use array operators like @> for contains
-      const theme = filters.themes[0].toLowerCase();
-      query = query.where(sql`EXISTS (
-        SELECT 1 FROM unnest(${tvShows.themes}) AS theme 
-        WHERE LOWER(theme) LIKE ${'%' + theme + '%'}
-      )`);
+    if (filters.dialogueIntensity) {
+      conditions.push(eq(tvShows.dialogueIntensity, filters.dialogueIntensity));
     }
     
-    // Filter by interaction level
-    if (filters.interactionLevel && filters.interactionLevel !== 'Any') {
-      query = query.where(eq(tvShows.interactivityLevel, filters.interactionLevel));
+    if (filters.soundFrequency) {
+      conditions.push(eq(tvShows.soundEffectsLevel, filters.soundFrequency));
     }
     
-    // Filter by dialogue intensity
-    if (filters.dialogueIntensity && filters.dialogueIntensity !== 'Any') {
-      query = query.where(eq(tvShows.dialogueIntensity, filters.dialogueIntensity));
-    }
-    
-    // Filter by sound frequency
-    if (filters.soundFrequency && filters.soundFrequency !== 'Any') {
-      query = query.where(eq(tvShows.soundEffectsLevel, filters.soundFrequency));
-    }
-    
-    // Filter by stimulation score range
     if (filters.stimulationScoreRange) {
-      query = query.where(sql`${tvShows.stimulationScore} >= ${filters.stimulationScoreRange.min} 
-        AND ${tvShows.stimulationScore} <= ${filters.stimulationScoreRange.max}`);
+      const { min, max } = filters.stimulationScoreRange;
+      conditions.push(sql`${tvShows.stimulationScore} >= ${min} AND ${tvShows.stimulationScore} <= ${max}`);
     }
     
-    // Sort results
+    if (filters.search) {
+      // Simple text search across name and description
+      const searchTerm = `%${filters.search}%`;
+      conditions.push(sql`(${tvShows.name} ILIKE ${searchTerm} OR ${tvShows.description} ILIKE ${searchTerm})`);
+    }
+    
+    // Apply all conditions
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    // Apply sort order
     if (filters.sortBy) {
-      switch (filters.sortBy) {
-        case 'name':
-          query = query.orderBy(asc(tvShows.name));
+      switch (filters.sortBy.toLowerCase()) {
+        case 'name_asc':
+          query = query.orderBy(tvShows.name);
           break;
-        case 'stimulation-score':
-          query = query.orderBy(asc(tvShows.stimulationScore)); // Lower is better
+        case 'name_desc':
+          query = query.orderBy(desc(tvShows.name));
           break;
-        case 'overall-rating':
-          query = query.orderBy(desc(tvShows.overallRating));
+        case 'stimulation_asc':
+          query = query.orderBy(tvShows.stimulationScore);
           break;
+        case 'stimulation_desc':
+          query = query.orderBy(desc(tvShows.stimulationScore));
+          break;
+        case 'year_asc':
+          query = query.orderBy(tvShows.releaseYear);
+          break;
+        case 'year_desc':
+          query = query.orderBy(desc(tvShows.releaseYear));
+          break;
+        default:
+          // Default to name ascending
+          query = query.orderBy(tvShows.name);
       }
+    } else {
+      // Default sort order
+      query = query.orderBy(tvShows.name);
     }
     
     return await query;
   }
-  
+
   async addTvShow(show: InsertTvShow): Promise<TvShow> {
-    const [tvShow] = await db.insert(tvShows).values(show).returning();
-    return tvShow;
+    const [newShow] = await db.insert(tvShows).values(show).returning();
+    return newShow;
   }
-  
+
   async updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined> {
     const [updatedShow] = await db
       .update(tvShows)
@@ -200,186 +197,166 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedShow;
   }
-  
+
   async deleteTvShow(id: number): Promise<boolean> {
     const result = await db.delete(tvShows).where(eq(tvShows.id, id));
     return result.count > 0;
   }
-  
-  // Review methods
+
   async getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]> {
     return await db
       .select()
       .from(tvShowReviews)
-      .where(eq(tvShowReviews.tvShowId, tvShowId));
+      .where(eq(tvShowReviews.tvShowId, tvShowId))
+      .orderBy(desc(tvShowReviews.createdAt));
   }
-  
+
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
-    const [tvShowReview] = await db
+    const now = new Date().toISOString();
+    const [newReview] = await db
       .insert(tvShowReviews)
-      .values(review)
+      .values({
+        ...review,
+        createdAt: now,
+      })
       .returning();
-    return tvShowReview;
+    return newReview;
   }
-  
-  // Search/Popularity tracking methods
+
   async trackShowSearch(tvShowId: number): Promise<void> {
+    const now = new Date().toISOString();
     const [existingSearch] = await db
       .select()
       .from(tvShowSearches)
       .where(eq(tvShowSearches.tvShowId, tvShowId));
-    
+
     if (existingSearch) {
       await db
         .update(tvShowSearches)
-        .set({ 
+        .set({
           searchCount: existingSearch.searchCount + 1,
-          lastSearched: new Date().toISOString()
+          lastSearchedAt: now,
         })
         .where(eq(tvShowSearches.id, existingSearch.id));
     } else {
-      await db
-        .insert(tvShowSearches)
-        .values({
-          tvShowId,
-          searchCount: 1,
-          viewCount: 0,
-          lastSearched: new Date().toISOString()
-        });
+      await db.insert(tvShowSearches).values({
+        tvShowId,
+        searchCount: 1,
+        viewCount: 0,
+        lastSearchedAt: now,
+        lastViewedAt: null,
+      });
     }
   }
-  
+
   async trackShowView(tvShowId: number): Promise<void> {
+    const now = new Date().toISOString();
     const [existingSearch] = await db
       .select()
       .from(tvShowSearches)
       .where(eq(tvShowSearches.tvShowId, tvShowId));
-    
+
     if (existingSearch) {
       await db
         .update(tvShowSearches)
-        .set({ 
+        .set({
           viewCount: existingSearch.viewCount + 1,
-          lastSearched: new Date().toISOString()
+          lastViewedAt: now,
         })
         .where(eq(tvShowSearches.id, existingSearch.id));
     } else {
-      await db
-        .insert(tvShowSearches)
-        .values({
-          tvShowId,
-          searchCount: 0,
-          viewCount: 1,
-          lastSearched: new Date().toISOString()
-        });
+      await db.insert(tvShowSearches).values({
+        tvShowId,
+        searchCount: 0,
+        viewCount: 1,
+        lastSearchedAt: null,
+        lastViewedAt: now,
+      });
     }
   }
-  
+
   async getPopularShows(limit: number = 10): Promise<TvShow[]> {
-    // First check if we have any search data
-    const searchCount = await db.select({ count: sql`count(*)` }).from(tvShowSearches);
-    
-    if (parseInt(searchCount[0].count.toString()) === 0) {
-      // If no search data, return shows with lowest stimulation scores
-      return await db
-        .select()
-        .from(tvShows)
-        .orderBy(asc(tvShows.stimulationScore))
-        .limit(limit);
-    }
-    
-    // Get popular shows based on search and view counts
-    const popularShowIds = await db
+    // Get the top viewed shows and join with the tvShows table
+    const popularShows = await db
       .select({
-        tvShowId: tvShowSearches.tvShowId,
-        score: sql`${tvShowSearches.searchCount} + ${tvShowSearches.viewCount} * 2`
+        show: tvShows,
+        totalViews: tvShowSearches.viewCount,
       })
       .from(tvShowSearches)
-      .orderBy(desc(sql`${tvShowSearches.searchCount} + ${tvShowSearches.viewCount} * 2`))
+      .innerJoin(tvShows, eq(tvShowSearches.tvShowId, tvShows.id))
+      .orderBy(desc(tvShowSearches.viewCount))
       .limit(limit);
-    
-    // Get the actual shows
-    const shows: TvShow[] = [];
-    
-    for (const item of popularShowIds) {
-      const [show] = await db
-        .select()
-        .from(tvShows)
-        .where(eq(tvShows.id, item.tvShowId));
-      
-      if (show) {
-        shows.push(show);
-      }
-    }
-    
-    return shows;
+
+    return popularShows.map((item) => item.show);
   }
-  
-  // Import shows from GitHub data
+
   async importShowsFromGitHub(githubShows: TvShowGitHub[]): Promise<TvShow[]> {
     const importedShows: TvShow[] = [];
-    
-    // Process each show
+
     for (const githubShow of githubShows) {
-      // Check if show already exists by name to avoid duplicates
-      const [existingShow] = await db
-        .select()
-        .from(tvShows)
-        .where(eq(tvShows.name, githubShow.title));
-      
-      if (existingShow) {
-        // Skip duplicate shows
-        importedShows.push(existingShow);
-        continue;
+      try {
+        // Check if the show already exists
+        const [existingShow] = await db
+          .select()
+          .from(tvShows)
+          .where(eq(tvShows.name, githubShow.Name));
+
+        if (existingShow) {
+          // Update the existing show
+          const [updatedShow] = await db
+            .update(tvShows)
+            .set({
+              description: githubShow.Description || existingShow.description,
+              stimulationScore: githubShow.Stimulation_Score || existingShow.stimulationScore,
+              dialogueIntensity: githubShow.Dialogue_Intensity || existingShow.dialogueIntensity,
+              soundEffectsLevel: githubShow.Sound_Effects_Level || existingShow.soundEffectsLevel,
+              interactivityLevel: githubShow.Interactivity_Level || existingShow.interactivityLevel,
+              ageRange: githubShow.Age_Range || existingShow.ageRange,
+              themes: githubShow.Themes || existingShow.themes,
+              availableOn: githubShow.Available_On || existingShow.availableOn,
+              releaseYear: githubShow.Release_Year ? parseInt(githubShow.Release_Year) : existingShow.releaseYear,
+              endYear: githubShow.End_Year ? parseInt(githubShow.End_Year) : existingShow.endYear,
+              episodeLength: githubShow.Episode_Length || existingShow.episodeLength,
+              seasons: githubShow.Seasons ? parseInt(githubShow.Seasons) : existingShow.seasons,
+              imageUrl: getDefaultImageUrl(githubShow.Name, githubShow.Image_Filename) || existingShow.imageUrl,
+            })
+            .where(eq(tvShows.id, existingShow.id))
+            .returning();
+
+          importedShows.push(updatedShow);
+        } else {
+          // Insert new show
+          const tvShow: InsertTvShow = {
+            name: githubShow.Name,
+            description: githubShow.Description || '',
+            stimulationScore: githubShow.Stimulation_Score || 3,
+            dialogueIntensity: githubShow.Dialogue_Intensity || 'Medium',
+            soundEffectsLevel: githubShow.Sound_Effects_Level || 'Medium',
+            interactivityLevel: githubShow.Interactivity_Level || 'Medium',
+            ageRange: githubShow.Age_Range || '3-5',
+            themes: githubShow.Themes || [],
+            availableOn: githubShow.Available_On || [],
+            releaseYear: githubShow.Release_Year ? parseInt(githubShow.Release_Year) : null,
+            endYear: githubShow.End_Year ? parseInt(githubShow.End_Year) : null,
+            episodeLength: githubShow.Episode_Length || null,
+            seasons: githubShow.Seasons ? parseInt(githubShow.Seasons) : null,
+            imageUrl: getDefaultImageUrl(githubShow.Name, githubShow.Image_Filename),
+          };
+
+          const [newShow] = await db.insert(tvShows).values(tvShow).returning();
+          importedShows.push(newShow);
+        }
+      } catch (error) {
+        console.error(`Error importing show ${githubShow.Name}:`, error);
       }
-      
-      // Convert GitHub show format to our database format
-      const tvShow: InsertTvShow = {
-        name: githubShow.title,
-        description: `${githubShow.title} is a children's TV show. It has a stimulation score of ${githubShow.stimulation_score}/5.`,
-        ageRange: githubShow.target_age_group,
-        episodeLength: getEpisodeLength(githubShow.avg_episode_length),
-        creator: null,
-        releaseYear: githubShow.release_year || null,
-        endYear: githubShow.end_year || null,
-        isOngoing: githubShow.end_year ? false : true,
-        seasons: getSeasonsNumber(githubShow.seasons),
-        stimulationScore: githubShow.stimulation_score,
-        interactivityLevel: githubShow.interactivity_level,
-        dialogueIntensity: githubShow.dialogue_intensity,
-        soundEffectsLevel: githubShow.sound_effects_level,
-        musicTempo: githubShow.music_tempo,
-        totalMusicLevel: githubShow.total_music_level,
-        totalSoundEffectTimeLevel: githubShow.total_sound_effect_time_level,
-        sceneFrequency: githubShow.scene_frequency,
-        friendshipRating: null,
-        problemSolvingRating: null,
-        relatableSituationsRating: null,
-        emotionalIntelligenceRating: null,
-        creativityRating: null,
-        educationalValueRating: null,
-        overallRating: 5 - githubShow.stimulation_score + 1, // Inverse of stimulation score (1-5)
-        availableOn: [githubShow.platform],
-        themes: githubShow.themes,
-        animationStyle: githubShow.animation_style,
-        imageUrl: githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename)
-      };
-      
-      // Add to database
-      const [insertedShow] = await db
-        .insert(tvShows)
-        .values(tvShow)
-        .returning();
-      
-      importedShows.push(insertedShow);
     }
-    
+
     return importedShows;
   }
-  
+
   // Favorites methods
   async addFavorite(userId: number, tvShowId: number): Promise<Favorite> {
-    // Check if already favorited
+    // Check if the favorite already exists
     const [existingFavorite] = await db
       .select()
       .from(favorites)
@@ -387,23 +364,25 @@ export class DatabaseStorage implements IStorage {
         eq(favorites.userId, userId),
         eq(favorites.tvShowId, tvShowId)
       ));
-    
+
     if (existingFavorite) {
       return existingFavorite;
     }
-    
-    // Add new favorite
+
+    // Add the favorite
+    const now = new Date().toISOString();
     const [favorite] = await db
       .insert(favorites)
       .values({
         userId,
-        tvShowId
+        tvShowId,
+        createdAt: now,
       })
       .returning();
-    
+
     return favorite;
   }
-  
+
   async removeFavorite(userId: number, tvShowId: number): Promise<boolean> {
     const result = await db
       .delete(favorites)
@@ -411,34 +390,23 @@ export class DatabaseStorage implements IStorage {
         eq(favorites.userId, userId),
         eq(favorites.tvShowId, tvShowId)
       ));
-    
+
     return result.count > 0;
   }
-  
+
   async getUserFavorites(userId: number): Promise<TvShow[]> {
-    // Get user's favorite show IDs
-    const userFavorites = await db
-      .select()
+    const favoriteShows = await db
+      .select({
+        show: tvShows,
+      })
       .from(favorites)
-      .where(eq(favorites.userId, userId));
-    
-    // Get the actual shows
-    const favoriteShows: TvShow[] = [];
-    
-    for (const favorite of userFavorites) {
-      const [show] = await db
-        .select()
-        .from(tvShows)
-        .where(eq(tvShows.id, favorite.tvShowId));
-      
-      if (show) {
-        favoriteShows.push(show);
-      }
-    }
-    
-    return favoriteShows;
+      .innerJoin(tvShows, eq(favorites.tvShowId, tvShows.id))
+      .where(eq(favorites.userId, userId))
+      .orderBy(tvShows.name);
+
+    return favoriteShows.map(item => item.show);
   }
-  
+
   async isFavorite(userId: number, tvShowId: number): Promise<boolean> {
     const [favorite] = await db
       .select()
@@ -447,102 +415,101 @@ export class DatabaseStorage implements IStorage {
         eq(favorites.userId, userId),
         eq(favorites.tvShowId, tvShowId)
       ));
-    
+
     return !!favorite;
   }
-  
+
   async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
     // Get user's favorite shows
     const userFavorites = await this.getUserFavorites(userId);
     
     if (userFavorites.length === 0) {
-      // If user has no favorites, return popular shows
-      return await this.getPopularShows(limit);
+      // If user has no favorites, return popular shows instead
+      return this.getPopularShows(limit);
     }
     
-    // Get themes and stimulation scores from user's favorites
-    const userThemes = new Set<string>();
-    let avgStimulationScore = 0;
+    // Extract features from user's favorites to build a profile
+    const favoriteIds = userFavorites.map(show => show.id);
+    const avgStimulationScore = Math.round(
+      userFavorites.reduce((sum, show) => sum + show.stimulationScore, 0) / userFavorites.length
+    );
     
+    // Get common themes from user's favorites
+    const themeFrequency: Record<string, number> = {};
     userFavorites.forEach(show => {
-      avgStimulationScore += show.stimulationScore;
-      show.themes?.forEach(theme => userThemes.add(theme.toLowerCase()));
+      show.themes?.forEach(theme => {
+        themeFrequency[theme] = (themeFrequency[theme] || 0) + 1;
+      });
     });
     
-    avgStimulationScore /= userFavorites.length;
+    // Get top themes (those that appear in at least 25% of favorites)
+    const minThemeCount = Math.max(1, Math.floor(userFavorites.length * 0.25));
+    const commonThemes = Object.entries(themeFrequency)
+      .filter(([_, count]) => count >= minThemeCount)
+      .map(([theme]) => theme);
     
-    // Find shows with similar themes and stimulation score
-    let similarShows = await db
+    // Find shows with similar characteristics but not already in favorites
+    // This is a simple recommendation algorithm that checks for shows with
+    // similar stimulation score and at least one common theme
+    const stimScoreRange = { min: Math.max(1, avgStimulationScore - 1), max: Math.min(5, avgStimulationScore + 1) };
+    
+    const similarShows = await db
       .select()
       .from(tvShows)
-      .where(sql`
-        ${tvShows.stimulationScore} BETWEEN ${Math.max(1, avgStimulationScore - 1)} 
-        AND ${Math.min(5, avgStimulationScore + 1)}
-      `);
+      .where(
+        and(
+          sql`${tvShows.stimulationScore} >= ${stimScoreRange.min} AND ${tvShows.stimulationScore} <= ${stimScoreRange.max}`,
+          sql`NOT (${tvShows.id} IN (${favoriteIds.join(',')}))`
+        )
+      )
+      .orderBy(desc(tvShows.stimulationScore)) // Sort by stimulation score for consistent results
+      .limit(limit * 2); // Get more than we need to filter by themes
     
-    // Filter out shows user already favorited
-    const favoriteIds = new Set(userFavorites.map(show => show.id));
-    similarShows = similarShows.filter(show => !favoriteIds.has(show.id));
+    // Score each show based on theme matches and stimulation score similarity
+    interface ScoredShow {
+      show: TvShow;
+      score: number;
+    }
     
-    // Score shows based on theme similarity
-    const scoredShows = similarShows.map(show => {
-      let themeScore = 0;
+    const scoredShows: ScoredShow[] = similarShows.map(show => {
+      let score = 0;
       
-      show.themes?.forEach(theme => {
-        if (userThemes.has(theme.toLowerCase())) {
-          themeScore++;
-        }
-      });
-      
-      // Calculate stimulation score difference (lower is better)
+      // Score based on stimulation score similarity (0-5 points)
       const stimDiff = Math.abs(show.stimulationScore - avgStimulationScore);
+      score += (5 - stimDiff);
       
-      // Combined score: theme matches are primary, stimulation difference is secondary
-      return {
-        show,
-        score: themeScore * 10 - stimDiff
-      };
+      // Score based on theme matches (3 points per match)
+      if (show.themes) {
+        commonThemes.forEach(theme => {
+          if (show.themes?.includes(theme)) {
+            score += 3;
+          }
+        });
+      }
+      
+      return { show, score };
     });
     
-    // Sort by score and limit results
-    scoredShows.sort((a, b) => b.score - a.score);
-    
-    return scoredShows.slice(0, limit).map(item => item.show);
+    // Sort by score and take the top 'limit' shows
+    return scoredShows
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(item => item.show);
   }
 }
 
-// Helper functions
-function getEpisodeLength(episodeLength: string | null): number {
-  if (!episodeLength) return 10; // Default
-  
-  const match = episodeLength.match(/(\d+)/);
-  if (match && match[1]) {
-    return parseInt(match[1], 10);
-  }
-  
-  return 10; // Default if parsing fails
-}
-
-function getSeasonsNumber(seasons: string | null): number | null {
-  if (!seasons) return null;
-  
-  const match = seasons.match(/(\d+)/);
-  if (match && match[1]) {
-    return parseInt(match[1], 10);
-  }
-  
-  return null;
-}
-
+// Helper function to build a default image URL
 function getDefaultImageUrl(title: string, image_filename: string): string {
-  // Convert to kebab case for the image URL
-  const urlSafeTitle = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-  
   if (image_filename) {
     return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${image_filename}`;
   }
   
-  return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${urlSafeTitle}.jpg`;
+  // Format the title for a URL-friendly string
+  const formattedTitle = title
+    .replace(/[^a-zA-Z0-9]/g, "")  // Remove all non-alphanumeric characters
+    .toLowerCase();
+  
+  return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${formattedTitle}.jpg`;
 }
 
 export const storage = new DatabaseStorage();

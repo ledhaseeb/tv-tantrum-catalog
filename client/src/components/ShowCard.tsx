@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import RatingBar from "@/components/RatingBar";
 import { TvShow } from "@shared/schema";
 import { getStimulationScoreColor } from "@/lib/showUtils";
+import { useAuth } from "@/hooks/use-auth";
+import { Heart } from "lucide-react";
 
 interface ShowCardProps {
   show: TvShow;
@@ -14,10 +16,34 @@ interface ShowCardProps {
 
 export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const { user, toggleFavorite: toggleFav } = useAuth();
+  
+  // Check if show is in favorites when component mounts or user changes
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (user && show.id) {
+        try {
+          const isFav = await fetch(`/api/favorites/${show.id}`)
+            .then(res => res.json())
+            .then(data => data.isFavorite);
+          setIsFavorite(isFav);
+        } catch (error) {
+          console.error("Failed to check favorite status:", error);
+        }
+      }
+    };
+    
+    checkFavoriteStatus();
+  }, [user, show.id]);
   
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
+    
+    // Use the auth context toggle favorite function
+    toggleFav(show.id).then(() => {
+      // Update local state (optimistic update)
+      setIsFavorite(!isFavorite);
+    });
   };
   
   // Format release year range
@@ -160,11 +186,11 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={`${isFavorite ? 'text-secondary-500' : 'text-gray-400 hover:text-secondary-500'}`}
+                  className={`${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                   onClick={toggleFavorite}
                 >
-                  <i className={`${isFavorite ? 'fas' : 'far'} fa-heart mr-1`}></i>
-                  Save
+                  <Heart className={`w-4 h-4 mr-1 ${isFavorite ? 'fill-red-500' : ''}`} />
+                  {isFavorite ? 'Saved' : 'Save'}
                 </Button>
                 <Button 
                   variant="default" 

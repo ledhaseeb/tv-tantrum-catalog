@@ -11,7 +11,9 @@ import Browse from "@/pages/browse";
 import Detail from "@/pages/detail";
 import Compare from "@/pages/compare";
 import About from "@/pages/about";
+import AuthPage from "@/pages/auth-page";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
+import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
   return (
@@ -34,6 +36,9 @@ function Router() {
           <Route path="/about">
             <About />
           </Route>
+          <Route path="/auth">
+            <AuthPage />
+          </Route>
           <Route>
             <NotFound />
           </Route>
@@ -47,11 +52,13 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-        <ColorPaletteCustomizer />
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+          <ColorPaletteCustomizer />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

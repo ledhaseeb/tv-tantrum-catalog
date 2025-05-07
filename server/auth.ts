@@ -4,23 +4,23 @@ import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+import { storage } from "./storage";
+import { users, User } from "@shared/schema";
 import connectPg from "connect-pg-simple";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
-import { User, users } from "@shared/schema";
 import { pool } from "./db";
+
+// Database session store
+const PostgresSessionStore = connectPg(session);
+export const sessionStore = new PostgresSessionStore({ 
+  pool, 
+  createTableIfMissing: true 
+});
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    interface User extends Omit<User, "password"> {}
   }
 }
-
-const PostgresSessionStore = connectPg(session);
-export const sessionStore = new PostgresSessionStore({ 
-  pool,
-  createTableIfMissing: true
-});
 
 const scryptAsync = promisify(scrypt);
 
@@ -38,20 +38,24 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  if (!process.env.SESSION_SECRET) {
+    // Use a default session secret for development
+    process.env.SESSION_SECRET = 'tv-tantrum-development-secret';
+    console.warn('Warning: SESSION_SECRET environment variable not set, using insecure default');
+  }
+
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "dev-secret-key",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true
     }
   };
 
-  app.set("trust proxy", 1);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -59,12 +63,13 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
-        const [user] = await db.select().from(users).where(eq(users.username, username));
-        
+        const user = await storage.getUserByUsername(username);
         if (!user || !(await comparePasswords(password, user.password))) {
           return done(null, false);
         } else {
-          return done(null, user);
+          // Don't send back password with the user object
+          const { password: _, ...safeUser } = user;
+          return done(null, safeUser as Express.User);
         }
       } catch (error) {
         return done(error);
@@ -72,11 +77,19 @@ export function setupAuth(app: Express) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const [user] = await db.select().from(users).where(eq(users.id, id));
-      done(null, user);
+      const user = await storage.getUser(id);
+      if (!user) {
+        return done(null, false);
+      }
+      // Don't include password in the user object
+      const { password: _, ...safeUser } = user;
+      done(null, safeUser as Express.User);
     } catch (error) {
       done(error);
     }
@@ -84,36 +97,48 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      // Check if username already exists
-      const [existingUser] = await db.select().from(users).where(eq(users.username, req.body.username));
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+      const { username, password, email } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).send({ message: "Username and password are required" });
       }
 
-      // Hash password and create user
-      const hashedPassword = await hashPassword(req.body.password);
-      
-      // Insert user in database
-      const [user] = await db.insert(users).values({
-        username: req.body.username,
-        password: hashedPassword,
-        email: req.body.email || null,
-        isAdmin: false, // By default, users are not admins
-      }).returning();
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).send({ message: "Username already exists" });
+      }
 
-      // Log in the user
-      req.login(user, (err) => {
+      const hashedPassword = await hashPassword(password);
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword,
+        email: email || null,
+        isAdmin: false  // By default, users are not admins
+      });
+
+      // Don't send back password with the user object
+      const { password: _, ...safeUser } = user;
+
+      req.login(safeUser as Express.User, (err) => {
         if (err) return next(err);
-        return res.status(201).json(user);
+        res.status(201).json(safeUser);
       });
     } catch (error) {
       next(error);
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    // Return the user information on successful authentication
-    res.status(200).json(req.user);
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) return next(err);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(200).json(user);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -124,7 +149,9 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     res.json(req.user);
   });
 }
