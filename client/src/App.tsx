@@ -11,6 +11,7 @@ import Browse from "@/pages/browse";
 import Detail from "@/pages/detail";
 import Compare from "@/pages/compare";
 import About from "@/pages/about";
+import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 
 function Router() {
   return (
@@ -49,6 +50,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <ColorPaletteCustomizer />
       </TooltipProvider>
     </QueryClientProvider>
   );
