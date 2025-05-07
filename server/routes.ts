@@ -1,11 +1,12 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./database-storage";
 import { githubService } from "./github";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema, TvShowGitHub } from "@shared/schema";
+import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize the data from GitHub on server start
@@ -257,6 +258,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to import CSV data", 
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
+    }
+  });
+
+  // Setup authentication
+  setupAuth(app);
+
+  // Add favorite routes, protected by authentication
+  // Add a show to user's favorites
+  app.post("/api/favorites", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to use favorites" });
+    }
+
+    try {
+      const { tvShowId } = req.body;
+      if (!tvShowId || isNaN(parseInt(tvShowId))) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+
+      const userId = req.user!.id;
+      const favorite = await storage.addFavorite(userId, parseInt(tvShowId));
+      
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      res.status(500).json({ message: "Failed to add favorite" });
+    }
+  });
+
+  // Remove a show from user's favorites
+  app.delete("/api/favorites/:tvShowId", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to use favorites" });
+    }
+
+    try {
+      const tvShowId = parseInt(req.params.tvShowId);
+      if (isNaN(tvShowId)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+
+      const userId = req.user!.id;
+      const result = await storage.removeFavorite(userId, tvShowId);
+      
+      if (result) {
+        res.status(200).json({ message: "Show removed from favorites" });
+      } else {
+        res.status(404).json({ message: "Show was not in favorites" });
+      }
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      res.status(500).json({ message: "Failed to remove favorite" });
+    }
+  });
+
+  // Get user's favorites
+  app.get("/api/favorites", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to view favorites" });
+    }
+
+    try {
+      const userId = req.user!.id;
+      const favorites = await storage.getUserFavorites(userId);
+      
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ message: "Failed to fetch favorites" });
+    }
+  });
+
+  // Check if a show is in the user's favorites
+  app.get("/api/favorites/:tvShowId", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to check favorites" });
+    }
+
+    try {
+      const tvShowId = parseInt(req.params.tvShowId);
+      if (isNaN(tvShowId)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+
+      const userId = req.user!.id;
+      const isFavorite = await storage.isFavorite(userId, tvShowId);
+      
+      res.json({ isFavorite });
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+      res.status(500).json({ message: "Failed to check favorite status" });
+    }
+  });
+
+  // Get similar shows based on user's favorites
+  app.get("/api/recommendations", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to get recommendations" });
+    }
+
+    try {
+      const userId = req.user!.id;
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 5;
+      
+      const recommendations = await storage.getSimilarShows(userId, limit);
+      
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      res.status(500).json({ message: "Failed to fetch recommendations" });
+    }
+  });
+
+  // Check if a user is admin (for color palette access)
+  app.get("/api/user/is-admin", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in" });
+    }
+
+    try {
+      res.json({ isAdmin: req.user!.isAdmin });
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      res.status(500).json({ message: "Failed to check admin status" });
     }
   });
 
