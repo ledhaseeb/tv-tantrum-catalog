@@ -63,6 +63,32 @@ export default function Browse() {
       initialFilters.sortBy = sortBy;
     }
     
+    // Get tantrumFactor from URL
+    const tantrumFactor = searchParams.get('tantrumFactor');
+    if (tantrumFactor) {
+      initialFilters.tantrumFactor = tantrumFactor;
+    }
+    
+    // Get interactivity level from URL
+    const interactionLevel = searchParams.get('interactionLevel');
+    if (interactionLevel) {
+      initialFilters.interactionLevel = interactionLevel;
+    }
+    
+    // Get stimulation score range from URL
+    const stimulationScoreRange = searchParams.get('stimulationScoreRange');
+    if (stimulationScoreRange) {
+      try {
+        const parsedRange = JSON.parse(decodeURIComponent(stimulationScoreRange));
+        if (parsedRange && typeof parsedRange === 'object' && 'min' in parsedRange && 'max' in parsedRange) {
+          initialFilters.stimulationScoreRange = parsedRange;
+          console.log('Parsed stimulation score range:', parsedRange);
+        }
+      } catch (e) {
+        console.error('Error parsing stimulation score range:', e);
+      }
+    }
+    
     // Apply filters from URL if any exist
     if (Object.keys(initialFilters).length > 0) {
       setActiveFilters(initialFilters);
