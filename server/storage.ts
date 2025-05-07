@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub } from "@shared/schema";
+import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -22,6 +22,11 @@ export interface IStorage {
   getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]>;
   addReview(review: InsertTvShowReview): Promise<TvShowReview>;
   
+  // Search/Popularity tracking methods
+  trackShowSearch(tvShowId: number): Promise<void>;
+  trackShowView(tvShowId: number): Promise<void>;
+  getPopularShows(limit?: number): Promise<TvShow[]>;
+  
   // Import shows from GitHub data
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
 }
@@ -30,17 +35,21 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private tvShows: Map<number, TvShow>;
   private tvShowReviews: Map<number, TvShowReview>;
+  private tvShowSearches: Map<number, TvShowSearch>;
   private userCurrentId: number;
   private tvShowCurrentId: number;
   private reviewCurrentId: number;
+  private searchCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.tvShows = new Map();
     this.tvShowReviews = new Map();
+    this.tvShowSearches = new Map();
     this.userCurrentId = 1;
     this.tvShowCurrentId = 1;
     this.reviewCurrentId = 1;
+    this.searchCurrentId = 1;
   }
 
   // User methods
@@ -351,6 +360,91 @@ export class MemStorage implements IStorage {
     const newReview: TvShowReview = { ...review, id };
     this.tvShowReviews.set(id, newReview);
     return newReview;
+  }
+  
+  // Search/Popularity tracking methods
+  async trackShowSearch(tvShowId: number): Promise<void> {
+    // Check if this show has been searched before
+    const existingSearch = Array.from(this.tvShowSearches.values())
+      .find(search => search.tvShowId === tvShowId);
+    
+    if (existingSearch) {
+      // Increment the search count
+      const updatedSearch: TvShowSearch = {
+        ...existingSearch,
+        searchCount: existingSearch.searchCount + 1,
+        lastSearched: new Date().toISOString()
+      };
+      this.tvShowSearches.set(existingSearch.id, updatedSearch);
+    } else {
+      // Create a new search record
+      const id = this.searchCurrentId++;
+      const newSearch: TvShowSearch = {
+        id,
+        tvShowId,
+        searchCount: 1,
+        viewCount: 0,
+        lastSearched: new Date().toISOString()
+      };
+      this.tvShowSearches.set(id, newSearch);
+    }
+  }
+  
+  async trackShowView(tvShowId: number): Promise<void> {
+    // Check if this show has been viewed/searched before
+    const existingSearch = Array.from(this.tvShowSearches.values())
+      .find(search => search.tvShowId === tvShowId);
+    
+    if (existingSearch) {
+      // Increment the view count
+      const updatedSearch: TvShowSearch = {
+        ...existingSearch,
+        viewCount: existingSearch.viewCount + 1,
+        lastSearched: new Date().toISOString() // Update timestamp
+      };
+      this.tvShowSearches.set(existingSearch.id, updatedSearch);
+    } else {
+      // Create a new record with view count = 1
+      const id = this.searchCurrentId++;
+      const newSearch: TvShowSearch = {
+        id,
+        tvShowId,
+        searchCount: 0,
+        viewCount: 1,
+        lastSearched: new Date().toISOString()
+      };
+      this.tvShowSearches.set(id, newSearch);
+    }
+  }
+  
+  async getPopularShows(limit: number = 10): Promise<TvShow[]> {
+    // Get all search records
+    const searches = Array.from(this.tvShowSearches.values());
+    
+    if (searches.length === 0) {
+      // If no search data, return shows with lowest stimulation scores
+      const allShows = Array.from(this.tvShows.values());
+      return allShows
+        .sort((a, b) => a.stimulationScore - b.stimulationScore)
+        .slice(0, limit);
+    }
+    
+    // Sort by popularity (combined search and view count)
+    searches.sort((a, b) => {
+      const scoreA = a.searchCount * 1 + a.viewCount * 2; // Views worth double
+      const scoreB = b.searchCount * 1 + b.viewCount * 2;
+      return scoreB - scoreA; // Higher score first
+    });
+    
+    // Get the top N show IDs
+    const topShowIds = searches
+      .slice(0, Math.min(limit, searches.length))
+      .map(search => search.tvShowId);
+    
+    // Get the actual show data for these IDs
+    return topShowIds
+      .map(id => this.tvShows.get(id))
+      .filter(show => show !== undefined) as TvShow[];
   }
 
   // Import shows from GitHub data

@@ -69,6 +69,15 @@ export const tvShowReviews = pgTable("tv_show_reviews", {
   review: text("review").notNull(),
 });
 
+// Track show search popularity
+export const tvShowSearches = pgTable("tv_show_searches", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull(),
+  searchCount: integer("search_count").notNull().default(1),
+  viewCount: integer("view_count").notNull().default(0),
+  lastSearched: text("last_searched").notNull().default(new Date().toISOString()),
+});
+
 export const insertTvShowSchema = createInsertSchema(tvShows).omit({
   id: true,
 });
@@ -77,10 +86,17 @@ export const insertTvShowReviewSchema = createInsertSchema(tvShowReviews).omit({
   id: true,
 });
 
+export const insertTvShowSearchSchema = createInsertSchema(tvShowSearches).omit({
+  id: true,
+  lastSearched: true,
+});
+
 export type InsertTvShow = z.infer<typeof insertTvShowSchema>;
 export type TvShow = typeof tvShows.$inferSelect;
 export type InsertTvShowReview = z.infer<typeof insertTvShowReviewSchema>;
 export type TvShowReview = typeof tvShowReviews.$inferSelect;
+export type InsertTvShowSearch = z.infer<typeof insertTvShowSearchSchema>;
+export type TvShowSearch = typeof tvShowSearches.$inferSelect;
 
 // GitHub show format based on actual data structure
 export const tvShowGitHubSchema = z.object({
