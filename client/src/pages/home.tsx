@@ -29,10 +29,19 @@ export default function Home() {
   }, []);
   
   // Fetch all TV shows
-  const { data: allShows, isLoading } = useQuery<TvShow[]>({
+  const { data: allShows, isLoading: allShowsLoading } = useQuery<TvShow[]>({
     queryKey: ['/api/shows'],
     staleTime: 60000, // 1 minute
   });
+  
+  // Fetch popular shows from our tracking data
+  const { data: popularShowsData, isLoading: popularShowsLoading } = useQuery<TvShow[]>({
+    queryKey: ['/api/shows/popular'],
+    staleTime: 60000, // 1 minute
+  });
+  
+  // Combined loading state
+  const isLoading = allShowsLoading || popularShowsLoading;
   
   // Find a featured show (using something with good data for demonstration)
   const featuredShow = allShows?.find(show => 
@@ -43,7 +52,7 @@ export default function Home() {
   // Filter shows by categories
   const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 8);
   const highlyRatedShows = allShows?.filter(show => show.overallRating >= 4).slice(0, 8);
-  const popularShows = allShows?.slice(0, 8); // For demonstration, could be refined with analytics data
+  const popularShows = popularShowsData || allShows?.slice(0, 8); // Use our tracked popular shows data
   const highInteractionShows = allShows?.filter(
     show => show.interactivityLevel === 'High' || show.interactivityLevel === 'Moderate-High'
   ).slice(0, 8);
@@ -342,14 +351,14 @@ export default function Home() {
           
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer bg-amber-50" 
-            onClick={() => setLocation("/browse")}
+            onClick={() => setLocation("/browse?sortBy=popular")}
           >
             <CardContent className="p-6 text-center">
               <div className="inline-flex p-3 rounded-full bg-amber-100 text-amber-600 mb-3">
                 <i className="fas fa-fire text-2xl"></i>
               </div>
               <h3 className="font-heading font-bold mb-2">Popular</h3>
-              <p className="text-sm text-gray-600">Shows our community watches and loves the most</p>
+              <p className="text-sm text-gray-600">Shows our community watches and searches for the most</p>
             </CardContent>
           </Card>
         </div>

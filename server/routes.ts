@@ -72,10 +72,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Shows API - Processed filters:", filters);
       
       const shows = await storage.getTvShowsByFilter(filters);
+      
+      // If this is a search request, track the search for each returned show
+      if (typeof search === 'string' && search.trim() && shows.length > 0) {
+        // Track search data for each of the first 5 results
+        const topResults = shows.slice(0, 5);
+        for (const show of topResults) {
+          await storage.trackShowSearch(show.id);
+        }
+        console.log(`Tracked search for term "${search}" with ${topResults.length} top results`);
+      }
       res.json(shows);
     } catch (error) {
       console.error("Error fetching TV shows:", error);
       res.status(500).json({ message: "Failed to fetch TV shows" });
+    }
+  });
+
+  // Get popular TV shows
+  app.get("/api/shows/popular", async (req: Request, res: Response) => {
+    try {
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
+      
+      const shows = await storage.getPopularShows(limit);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching popular TV shows:", error);
+      res.status(500).json({ message: "Failed to fetch popular TV shows" });
     }
   });
 
@@ -94,6 +118,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get reviews for this show
       const reviews = await storage.getReviewsByTvShowId(id);
+      
+      // Track this view
+      await storage.trackShowView(id);
       
       res.json({
         ...show,
