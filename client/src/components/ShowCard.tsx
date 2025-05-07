@@ -164,7 +164,7 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                   <i className={`${isFavorite ? 'fas' : 'far'} fa-heart mr-1`}></i>
                   Save
                 </Button>
-                <Button variant="default" size="sm" className="bg-secondary hover:bg-secondary/90 text-white">
+                <Button variant="default" size="sm" className="bg-secondary hover:bg-secondary/90 text-white font-bold">
                   Learn More
                 </Button>
               </div>
@@ -225,7 +225,7 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
             <Button 
               variant="default" 
               size="sm" 
-              className="bg-secondary hover:bg-secondary/90 text-white text-xs py-1 px-2"
+              className="bg-secondary hover:bg-secondary/90 text-white text-xs py-1 px-2 font-bold"
             >
               Learn More
             </Button>

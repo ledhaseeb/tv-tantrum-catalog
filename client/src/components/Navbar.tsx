@@ -72,35 +72,35 @@ export default function Navbar() {
   }).slice(0, 6);
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 z-50 bg-primary shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <h1 className="text-2xl font-heading font-bold text-primary-600">TV Tantrum</h1>
+              <h1 className="text-2xl font-heading font-bold text-white">TV Tantrum</h1>
             </Link>
             <nav className="hidden md:ml-10 md:flex space-x-8">
               <Link 
                 href="/"
-                className={`${location === '/' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+                className={`${location === '/' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
               >
                 Home
               </Link>
               <Link 
                 href="/browse"
-                className={`${location === '/browse' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+                className={`${location === '/browse' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
               >
                 Browse Shows
               </Link>
               <Link 
                 href="/compare"
-                className={`${location === '/compare' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+                className={`${location === '/compare' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
               >
                 Compare Shows
               </Link>
               <Link 
                 href="/about"
-                className={`${location === '/about' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-primary-600'} font-medium px-1 py-4`}
+                className={`${location === '/about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
               >
                 About
               </Link>
@@ -170,13 +170,13 @@ export default function Navbar() {
             
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden ml-4 text-gray-500 hover:text-primary-600">
+                <Button variant="ghost" size="icon" className="md:hidden ml-4 text-white hover:text-white/80">
                   <i className="fas fa-bars text-xl"></i>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left">
                 <div className="px-2 pt-4 pb-3 space-y-1">
-                  <h2 className="text-lg font-bold mb-4">TV Tantrum</h2>
+                  <h2 className="text-lg font-bold mb-4 text-primary">TV Tantrum</h2>
                   <Link 
                     href="/"
                     className={`block px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
