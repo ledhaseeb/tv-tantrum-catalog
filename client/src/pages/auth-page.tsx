@@ -14,13 +14,13 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 
 // Schema for login form
 const loginSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 // Schema for registration form with additional fields
 const registerSchema = loginSchema.extend({
-  email: z.string().email("Please enter a valid email address").optional(),
+  username: z.string().min(3, "Username must be at least 3 characters").optional(),
   confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
@@ -46,7 +46,7 @@ export default function AuthPage() {
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -137,13 +137,14 @@ export default function AuthPage() {
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
                         control={loginForm.control}
-                        name="username"
+                        name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="Enter your username"
+                                type="email"
+                                placeholder="Enter your email address"
                                 {...field}
                                 disabled={loginMutation.isPending}
                               />
@@ -214,14 +215,17 @@ export default function AuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Username (optional)</FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="Choose a username"
+                                placeholder="Choose a display name"
                                 {...field}
                                 disabled={registerMutation.isPending}
                               />
                             </FormControl>
+                            <FormDescription>
+                              This will be used for your reviews and comments
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -232,11 +236,11 @@ export default function AuthPage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email (optional)</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input 
                                 type="email" 
-                                placeholder="Enter your email"
+                                placeholder="Enter your email address"
                                 {...field}
                                 disabled={registerMutation.isPending}
                               />

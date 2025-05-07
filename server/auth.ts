@@ -110,20 +110,20 @@ export function setupAuth(app: Express) {
     try {
       const { username, password, email } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).send({ message: "Username and password are required" });
+      if (!email || !password) {
+        return res.status(400).send({ message: "Email and password are required" });
       }
 
-      const existingUser = await storage.getUserByUsername(username);
+      const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
-        return res.status(400).send({ message: "Username already exists" });
+        return res.status(400).send({ message: "Email already registered" });
       }
 
       const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
-        username,
+        email,
         password: hashedPassword,
-        email: email || null,
+        username: username || null,
         isAdmin: false  // By default, users are not admins
       });
 
@@ -143,7 +143,7 @@ export function setupAuth(app: Express) {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user) {
-        return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid email or password" });
       }
       req.login(user, (err) => {
         if (err) return next(err);
