@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import ShowCard from "@/components/ShowCard";
 import { TvShow } from "@shared/schema";
-import { Search } from "lucide-react";
+import { Heart, Search } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import {
   Carousel,
   CarouselContent,
@@ -20,6 +22,8 @@ export default function Home() {
   const [_, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const { user, toggleFavorite } = useAuth();
+  const { toast } = useToast();
   
   // Hide results when clicking outside
   useEffect(() => {
@@ -254,6 +258,11 @@ export default function Home() {
         <div className="bg-indigo-50 rounded-xl overflow-hidden mb-12">
           <div className="flex flex-col md:flex-row">
             <div className="md:w-1/3 p-6">
+              <div className="mb-2">
+                <Badge variant="outline" className="bg-purple-100 text-purple-800 uppercase text-xs font-bold tracking-wide">
+                  Featured Listing
+                </Badge>
+              </div>
               {featuredShow.imageUrl ? (
                 <img 
                   src={featuredShow.imageUrl} 
@@ -275,9 +284,36 @@ export default function Home() {
                 <Badge variant="outline" className="bg-green-100 text-green-800 mr-2">
                   Ages {featuredShow.ageRange}
                 </Badge>
-                <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                  {featuredShow.stimulationScore}/5 Stimulation
-                </Badge>
+                <div className="inline-flex items-center">
+                  <div className="flex items-center mr-2">
+                    {Array(5).fill(0).map((_, i) => {
+                      const scoreColors = [
+                        'bg-green-500 border-green-500',    // green for 1
+                        'bg-yellow-500 border-yellow-500',  // yellow for 2
+                        'bg-orange-500 border-orange-500',  // orange for 3
+                        'bg-orange-600 border-orange-600',  // dark orange for 4
+                        'bg-red-500 border-red-500'         // red for 5
+                      ];
+                      const color = scoreColors[i];
+                      const isActive = i < featuredShow.stimulationScore;
+                      return (
+                        <div 
+                          key={i} 
+                          className={`w-3 h-3 rounded-full mx-0.5 ${
+                            isActive ? color.split(' ')[0] : `border-2 ${color.split(' ')[1]} bg-white`
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {featuredShow.stimulationScore === 1 ? 'Low' : 
+                     featuredShow.stimulationScore === 2 ? 'Low-Medium' : 
+                     featuredShow.stimulationScore === 3 ? 'Medium' : 
+                     featuredShow.stimulationScore === 4 ? 'Medium-High' : 
+                     'High'} Stimulation
+                  </span>
+                </div>
               </div>
               
               <p className="text-gray-700 mb-4">
@@ -295,12 +331,35 @@ export default function Home() {
                 </div>
               </div>
               
-              <Button 
-                className="mt-2" 
-                onClick={() => handleShowCardClick(featuredShow.id)}
-              >
-                View Show Details
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-gray-400 hover:text-red-500"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (user) {
+                      toggleFavorite(featuredShow.id);
+                    } else {
+                      toast({
+                        title: "Authentication required",
+                        description: "Please log in or register to save shows to your favorites.",
+                        variant: "default",
+                      });
+                      setLocation("/auth");
+                    }
+                  }}
+                >
+                  <Heart className="w-5 h-5 mr-1" />
+                  Add to Favorites
+                </Button>
+                <Button 
+                  className="mt-2" 
+                  onClick={() => handleShowCardClick(featuredShow.id)}
+                >
+                  View Show Details
+                </Button>
+              </div>
             </div>
           </div>
         </div>
