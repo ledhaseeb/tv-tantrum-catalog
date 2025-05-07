@@ -63,6 +63,13 @@ export default function AuthPage() {
   });
 
   // Handle login submission
+  // Get the redirect path from URL if available
+  const getRedirectPath = () => {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    return redirect ? decodeURIComponent(redirect) : '/';
+  };
+
   function onLoginSubmit(data: LoginFormValues) {
     loginMutation.mutate(data, {
       onSuccess: () => {
@@ -70,7 +77,7 @@ export default function AuthPage() {
           title: "Login successful",
           description: "Welcome back!",
         });
-        navigate("/");
+        navigate(getRedirectPath());
       },
       onError: (error) => {
         toast({
@@ -93,7 +100,7 @@ export default function AuthPage() {
           title: "Registration successful",
           description: "Your account has been created!",
         });
-        navigate("/");
+        navigate(getRedirectPath());
       },
       onError: (error) => {
         toast({

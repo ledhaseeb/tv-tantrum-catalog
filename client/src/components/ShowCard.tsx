@@ -286,6 +286,18 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                  'High'} Stimulation
               </span>
             </div>
+          </div>
+          
+          {/* Buttons */}
+          <div className="flex items-center justify-between mt-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className={`${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} p-1`}
+              onClick={toggleFavorite}
+            >
+              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500' : ''}`} />
+            </Button>
             <Button 
               variant="default" 
               size="sm" 
