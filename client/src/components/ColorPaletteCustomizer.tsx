@@ -234,7 +234,7 @@ export default function ColorPaletteCustomizer() {
                       style={{ backgroundColor: colors.accent }}
                     />
                   </div>
-                  <span className="text-xs capitalize">{name}</span>
+                  <span className="text-xs capitalize font-bold">{name}</span>
                   {selectedPreset === name && (
                     <div className="absolute top-1 right-1">
                       <Check className="h-3 w-3 text-primary" />
