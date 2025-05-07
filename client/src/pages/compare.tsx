@@ -131,9 +131,9 @@ export default function Compare() {
           {[1, 2, 3, 4, 5].map((segment) => {
             const color = 
               segment === 1 ? 'bg-green-500' : 
-              segment === 2 ? 'bg-yellow-500' : 
-              segment === 3 ? 'bg-orange-500' : 
-              segment === 4 ? 'bg-orange-600' : 
+              segment === 2 ? 'bg-green-400' : 
+              segment === 3 ? 'bg-yellow-500' : 
+              segment === 4 ? 'bg-orange-500' : 
               'bg-red-500';
             
             return (
@@ -163,8 +163,10 @@ export default function Compare() {
       <div className="flex justify-center gap-1 mb-1">
         {[1, 2, 3, 4, 5].map((dot) => {
           let bgColor = '';
-          if (dot <= 2) bgColor = 'bg-green-500';
-          else if (dot <= 4) bgColor = 'bg-yellow-500';
+          if (dot === 1) bgColor = 'bg-green-500';
+          else if (dot === 2) bgColor = 'bg-green-400';
+          else if (dot === 3) bgColor = 'bg-yellow-500';
+          else if (dot === 4) bgColor = 'bg-orange-500';
           else bgColor = 'bg-red-500';
           
           return (
