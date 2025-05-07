@@ -295,30 +295,36 @@ export class DatabaseStorage implements IStorage {
 
     for (const githubShow of githubShows) {
       try {
+        if (!githubShow.title) {
+          console.warn("Skipping show with no title:", githubShow);
+          continue;
+        }
+
         // Check if the show already exists
         const [existingShow] = await db
           .select()
           .from(tvShows)
-          .where(eq(tvShows.name, githubShow.Name));
+          .where(eq(tvShows.name, githubShow.title));
 
         if (existingShow) {
           // Update the existing show
           const [updatedShow] = await db
             .update(tvShows)
             .set({
-              description: githubShow.Description || existingShow.description,
-              stimulationScore: githubShow.Stimulation_Score || existingShow.stimulationScore,
-              dialogueIntensity: githubShow.Dialogue_Intensity || existingShow.dialogueIntensity,
-              soundEffectsLevel: githubShow.Sound_Effects_Level || existingShow.soundEffectsLevel,
-              interactivityLevel: githubShow.Interactivity_Level || existingShow.interactivityLevel,
-              ageRange: githubShow.Age_Range || existingShow.ageRange,
-              themes: githubShow.Themes || existingShow.themes,
-              availableOn: githubShow.Available_On || existingShow.availableOn,
-              releaseYear: githubShow.Release_Year ? parseInt(githubShow.Release_Year) : existingShow.releaseYear,
-              endYear: githubShow.End_Year ? parseInt(githubShow.End_Year) : existingShow.endYear,
-              episodeLength: githubShow.Episode_Length || existingShow.episodeLength,
-              seasons: githubShow.Seasons ? parseInt(githubShow.Seasons) : existingShow.seasons,
-              imageUrl: getDefaultImageUrl(githubShow.Name, githubShow.Image_Filename) || existingShow.imageUrl,
+              // Use the correct property names from the TvShowGitHub type
+              description: existingShow.description, // Keep existing description if not provided
+              stimulationScore: typeof githubShow.stimulation_score === 'number' ? githubShow.stimulation_score : existingShow.stimulationScore,
+              dialogueIntensity: githubShow.dialogue_intensity || existingShow.dialogueIntensity,
+              soundEffectsLevel: githubShow.sound_effects_level || existingShow.soundEffectsLevel,
+              interactivityLevel: githubShow.interactivity_level || existingShow.interactivityLevel,
+              ageRange: githubShow.target_age_group || existingShow.ageRange,
+              themes: githubShow.themes || existingShow.themes,
+              availableOn: [githubShow.platform] || existingShow.availableOn,
+              releaseYear: typeof githubShow.release_year === 'number' && !isNaN(githubShow.release_year) ? githubShow.release_year : existingShow.releaseYear,
+              endYear: typeof githubShow.end_year === 'number' && !isNaN(githubShow.end_year) ? githubShow.end_year : existingShow.endYear,
+              episodeLength: githubShow.avg_episode_length && !isNaN(parseInt(githubShow.avg_episode_length)) ? parseInt(githubShow.avg_episode_length) : existingShow.episodeLength,
+              seasons: githubShow.seasons && !isNaN(parseInt(githubShow.seasons)) ? parseInt(githubShow.seasons) : existingShow.seasons,
+              imageUrl: githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename) || existingShow.imageUrl,
             })
             .where(eq(tvShows.id, existingShow.id))
             .returning();
@@ -327,27 +333,28 @@ export class DatabaseStorage implements IStorage {
         } else {
           // Insert new show
           const tvShow: InsertTvShow = {
-            name: githubShow.Name,
-            description: githubShow.Description || '',
-            stimulationScore: githubShow.Stimulation_Score || 3,
-            dialogueIntensity: githubShow.Dialogue_Intensity || 'Medium',
-            soundEffectsLevel: githubShow.Sound_Effects_Level || 'Medium',
-            interactivityLevel: githubShow.Interactivity_Level || 'Medium',
-            ageRange: githubShow.Age_Range || '3-5',
-            themes: githubShow.Themes || [],
-            availableOn: githubShow.Available_On || [],
-            releaseYear: githubShow.Release_Year ? parseInt(githubShow.Release_Year) : null,
-            endYear: githubShow.End_Year ? parseInt(githubShow.End_Year) : null,
-            episodeLength: githubShow.Episode_Length || null,
-            seasons: githubShow.Seasons ? parseInt(githubShow.Seasons) : null,
-            imageUrl: getDefaultImageUrl(githubShow.Name, githubShow.Image_Filename),
+            name: githubShow.title,
+            description: 'A children\'s TV show', // Default description
+            stimulationScore: typeof githubShow.stimulation_score === 'number' ? githubShow.stimulation_score : 3,
+            dialogueIntensity: githubShow.dialogue_intensity || 'Medium',
+            soundEffectsLevel: githubShow.sound_effects_level || 'Medium',
+            interactivityLevel: githubShow.interactivity_level || 'Medium',
+            ageRange: githubShow.target_age_group || '3-5',
+            themes: githubShow.themes || [],
+            availableOn: [githubShow.platform],
+            releaseYear: typeof githubShow.release_year === 'number' && !isNaN(githubShow.release_year) ? githubShow.release_year : null,
+            endYear: typeof githubShow.end_year === 'number' && !isNaN(githubShow.end_year) ? githubShow.end_year : null,
+            episodeLength: githubShow.avg_episode_length && !isNaN(parseInt(githubShow.avg_episode_length)) ? parseInt(githubShow.avg_episode_length) : 15,
+            seasons: githubShow.seasons && !isNaN(parseInt(githubShow.seasons)) ? parseInt(githubShow.seasons) : null,
+            imageUrl: githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename),
+            overallRating: 4 // Providing a default value for required field
           };
 
           const [newShow] = await db.insert(tvShows).values(tvShow).returning();
           importedShows.push(newShow);
         }
       } catch (error) {
-        console.error(`Error importing show ${githubShow.Name}:`, error);
+        console.error(`Error importing show ${githubShow.title}:`, error);
       }
     }
 
@@ -499,9 +506,15 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Helper function to build a default image URL
-function getDefaultImageUrl(title: string, image_filename: string): string {
+function getDefaultImageUrl(title: string | undefined, image_filename: string | undefined): string {
+  // Check if image_filename exists and use it
   if (image_filename) {
     return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${image_filename}`;
+  }
+  
+  // Check if title exists
+  if (!title) {
+    return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/default.jpg`;
   }
   
   // Format the title for a URL-friendly string
