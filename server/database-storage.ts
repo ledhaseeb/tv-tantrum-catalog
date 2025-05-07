@@ -211,13 +211,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
-    const now = new Date().toISOString();
     const [newReview] = await db
       .insert(tvShowReviews)
-      .values({
-        ...review,
-        createdAt: now,
-      })
+      .values(review)
       .returning();
     return newReview;
   }
@@ -234,7 +230,7 @@ export class DatabaseStorage implements IStorage {
         .update(tvShowSearches)
         .set({
           searchCount: existingSearch.searchCount + 1,
-          lastSearchedAt: now,
+          lastSearched: now,
         })
         .where(eq(tvShowSearches.id, existingSearch.id));
     } else {
@@ -242,8 +238,7 @@ export class DatabaseStorage implements IStorage {
         tvShowId,
         searchCount: 1,
         viewCount: 0,
-        lastSearchedAt: now,
-        lastViewedAt: null,
+        lastSearched: now,
       });
     }
   }
@@ -260,7 +255,7 @@ export class DatabaseStorage implements IStorage {
         .update(tvShowSearches)
         .set({
           viewCount: existingSearch.viewCount + 1,
-          lastViewedAt: now,
+          lastViewed: now,
         })
         .where(eq(tvShowSearches.id, existingSearch.id));
     } else {
@@ -268,8 +263,7 @@ export class DatabaseStorage implements IStorage {
         tvShowId,
         searchCount: 0,
         viewCount: 1,
-        lastSearchedAt: null,
-        lastViewedAt: now,
+        lastViewed: now,
       });
     }
   }

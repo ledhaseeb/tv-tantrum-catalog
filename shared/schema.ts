@@ -97,6 +97,7 @@ export const tvShowSearches = pgTable("tv_show_searches", {
   searchCount: integer("search_count").notNull().default(1),
   viewCount: integer("view_count").notNull().default(0),
   lastSearched: text("last_searched").notNull().default(new Date().toISOString()),
+  lastViewed: text("last_viewed"),
 });
 
 export const insertTvShowSchema = createInsertSchema(tvShows).omit({
@@ -110,6 +111,7 @@ export const insertTvShowReviewSchema = createInsertSchema(tvShowReviews).omit({
 export const insertTvShowSearchSchema = createInsertSchema(tvShowSearches).omit({
   id: true,
   lastSearched: true,
+  lastViewed: true,
 });
 
 export type InsertTvShow = z.infer<typeof insertTvShowSchema>;
