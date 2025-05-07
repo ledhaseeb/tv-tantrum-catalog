@@ -107,7 +107,7 @@ export default function About() {
       </div>
       
       <div className="bg-gray-50 rounded-lg p-8 mb-12">
-        <h2 className="text-2xl font-heading font-bold mb-6 text-center">Contribute to KidTV Guide</h2>
+        <h2 className="text-2xl font-heading font-bold mb-6 text-center">Contribute to TV Tantrum</h2>
         <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
           We're always looking to improve our ratings and expand our database. Share your experiences and help other parents make informed choices.
         </p>
