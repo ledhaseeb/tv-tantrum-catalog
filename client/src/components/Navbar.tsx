@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Home, Filter, BarChart2, Info } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -84,26 +84,30 @@ export default function Navbar() {
             <nav className="hidden md:ml-10 md:flex space-x-8">
               <Link 
                 href="/"
-                className={`${location === '/' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
+                className={`${location === '/' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
+                <Home className="w-4 h-4 mr-2" />
                 Home
               </Link>
               <Link 
                 href="/browse"
-                className={`${location === '/browse' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
+                className={`${location === '/browse' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
-                Browse Shows
+                <Filter className="w-4 h-4 mr-2" />
+                Browse
               </Link>
               <Link 
                 href="/compare"
-                className={`${location === '/compare' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
+                className={`${location === '/compare' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
-                Compare Shows
+                <BarChart2 className="w-4 h-4 mr-2" />
+                Compare
               </Link>
               <Link 
                 href="/about"
-                className={`${location === '/about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4`}
+                className={`${location === '/about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
+                <Info className="w-4 h-4 mr-2" />
                 About
               </Link>
             </nav>
@@ -213,26 +217,30 @@ export default function Navbar() {
                   <h2 className="text-lg font-bold mb-4 text-primary">TV Tantrum</h2>
                   <Link 
                     href="/"
-                    className={`block px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
                   >
+                    <Home className="h-5 w-5 mr-3" />
                     Home
                   </Link>
                   <Link 
                     href="/browse"
-                    className={`block px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
                   >
-                    Browse Shows
+                    <Filter className="h-5 w-5 mr-3" />
+                    Browse
                   </Link>
                   <Link 
                     href="/compare"
-                    className={`block px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
                   >
-                    Compare Shows
+                    <BarChart2 className="h-5 w-5 mr-3" />
+                    Compare
                   </Link>
                   <Link 
                     href="/about"
-                    className={`block px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
                   >
+                    <Info className="h-5 w-5 mr-3" />
                     About
                   </Link>
                   
