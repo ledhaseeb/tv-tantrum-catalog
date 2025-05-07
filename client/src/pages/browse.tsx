@@ -126,6 +126,10 @@ export default function Browse() {
     if (filters.ageGroup) searchParams.set('ageGroup', filters.ageGroup);
     if (filters.themes && filters.themes.length > 0) searchParams.set('themes', filters.themes.join(','));
     if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
+    if (filters.tantrumFactor) searchParams.set('tantrumFactor', filters.tantrumFactor);
+    if (filters.interactionLevel) searchParams.set('interactionLevel', filters.interactionLevel);
+    if (filters.stimulationScoreRange) searchParams.set('stimulationScoreRange', 
+        encodeURIComponent(JSON.stringify(filters.stimulationScoreRange)));
     
     const newSearch = searchParams.toString() ? `?${searchParams.toString()}` : '';
     setLocation(`/browse${newSearch}`);
