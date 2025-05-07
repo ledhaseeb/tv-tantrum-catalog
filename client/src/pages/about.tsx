@@ -4,13 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function About() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-heading font-bold text-center mb-8">About KidTV Guide</h1>
+      <h1 className="text-3xl font-heading font-bold text-center mb-8">About TV Tantrum</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <div>
           <h2 className="text-2xl font-heading font-bold mb-4">Our Mission</h2>
           <p className="text-gray-700 mb-4">
-            KidTV Guide was created to help parents make informed decisions about the children's TV shows their kids watch. We understand that screen time is inevitable, so why not make it count?
+            TV Tantrum was created to help parents make informed decisions about the children's TV shows their kids watch. We understand that screen time is inevitable, so why not make it count?
           </p>
           <p className="text-gray-700 mb-4">
             Our unique rating system focuses on metrics that matter to parents, including:

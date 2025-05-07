@@ -16,7 +16,7 @@ document.head.appendChild(fontAwesomeLink);
 
 // Add title
 const titleElement = document.createElement('title');
-titleElement.textContent = 'KidTV Guide - Children\'s TV Show Comparison';
+titleElement.textContent = 'TV Tantrum - Children\'s TV Show Comparison';
 document.head.appendChild(titleElement);
 
 createRoot(document.getElementById("root")!).render(<App />);
