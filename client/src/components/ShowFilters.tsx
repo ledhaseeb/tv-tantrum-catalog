@@ -36,8 +36,6 @@ interface FiltersType {
   search?: string;
   themes?: string[];
   interactionLevel?: string;
-  dialogueIntensity?: string;
-  soundFrequency?: string;
   stimulationScoreRange?: {min: number, max: number};
 }
 
@@ -177,10 +175,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         }
       case 'interactionLevel':
         return `Interaction Level: ${value}`;
-      case 'dialogueIntensity':
-        return `Dialogue Intensity: ${value}`;
-      case 'soundFrequency':
-        return `Sound Frequency: ${value}`;
       case 'stimulationScoreRange':
         const range = value as {min: number, max: number};
         if (range.min === range.max) {
@@ -193,7 +187,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
           case 'name': return 'Sorted by Name';
           case 'stimulation-score': return 'Sorted by Stimulation Score';
           case 'interactivity-level': return 'Sorted by Interactivity Level';
-          case 'dialogue-intensity': return 'Sorted by Dialogue Intensity';
           case 'overall-rating': return 'Sorted by Rating';
           default: return value;
         }
@@ -428,51 +421,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             </Select>
           </div>
 
-          {/* Dialogue Intensity */}
-          <div>
-            <Label htmlFor="dialogue-intensity" className="block text-sm font-medium text-gray-700 mb-1">
-              Dialogue Intensity
-            </Label>
-            <Select 
-              value={filters.dialogueIntensity} 
-              onValueChange={(value) => handleFilterChange('dialogueIntensity', value)}
-            >
-              <SelectTrigger id="dialogue-intensity">
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any">Any</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
-                <SelectItem value="Moderate">Moderate</SelectItem>
-                <SelectItem value="Moderate-High">Moderate-High</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
-          {/* Sound Frequency */}
-          <div>
-            <Label htmlFor="sound-frequency" className="block text-sm font-medium text-gray-700 mb-1">
-              Sound Frequency
-            </Label>
-            <Select 
-              value={filters.soundFrequency} 
-              onValueChange={(value) => handleFilterChange('soundFrequency', value)}
-            >
-              <SelectTrigger id="sound-frequency">
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any">Any</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
-                <SelectItem value="Moderate">Moderate</SelectItem>
-                <SelectItem value="Moderate-High">Moderate-High</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           
           {/* Stimulation Score Range - always visible */}
           <div>

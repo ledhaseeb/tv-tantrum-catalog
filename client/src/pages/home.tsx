@@ -376,7 +376,7 @@ export default function Home() {
         "Lower Stimulation (Scores 1-2)",
         "Calmer shows with gentle pacing, perfect for sensitive viewers", 
         lowStimulationShows, 
-        "/browse?tantrumFactor=Low"
+        `/browse?stimulationScoreRange=${encodeURIComponent(JSON.stringify({min: 1, max: 2}))}`
       )}
       
       {/* Higher Interaction */}

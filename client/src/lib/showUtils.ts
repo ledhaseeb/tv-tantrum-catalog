@@ -112,8 +112,6 @@ export function filterShows(
     search?: string;
     themes?: string[];
     interactionLevel?: string;
-    dialogueIntensity?: string;
-    soundFrequency?: string;
     stimulationScoreRange?: {min: number, max: number};
   }
 ): TvShow[] {
@@ -177,37 +175,7 @@ export function filterShows(
       }
     }
     
-    // Filter by dialogue intensity
-    if (filters.dialogueIntensity && show.dialogueIntensity) {
-      if (filters.dialogueIntensity === 'Low' && 
-          !['Low', 'Limited', 'Minimal'].some(term => show.dialogueIntensity?.includes(term))) {
-        return false;
-      }
-      if (filters.dialogueIntensity === 'Moderate' && 
-          !['Moderate', 'Medium', 'Some'].some(term => show.dialogueIntensity?.includes(term))) {
-        return false;
-      }
-      if (filters.dialogueIntensity === 'High' && 
-          !['High', 'Heavy', 'Strong', 'Frequent'].some(term => show.dialogueIntensity?.includes(term))) {
-        return false;
-      }
-    }
-    
-    // Filter by sound effects frequency
-    if (filters.soundFrequency && show.soundEffectsLevel) {
-      if (filters.soundFrequency === 'Low' && 
-          !['Low', 'Limited', 'Minimal'].some(term => show.soundEffectsLevel?.includes(term))) {
-        return false;
-      }
-      if (filters.soundFrequency === 'Moderate' && 
-          !['Moderate', 'Medium', 'Some'].some(term => show.soundEffectsLevel?.includes(term))) {
-        return false;
-      }
-      if (filters.soundFrequency === 'High' && 
-          !['High', 'Heavy', 'Strong', 'Frequent'].some(term => show.soundEffectsLevel?.includes(term))) {
-        return false;
-      }
-    }
+
     
     // Filter by stimulation score range
     if (filters.stimulationScoreRange && show.stimulationScore) {
@@ -291,18 +259,7 @@ export function sortShows(
         const aLevel = levelMap[a.interactivityLevel || 'Moderate'] || 3;
         const bLevel = levelMap[b.interactivityLevel || 'Moderate'] || 3;
         return aLevel - bLevel;
-      case 'dialogue-intensity':
-        // Sort by dialogue intensity using the same level map
-        const dlevelMap: {[key: string]: number} = {
-          'Low': 1,
-          'Moderate-Low': 2,
-          'Moderate': 3,
-          'Moderate-High': 4,
-          'High': 5
-        };
-        const adLevel = dlevelMap[a.dialogueIntensity || 'Moderate'] || 3;
-        const bdLevel = dlevelMap[b.dialogueIntensity || 'Moderate'] || 3;
-        return adLevel - bdLevel;
+
       case 'overall-rating':
         return b.overallRating - a.overallRating;
       default:
