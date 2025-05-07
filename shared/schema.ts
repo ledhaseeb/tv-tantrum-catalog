@@ -87,6 +87,7 @@ export const tvShowReviews = pgTable("tv_show_reviews", {
   userName: text("user_name").notNull(),
   rating: integer("rating").notNull(), // 1-5 scale
   review: text("review").notNull(),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
 // Track show search popularity

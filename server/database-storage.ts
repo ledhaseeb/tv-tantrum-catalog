@@ -207,8 +207,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(tvShowReviews)
-      .where(eq(tvShowReviews.tvShowId, tvShowId))
-      .orderBy(desc(tvShowReviews.createdAt));
+      .where(eq(tvShowReviews.tvShowId, tvShowId));
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
