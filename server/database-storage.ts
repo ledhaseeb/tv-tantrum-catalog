@@ -204,16 +204,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]> {
-    return await db
-      .select()
-      .from(tvShowReviews)
-      .where(eq(tvShowReviews.tvShowId, tvShowId));
+    // Use sql template to explicitly specify column names
+    return await db.execute(sql`
+      SELECT 
+        id, 
+        tv_show_id as "tvShowId", 
+        user_name as "userName", 
+        rating, 
+        review, 
+        "createdAt"
+      FROM tv_show_reviews 
+      WHERE tv_show_id = ${tvShowId}
+    `);
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
+    const now = new Date().toISOString();
     const [newReview] = await db
       .insert(tvShowReviews)
-      .values(review)
+      .values({
+        ...review,
+        createdAt: now
+      })
       .returning();
     return newReview;
   }
@@ -239,6 +251,7 @@ export class DatabaseStorage implements IStorage {
         searchCount: 1,
         viewCount: 0,
         lastSearched: now,
+        lastViewed: null,
       });
     }
   }
@@ -264,6 +277,7 @@ export class DatabaseStorage implements IStorage {
         searchCount: 0,
         viewCount: 1,
         lastViewed: now,
+        lastSearched: now,
       });
     }
   }
