@@ -317,9 +317,9 @@ export default function AuthPage() {
         {/* Hero Section */}
         <div className="w-full md:w-1/2 bg-gradient-to-br from-primary/90 to-primary/50 rounded-xl p-8 text-primary-foreground flex flex-col justify-center">
           <div>
-            <h1 className="text-3xl font-bold mb-4">Welcome to TV Tantrum</h1>
+            <h1 className="text-3xl font-bold mb-4">Welcome to the TV tantrum community</h1>
             <p className="mb-6 text-lg opacity-90">
-              Your trusted guide to finding the perfect shows for your children based on sensory and stimulation needs.
+              Join the revolution to transform the culture of children's TV
             </p>
             <div className="space-y-4">
               <div className="flex items-start gap-2">
@@ -353,8 +353,8 @@ export default function AuthPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium">Compare Shows Side by Side</h3>
-                  <p className="opacity-75 text-sm">Easily compare different shows based on stimulation scores and sensory features.</p>
+                  <h3 className="font-medium">Leave Reviews</h3>
+                  <p className="opacity-75 text-sm">Share your experiences and help other parents by rating and reviewing shows you've watched.</p>
                 </div>
               </div>
             </div>

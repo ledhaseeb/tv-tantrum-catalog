@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search } from "lucide-react";
+import { Search, User, LogOut } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Navbar() {
   const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const { user, logoutMutation } = useAuth();
 
   // Fetch shows for search dropdown
   const { data: shows } = useQuery({
@@ -107,7 +109,7 @@ export default function Navbar() {
             </nav>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
             <div className="hidden md:block">
               <form onSubmit={handleSearch} className="relative w-[300px]" onClick={(e) => e.stopPropagation()}>
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
@@ -168,6 +170,38 @@ export default function Navbar() {
               </form>
             </div>
             
+            {/* Authentication links */}
+            <div className="hidden md:flex items-center gap-3">
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    onClick={() => logoutMutation.mutate()}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{user.username}</span>
+                  </Button>
+                </div>
+              ) : (
+                <Link href="/auth">
+                  <Button 
+                    variant="ghost" 
+                    className="text-white/90 hover:text-white hover:bg-primary-700"
+                  >
+                    Login / Register
+                  </Button>
+                </Link>
+              )}
+            </div>
+            
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden ml-4 text-white hover:text-white/80">
@@ -201,6 +235,31 @@ export default function Navbar() {
                   >
                     About
                   </Link>
+                  
+                  {/* Mobile authentication links */}
+                  {user ? (
+                    <>
+                      <button
+                        onClick={() => logoutMutation.mutate()}
+                        className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                      >
+                        <LogOut className="h-5 w-5 mr-2" />
+                        Logout
+                      </button>
+                      <div className="flex items-center px-3 py-2 text-base font-medium text-gray-500 rounded-md">
+                        <User className="h-5 w-5 mr-2" />
+                        {user.username}
+                      </div>
+                    </>
+                  ) : (
+                    <Link 
+                      href="/auth"
+                      className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                    >
+                      <User className="h-5 w-5 mr-2" />
+                      Login / Register
+                    </Link>
+                  )}
                 </div>
                 <div className="pt-4 pb-3 border-t border-gray-200">
                   <div className="px-2">

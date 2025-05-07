@@ -1,10 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import RatingBar from "@/components/RatingBar";
 import { TvShow, TvShowReview } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 type ShowDetailResponse = TvShow & { reviews: TvShowReview[] };
 
@@ -12,11 +20,60 @@ type DetailProps = {
   id: number;
 }
 
+// Review form schema
+const reviewSchema = z.object({
+  rating: z.number().min(1).max(5),
+  review: z.string().min(5, "Review must be at least 5 characters").max(1000, "Review must be less than 1000 characters"),
+});
+
+type ReviewFormValues = z.infer<typeof reviewSchema>;
+
 export default function Detail({ id }: DetailProps) {
   const [_, setLocation] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
   
   const { data: showDetail, isLoading, error } = useQuery<ShowDetailResponse>({
     queryKey: [`/api/shows/${id}`],
+  });
+  
+  // Review form
+  const reviewForm = useForm<ReviewFormValues>({
+    resolver: zodResolver(reviewSchema),
+    defaultValues: {
+      rating: 5,
+      review: "",
+    },
+  });
+  
+  // Stars selection
+  const [selectedRating, setSelectedRating] = useState(5);
+  
+  // Add review mutation
+  const addReviewMutation = useMutation({
+    mutationFn: async (data: ReviewFormValues) => {
+      return await apiRequest("POST", `/api/shows/${id}/reviews`, {
+        ...data,
+        userName: user?.username || "Anonymous",
+        tvShowId: id,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Review added",
+        description: "Your review has been added successfully!",
+      });
+      reviewForm.reset();
+      setSelectedRating(5);
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add review. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleBackClick = () => {
