@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import haseebImage from "@/assets/haseeb_new.png";
 
 export default function About() {
   return (
@@ -255,28 +254,6 @@ export default function About() {
             </div>
           </div>
         </form>
-      </div>
-      
-      <h2 className="text-2xl font-heading font-bold mb-6">Meet the Team</h2>
-      <div className="flex justify-center mb-8">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="w-64 h-64 rounded-full overflow-hidden mx-auto mb-6">
-                <img 
-                  src={haseebImage} 
-                  alt="Haseeb Ibrahim" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="text-xl font-heading font-bold">Haseeb Ibrahim</h3>
-              <p className="text-gray-500">The Founder</p>
-              <p className="mt-4 text-gray-600">
-                Media researcher and stimulation analyst specializing in children's content.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </main>
   );
