@@ -170,10 +170,10 @@ export default function Home() {
       {/* Hero Section */}
       <div className="bg-white rounded-xl p-8 mb-12 text-center">
         <h1 className="text-3xl md:text-4xl font-heading font-bold mb-3">
-          Sensory Screen Time Guide
+          Screen Time Stimulation Scores
         </h1>
         <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          Find TV shows optimized for sensory stimulation levels, helping you discover content
+          Find TV shows measured by stimulation levels, helping you discover content
           that fits your child's needs.
         </p>
         
