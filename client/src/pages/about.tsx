@@ -118,32 +118,32 @@ export default function About() {
             </p>
           </div>
           
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <div className="w-8 h-8 rounded-full bg-green-400 flex items-center justify-center text-white font-bold">2</div>
-              <h3 className="ml-2 text-lg font-bold text-green-700">Low-Medium</h3>
-            </div>
-            <p className="text-green-700">
-              Moderate pacing with occasional transitions. Mild sound effects and harmonious music. Engaging but not overwhelming content. Good for longer viewing sessions and younger children.
-            </p>
-          </div>
-          
           <div className="bg-yellow-50 rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold">3</div>
-              <h3 className="ml-2 text-lg font-bold text-yellow-800">Medium</h3>
+              <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold">2</div>
+              <h3 className="ml-2 text-lg font-bold text-yellow-800">Low-Medium</h3>
             </div>
             <p className="text-yellow-800">
-              Balanced pacing with regular scene changes. Moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most children but monitor younger viewers for signs of overstimulation.
+              Moderate pacing with occasional transitions. Mild sound effects and harmonious music. Engaging but not overwhelming content. Good for longer viewing sessions and younger children.
             </p>
           </div>
           
           <div className="bg-orange-50 rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">4</div>
-              <h3 className="ml-2 text-lg font-bold text-orange-800">Medium-High</h3>
+              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">3</div>
+              <h3 className="ml-2 text-lg font-bold text-orange-800">Medium</h3>
             </div>
             <p className="text-orange-800">
+              Balanced pacing with regular scene changes. Moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most children but monitor younger viewers for signs of overstimulation.
+            </p>
+          </div>
+          
+          <div className="bg-red-100 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-red-400 flex items-center justify-center text-white font-bold">4</div>
+              <h3 className="ml-2 text-lg font-bold text-red-700">Medium-High</h3>
+            </div>
+            <p className="text-red-700">
               Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better for older children and shorter viewing sessions. May feel intense to younger viewers.
             </p>
           </div>
