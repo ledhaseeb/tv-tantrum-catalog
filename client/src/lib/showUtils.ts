@@ -259,7 +259,12 @@ export function sortShows(
         const aLevel = levelMap[a.interactivityLevel || 'Moderate'] || 3;
         const bLevel = levelMap[b.interactivityLevel || 'Moderate'] || 3;
         return aLevel - bLevel;
-
+      case 'popular':
+        // Popular would be handled by a separate API endpoint, so this is a fallback
+        // The views+searches metrics impact popularity
+        const aPopularity = (a.views || 0) * 2 + (a.searches || 0);
+        const bPopularity = (b.views || 0) * 2 + (b.searches || 0);
+        return bPopularity - aPopularity; // Higher popularity first
       case 'overall-rating':
         return b.overallRating - a.overallRating;
       default:
