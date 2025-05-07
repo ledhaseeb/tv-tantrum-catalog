@@ -303,7 +303,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer bg-green-50" 
-            onClick={() => setLocation("/browse?tantrumFactor=Low")}
+            onClick={() => setLocation(`/browse?stimulationScoreRange=${encodeURIComponent(JSON.stringify({min: 1, max: 2}))}`)}
           >
             <CardContent className="p-6 text-center">
               <div className="inline-flex p-3 rounded-full bg-green-100 text-green-600 mb-3">
