@@ -23,10 +23,14 @@ export function getPositiveRatingColor(value: number): string {
  * Returns a text description for the stimulation score
  */
 export function getStimulationScoreDescription(value: number): string {
-  if (value <= 2) {
+  if (value === 1) {
     return "Low stimulation - calming content with gentle pacing.";
-  } else if (value <= 4) {
+  } else if (value === 2) {
+    return "Low-Medium stimulation - mostly calm content with occasional moderate energy.";
+  } else if (value === 3) {
     return "Medium stimulation - balanced content with moderate energy.";
+  } else if (value === 4) {
+    return "Medium-High stimulation - moderately energetic content with some intense moments.";
   } else {
     return "High stimulation - energetic content that may be overstimulating for some children.";
   }
@@ -134,13 +138,19 @@ export function filterShows(
     
     // Filter by tantrum factor (stimulation score)
     if (filters.tantrumFactor) {
-      if (filters.tantrumFactor.toLowerCase() === 'low' && show.stimulationScore > 2) {
+      if (filters.tantrumFactor.toLowerCase() === 'low' && show.stimulationScore !== 1) {
         return false;
       }
-      if (filters.tantrumFactor.toLowerCase() === 'moderate' && (show.stimulationScore < 3 || show.stimulationScore > 3)) {
+      if (filters.tantrumFactor.toLowerCase() === 'low-medium' && show.stimulationScore !== 2) {
         return false;
       }
-      if (filters.tantrumFactor.toLowerCase() === 'high' && show.stimulationScore < 4) {
+      if (filters.tantrumFactor.toLowerCase() === 'medium' && show.stimulationScore !== 3) {
+        return false;
+      }
+      if (filters.tantrumFactor.toLowerCase() === 'medium-high' && show.stimulationScore !== 4) {
+        return false;
+      }
+      if (filters.tantrumFactor.toLowerCase() === 'high' && show.stimulationScore !== 5) {
         return false;
       }
     }

@@ -148,9 +148,11 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                   {renderStimulationDots()}
                 </div>
                 <span className="text-sm text-gray-600">
-                  {show.stimulationScore <= 2 ? 'Low' : 
-                  show.stimulationScore <= 4 ? 'Medium' : 
-                  'High'} Stimulation
+                  {show.stimulationScore === 1 ? 'Low' : 
+                   show.stimulationScore === 2 ? 'Low-Medium' : 
+                   show.stimulationScore === 3 ? 'Medium' : 
+                   show.stimulationScore === 4 ? 'Medium-High' : 
+                   'High'} Stimulation
                 </span>
               </div>
               
@@ -222,8 +224,10 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                 {renderStimulationDots()}
               </div>
               <span className="text-xs text-gray-600">
-                {show.stimulationScore <= 2 ? 'Low' : 
-                 show.stimulationScore <= 4 ? 'Medium' : 
+                {show.stimulationScore === 1 ? 'Low' : 
+                 show.stimulationScore === 2 ? 'Low-Medium' : 
+                 show.stimulationScore === 3 ? 'Medium' : 
+                 show.stimulationScore === 4 ? 'Medium-High' : 
                  'High'} Stimulation
               </span>
             </div>
