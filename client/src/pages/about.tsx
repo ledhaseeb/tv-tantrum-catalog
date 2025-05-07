@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import haseebImage from "@/assets/haseeb.jpg";
 
 export default function About() {
   return (
@@ -17,16 +18,16 @@ export default function About() {
           </p>
           <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
             <li><span className="font-semibold">Tantrum Factor</span> - How likely will your child melt down when the show ends?</li>
-            <li><span className="font-semibold">Educational Value</span> - What skills or concepts might children learn?</li>
-            <li><span className="font-semibold">Parent Enjoyment</span> - Will you want to leave the room when this show is on?</li>
-            <li><span className="font-semibold">Repeat Watchability</span> - How well does it hold up to the inevitable rewatches?</li>
+            <li><span className="font-semibold">Themes</span> - Understand what topics and concepts are covered in each show, from adventure and creativity to social-emotional learning and problem-solving.</li>
+            <li><span className="font-semibold">Interactivity Level</span> - How engaging and interactive is the content for children?</li>
+            <li><span className="font-semibold">Stimulation Score</span> - Measure of how visually and audibly stimulating the content is.</li>
           </ul>
         </div>
         
         <div className="bg-primary-50 rounded-lg p-6">
           <h2 className="text-2xl font-heading font-bold mb-4">Data Sources</h2>
           <p className="text-gray-700 mb-4">
-            Our data comes from the TVTantrum GitHub repository, which aggregates ratings and information from:
+            Our comprehensive database aggregates ratings and information from:
           </p>
           <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
             <li>Parent surveys and reviews</li>
@@ -37,12 +38,6 @@ export default function About() {
           <p className="text-gray-700">
             We're constantly updating our database as new shows emerge and more parents contribute their experiences.
           </p>
-          <div className="mt-4">
-            <Button variant="outline" className="bg-white">
-              <i className="fab fa-github mr-2"></i>
-              View on GitHub
-            </Button>
-          </div>
         </div>
       </div>
       
@@ -71,7 +66,7 @@ export default function About() {
               </div>
               <h3 className="text-xl font-heading font-bold mb-2">Filter</h3>
               <p className="text-gray-600">
-                Narrow down shows by age appropriateness, tantrum factor, educational value, and more.
+                Narrow down shows by age appropriateness, tantrum factor, themes, and more.
               </p>
             </div>
           </CardContent>
@@ -118,47 +113,21 @@ export default function About() {
       </div>
       
       <h2 className="text-2xl font-heading font-bold mb-6">Meet the Team</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Card>
+      <div className="flex justify-center mb-8">
+        <Card className="max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-user text-gray-400 text-2xl"></i>
+              <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
+                <img 
+                  src={haseebImage} 
+                  alt="Haseeb Ibrahim" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <h3 className="text-xl font-heading font-bold">Jane Smith</h3>
-              <p className="text-gray-500">Founder & Child Development Expert</p>
+              <h3 className="text-xl font-heading font-bold">Haseeb Ibrahim</h3>
+              <p className="text-gray-500">The Founder</p>
               <p className="mt-4 text-gray-600">
-                Former preschool teacher with 15 years of experience in early childhood education.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-user text-gray-400 text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-heading font-bold">Michael Johnson</h3>
-              <p className="text-gray-500">Content Analyst</p>
-              <p className="mt-4 text-gray-600">
-                Media researcher specializing in children's educational content and entertainment.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-user text-gray-400 text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-heading font-bold">Sarah Lee</h3>
-              <p className="text-gray-500">Parent Coordinator</p>
-              <p className="mt-4 text-gray-600">
-                Mother of three who oversees our parent review panel and community engagement.
+                Media researcher and stimulation analyst specializing in children's content.
               </p>
             </div>
           </CardContent>
