@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import haseebImage from "@/assets/haseeb.jpg";
+import haseebImage from "@/assets/haseeb_new.png";
 
 export default function About() {
   return (
