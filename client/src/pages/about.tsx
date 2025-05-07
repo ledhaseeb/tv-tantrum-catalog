@@ -40,7 +40,7 @@ export default function About() {
         </div>
       </div>
       
-      <h2 className="text-2xl font-heading font-bold mb-6">How to Use Our Ratings</h2>
+      <h2 className="text-2xl font-heading font-bold mb-6">How to Use Our Features</h2>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <Card>
@@ -98,6 +98,66 @@ export default function About() {
             </div>
           </CardContent>
         </Card>
+      </div>
+      
+      <h2 className="text-2xl font-heading font-bold mb-6">Understanding Stimulation Ratings</h2>
+      
+      <div className="bg-gray-50 rounded-lg p-8 mb-12">
+        <p className="text-gray-700 mb-6">
+          Our stimulation ratings help you understand how a show may affect your child's sensory system and behavior. Lower-rated shows allow for longer watching periods before causing overstimulation, while higher-rated shows may lead to overstimulation more quickly, potentially resulting in tantrums. Keep in mind that younger children are more sensitive to stimulation, while older children can typically handle higher levels of stimulation.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
+          <div className="bg-green-100 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">1</div>
+              <h3 className="ml-2 text-lg font-bold text-green-800">Very Low</h3>
+            </div>
+            <p className="text-green-800">
+              Gentle pacing with minimal scene changes. Soft sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.
+            </p>
+          </div>
+          
+          <div className="bg-green-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-green-400 flex items-center justify-center text-white font-bold">2</div>
+              <h3 className="ml-2 text-lg font-bold text-green-700">Low</h3>
+            </div>
+            <p className="text-green-700">
+              Moderate pacing with occasional transitions. Mild sound effects and harmonious music. Engaging but not overwhelming content. Good for longer viewing sessions and younger children.
+            </p>
+          </div>
+          
+          <div className="bg-yellow-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold">3</div>
+              <h3 className="ml-2 text-lg font-bold text-yellow-800">Medium</h3>
+            </div>
+            <p className="text-yellow-800">
+              Balanced pacing with regular scene changes. Moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most children but monitor younger viewers for signs of overstimulation.
+            </p>
+          </div>
+          
+          <div className="bg-orange-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">4</div>
+              <h3 className="ml-2 text-lg font-bold text-orange-800">High</h3>
+            </div>
+            <p className="text-orange-800">
+              Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better for older children and shorter viewing sessions. May feel intense to younger viewers.
+            </p>
+          </div>
+          
+          <div className="bg-red-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">5</div>
+              <h3 className="ml-2 text-lg font-bold text-red-800">Very High</h3>
+            </div>
+            <p className="text-red-800">
+              Rapid pacing with constant scene changes. Loud sound effects and intense music. Highly energetic content with many elements competing for attention. Recommended in small doses, even for older children.
+            </p>
+          </div>
+        </div>
       </div>
       
       <div className="bg-gray-50 rounded-lg p-8 mb-12">
