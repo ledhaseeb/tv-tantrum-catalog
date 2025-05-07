@@ -5,7 +5,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { User, InsertUser } from "@shared/schema";
-import { apiRequest, queryClient } from "../lib/queryClient";
+import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
@@ -26,42 +26,15 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-
-  // Get the current user
+  
+  // Fetch current user data
   const {
     data: user,
     error,
     isLoading,
   } = useQuery<User | null, Error>({
     queryKey: ["/api/user"],
-    queryFn: async () => {
-      try {
-        const res = await apiRequest("GET", "/api/user");
-        return await res.json();
-      } catch (error) {
-        if (error instanceof Response && error.status === 401) {
-          return null;
-        }
-        throw error;
-      }
-    }
-  });
-
-  // Check if user is admin for color palette access
-  const { data: adminData } = useQuery<{isAdmin: boolean}, Error>({
-    queryKey: ["/api/user/is-admin"],
-    queryFn: async () => {
-      try {
-        const res = await apiRequest("GET", "/api/user/is-admin");
-        return await res.json();
-      } catch (error) {
-        if (error instanceof Response && error.status === 401) {
-          return { isAdmin: false };
-        }
-        throw error;
-      }
-    },
-    enabled: !!user, // Only run if user is logged in
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
   // Login mutation
@@ -72,36 +45,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Login successful",
-        description: `Welcome, ${user.username}!`,
-      });
     },
     onError: (error: Error) => {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid username or password",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Registration mutation
+  // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
       const res = await apiRequest("POST", "/api/register", credentials);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Registration failed");
-      }
       return await res.json();
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Registration successful",
-        description: `Welcome, ${user.username}!`,
-      });
     },
     onError: (error: Error) => {
       toast({
@@ -119,11 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
+      // Invalidate any query keys that depend on user authentication
       queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
-      toast({
-        title: "Logged out",
-        description: "You have been logged out successfully.",
-      });
     },
     onError: (error: Error) => {
       toast({
@@ -137,9 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if a show is in user's favorites
   const isFavorite = async (showId: number): Promise<boolean> => {
     if (!user) return false;
-
+    
     try {
-      const res = await apiRequest("GET", `/api/favorites/${showId}`);
+      const res = await fetch(`/api/favorites/${showId}`);
       const data = await res.json();
       return data.isFavorite;
     } catch (error) {
@@ -148,52 +106,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Toggle favorite status
+  // Toggle favorite status for a show
   const toggleFavorite = async (showId: number): Promise<void> => {
     if (!user) {
-      // If not logged in, redirect to auth page
-      window.location.href = "/auth";
-      return;
+      throw new Error("User must be logged in to manage favorites");
     }
-
-    try {
-      // Check current favorite status
-      const isFav = await isFavorite(showId);
-
-      if (isFav) {
-        // Remove from favorites
-        await apiRequest("DELETE", `/api/favorites/${showId}`);
-        toast({
-          title: "Removed from favorites",
-          description: "Show removed from your favorites.",
-        });
-      } else {
-        // Add to favorites
-        await apiRequest("POST", "/api/favorites", { tvShowId: showId });
-        toast({
-          title: "Added to favorites",
-          description: "Show added to your favorites.",
-        });
-      }
-
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
-      queryClient.invalidateQueries({ queryKey: [`/api/favorites/${showId}`] });
-      queryClient.invalidateQueries({ queryKey: ["/api/recommendations"] });
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites. Please try again.",
-        variant: "destructive",
-      });
+    
+    // Check current favorite status
+    const isFav = await isFavorite(showId);
+    
+    if (isFav) {
+      // If already favorited, remove from favorites
+      await apiRequest("DELETE", `/api/favorites/${showId}`);
+    } else {
+      // If not favorited, add to favorites
+      await apiRequest("POST", "/api/favorites", { tvShowId: showId });
     }
+    
+    // Invalidate relevant queries
+    queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
   };
+
+  // Check if the user has admin privileges
+  const isAdmin = user?.isAdmin === true;
 
   return (
     <AuthContext.Provider
       value={{
-        user: user || null,
+        user,
         isLoading,
         error,
         loginMutation,
@@ -201,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         registerMutation,
         isFavorite,
         toggleFavorite,
-        isAdmin: adminData?.isAdmin || false
+        isAdmin,
       }}
     >
       {children}

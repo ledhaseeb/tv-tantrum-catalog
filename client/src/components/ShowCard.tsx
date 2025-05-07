@@ -7,6 +7,8 @@ import { TvShow } from "@shared/schema";
 import { getStimulationScoreColor } from "@/lib/showUtils";
 import { useAuth } from "@/hooks/use-auth";
 import { Heart } from "lucide-react";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 interface ShowCardProps {
   show: TvShow;
@@ -36,13 +38,40 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
     checkFavoriteStatus();
   }, [user, show.id]);
   
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or register to save shows to your favorites.",
+        variant: "default",
+      });
+      navigate("/auth");
+      return;
+    }
     
     // Use the auth context toggle favorite function
     toggleFav(show.id).then(() => {
       // Update local state (optimistic update)
       setIsFavorite(!isFavorite);
+      
+      toast({
+        title: isFavorite ? "Removed from favorites" : "Added to favorites",
+        description: isFavorite ? `${show.name} has been removed from your favorites.` : `${show.name} has been added to your favorites.`,
+        variant: "default",
+      });
+    }).catch(error => {
+      toast({
+        title: "Error",
+        description: "There was an error updating your favorites. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error toggling favorite:", error);
     });
   };
   
