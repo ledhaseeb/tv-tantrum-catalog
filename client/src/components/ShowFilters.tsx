@@ -168,9 +168,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         return `Age: ${value}`;
       case 'tantrumFactor':
         switch (value) {
-          case 'Low': return 'Low Stimulation Score (1-2)';
-          case 'Medium': return 'Medium Stimulation Score (3-4)';
-          case 'High': return 'High Stimulation Score (5+)';
+          case 'low': return 'Low Stimulation (1)';
+          case 'low-medium': return 'Low-Medium Stimulation (2)';
+          case 'medium': return 'Medium Stimulation (3)';
+          case 'medium-high': return 'Medium-High Stimulation (4)';
+          case 'high': return 'High Stimulation (5)';
           default: return value;
         }
       case 'interactionLevel':
@@ -518,7 +520,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               
               <div className="flex justify-between text-xs text-gray-600 mt-1">
                 <span className="font-medium text-green-600">Low</span>
-                <span className="font-medium text-yellow-600">Medium</span>
+                <span className="font-medium text-green-600">Low-Med</span>
+                <span className="font-medium text-yellow-600">Med</span>
+                <span className="font-medium text-yellow-600">Med-High</span>
                 <span className="font-medium text-red-600">High</span>
               </div>
             </div>
