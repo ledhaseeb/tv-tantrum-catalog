@@ -262,8 +262,8 @@ export function sortShows(
       case 'popular':
         // Popular would be handled by a separate API endpoint, so this is a fallback
         // The views+searches metrics impact popularity
-        const aPopularity = (a.views || 0) * 2 + (a.searches || 0);
-        const bPopularity = (b.views || 0) * 2 + (b.searches || 0);
+        const aPopularity = ((a as any).views || 0) * 2 + ((a as any).searches || 0);
+        const bPopularity = ((b as any).views || 0) * 2 + ((b as any).searches || 0);
         return bPopularity - aPopularity; // Higher popularity first
       case 'overall-rating':
         return b.overallRating - a.overallRating;

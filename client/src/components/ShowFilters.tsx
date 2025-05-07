@@ -188,6 +188,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
           case 'stimulation-score': return 'Sorted by Stimulation Score';
           case 'interactivity-level': return 'Sorted by Interactivity Level';
           case 'overall-rating': return 'Sorted by Rating';
+          case 'popular': return 'Sorted by Popularity';
           default: return value;
         }
       case 'search':
@@ -417,6 +418,28 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 <SelectItem value="Moderate">Moderate</SelectItem>
                 <SelectItem value="Moderate-High">Moderate-High</SelectItem>
                 <SelectItem value="High">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Sort By */}
+          <div>
+            <Label htmlFor="sort-by" className="block text-sm font-medium text-gray-700 mb-1">
+              Sort By
+            </Label>
+            <Select 
+              value={filters.sortBy} 
+              onValueChange={(value) => handleFilterChange('sortBy', value)}
+            >
+              <SelectTrigger id="sort-by">
+                <SelectValue placeholder="Name (A-Z)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+                <SelectItem value="stimulation-score">Stimulation Score (Low to High)</SelectItem>
+                <SelectItem value="interactivity-level">Interactivity Level (Low to High)</SelectItem>
+                <SelectItem value="overall-rating">Rating (High to Low)</SelectItem>
+                <SelectItem value="popular">Popular</SelectItem>
               </SelectContent>
             </Select>
           </div>
