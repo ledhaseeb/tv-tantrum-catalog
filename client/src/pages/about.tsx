@@ -160,15 +160,101 @@ export default function About() {
         </div>
       </div>
       
-      <div className="bg-gray-50 rounded-lg p-8 mb-12">
-        <h2 className="text-2xl font-heading font-bold mb-6 text-center">Contribute to TV Tantrum</h2>
+      <div id="contact" className="bg-gray-50 rounded-lg p-8 mb-12">
+        <h2 className="text-2xl font-heading font-bold mb-6 text-center">Contact Us</h2>
         <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
-          We're always looking to improve our ratings and expand our database. Share your experiences and help other parents make informed choices.
+          Have a question, suggestion, or want to work with us? Use the form below to get in touch with our team.
         </p>
-        <div className="flex justify-center space-x-4">
-          <Button>Submit a Review</Button>
-          <Button variant="outline">Suggest a Show</Button>
-        </div>
+        
+        <form className="max-w-xl mx-auto">
+          <div className="grid grid-cols-1 gap-6">
+            {/* Name */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="Your name"
+              />
+            </div>
+            
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="your.email@example.com"
+              />
+            </div>
+            
+            {/* Phone (optional) */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number <span className="text-gray-400 text-xs">(Optional)</span>
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="Your phone number"
+              />
+            </div>
+            
+            {/* Enquiry Type */}
+            <div>
+              <label htmlFor="enquiryType" className="block text-sm font-medium text-gray-700 mb-1">
+                Enquiry Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="enquiryType"
+                name="enquiryType"
+                required
+                defaultValue=""
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+              >
+                <option value="" disabled>Select an option</option>
+                <option value="feedback">Feedback</option>
+                <option value="add-show">Add a show listing</option>
+                <option value="get-featured">Get featured</option>
+                <option value="press">Press</option>
+                <option value="partnership">Partnership/Collaborate</option>
+              </select>
+            </div>
+            
+            {/* Message */}
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                Message <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                required
+                rows={6}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="Your message here..."
+              ></textarea>
+            </div>
+            
+            <div>
+              <Button type="submit" className="w-full">
+                Send Message
+              </Button>
+            </div>
+          </div>
+        </form>
       </div>
       
       <h2 className="text-2xl font-heading font-bold mb-6">Meet the Team</h2>
