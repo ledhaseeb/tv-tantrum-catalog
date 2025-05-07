@@ -525,7 +525,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
           </div>
           
           <div className="flex flex-col gap-3">
-            <Button type="button" onClick={handleApplyFilters} className="w-full bg-green-600 hover:bg-green-700">
+            <Button type="button" onClick={handleApplyFilters} className="w-full bg-secondary hover:bg-secondary/90 font-bold">
               Apply Filters
             </Button>
             {Object.keys(filters).length > 0 && (
