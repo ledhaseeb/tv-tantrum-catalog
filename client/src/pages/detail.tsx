@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useState } from "react";
+import { Link } from "wouter";
 
 type ShowDetailResponse = TvShow & { reviews: TvShowReview[] };
 
@@ -662,10 +664,86 @@ export default function Detail({ id }: DetailProps) {
         <div className="border-t border-gray-200 p-6">
           <h3 className="font-heading font-bold text-gray-900 mb-4">Parent Reviews</h3>
           
+          {/* Add review form - only shown to logged-in users */}
+          {user ? (
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <h4 className="font-medium text-gray-800 mb-4">Share Your Experience</h4>
+              <Form {...reviewForm}>
+                <form onSubmit={reviewForm.handleSubmit((data) => addReviewMutation.mutate(data))} className="space-y-4">
+                  {/* Rating stars */}
+                  <div>
+                    <FormLabel>Rating</FormLabel>
+                    <div className="flex items-center gap-1 mt-2">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedRating(value);
+                            reviewForm.setValue('rating', value);
+                          }}
+                          className="text-2xl focus:outline-none"
+                        >
+                          {value <= selectedRating ? (
+                            <i className="fas fa-star text-yellow-500"></i>
+                          ) : (
+                            <i className="far fa-star text-gray-400"></i>
+                          )}
+                        </button>
+                      ))}
+                      <span className="ml-2 text-sm text-gray-500">
+                        {selectedRating} out of 5 stars
+                      </span>
+                    </div>
+                    {reviewForm.formState.errors.rating && (
+                      <p className="text-red-500 text-sm mt-1">{reviewForm.formState.errors.rating.message}</p>
+                    )}
+                  </div>
+                  
+                  {/* Review text */}
+                  <FormField
+                    control={reviewForm.control}
+                    name="review"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Review</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Share your thoughts about this show..." 
+                            {...field} 
+                            className="h-24"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit" 
+                    disabled={addReviewMutation.isPending}
+                    className="bg-primary text-white hover:bg-primary-600"
+                  >
+                    {addReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          ) : (
+            <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+              <p className="text-blue-800">
+                <Link href={`/auth?redirect=/detail/${id}`} className="font-medium underline">
+                  Sign in or register
+                </Link> to leave a review and help other parents choose appropriate shows for their children.
+              </p>
+            </div>
+          )}
+          
+          {/* Existing reviews section */}
           {showDetail.reviews && showDetail.reviews.length > 0 ? (
             <div className="space-y-4">
               {showDetail.reviews.map((review, index) => (
-                <div key={index} className="flex">
+                <div key={index} className="flex p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
                   <div className="flex-shrink-0 mr-4">
                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
                       <span className="font-medium text-primary-600">
@@ -673,12 +751,12 @@ export default function Detail({ id }: DetailProps) {
                       </span>
                     </div>
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center mb-1">
                       <h4 className="font-medium">{review.userName}</h4>
                       <div className="ml-2 flex">
                         {[...Array(5)].map((_, i) => (
-                          <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-secondary-500`}></i>
+                          <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
                         ))}
                       </div>
                     </div>
@@ -688,7 +766,9 @@ export default function Detail({ id }: DetailProps) {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 italic">No reviews yet. Be the first to share your thoughts!</p>
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-500 italic">No reviews yet. Be the first to share your thoughts!</p>
+            </div>
           )}
           
           {showDetail.reviews && showDetail.reviews.length > 3 && (
