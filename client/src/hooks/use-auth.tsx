@@ -5,7 +5,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { User, InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, apiGet, queryClient } from "@/lib/queryClient";
+import { getQueryFn, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
@@ -44,8 +44,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      // apiRequest already returns the JSON data, no need to call .json()
-      return await apiRequest("POST", "/api/login", credentials);
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Login failed");
+      }
+      
+      return await res.json();
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -62,8 +73,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
-      // apiRequest already returns the JSON data, no need to call .json()
-      return await apiRequest("POST", "/api/register", credentials);
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Registration failed");
+      }
+      
+      return await res.json();
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -80,7 +102,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      const res = await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Logout failed");
+      }
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
@@ -101,7 +131,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
     
     try {
-      const data = await apiGet(`/api/favorites/${showId}`);
+      const res = await fetch(`/api/favorites/${showId}`, {
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        return false;
+      }
+      
+      const data = await res.json();
       return data.isFavorite;
     } catch (error) {
       console.error("Error checking favorite status:", error);
@@ -120,10 +158,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (isFav) {
       // If already favorited, remove from favorites
-      await apiRequest("DELETE", `/api/favorites/${showId}`);
+      const res = await fetch(`/api/favorites/${showId}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to remove from favorites");
+      }
     } else {
       // If not favorited, add to favorites
-      await apiRequest("POST", "/api/favorites", { tvShowId: showId });
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tvShowId: showId }),
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to add to favorites");
+      }
     }
     
     // Invalidate relevant queries
