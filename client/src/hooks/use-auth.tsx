@@ -5,7 +5,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { User, InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
+import { getQueryFn, apiRequest, apiGet, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
@@ -37,13 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: getQueryFn({ on401: "returnNull" }),
     // This ensures we never have undefined, only null for unauthenticated users
     select: (data) => data ?? null,
+    // Initialize with null (not authenticated)
+    initialData: null
   });
 
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      // apiRequest already returns the JSON data, no need to call .json()
+      return await apiRequest("POST", "/api/login", credentials);
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -60,8 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
+      // apiRequest already returns the JSON data, no need to call .json()
+      return await apiRequest("POST", "/api/register", credentials);
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -99,8 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
     
     try {
-      const res = await fetch(`/api/favorites/${showId}`);
-      const data = await res.json();
+      const data = await apiGet(`/api/favorites/${showId}`);
       return data.isFavorite;
     } catch (error) {
       console.error("Error checking favorite status:", error);
