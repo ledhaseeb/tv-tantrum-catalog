@@ -719,12 +719,9 @@ export default function Detail({ id }: DetailProps) {
 function SimilarShows({ showId }: { showId: number }) {
   const { data: similarShows, isLoading, error } = useQuery<TvShow[]>({
     queryKey: [`/api/shows/${showId}/similar`],
-    enabled: !!showId
+    enabled: !!showId,
+    refetchOnWindowFocus: false
   });
-  
-  // Add debug logs outside of the query configuration
-  console.log("Similar shows component rendering, showId:", showId);
-  console.log("Similar shows data:", similarShows);
   
   const [_, setLocation] = useLocation();
   
@@ -747,8 +744,20 @@ function SimilarShows({ showId }: { showId: number }) {
     );
   }
   
-  if (error || !similarShows || similarShows.length === 0) {
-    return null; // Don't show the section if there are no similar shows
+  if (error) {
+    console.error("Error loading similar shows:", error);
+    return null;
+  }
+  
+  if (!similarShows || similarShows.length === 0) {
+    console.log("No similar shows found or data empty");
+    // Show empty state instead of hiding completely
+    return (
+      <div className="mt-8 bg-white rounded-md shadow p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">You might also like...</h2>
+        <p className="text-center py-4 text-gray-500">No similar shows found for this title.</p>
+      </div>
+    );
   }
   
   return (

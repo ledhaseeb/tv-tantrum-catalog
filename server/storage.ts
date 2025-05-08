@@ -643,11 +643,15 @@ export class MemStorage implements IStorage {
     // Get the show details
     const show = await this.getTvShowById(showId);
     if (!show) {
+      console.log(`Show with ID ${showId} not found - can't find similar shows`);
       return [];
     }
     
+    console.log(`Finding similar shows for ${show.name} (ID: ${showId}), stimulation: ${show.stimulationScore}, themes: ${show.themes?.join(', ')}`);
+    
     // Get all shows except the current one
     const allShows = Array.from(this.tvShows.values()).filter(s => s.id !== showId);
+    console.log(`Comparing against ${allShows.length} other shows`);
     
     // Calculate similarity score for each show based on:
     // 1. Similar stimulation score (+3 points if within 1 point difference)
@@ -703,7 +707,19 @@ export class MemStorage implements IStorage {
     scoredShows.sort((a, b) => b.score - a.score);
     
     // Return the top N similar shows
-    return scoredShows.slice(0, limit).map(item => item.show);
+    const result = scoredShows.slice(0, limit).map(item => item.show);
+    
+    // Log the results
+    if (result.length === 0) {
+      console.log(`No similar shows found for ${show.name} with score > 0`);
+    } else {
+      console.log(`Found ${result.length} similar shows for ${show.name}:`);
+      result.forEach((s, i) => {
+        console.log(`  ${i+1}. ${s.name} (ID: ${s.id}), score: ${scoredShows[i].score}`);
+      });
+    }
+    
+    return result;
   }
 }
 
