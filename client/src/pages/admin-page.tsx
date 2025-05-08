@@ -65,8 +65,11 @@ export default function AdminPage() {
     interactivityLevel: 'Medium',
     dialogueIntensity: 'Medium',
     soundEffectsLevel: 'Medium',
-    themes: [] as string[],
-    overallRating: 3
+    sceneFrequency: 'Medium',
+    musicTempo: 'Medium',
+    totalMusicLevel: 'Medium',
+    animationStyle: '',
+    themes: [] as string[]
   });
 
   // Check if user is admin
