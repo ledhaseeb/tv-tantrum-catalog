@@ -157,23 +157,65 @@ export default function AdminPage() {
       return value && value.trim() !== '' ? value : defaultValue;
     };
 
-    setSelectedShow(show);
-    setFormState({
-      name: show.name,
-      description: ensureValue(show.description, ''),
-      ageRange: ensureValue(show.ageRange, ''),
-      stimulationScore: show.stimulationScore,
-      interactivityLevel: ensureValue(show.interactivityLevel),
-      dialogueIntensity: ensureValue(show.dialogueIntensity),
-      soundEffectsLevel: ensureValue(show.soundEffectsLevel),
-      sceneFrequency: ensureValue(show.sceneFrequency),
-      musicTempo: ensureValue(show.musicTempo),
-      totalMusicLevel: ensureValue(show.totalMusicLevel),
-      totalSoundEffectTimeLevel: ensureValue(show.totalSoundEffectTimeLevel),
-      animationStyle: ensureValue(show.animationStyle, ''),
-      themes: show.themes || []
-    });
-    setIsDialogOpen(true);
+    // Log the show object to debug what values we're getting from the API
+    console.log("Show data for editing:", JSON.stringify(show, null, 2));
+
+    // Force a fresh fetch of the specific show to ensure we have the latest data
+    const fetchCurrentShowData = async () => {
+      try {
+        const response = await fetch(`/api/shows/${show.id}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch show: ${response.statusText}`);
+        }
+        
+        const currentShowData = await response.json();
+        console.log("Fresh show data:", JSON.stringify(currentShowData, null, 2));
+        
+        // Use the freshly fetched show data
+        setSelectedShow(currentShowData);
+        setFormState({
+          name: currentShowData.name,
+          description: ensureValue(currentShowData.description, ''),
+          ageRange: ensureValue(currentShowData.ageRange, ''),
+          stimulationScore: currentShowData.stimulationScore,
+          interactivityLevel: ensureValue(currentShowData.interactivityLevel),
+          dialogueIntensity: ensureValue(currentShowData.dialogueIntensity),
+          soundEffectsLevel: ensureValue(currentShowData.soundEffectsLevel),
+          sceneFrequency: ensureValue(currentShowData.sceneFrequency),
+          musicTempo: ensureValue(currentShowData.musicTempo),
+          totalMusicLevel: ensureValue(currentShowData.totalMusicLevel),
+          totalSoundEffectTimeLevel: ensureValue(currentShowData.totalSoundEffectTimeLevel),
+          animationStyle: ensureValue(currentShowData.animationStyle, ''),
+          themes: currentShowData.themes || []
+        });
+        
+        setIsDialogOpen(true);
+      } catch (error) {
+        console.error("Error fetching fresh show data:", error);
+        // Fall back to using the original show data if the fetch fails
+        setSelectedShow(show);
+        setFormState({
+          name: show.name,
+          description: ensureValue(show.description, ''),
+          ageRange: ensureValue(show.ageRange, ''),
+          stimulationScore: show.stimulationScore,
+          interactivityLevel: ensureValue(show.interactivityLevel),
+          dialogueIntensity: ensureValue(show.dialogueIntensity),
+          soundEffectsLevel: ensureValue(show.soundEffectsLevel),
+          sceneFrequency: ensureValue(show.sceneFrequency),
+          musicTempo: ensureValue(show.musicTempo),
+          totalMusicLevel: ensureValue(show.totalMusicLevel),
+          totalSoundEffectTimeLevel: ensureValue(show.totalSoundEffectTimeLevel),
+          animationStyle: ensureValue(show.animationStyle, ''),
+          themes: show.themes || []
+        });
+        
+        setIsDialogOpen(true);
+      }
+    };
+    
+    // Call the fetch function
+    fetchCurrentShowData();
   };
 
   // Update show
