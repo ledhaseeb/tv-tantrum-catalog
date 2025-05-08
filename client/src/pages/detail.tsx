@@ -755,7 +755,7 @@ function SimilarShows({ showId }: { showId: number }) {
           <div 
             key={show.id} 
             className="rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => setLocation(`/show/${show.id}`)}
+            onClick={() => setLocation(`/shows/${show.id}`)}
           >
             {show.imageUrl ? (
               <img 
