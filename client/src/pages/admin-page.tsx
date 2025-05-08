@@ -163,6 +163,7 @@ export default function AdminPage() {
       sceneFrequency: show.sceneFrequency || 'Medium',
       musicTempo: show.musicTempo || 'Medium',
       totalMusicLevel: show.totalMusicLevel || 'Medium',
+      totalSoundEffectTimeLevel: show.totalSoundEffectTimeLevel || 'Medium',
       animationStyle: show.animationStyle || '',
       themes: show.themes || []
     });
@@ -453,6 +454,27 @@ export default function AdminPage() {
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select sound effects level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="totalSoundEffectTimeLevel" className="text-right">
+                Total Sound Effect Time
+              </Label>
+              <Select 
+                value={formState.totalSoundEffectTimeLevel}
+                onValueChange={(value) => setFormState({...formState, totalSoundEffectTimeLevel: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select total sound effect time level" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Low">Low</SelectItem>

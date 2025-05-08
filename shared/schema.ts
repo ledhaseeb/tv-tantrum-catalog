@@ -69,8 +69,7 @@ export const tvShows = pgTable("tv_shows", {
   creativityRating: integer("creativity_rating"),
   educationalValueRating: integer("educational_value_rating"),
   
-  // Overall rating still useful for comparison
-  overallRating: integer("overall_rating").notNull(), // 1-5 scale
+  // We no longer need overall rating as it's redundant with stimulationScore
   
   // Platform and themes
   availableOn: text("available_on").array(),
