@@ -530,12 +530,13 @@ export default function AdminPage() {
               <Label htmlFor="animationStyle" className="text-right">
                 Animation Style
               </Label>
-              <Input
+              <Textarea
                 id="animationStyle"
                 value={formState.animationStyle}
                 onChange={(e) => setFormState({...formState, animationStyle: e.target.value})}
                 className="col-span-3"
-                placeholder="e.g. 3D Animation, Stop-motion"
+                placeholder="Describe the animation style (e.g., '3D Animation', 'Stop-motion with hand-crafted models')"
+                rows={3}
               />
             </div>
           </div>
