@@ -705,9 +705,83 @@ export default function Detail({ id }: DetailProps) {
         </div>
       </div>
       
+      {/* Similar Shows Section */}
+      <SimilarShows showId={id} />
+      
       <div className="text-center text-xs text-gray-500 mt-8">
         © 2025 Sensory Screen Time Guide. All rights reserved.
       </div>
     </main>
+  );
+}
+
+// Similar Shows Component
+function SimilarShows({ showId }: { showId: number }) {
+  const { data: similarShows, isLoading, error } = useQuery<TvShow[]>({
+    queryKey: [`/api/shows/${showId}/similar`],
+    enabled: !!showId,
+  });
+  
+  const [_, setLocation] = useLocation();
+  
+  if (isLoading) {
+    return (
+      <div className="mt-8 bg-white rounded-md shadow p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">You might also like...</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-md border border-gray-200 overflow-hidden">
+              <Skeleton className="w-full h-40" />
+              <div className="p-3">
+                <Skeleton className="h-5 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  if (error || !similarShows || similarShows.length === 0) {
+    return null; // Don't show the section if there are no similar shows
+  }
+  
+  return (
+    <div className="mt-8 bg-white rounded-md shadow p-6">
+      <h2 className="text-xl font-bold text-gray-800 mb-4">You might also like...</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {similarShows.map((show) => (
+          <div 
+            key={show.id} 
+            className="rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => setLocation(`/show/${show.id}`)}
+          >
+            {show.imageUrl ? (
+              <img 
+                src={show.imageUrl} 
+                alt={show.name} 
+                className="w-full h-40 object-cover"
+              />
+            ) : (
+              <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
+                <i className="fas fa-tv text-gray-400 text-2xl"></i>
+              </div>
+            )}
+            <div className="p-3">
+              <h3 className="font-medium text-teal-700">{show.name}</h3>
+              <p className="text-sm text-gray-600 flex items-center mt-1">
+                <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
+                  show.stimulationScore <= 2 ? 'bg-green-500' : 
+                  show.stimulationScore === 3 ? 'bg-yellow-500' : 
+                  'bg-orange-500'
+                }`}></span>
+                Stimulation: {show.stimulationScore}/5
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

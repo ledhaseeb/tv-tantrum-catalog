@@ -377,6 +377,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch recommendations" });
     }
   });
+  
+  // Get similar shows for a specific show
+  app.get("/api/shows/:id/similar", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 4;
+      
+      const similarShows = await storage.getSimilarShowsByShowId(id, limit);
+      
+      res.json(similarShows);
+    } catch (error) {
+      console.error("Error fetching similar shows:", error);
+      res.status(500).json({ message: "Failed to fetch similar shows" });
+    }
+  });
 
   // Check if a user is admin (for color palette access)
   app.get("/api/user/is-admin", async (req: Request, res: Response) => {
