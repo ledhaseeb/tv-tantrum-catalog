@@ -151,20 +151,26 @@ export default function AdminPage() {
 
   // Open edit dialog
   const handleEditShow = (show: TvShow) => {
+    // Helper function to ensure we always have a valid string value
+    const ensureValue = (value: string | null | undefined, defaultValue: string = 'Medium'): string => {
+      // Return the value if it exists and is not an empty string, otherwise return the default
+      return value && value.trim() !== '' ? value : defaultValue;
+    };
+
     setSelectedShow(show);
     setFormState({
       name: show.name,
-      description: show.description || '',
-      ageRange: show.ageRange || '',
+      description: ensureValue(show.description, ''),
+      ageRange: ensureValue(show.ageRange, ''),
       stimulationScore: show.stimulationScore,
-      interactivityLevel: show.interactivityLevel || 'Medium',
-      dialogueIntensity: show.dialogueIntensity || 'Medium',
-      soundEffectsLevel: show.soundEffectsLevel || 'Medium',
-      sceneFrequency: show.sceneFrequency || 'Medium',
-      musicTempo: show.musicTempo || 'Medium',
-      totalMusicLevel: show.totalMusicLevel || 'Medium',
-      totalSoundEffectTimeLevel: show.totalSoundEffectTimeLevel || 'Medium',
-      animationStyle: show.animationStyle || '',
+      interactivityLevel: ensureValue(show.interactivityLevel),
+      dialogueIntensity: ensureValue(show.dialogueIntensity),
+      soundEffectsLevel: ensureValue(show.soundEffectsLevel),
+      sceneFrequency: ensureValue(show.sceneFrequency),
+      musicTempo: ensureValue(show.musicTempo),
+      totalMusicLevel: ensureValue(show.totalMusicLevel),
+      totalSoundEffectTimeLevel: ensureValue(show.totalSoundEffectTimeLevel),
+      animationStyle: ensureValue(show.animationStyle, ''),
       themes: show.themes || []
     });
     setIsDialogOpen(true);
