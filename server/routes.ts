@@ -18,12 +18,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const showsData = await githubService.fetchTvShowsData();
     console.log(`Fetched ${showsData.length} TV shows from GitHub`);
     
-    // Import only a subset of shows for faster startup
+    // Import all shows to make sure we have the full database available
     if (showsData.length > 0) {
-      // Take only the first 20 shows for faster startup
-      const limitedShowsData = showsData.slice(0, 20);
-      console.log(`Importing ${limitedShowsData.length} TV shows for faster startup...`);
-      const importedShows = await storage.importShowsFromGitHub(limitedShowsData);
+      console.log(`Importing all ${showsData.length} TV shows...`);
+      const importedShows = await storage.importShowsFromGitHub(showsData);
       console.log(`Imported ${importedShows.length} TV shows to storage`);
     }
   } catch (error) {
