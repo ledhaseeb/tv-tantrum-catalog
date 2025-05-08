@@ -418,12 +418,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Show not found" });
       }
 
+      console.log(`Updating show #${id} with data:`, JSON.stringify(req.body, null, 2));
+
       // Update the show
       const updatedShow = await storage.updateTvShow(id, req.body);
       if (!updatedShow) {
+        console.error(`Failed to update show #${id}`);
         return res.status(500).json({ message: "Failed to update show" });
       }
 
+      console.log(`Show #${id} updated successfully:`, JSON.stringify(updatedShow, null, 2));
       res.json(updatedShow);
     } catch (error) {
       console.error("Error updating TV show:", error);

@@ -41,7 +41,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Search, Edit, RefreshCw } from 'lucide-react';
 import { TvShow } from '@shared/schema';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export default function AdminPage() {
   const { user, isAdmin } = useAuth();
@@ -275,14 +275,45 @@ export default function AdminPage() {
     fetchCurrentShowData();
   };
 
+  // Convert form values back to API format
+  const convertFormValuesToApi = (formValues: any) => {
+    // Helper function to convert "Medium" back to "Moderate" for API
+    const convertMetricValueForApi = (value: string | null | undefined): string | null => {
+      if (!value) return null;
+      
+      // Convert form values back to API format
+      if (value === 'Medium') {
+        return 'Moderate';
+      }
+      
+      return value;
+    };
+    
+    // Create a new object with converted values
+    return {
+      ...formValues,
+      // Convert form field values back to API format
+      interactivityLevel: formValues.interactivityLevel === 'Medium' ? 'Moderate' : formValues.interactivityLevel,
+      dialogueIntensity: formValues.dialogueIntensity === 'Medium' ? 'Moderate' : formValues.dialogueIntensity,
+      sceneFrequency: formValues.sceneFrequency === 'Medium' ? 'Moderate' : formValues.sceneFrequency,
+      musicTempo: formValues.musicTempo === 'Medium' ? 'Moderate' : formValues.musicTempo,
+      totalMusicLevel: formValues.totalMusicLevel === 'Medium' ? 'Moderate' : formValues.totalMusicLevel,
+    };
+  };
+  
   // Update show
   const handleUpdateShow = async () => {
     if (!selectedShow) return;
     
     setIsUpdating(true);
     try {
-      const response = await apiRequest('PATCH', `/api/shows/${selectedShow.id}`, formState);
-      const updatedShow = await response.json();
+      // Convert form values back to API format
+      const apiFormData = convertFormValuesToApi(formState);
+      
+      console.log('Submitting data to API:', apiFormData);
+      
+      // Make the API request with the converted data
+      const updatedShow = await apiRequest('PATCH', `/api/shows/${selectedShow.id}`, apiFormData);
       
       // Update shows in state
       setShows(prev => prev.map(show => 
@@ -291,6 +322,11 @@ export default function AdminPage() {
       setFilteredShows(prev => prev.map(show => 
         show.id === updatedShow.id ? updatedShow : show
       ));
+      
+      // Invalidate any queries that might have stale data
+      console.log('Invalidating query cache for:', `/api/shows/${selectedShow.id}`);
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${selectedShow.id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/shows'] });
       
       toast({
         title: "Show Updated",
