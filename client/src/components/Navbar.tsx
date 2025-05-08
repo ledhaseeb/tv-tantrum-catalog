@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search, User, LogOut, Home, Filter, BarChart2, Info } from "lucide-react";
+import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -13,7 +13,7 @@ export default function Navbar() {
   const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
-  const { user, logoutMutation } = useAuth();
+  const { user, logoutMutation, isAdmin } = useAuth();
 
   // Fetch shows for search dropdown
   const { data: shows } = useQuery({
@@ -178,6 +178,17 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-2">
+                  {isAdmin && (
+                    <Link href="/admin">
+                      <Button 
+                        variant="ghost" 
+                        className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>Admin</span>
+                      </Button>
+                    </Link>
+                  )}
                   <Button 
                     variant="ghost" 
                     className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
@@ -247,6 +258,15 @@ export default function Navbar() {
                   {/* Mobile authentication links */}
                   {user ? (
                     <>
+                      {isAdmin && (
+                        <Link 
+                          href="/admin"
+                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                        >
+                          <Settings className="h-5 w-5 mr-2" />
+                          Admin Dashboard
+                        </Link>
+                      )}
                       <button
                         onClick={() => logoutMutation.mutate()}
                         className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
