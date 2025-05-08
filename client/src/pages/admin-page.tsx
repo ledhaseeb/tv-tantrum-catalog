@@ -149,14 +149,41 @@ export default function AdminPage() {
     }
   };
 
+  // Normalize stimulation metrics between different naming conventions
+  const normalizeMetrics = (value: string | null | undefined): string => {
+    if (!value) return 'Medium';
+    
+    // Trim and convert to lowercase for consistent comparison
+    const normalizedValue = value.trim().toLowerCase();
+    
+    // Map various formats to standard values
+    if (normalizedValue.includes('low-moderate') || normalizedValue.includes('low to moderate')) {
+      return 'Low-Moderate';
+    } else if (normalizedValue.includes('moderate-low')) {
+      return 'Low-Moderate';
+    } else if (normalizedValue.includes('moderate-high') || normalizedValue.includes('moderate to high')) {
+      return 'Moderate-High';
+    } else if (normalizedValue.includes('high-moderate')) {
+      return 'Moderate-High';
+    } else if (normalizedValue === 'low') {
+      return 'Low';
+    } else if (normalizedValue === 'high') {
+      return 'High';
+    } else if (normalizedValue.includes('moderate')) {
+      return 'Medium'; // Convert 'Moderate' to 'Medium' for consistency
+    }
+    
+    return 'Medium'; // Default fallback
+  };
+
+  // Helper function to ensure we always have a valid string value
+  const ensureValue = (value: string | null | undefined, defaultValue: string = 'Medium'): string => {
+    // Return the value if it exists and is not an empty string, otherwise return the default
+    return value && value.trim() !== '' ? value : defaultValue;
+  };
+
   // Open edit dialog
   const handleEditShow = (show: TvShow) => {
-    // Helper function to ensure we always have a valid string value
-    const ensureValue = (value: string | null | undefined, defaultValue: string = 'Medium'): string => {
-      // Return the value if it exists and is not an empty string, otherwise return the default
-      return value && value.trim() !== '' ? value : defaultValue;
-    };
-
     // Log the show object to debug what values we're getting from the API
     console.log("Show data for editing:", JSON.stringify(show, null, 2));
 
@@ -171,20 +198,40 @@ export default function AdminPage() {
         const currentShowData = await response.json();
         console.log("Fresh show data:", JSON.stringify(currentShowData, null, 2));
         
-        // Use the freshly fetched show data
+        // Map display values to form values - converting from "Moderate" to correct form values
+        // This ensures the edit form and details page values match
+        const mappedInteractivityLevel = normalizeMetrics(currentShowData.interactivityLevel);
+        const mappedDialogueIntensity = normalizeMetrics(currentShowData.dialogueIntensity);
+        const mappedSoundEffectsLevel = normalizeMetrics(currentShowData.soundEffectsLevel);
+        const mappedSceneFrequency = normalizeMetrics(currentShowData.sceneFrequency);
+        const mappedMusicTempo = normalizeMetrics(currentShowData.musicTempo);
+        const mappedTotalMusicLevel = normalizeMetrics(currentShowData.totalMusicLevel);
+        const mappedTotalSoundEffectTimeLevel = normalizeMetrics(currentShowData.totalSoundEffectTimeLevel);
+        
+        console.log("Mapped values:", {
+          interactivityLevel: mappedInteractivityLevel,
+          dialogueIntensity: mappedDialogueIntensity,
+          soundEffectsLevel: mappedSoundEffectsLevel,
+          sceneFrequency: mappedSceneFrequency,
+          musicTempo: mappedMusicTempo,
+          totalMusicLevel: mappedTotalMusicLevel,
+          totalSoundEffectTimeLevel: mappedTotalSoundEffectTimeLevel
+        });
+        
+        // Use the freshly fetched show data with normalized values
         setSelectedShow(currentShowData);
         setFormState({
           name: currentShowData.name,
           description: ensureValue(currentShowData.description, ''),
           ageRange: ensureValue(currentShowData.ageRange, ''),
           stimulationScore: currentShowData.stimulationScore,
-          interactivityLevel: ensureValue(currentShowData.interactivityLevel),
-          dialogueIntensity: ensureValue(currentShowData.dialogueIntensity),
-          soundEffectsLevel: ensureValue(currentShowData.soundEffectsLevel),
-          sceneFrequency: ensureValue(currentShowData.sceneFrequency),
-          musicTempo: ensureValue(currentShowData.musicTempo),
-          totalMusicLevel: ensureValue(currentShowData.totalMusicLevel),
-          totalSoundEffectTimeLevel: ensureValue(currentShowData.totalSoundEffectTimeLevel),
+          interactivityLevel: mappedInteractivityLevel,
+          dialogueIntensity: mappedDialogueIntensity,
+          soundEffectsLevel: mappedSoundEffectsLevel,
+          sceneFrequency: mappedSceneFrequency,
+          musicTempo: mappedMusicTempo,
+          totalMusicLevel: mappedTotalMusicLevel,
+          totalSoundEffectTimeLevel: mappedTotalSoundEffectTimeLevel,
           animationStyle: ensureValue(currentShowData.animationStyle, ''),
           themes: currentShowData.themes || []
         });
@@ -194,18 +241,28 @@ export default function AdminPage() {
         console.error("Error fetching fresh show data:", error);
         // Fall back to using the original show data if the fetch fails
         setSelectedShow(show);
+        
+        // Apply the same normalization to the original show data
+        const mappedInteractivityLevel = normalizeMetrics(show.interactivityLevel);
+        const mappedDialogueIntensity = normalizeMetrics(show.dialogueIntensity);
+        const mappedSoundEffectsLevel = normalizeMetrics(show.soundEffectsLevel);
+        const mappedSceneFrequency = normalizeMetrics(show.sceneFrequency);
+        const mappedMusicTempo = normalizeMetrics(show.musicTempo);
+        const mappedTotalMusicLevel = normalizeMetrics(show.totalMusicLevel);
+        const mappedTotalSoundEffectTimeLevel = normalizeMetrics(show.totalSoundEffectTimeLevel);
+        
         setFormState({
           name: show.name,
           description: ensureValue(show.description, ''),
           ageRange: ensureValue(show.ageRange, ''),
           stimulationScore: show.stimulationScore,
-          interactivityLevel: ensureValue(show.interactivityLevel),
-          dialogueIntensity: ensureValue(show.dialogueIntensity),
-          soundEffectsLevel: ensureValue(show.soundEffectsLevel),
-          sceneFrequency: ensureValue(show.sceneFrequency),
-          musicTempo: ensureValue(show.musicTempo),
-          totalMusicLevel: ensureValue(show.totalMusicLevel),
-          totalSoundEffectTimeLevel: ensureValue(show.totalSoundEffectTimeLevel),
+          interactivityLevel: mappedInteractivityLevel,
+          dialogueIntensity: mappedDialogueIntensity,
+          soundEffectsLevel: mappedSoundEffectsLevel,
+          sceneFrequency: mappedSceneFrequency,
+          musicTempo: mappedMusicTempo,
+          totalMusicLevel: mappedTotalMusicLevel,
+          totalSoundEffectTimeLevel: mappedTotalSoundEffectTimeLevel,
           animationStyle: ensureValue(show.animationStyle, ''),
           themes: show.themes || []
         });
