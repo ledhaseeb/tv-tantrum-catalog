@@ -68,6 +68,7 @@ export default function AdminPage() {
     sceneFrequency: 'Medium',
     musicTempo: 'Medium',
     totalMusicLevel: 'Medium',
+    totalSoundEffectTimeLevel: 'Medium',
     animationStyle: '',
     themes: [] as string[]
   });
