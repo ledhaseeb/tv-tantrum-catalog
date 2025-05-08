@@ -12,15 +12,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
-  // Initialize the data from GitHub on server start
+  // Initialize the data from GitHub on server start - Limiting to 20 shows for faster startup
   try {
     console.log("Fetching TV shows data from GitHub...");
     const showsData = await githubService.fetchTvShowsData();
     console.log(`Fetched ${showsData.length} TV shows from GitHub`);
     
-    // Import shows to storage
+    // Import only a subset of shows for faster startup
     if (showsData.length > 0) {
-      const importedShows = await storage.importShowsFromGitHub(showsData);
+      // Take only the first 20 shows for faster startup
+      const limitedShowsData = showsData.slice(0, 20);
+      console.log(`Importing ${limitedShowsData.length} TV shows for faster startup...`);
+      const importedShows = await storage.importShowsFromGitHub(limitedShowsData);
       console.log(`Imported ${importedShows.length} TV shows to storage`);
     }
   } catch (error) {
@@ -389,6 +392,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking admin status:", error);
       res.status(500).json({ message: "Failed to check admin status" });
+    }
+  });
+  
+  // Update a TV show (admin only)
+  app.patch("/api/shows/:id", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to update shows" });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      // Validate the show exists
+      const existingShow = await storage.getTvShowById(id);
+      if (!existingShow) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+
+      // Update the show
+      const updatedShow = await storage.updateTvShow(id, req.body);
+      if (!updatedShow) {
+        return res.status(500).json({ message: "Failed to update show" });
+      }
+
+      res.json(updatedShow);
+    } catch (error) {
+      console.error("Error updating TV show:", error);
+      res.status(500).json({ message: "Failed to update TV show" });
     }
   });
 

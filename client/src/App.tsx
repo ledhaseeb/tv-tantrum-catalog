@@ -12,6 +12,7 @@ import Detail from "@/pages/detail";
 import Compare from "@/pages/compare";
 import About from "@/pages/about";
 import AuthPage from "@/pages/auth-page";
+import AdminPage from "@/pages/admin-page";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -38,6 +39,9 @@ function Router() {
           </Route>
           <Route path="/auth">
             <AuthPage />
+          </Route>
+          <Route path="/admin">
+            <AdminPage />
           </Route>
           <Route>
             <NotFound />
