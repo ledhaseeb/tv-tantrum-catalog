@@ -79,7 +79,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <h1 className="text-2xl font-heading font-bold text-white">TV Tantrum</h1>
+              <h1 className="text-2xl font-heading font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h1>
             </Link>
             <nav className="hidden md:ml-10 md:flex space-x-8">
               <Link 
@@ -225,7 +225,7 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent side="left">
                 <div className="px-2 pt-4 pb-3 space-y-1">
-                  <h2 className="text-lg font-bold mb-4 text-primary">TV Tantrum</h2>
+                  <h2 className="text-lg font-bold mb-4" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
                   <Link 
                     href="/"
                     className={`flex items-center px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
