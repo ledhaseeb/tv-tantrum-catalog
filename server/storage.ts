@@ -343,7 +343,8 @@ export class MemStorage implements IStorage {
           });
           break;
         case 'overall-rating':
-          shows.sort((a, b) => b.overallRating - a.overallRating);
+          // Sort by stimulation score (inverse, since higher stimulation is more intense)
+          shows.sort((a, b) => a.stimulationScore - b.stimulationScore);
           break;
       }
     }
@@ -512,10 +513,8 @@ export class MemStorage implements IStorage {
     this.reviewCurrentId = 1;
     
     for (const show of shows) {
-      // Calculate an overall rating based on stimulation score
-      // Lower stimulation score is better for calmness, so we invert it for rating
-      // (This is just a placeholder calculation method)
-      const overallRating = Math.max(1, Math.min(5, Math.round(6 - show.stimulation_score)));
+      // Lower stimulation score is better for calmness
+      // We no longer need to calculate an overall rating as we use stimulation score directly
       
       // Extract episode length in minutes if available
       let episodeLength = 15; // Default
@@ -590,7 +589,6 @@ export class MemStorage implements IStorage {
         educationalValueRating: hasEducationalTheme ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 1,
         
         // Derived fields
-        overallRating: overallRating,
         availableOn: [show.platform],
         imageUrl: show.imageUrl ? show.imageUrl : null,
       });
