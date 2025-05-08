@@ -66,11 +66,9 @@ export class MemStorage implements IStorage {
     this.searchCurrentId = 1;
     
     // Create an admin test user for development
-    const adminPassword = "admin123"; // Using plain text for demonstration purposes
-    
-    // Manually hash the password for storage
-    // The format of the hash is hash.salt
-    const adminPasswordHash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8.54b0e395eb56960b";
+    // The password hash is generated using the hashPassword function in auth.ts
+    // This is the hash for password: "admin123"
+    const adminPasswordHash = "7f109fc73f0989b7f927a0b1348c95cc54354a624d321e0bc391a78e5d02be699e356821891ff6d8bbb4129e6f86d88a7460d69acdb060d79e9868447cee14f5.30095aeccc3401a9393d84557eaac61b";
     
     // Add an admin user for testing
     this.createUser({
