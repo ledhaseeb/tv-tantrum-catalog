@@ -159,8 +159,11 @@ export default function AdminPage() {
       interactivityLevel: show.interactivityLevel || 'Medium',
       dialogueIntensity: show.dialogueIntensity || 'Medium',
       soundEffectsLevel: show.soundEffectsLevel || 'Medium',
-      themes: show.themes || [],
-      overallRating: show.overallRating
+      sceneFrequency: show.sceneFrequency || 'Medium',
+      musicTempo: show.musicTempo || 'Medium',
+      totalMusicLevel: show.totalMusicLevel || 'Medium',
+      animationStyle: show.animationStyle || '',
+      themes: show.themes || []
     });
     setIsDialogOpen(true);
   };
@@ -270,14 +273,13 @@ export default function AdminPage() {
                       <TableHead>Name</TableHead>
                       <TableHead>Age Range</TableHead>
                       <TableHead>Stimulation</TableHead>
-                      <TableHead>Rating</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredShows.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                           No shows found
                         </TableCell>
                       </TableRow>
@@ -288,7 +290,6 @@ export default function AdminPage() {
                           <TableCell className="font-medium">{show.name}</TableCell>
                           <TableCell>{show.ageRange || 'N/A'}</TableCell>
                           <TableCell>{show.stimulationScore}/5</TableCell>
-                          <TableCell>{show.overallRating}/5</TableCell>
                           <TableCell className="text-right">
                             <Button 
                               variant="ghost" 
@@ -463,24 +464,79 @@ export default function AdminPage() {
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="overallRating" className="text-right">
-                Overall Rating
+              <Label htmlFor="sceneFrequency" className="text-right">
+                Scene Frequency
               </Label>
               <Select 
-                value={String(formState.overallRating)}
-                onValueChange={(value) => setFormState({...formState, overallRating: parseInt(value)})}
+                value={formState.sceneFrequency}
+                onValueChange={(value) => setFormState({...formState, sceneFrequency: value})}
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select overall rating" />
+                  <SelectValue placeholder="Select scene frequency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 - Poor</SelectItem>
-                  <SelectItem value="2">2 - Fair</SelectItem>
-                  <SelectItem value="3">3 - Good</SelectItem>
-                  <SelectItem value="4">4 - Very Good</SelectItem>
-                  <SelectItem value="5">5 - Excellent</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="musicTempo" className="text-right">
+                Music Tempo
+              </Label>
+              <Select 
+                value={formState.musicTempo}
+                onValueChange={(value) => setFormState({...formState, musicTempo: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select music tempo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="totalMusicLevel" className="text-right">
+                Total Music Level
+              </Label>
+              <Select 
+                value={formState.totalMusicLevel}
+                onValueChange={(value) => setFormState({...formState, totalMusicLevel: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select total music level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="animationStyle" className="text-right">
+                Animation Style
+              </Label>
+              <Input
+                id="animationStyle"
+                value={formState.animationStyle}
+                onChange={(e) => setFormState({...formState, animationStyle: e.target.value})}
+                className="col-span-3"
+                placeholder="e.g. 3D Animation, Stop-motion"
+              />
             </div>
           </div>
           
