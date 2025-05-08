@@ -43,6 +43,7 @@ export interface IStorage {
   getUserFavorites(userId: number): Promise<TvShow[]>;
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
+  getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -636,6 +637,73 @@ export class MemStorage implements IStorage {
   async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
     // This is just a stub since we're using DatabaseStorage
     throw new Error('Method not implemented in MemStorage');
+  }
+  
+  async getSimilarShowsByShowId(showId: number, limit: number = 4): Promise<TvShow[]> {
+    // Get the show details
+    const show = await this.getTvShowById(showId);
+    if (!show) {
+      return [];
+    }
+    
+    // Get all shows except the current one
+    const allShows = Array.from(this.tvShows.values()).filter(s => s.id !== showId);
+    
+    // Calculate similarity score for each show based on:
+    // 1. Similar stimulation score (+3 points if within 1 point difference)
+    // 2. Similar themes (+2 points for each matching theme)
+    // 3. Similar interactivity level (+2 points if same)
+    // 4. Similar target age range (+1 point if overlapping)
+    interface ScoredShow {
+      show: TvShow;
+      score: number;
+    }
+    
+    const scoredShows: ScoredShow[] = allShows.map(otherShow => {
+      let score = 0;
+      
+      // 1. Similar stimulation score
+      if (Math.abs(otherShow.stimulationScore - show.stimulationScore) <= 1) {
+        score += 3;
+      }
+      
+      // 2. Similar themes
+      if (show.themes && otherShow.themes) {
+        const showThemesLower = show.themes.map(t => t.toLowerCase());
+        const otherThemesLower = otherShow.themes.map(t => t.toLowerCase());
+        
+        // Count matching themes
+        for (const theme of showThemesLower) {
+          if (otherThemesLower.some(t => t.includes(theme) || theme.includes(t))) {
+            score += 2;
+          }
+        }
+      }
+      
+      // 3. Similar interactivity level
+      if (show.interactivityLevel === otherShow.interactivityLevel) {
+        score += 2;
+      }
+      
+      // 4. Similar target age range
+      if (show.ageRange && otherShow.ageRange) {
+        const [showMin, showMax] = show.ageRange.split('-').map(Number);
+        const [otherMin, otherMax] = otherShow.ageRange.split('-').map(Number);
+        
+        // Check for overlap in age ranges
+        if (showMin <= otherMax && showMax >= otherMin) {
+          score += 1;
+        }
+      }
+      
+      return { show: otherShow, score };
+    });
+    
+    // Sort by similarity score (highest first)
+    scoredShows.sort((a, b) => b.score - a.score);
+    
+    // Return the top N similar shows
+    return scoredShows.slice(0, limit).map(item => item.show);
   }
 }
 
