@@ -1,6 +1,7 @@
-import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch } from "@shared/schema";
+import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch, type Favorite } from "@shared/schema";
 
 export interface IStorage {
+  // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -14,6 +15,11 @@ export interface IStorage {
     tantrumFactor?: string; 
     sortBy?: string; 
     search?: string;
+    themes?: string[];
+    interactionLevel?: string;
+    dialogueIntensity?: string;
+    soundFrequency?: string;
+    stimulationScoreRange?: {min: number, max: number};
   }): Promise<TvShow[]>;
   addTvShow(show: InsertTvShow): Promise<TvShow>;
   updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined>;
@@ -30,6 +36,13 @@ export interface IStorage {
   
   // Import shows from GitHub data
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
+  
+  // Favorites methods
+  addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
+  removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
+  getUserFavorites(userId: number): Promise<TvShow[]>;
+  isFavorite(userId: number, tvShowId: number): Promise<boolean>;
+  getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -586,6 +599,37 @@ export class MemStorage implements IStorage {
     
     return importedShows;
   }
+  
+  // These methods are implemented in DatabaseStorage but need stubs here
+  // Favorites methods
+  async addFavorite(userId: number, tvShowId: number): Promise<Favorite> {
+    // This is just a stub since we're using DatabaseStorage
+    throw new Error('Method not implemented in MemStorage');
+  }
+  
+  async removeFavorite(userId: number, tvShowId: number): Promise<boolean> {
+    // This is just a stub since we're using DatabaseStorage
+    throw new Error('Method not implemented in MemStorage');
+  }
+  
+  async getUserFavorites(userId: number): Promise<TvShow[]> {
+    // This is just a stub since we're using DatabaseStorage
+    throw new Error('Method not implemented in MemStorage');
+  }
+  
+  async isFavorite(userId: number, tvShowId: number): Promise<boolean> {
+    // This is just a stub since we're using DatabaseStorage
+    throw new Error('Method not implemented in MemStorage');
+  }
+  
+  async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
+    // This is just a stub since we're using DatabaseStorage
+    throw new Error('Method not implemented in MemStorage');
+  }
 }
 
-export const storage = new MemStorage();
+// Import the DatabaseStorage implementation
+import { DatabaseStorage } from './database-storage';
+
+// Use DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();
