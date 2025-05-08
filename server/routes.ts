@@ -382,7 +382,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/shows/:id/similar", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`Fetching similar shows for show ID: ${id}`);
+      
       if (isNaN(id)) {
+        console.log("Invalid show ID provided");
         return res.status(400).json({ message: "Invalid show ID" });
       }
       
@@ -390,6 +393,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 4;
       
       const similarShows = await storage.getSimilarShowsByShowId(id, limit);
+      console.log(`Found ${similarShows.length} similar shows for show ID ${id}`);
+      
+      // Log some sample data
+      if (similarShows.length > 0) {
+        console.log("First similar show:", {
+          id: similarShows[0].id,
+          name: similarShows[0].name
+        });
+      }
       
       res.json(similarShows);
     } catch (error) {

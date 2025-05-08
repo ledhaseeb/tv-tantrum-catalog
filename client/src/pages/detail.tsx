@@ -719,8 +719,12 @@ export default function Detail({ id }: DetailProps) {
 function SimilarShows({ showId }: { showId: number }) {
   const { data: similarShows, isLoading, error } = useQuery<TvShow[]>({
     queryKey: [`/api/shows/${showId}/similar`],
-    enabled: !!showId,
+    enabled: !!showId
   });
+  
+  // Add debug logs outside of the query configuration
+  console.log("Similar shows component rendering, showId:", showId);
+  console.log("Similar shows data:", similarShows);
   
   const [_, setLocation] = useLocation();
   
