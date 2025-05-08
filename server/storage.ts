@@ -64,6 +64,21 @@ export class MemStorage implements IStorage {
     this.tvShowCurrentId = 1;
     this.reviewCurrentId = 1;
     this.searchCurrentId = 1;
+    
+    // Create an admin test user for development
+    const adminPassword = "admin123"; // Using plain text for demonstration purposes
+    
+    // Manually hash the password for storage
+    // The format of the hash is hash.salt
+    const adminPasswordHash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8.54b0e395eb56960b";
+    
+    // Add an admin user for testing
+    this.createUser({
+      email: "admin@tvtantrum.com",
+      password: adminPasswordHash,
+      username: "admin",
+      isAdmin: true
+    }).then(user => console.log("Created admin user with ID:", user.id));
   }
 
   // User methods
