@@ -13,7 +13,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import ShowCard from "@/components/ShowCard";
 import { Link } from "wouter";
 
 // Define OMDb data type
@@ -52,6 +60,26 @@ export default function Detail({ id }: DetailProps) {
   const [_, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check if device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const mobileWidth = 768;
+      const width = window.innerWidth;
+      setIsMobile(width < mobileWidth);
+      console.log("Detail page - Window width:", width, "isMobile:", width < mobileWidth);
+    };
+    
+    // Check on mount
+    checkIfMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
   
   const { data: showDetail, isLoading, error } = useQuery<ShowDetailResponse>({
     queryKey: [`/api/shows/${id}`],
