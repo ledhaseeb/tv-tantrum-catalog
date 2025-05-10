@@ -71,39 +71,39 @@ export default function Home() {
     (show.themes?.includes("Adventure") && show.themes?.includes("Fantasy"))
   ) || allShows?.[0];
   
-  // Filter shows by categories - ensure at least 18 shows per category
-  const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 18);
+  // Filter shows by categories - ensure at least 24 shows per category for better browsing
+  const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 24);
   // Using stimulation score as a proxy for ratings since overallRating is not in the schema
   const highlyRatedShows = allShows?.filter(show => 
     (show.stimulationScore <= 3 && show.themes && show.themes.length >= 3) || 
     (show.stimulationScore <= 2)
-  ).slice(0, 18);
-  const popularShows = popularShowsData?.slice(0, 18) || allShows?.slice(0, 18); // Use our tracked popular shows data
+  ).slice(0, 24);
+  const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24); // Use our tracked popular shows data
   const highInteractionShows = allShows?.filter(
     show => show.interactivityLevel === 'High' || show.interactivityLevel === 'Moderate-High'
-  ).slice(0, 18);
+  ).slice(0, 24);
   
-  // Find shows by popular themes - ensure at least 18 shows per category
+  // Find shows by popular themes - ensure at least 24 shows per category
   const educationalShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('education') || theme.toLowerCase().includes('learning'))
-  ).slice(0, 18);
+  ).slice(0, 24);
   
   const adventureShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('adventure'))
-  ).slice(0, 18);
+  ).slice(0, 24);
   
   const musicalShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('music'))
-  ).slice(0, 18);
+  ).slice(0, 24);
   
   const fantasyShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('fantasy'))
-  ).slice(0, 18);
+  ).slice(0, 24);
   
   const preschoolerShows = allShows?.filter(show => 
     show.ageRange?.toLowerCase().includes('preschool') || 
     (show.ageRange && parseInt(show.ageRange.split('-')[0]) <= 4)
-  ).slice(0, 12);
+  ).slice(0, 24);
   
   // Filter shows based on search term
   const filteredShows = allShows?.filter((show: TvShow) => {

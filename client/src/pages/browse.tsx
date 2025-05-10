@@ -311,7 +311,7 @@ export default function Browse() {
               <div ref={resultsRef}>
                 {/* Show Cards Grid - Mobile uses portrait, desktop uses landscape */}
                 {isMobile ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-5">
                     {/* Mobile grid layout with portrait cards */}
                     {currentShows.map(show => (
                       <ShowCard 
