@@ -218,27 +218,21 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           </Button>
         </div>
         
-        <div className="px-3 pb-0 pt-3 text-center bg-gradient-to-t from-white to-transparent -mt-6 relative z-10">
-          {/* Stimulation text - right below the image */}
-          <div className={`font-semibold ${stimulationColor.split(' ')[1]} text-shadow-md mt-4`} 
-               style={{ 
-                 textShadow: '1.5px 1.5px 0 black, -1.5px -1.5px 0 black, 1.5px -1.5px 0 black, -1.5px 1.5px 0 black',
-                 fontWeight: 700,
-                 fontSize: '0.85rem'
-               }}>
-            {getStimulationText(show.stimulationScore)} Stimulation
-          </div>
-        </div>
-          
-        <CardContent className="p-3 pt-2 flex flex-col flex-grow">
+        <CardContent className="p-3 pt-4 flex flex-col flex-grow">
           {/* Title */}
-          <h3 className="text-sm font-bold line-clamp-1">{show.name}</h3>
+          <h3 className="text-sm font-bold line-clamp-1 mt-1">{show.name}</h3>
           
           {/* Age Range Badge */}
-          <div className="mt-1.5 mb-1 mt-auto">
+          <div className="mt-1.5 mb-1">
             <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
               Ages {show.ageRange}
             </Badge>
+          </div>
+          
+          {/* Stimulation indicator with both score and text */}
+          <div className="text-xs text-gray-600 mt-auto flex items-center justify-between">
+            <span className="font-semibold">{show.stimulationScore}/5</span>
+            <span>{getStimulationText(show.stimulationScore)}</span>
           </div>
         </CardContent>
       </Card>
