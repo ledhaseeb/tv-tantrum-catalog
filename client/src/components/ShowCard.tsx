@@ -342,7 +342,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   }
   
-  // Default card view (grid) - portrait style
+  // Default card view (grid) - smaller portrait style
   return (
     <Card 
       className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col" 
@@ -373,47 +373,47 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         <Button 
           variant="ghost" 
           size="sm"
-          className={`absolute top-2 right-2 p-1 bg-black/30 text-white rounded-full hover:bg-black/50 h-8 w-8 flex items-center justify-center`}
+          className={`absolute top-1 right-1 p-0.5 bg-black/30 text-white rounded-full hover:bg-black/50 h-6 w-6 flex items-center justify-center`}
           onClick={(e) => {
             e.stopPropagation();
             toggleFavorite(e);
           }}
         >
-          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-white' : ''}`} />
+          <Heart className={`w-3 h-3 ${isFavorite ? 'fill-white' : ''}`} />
         </Button>
       </div>
       
-      <CardContent className="p-3 flex-grow flex flex-col">
-        <div className="flex-grow space-y-2">
+      <CardContent className="p-2 flex-grow flex flex-col">
+        <div className="flex-grow space-y-1">
           {/* Title and age */}
           <div>
-            <h3 className="text-md font-bold line-clamp-1">{show.name} {releaseYears}</h3>
-            <div className="flex items-center gap-1 mt-1">
+            <h3 className="text-sm font-semibold line-clamp-1">{show.name}</h3>
+            <div className="flex items-center gap-1 mt-0.5">
               <span className="text-xs text-gray-500">Ages {show.ageRange}</span>
             </div>
           </div>
           
           {/* Stimulation score indicator */}
-          <div className="flex items-center gap-1 mt-2">
-            <div className="flex items-center scale-90">
+          <div className="flex items-center gap-1">
+            <div className="flex items-center scale-75">
               {renderStimulationDots()}
             </div>
             <span className="text-xs text-gray-600">
-              {getStimulationText(show.stimulationScore)} Stimulation
+              {getStimulationText(show.stimulationScore)}
             </span>
           </div>
           
-          {/* Theme tags */}
+          {/* Theme tags - limited to 1 for smaller cards */}
           {show.themes && show.themes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {show.themes.slice(0, 2).map((theme, index) => (
-                <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs`}>
+            <div className="flex flex-wrap gap-1">
+              {show.themes.slice(0, 1).map((theme, index) => (
+                <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs py-0 px-1.5`}>
                   {theme}
                 </Badge>
               ))}
-              {show.themes.length > 2 && (
-                <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
-                  +{show.themes.length - 2}
+              {show.themes.length > 1 && (
+                <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs py-0 px-1.5">
+                  +{show.themes.length - 1}
                 </Badge>
               )}
             </div>
@@ -421,11 +421,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         </div>
         
         {/* Learn More button */}
-        <div className="mt-auto pt-2">
+        <div className="mt-auto pt-1">
           <Button 
             variant="default" 
             size="sm" 
-            className="w-full bg-secondary hover:bg-secondary/90 text-white text-xs py-1"
+            className="w-full bg-secondary hover:bg-secondary/90 text-white text-xs py-0.5 h-7"
             style={{fontWeight: 'bold'}}
           >
             Learn More
