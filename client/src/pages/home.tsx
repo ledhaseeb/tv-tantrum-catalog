@@ -73,7 +73,11 @@ export default function Home() {
   
   // Filter shows by categories
   const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 8);
-  const highlyRatedShows = allShows?.filter(show => show.overallRating >= 4).slice(0, 8);
+  // Using stimulation score as a proxy for ratings since overallRating is not in the schema
+  const highlyRatedShows = allShows?.filter(show => 
+    (show.stimulationScore <= 3 && show.themes && show.themes.length >= 3) || 
+    (show.stimulationScore <= 2)
+  ).slice(0, 8);
   const popularShows = popularShowsData || allShows?.slice(0, 8); // Use our tracked popular shows data
   const highInteractionShows = allShows?.filter(
     show => show.interactivityLevel === 'High' || show.interactivityLevel === 'Moderate-High'
@@ -403,7 +407,7 @@ export default function Home() {
           
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer bg-blue-50" 
-            onClick={() => setLocation("/browse?sortBy=overallRating")}
+            onClick={() => setLocation("/browse?sortBy=stimulationScore&sortDirection=asc")}
           >
             <CardContent className="p-6 text-center">
               <div className="inline-flex p-3 rounded-full bg-blue-100 text-blue-600 mb-3">
@@ -455,7 +459,7 @@ export default function Home() {
         "Highly Rated Shows",
         "Top-rated shows across all categories", 
         highlyRatedShows,
-        "/browse?sortBy=overallRating"
+        "/browse?sortBy=stimulationScore&sortDirection=asc"
       )}
       
       {/* Lower Stimulation */}
