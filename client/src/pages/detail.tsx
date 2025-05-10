@@ -16,7 +16,25 @@ import { z } from "zod";
 import { useState } from "react";
 import { Link } from "wouter";
 
-type ShowDetailResponse = TvShow & { reviews: TvShowReview[] };
+// Define OMDb data type
+interface OmdbData {
+  runtime: string;
+  rated: string;
+  totalSeasons: string;
+  language: string;
+  country: string;
+  director: string;
+  writer: string;
+  imdbRating: string;
+  awards: string;
+  poster: string;
+  imdbId: string;
+}
+
+type ShowDetailResponse = TvShow & { 
+  reviews: TvShowReview[];
+  omdb?: OmdbData | null; 
+};
 
 type DetailProps = {
   id: number;

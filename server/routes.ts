@@ -2,6 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { githubService } from "./github";
+import { omdbService } from "./omdb";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import fs from 'fs';
@@ -127,9 +128,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Track this view
       await storage.trackShowView(id);
       
+      // Try to fetch OMDb data for this show
+      let omdbData = null;
+      try {
+        omdbData = await omdbService.getShowData(show.name);
+        console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
+      } catch (omdbError) {
+        console.error(`Error fetching OMDb data for ${show.name}:`, omdbError);
+        // Continue even if OMDb fetch fails
+      }
+      
       res.json({
         ...show,
-        reviews
+        reviews,
+        omdb: omdbData
       });
     } catch (error) {
       console.error("Error fetching TV show:", error);
