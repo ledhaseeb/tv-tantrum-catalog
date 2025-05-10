@@ -342,10 +342,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   }
   
-  // Default card view (grid)
+  // Default card view (grid) - portrait style
   return (
     <Card 
-      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full" 
+      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col" 
       onClick={() => {
         // Scroll to top before triggering the onClick action
         window.scrollTo(0, 0);
@@ -353,7 +353,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       }}>
       <div className="relative">
         {show.imageUrl ? (
-          <div className="h-44 w-full bg-gray-100 overflow-hidden flex items-center justify-center">
+          <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden flex items-center justify-center">
             <div className="w-full h-full relative">
               <img 
                 className="absolute inset-0 w-full h-full object-cover"
@@ -364,62 +364,72 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             </div>
           </div>
         ) : (
-          <div className="h-44 w-full bg-gray-200 flex items-center justify-center">
+          <div className="w-full aspect-[2/3] bg-gray-200 flex items-center justify-center">
             <i className="fas fa-tv text-gray-400 text-4xl"></i>
           </div>
         )}
+        
+        {/* Favorite button overlay */}
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className={`absolute top-2 right-2 p-1 bg-black/30 text-white rounded-full hover:bg-black/50 h-8 w-8 flex items-center justify-center`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite(e);
+          }}
+        >
+          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-white' : ''}`} />
+        </Button>
       </div>
       
-      <CardContent className="p-4">
-        <div className="space-y-2">
+      <CardContent className="p-3 flex-grow flex flex-col">
+        <div className="flex-grow space-y-2">
           {/* Title and age */}
           <div>
-            <h3 className="text-md font-bold mb-1 line-clamp-1">{show.name} {releaseYears}</h3>
-            <div className="text-sm text-gray-500">Age: {show.ageRange}</div>
+            <h3 className="text-md font-bold line-clamp-1">{show.name} {releaseYears}</h3>
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-xs text-gray-500">Ages {show.ageRange}</span>
+            </div>
+          </div>
+          
+          {/* Stimulation score indicator */}
+          <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center scale-90">
+              {renderStimulationDots()}
+            </div>
+            <span className="text-xs text-gray-600">
+              {getStimulationText(show.stimulationScore)} Stimulation
+            </span>
           </div>
           
           {/* Theme tags */}
           {show.themes && show.themes.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {show.themes.slice(0, 3).map((theme, index) => (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {show.themes.slice(0, 2).map((theme, index) => (
                 <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs`}>
                   {theme}
                 </Badge>
               ))}
+              {show.themes.length > 2 && (
+                <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
+                  +{show.themes.length - 2}
+                </Badge>
+              )}
             </div>
           )}
-          
-          {/* Stimulation score indicator */}
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-1">
-              <div className="flex items-center scale-75 mr-1">
-                {renderStimulationDots()}
-              </div>
-              <span className="text-xs text-gray-600">
-                {getStimulationText(show.stimulationScore)} Stimulation
-              </span>
-            </div>
-          </div>
-          
-          {/* Buttons */}
-          <div className="flex items-center justify-between mt-2">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className={`${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} p-1`}
-              onClick={toggleFavorite}
-            >
-              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500' : ''}`} />
-            </Button>
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="bg-secondary hover:bg-secondary/90 text-white text-xs py-1 px-2"
-              style={{fontWeight: 'bold'}}
-            >
-              Learn More
-            </Button>
-          </div>
+        </div>
+        
+        {/* Learn More button */}
+        <div className="mt-auto pt-2">
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="w-full bg-secondary hover:bg-secondary/90 text-white text-xs py-1"
+            style={{fontWeight: 'bold'}}
+          >
+            Learn More
+          </Button>
         </div>
       </CardContent>
     </Card>
