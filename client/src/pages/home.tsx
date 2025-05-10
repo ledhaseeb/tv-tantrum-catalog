@@ -177,6 +177,7 @@ export default function Home() {
                   <ShowCard 
                     show={show} 
                     viewMode="grid"
+                    isMobile={isMobile}
                     onClick={() => handleShowCardClick(show.id)}
                   />
                 </CarouselItem>
