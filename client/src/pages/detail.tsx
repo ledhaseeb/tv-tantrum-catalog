@@ -204,17 +204,21 @@ export default function Detail({ id }: DetailProps) {
           <div className="md:w-1/4 flex-shrink-0 mb-4 md:mb-0 md:mr-6">
             {/* Use OMDb poster if available, otherwise use our image or placeholder */}
             {showDetail.omdb?.poster && showDetail.omdb.poster !== 'N/A' ? (
-              <img 
-                className="w-full h-auto mb-4 rounded border border-gray-200" 
-                src={showDetail.omdb.poster} 
-                alt={showDetail.name}
-              />
+              <div className="mb-4 rounded border border-gray-200 overflow-hidden" style={{ maxHeight: '400px' }}>
+                <img 
+                  className="w-full h-full object-contain" 
+                  src={showDetail.omdb.poster} 
+                  alt={showDetail.name}
+                />
+              </div>
             ) : showDetail.imageUrl ? (
-              <img 
-                className="w-full h-auto mb-4 rounded border border-gray-200" 
-                src={showDetail.imageUrl} 
-                alt={showDetail.name}
-              />
+              <div className="mb-4 rounded border border-gray-200 overflow-hidden" style={{ maxHeight: '400px' }}>
+                <img 
+                  className="w-full h-full object-contain" 
+                  src={showDetail.imageUrl} 
+                  alt={showDetail.name}
+                />
+              </div>
             ) : (
               <div className="w-full h-auto aspect-square mb-4 bg-gray-200 flex items-center justify-center rounded border border-gray-200">
                 <i className="fas fa-tv text-gray-400 text-4xl"></i>
