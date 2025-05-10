@@ -175,7 +175,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return (
       <Card 
         className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer h-full flex flex-col" 
-        onClick={onClick}
+        onClick={() => {
+          // Scroll to top before triggering the onClick action
+          window.scrollTo(0, 0);
+          onClick();
+        }}
         style={{ maxWidth: '160px' }}
       >
         {/* Image */}
@@ -234,7 +238,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // Original list view card
   if (viewMode === "list") {
     return (
-      <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={onClick}>
+      <Card 
+        className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
+        onClick={() => {
+          // Scroll to top before triggering the onClick action
+          window.scrollTo(0, 0);
+          onClick();
+        }}>
         <div className="flex">
           <div className="flex-shrink-0 w-32 sm:w-48">
             {show.imageUrl ? (
@@ -324,7 +334,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   
   // Default card view (grid)
   return (
-    <Card className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full" onClick={onClick}>
+    <Card 
+      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full" 
+      onClick={() => {
+        // Scroll to top before triggering the onClick action
+        window.scrollTo(0, 0);
+        onClick();
+      }}>
       <div className="relative">
         {show.imageUrl ? (
           <img 

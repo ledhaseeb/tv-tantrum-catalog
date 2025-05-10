@@ -948,7 +948,11 @@ function SimilarShows({ showId }: { showId: number }) {
                 <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-1/3">
                   <div 
                     className="cursor-pointer relative pb-[150%] overflow-hidden rounded-lg border border-gray-200"
-                    onClick={() => setLocation(`/shows/${show.id}`)}
+                    onClick={() => {
+                      // Scroll to top first, then navigate
+                      window.scrollTo(0, 0);
+                      setLocation(`/shows/${show.id}`);
+                    }}
                   >
                     {show.imageUrl ? (
                       <img 
@@ -993,7 +997,11 @@ function SimilarShows({ showId }: { showId: number }) {
             <div 
               key={show.id} 
               className="rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
-              onClick={() => setLocation(`/shows/${show.id}`)}
+              onClick={() => {
+                // Scroll to top first, then navigate
+                window.scrollTo(0, 0);
+                setLocation(`/shows/${show.id}`);
+              }}
             >
               {show.imageUrl ? (
                 <img 
