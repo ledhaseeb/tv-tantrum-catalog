@@ -173,6 +173,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     const stimulationColor = getStimulationCircleColor(show.stimulationScore);
     const stimulationPercentage = getStimulationPercentage(show.stimulationScore);
     
+    console.log('Rendering mobile portrait card for:', show.name);
     return (
       <Card 
         className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer h-full flex flex-col" 

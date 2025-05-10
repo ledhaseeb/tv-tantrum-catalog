@@ -120,7 +120,9 @@ export default function Browse() {
   // Effect to detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640); // sm breakpoint in Tailwind
+      const isMobileView = window.innerWidth < 640; // sm breakpoint in Tailwind
+      console.log('Window width:', window.innerWidth, 'isMobile:', isMobileView);
+      setIsMobile(isMobileView);
     };
     
     // Check initially
@@ -291,6 +293,7 @@ export default function Browse() {
                 {/* Show Cards Grid - Mobile uses portrait, desktop uses landscape */}
                 {isMobile ? (
                   <div className="grid grid-cols-2 gap-3">
+                    {console.log('Rendering mobile grid with', currentShows.length, 'shows')}
                     {currentShows.map(show => (
                       <ShowCard 
                         key={show.id} 
