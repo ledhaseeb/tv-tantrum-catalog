@@ -22,6 +22,7 @@ export default function Home() {
   const [_, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, toggleFavorite } = useAuth();
   const { toast } = useToast();
   
@@ -30,6 +31,23 @@ export default function Home() {
     const handleClickOutside = () => setShowResults(false);
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+  
+  // Effect to detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileView = window.innerWidth < 640; // sm breakpoint in Tailwind
+      setIsMobile(isMobileView);
+    };
+    
+    // Check initially
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
   
   // Fetch all TV shows

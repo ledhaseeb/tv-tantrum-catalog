@@ -153,10 +153,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
            'High';
   };
   
-  // Format the stimulation score as a percentage for the circular rating (like TMDB)
-  const getStimulationPercentage = (score: number) => {
-    // Convert 1-5 scale to percentage (20%, 40%, 60%, 80%, 100%)
-    return score * 20;
+  // Format the stimulation score text (used for circular badge in mobile view)
+  const getStimulationScoreText = (score: number) => {
+    return `${score}/5`;
   };
   
   // Get color for circular stimulation score
@@ -171,7 +170,8 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // Mobile portrait style card (TMDB-like)
   if (isMobile && viewMode === "grid") {
     const stimulationColor = getStimulationCircleColor(show.stimulationScore);
-    const stimulationPercentage = getStimulationPercentage(show.stimulationScore);
+    const stimulationScoreText = getStimulationScoreText(show.stimulationScore);
+    const stimulationLabel = getStimulationText(show.stimulationScore);
     
     console.log('Rendering mobile portrait card for:', show.name);
     return (
@@ -198,8 +198,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           <div className="absolute -bottom-3 left-2">
             <div 
               className={`w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center font-bold text-sm ${stimulationColor} border-2`}
+              title={`${stimulationLabel} Stimulation`}
             >
-              {stimulationPercentage}%
+              {stimulationScoreText}
             </div>
           </div>
           
@@ -228,9 +229,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             </Badge>
           </div>
           
-          {/* Stimulation indicator - text only */}
-          <div className="text-xs text-gray-600 mt-auto">
-            {getStimulationText(show.stimulationScore)} Stimulation
+          {/* Stimulation indicator with both score and text */}
+          <div className="text-xs text-gray-600 mt-auto flex items-center justify-between">
+            <span className="font-semibold">{show.stimulationScore}/5</span>
+            <span>{getStimulationText(show.stimulationScore)}</span>
           </div>
         </CardContent>
       </Card>
