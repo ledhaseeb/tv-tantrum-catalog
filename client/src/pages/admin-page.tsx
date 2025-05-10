@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, Edit, RefreshCw } from 'lucide-react';
+import { Loader2, Search, Edit, RefreshCw, ImageIcon } from 'lucide-react';
 import { TvShow } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
@@ -55,6 +55,7 @@ export default function AdminPage() {
   const [selectedShow, setSelectedShow] = useState<TvShow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isOptimizingImages, setIsOptimizingImages] = useState(false);
 
   // Form state
   const [formState, setFormState] = useState({
@@ -146,6 +147,34 @@ export default function AdminPage() {
       });
     } finally {
       setIsRefreshing(false);
+    }
+  };
+  
+  // Optimize show images using OMDB posters
+  const handleOptimizeImages = async () => {
+    setIsOptimizingImages(true);
+    try {
+      const response = await apiRequest('POST', '/api/optimize-images');
+      const data = await response.json();
+      
+      toast({
+        title: "Images Optimized",
+        description: `Processed ${data.total} shows. Successfully updated ${data.successful} images.`,
+      });
+      
+      // Reload shows to get the updated image URLs
+      const updatedShows = await fetch('/api/shows').then(res => res.json());
+      setShows(updatedShows);
+      setFilteredShows(updatedShows);
+    } catch (error) {
+      console.error('Error optimizing images:', error);
+      toast({
+        title: "Error",
+        description: "Failed to optimize images. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsOptimizingImages(false);
     }
   };
 
@@ -466,8 +495,35 @@ export default function AdminPage() {
                 Configure system-wide settings and options
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Settings options will be available in a future update.</p>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Image Optimization</h3>
+                <p className="text-muted-foreground mb-4">
+                  Replace landscape-oriented images with portrait-style images from OMDB to ensure 
+                  consistent portrait layout across the application.
+                </p>
+                <Button 
+                  onClick={handleOptimizeImages} 
+                  disabled={isOptimizingImages}
+                  className="flex items-center"
+                >
+                  {isOptimizingImages ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Optimizing Images...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Optimize Show Images
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="pt-4 border-t">
+                <p className="text-muted-foreground">More settings options will be available in future updates.</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
