@@ -200,6 +200,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to refresh data" });
     }
   });
+  
+  // Endpoint to optimize show images using OMDB posters
+  app.post("/api/optimize-images", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized. Admin privileges required." });
+      }
+      
+      console.log("Starting image optimization process...");
+      const results = await updateShowImagesFromOmdb();
+      
+      res.json({
+        message: `Processed ${results.total} shows. Updated ${results.successful.length} images successfully.`,
+        successful: results.successful.length,
+        failed: results.failed.length,
+        results
+      });
+    } catch (error) {
+      console.error("Error optimizing images:", error);
+      res.status(500).json({ message: "Failed to optimize images" });
+    }
+  });
 
   // Import data from CSV file
   app.post("/api/import-csv", async (req: Request, res: Response) => {
