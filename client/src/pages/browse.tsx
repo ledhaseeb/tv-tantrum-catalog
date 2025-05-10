@@ -19,6 +19,7 @@ import { TvShow } from "@shared/schema";
 export default function Browse() {
   const [_, setLocation] = useLocation();
   const search = useSearch();
+  const [isMobile, setIsMobile] = useState(false);
   const [activeFilters, setActiveFilters] = useState<{
     ageGroup?: string;
     tantrumFactor?: string;

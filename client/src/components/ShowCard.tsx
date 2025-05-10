@@ -14,9 +14,10 @@ interface ShowCardProps {
   show: TvShow;
   viewMode: "grid" | "list";
   onClick: () => void;
+  isMobile?: boolean;
 }
 
-export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
+export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
@@ -143,6 +144,99 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
     return dots;
   };
   
+  // Get the stimulation score text representation
+  const getStimulationText = (score: number) => {
+    return score === 1 ? 'Low' : 
+           score === 2 ? 'Low-Medium' : 
+           score === 3 ? 'Medium' : 
+           score === 4 ? 'Medium-High' : 
+           'High';
+  };
+  
+  // Format the stimulation score as a percentage for the circular rating (like TMDB)
+  const getStimulationPercentage = (score: number) => {
+    // Convert 1-5 scale to percentage (20%, 40%, 60%, 80%, 100%)
+    return score * 20;
+  };
+  
+  // Get color for circular stimulation score
+  const getStimulationCircleColor = (score: number) => {
+    if (score <= 1) return 'border-green-500 text-green-500';
+    if (score <= 2) return 'border-green-400 text-green-500';
+    if (score <= 3) return 'border-yellow-500 text-yellow-600';
+    if (score <= 4) return 'border-orange-500 text-orange-600';
+    return 'border-red-500 text-red-600';
+  };
+
+  // Mobile portrait style card (TMDB-like)
+  if (isMobile && viewMode === "grid") {
+    const stimulationColor = getStimulationCircleColor(show.stimulationScore);
+    const stimulationPercentage = getStimulationPercentage(show.stimulationScore);
+    
+    return (
+      <Card 
+        className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer h-full flex flex-col" 
+        onClick={onClick}
+        style={{ maxWidth: '160px' }}
+      >
+        {/* Image with rating badge */}
+        <div className="relative">
+          {show.imageUrl ? (
+            <img 
+              className="w-full aspect-[2/3] object-cover"
+              src={show.imageUrl}
+              alt={show.name}
+            />
+          ) : (
+            <div className="w-full aspect-[2/3] bg-gray-200 flex items-center justify-center">
+              <i className="fas fa-tv text-gray-400 text-3xl"></i>
+            </div>
+          )}
+          
+          {/* Stimulation score circular badge */}
+          <div className="absolute -bottom-3 left-2">
+            <div 
+              className={`w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center font-bold text-sm ${stimulationColor} border-2`}
+            >
+              {stimulationPercentage}%
+            </div>
+          </div>
+          
+          {/* Favorite button */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className={`absolute top-1 right-1 p-1 bg-black/30 text-white rounded-full hover:bg-black/50 h-7 w-7 flex items-center justify-center`}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(e);
+            }}
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          </Button>
+        </div>
+        
+        <CardContent className="p-3 pt-4 flex flex-col flex-grow">
+          {/* Title */}
+          <h3 className="text-sm font-bold line-clamp-1 mt-1">{show.name}</h3>
+          
+          {/* Age Range Badge */}
+          <div className="mt-1.5 mb-1">
+            <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
+              Ages {show.ageRange}
+            </Badge>
+          </div>
+          
+          {/* Stimulation indicator - text only */}
+          <div className="text-xs text-gray-600 mt-auto">
+            {getStimulationText(show.stimulationScore)} Stimulation
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Original list view card
   if (viewMode === "list") {
     return (
       <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={onClick}>
@@ -203,11 +297,7 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                   {renderStimulationDots()}
                 </div>
                 <span className="text-sm text-gray-600">
-                  {show.stimulationScore === 1 ? 'Low' : 
-                   show.stimulationScore === 2 ? 'Low-Medium' : 
-                   show.stimulationScore === 3 ? 'Medium' : 
-                   show.stimulationScore === 4 ? 'Medium-High' : 
-                   'High'} Stimulation
+                  {getStimulationText(show.stimulationScore)} Stimulation
                 </span>
               </div>
               
@@ -237,6 +327,7 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
     );
   }
   
+  // Default card view (grid)
   return (
     <Card className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full" onClick={onClick}>
       <div className="relative">
@@ -279,11 +370,7 @@ export default function ShowCard({ show, viewMode, onClick }: ShowCardProps) {
                 {renderStimulationDots()}
               </div>
               <span className="text-xs text-gray-600">
-                {show.stimulationScore === 1 ? 'Low' : 
-                 show.stimulationScore === 2 ? 'Low-Medium' : 
-                 show.stimulationScore === 3 ? 'Medium' : 
-                 show.stimulationScore === 4 ? 'Medium-High' : 
-                 'High'} Stimulation
+                {getStimulationText(show.stimulationScore)} Stimulation
               </span>
             </div>
           </div>
