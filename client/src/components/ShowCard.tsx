@@ -169,8 +169,6 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
 
   // Mobile portrait style card (TMDB-like)
   if (isMobile && viewMode === "grid") {
-    const stimulationColor = getStimulationCircleColor(show.stimulationScore);
-    const stimulationScoreText = getStimulationScoreText(show.stimulationScore);
     const stimulationLabel = getStimulationText(show.stimulationScore);
     
     console.log('Rendering mobile portrait card for:', show.name);
@@ -180,7 +178,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         onClick={onClick}
         style={{ maxWidth: '160px' }}
       >
-        {/* Image with rating badge */}
+        {/* Image */}
         <div className="relative">
           {show.imageUrl ? (
             <img 
@@ -193,16 +191,6 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
               <i className="fas fa-tv text-gray-400 text-3xl"></i>
             </div>
           )}
-          
-          {/* Stimulation score circular badge */}
-          <div className="absolute -bottom-3 left-2">
-            <div 
-              className={`w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center font-bold text-sm ${stimulationColor} border-2`}
-              title={`${stimulationLabel} Stimulation`}
-            >
-              {stimulationScoreText}
-            </div>
-          </div>
           
           {/* Favorite button */}
           <Button 
@@ -218,21 +206,25 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           </Button>
         </div>
         
-        <CardContent className="p-3 pt-4 flex flex-col flex-grow">
+        <CardContent className="p-3 pt-2 flex flex-col flex-grow">
           {/* Title */}
-          <h3 className="text-sm font-bold line-clamp-1 mt-1">{show.name}</h3>
+          <h3 className="text-sm font-bold line-clamp-1">{show.name}</h3>
           
           {/* Age Range Badge */}
-          <div className="mt-1.5 mb-1">
+          <div className="mt-1 mb-1">
             <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
               Ages {show.ageRange}
             </Badge>
           </div>
           
-          {/* Stimulation indicator with both score and text */}
-          <div className="text-xs text-gray-600 mt-auto flex items-center justify-between">
-            <span className="font-semibold">{show.stimulationScore}/5</span>
-            <span>{getStimulationText(show.stimulationScore)}</span>
+          {/* Stimulation score dots */}
+          <div className="mt-auto">
+            <div className="flex items-center justify-center">
+              {renderStimulationDots()}
+            </div>
+            <div className="text-xs text-gray-600 text-center mt-1">
+              {stimulationLabel} Stimulation
+            </div>
           </div>
         </CardContent>
       </Card>
