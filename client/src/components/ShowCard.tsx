@@ -167,11 +167,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return 'border-red-500 text-red-600';
   };
 
-  // Mobile portrait style card (TMDB-like)
+  // Mobile portrait style card (TMDB-like) - less compact
   if (isMobile && viewMode === "grid") {
     const stimulationLabel = getStimulationText(show.stimulationScore);
     
-    console.log('Rendering mobile portrait card for:', show.name);
     return (
       <Card 
         className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer h-full flex flex-col" 
@@ -180,7 +179,6 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           window.scrollTo(0, 0);
           onClick();
         }}
-        style={{ maxWidth: '160px' }}
       >
         {/* Image */}
         <div className="relative">
@@ -213,26 +211,35 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           >
             <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
           </Button>
-        </div>
-        
-        <CardContent className="p-3 pt-2 flex flex-col flex-grow">
-          {/* Title */}
-          <h3 className="text-sm font-bold line-clamp-1">{show.name}</h3>
           
           {/* Age Range Badge */}
-          <div className="mt-1 mb-1">
-            <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
-              Ages {show.ageRange}
-            </Badge>
+          <div className="absolute top-1 left-1 bg-white/80 backdrop-blur-sm rounded px-1.5 py-0.5 text-xs font-medium">
+            Ages {show.ageRange}
           </div>
+        </div>
+        
+        <CardContent className="p-3 flex flex-col flex-grow">
+          {/* Title */}
+          <h3 className="text-sm font-bold line-clamp-2 mb-2">{show.name}</h3>
+          
+          {/* Theme tags if available */}
+          {show.themes && show.themes.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              <Badge variant="outline" className={`${getThemeColor(show.themes[0])} text-xs`}>
+                {show.themes[0]}
+              </Badge>
+            </div>
+          )}
           
           {/* Stimulation score dots */}
           <div className="mt-auto">
-            <div className="flex items-center justify-center">
-              {renderStimulationDots()}
-            </div>
-            <div className="text-xs text-gray-600 text-center mt-1">
-              {stimulationLabel} Stimulation
+            <div className="flex items-center">
+              <div className="flex items-center">
+                {renderStimulationDots()}
+              </div>
+              <div className="text-xs text-gray-600 ml-1">
+                {stimulationLabel}
+              </div>
             </div>
           </div>
         </CardContent>

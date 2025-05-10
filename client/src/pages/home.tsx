@@ -182,7 +182,7 @@ export default function Home() {
           >
             <CarouselContent className="-ml-2 md:-ml-4">
               {shows.map((show) => (
-                <CarouselItem key={show.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-1/4' : 'md:basis-1/5 lg:basis-1/6'}`}>
+                <CarouselItem key={show.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-1/3' : 'md:basis-1/4 lg:basis-1/5'}`}>
                   <ShowCard 
                     show={show} 
                     viewMode="grid"
