@@ -8,6 +8,7 @@ import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@s
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
+import { updateShowImagesFromOmdb } from "./image-optimizer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
