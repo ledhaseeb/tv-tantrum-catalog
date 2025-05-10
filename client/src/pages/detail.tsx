@@ -869,6 +869,27 @@ function SimilarShows({ showId }: { showId: number }) {
     refetchOnWindowFocus: false
   });
   
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check if device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const mobileWidth = 768;
+      const width = window.innerWidth;
+      setIsMobile(width < mobileWidth);
+      console.log("SimilarShows component - Window width:", width, "isMobile:", width < mobileWidth);
+    };
+    
+    // Check on mount
+    checkIfMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+  
   const [_, setLocation] = useLocation();
   
   if (isLoading) {
@@ -909,38 +930,97 @@ function SimilarShows({ showId }: { showId: number }) {
   return (
     <div className="mt-8 bg-white rounded-md shadow p-6">
       <h2 className="text-xl font-bold text-gray-800 mb-4">You might also like...</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {similarShows.map((show) => (
-          <div 
-            key={show.id} 
-            className="rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => setLocation(`/shows/${show.id}`)}
+      
+      {isMobile ? (
+        // Mobile carousel with portrait cards
+        <div className="relative">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+              dragFree: true,
+              containScroll: "trimSnaps"
+            }}
+            className="w-full"
           >
-            {show.imageUrl ? (
-              <img 
-                src={show.imageUrl} 
-                alt={show.name} 
-                className="w-full h-40 object-cover"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
-                <i className="fas fa-tv text-gray-400 text-2xl"></i>
-              </div>
-            )}
-            <div className="p-3">
-              <h3 className="font-medium text-teal-700">{show.name}</h3>
-              <p className="text-sm text-gray-600 flex items-center mt-1">
-                <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
-                  show.stimulationScore <= 2 ? 'bg-green-500' : 
-                  show.stimulationScore === 3 ? 'bg-yellow-500' : 
-                  'bg-orange-500'
-                }`}></span>
-                Stimulation: {show.stimulationScore}/5
-              </p>
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {similarShows.map((show) => (
+                <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-1/3">
+                  <div 
+                    className="cursor-pointer relative pb-[150%] overflow-hidden rounded-lg border border-gray-200"
+                    onClick={() => setLocation(`/shows/${show.id}`)}
+                  >
+                    {show.imageUrl ? (
+                      <img 
+                        src={show.imageUrl} 
+                        alt={show.name} 
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute top-0 left-0 w-full h-full bg-gray-200 flex items-center justify-center">
+                        <i className="fas fa-tv text-gray-400 text-2xl"></i>
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 p-2 text-white">
+                      <h3 className="text-sm font-medium truncate">{show.name}</h3>
+                      <div className="flex items-center mt-1">
+                        <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
+                          show.stimulationScore <= 2 ? 'bg-green-500' : 
+                          show.stimulationScore === 3 ? 'bg-yellow-500' : 
+                          'bg-orange-500'
+                        }`}></span>
+                        <span className="text-xs">
+                          {show.stimulationScore <= 2 ? 'Low' : 
+                           show.stimulationScore === 3 ? 'Moderate' : 
+                           'High'} Stimulation
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="flex justify-center gap-2 mt-4">
+              <CarouselPrevious className="static translate-y-0 mr-0" />
+              <CarouselNext className="static translate-y-0" />
             </div>
-          </div>
-        ))}
-      </div>
+          </Carousel>
+        </div>
+      ) : (
+        // Desktop grid layout
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {similarShows.map((show) => (
+            <div 
+              key={show.id} 
+              className="rounded-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200"
+              onClick={() => setLocation(`/shows/${show.id}`)}
+            >
+              {show.imageUrl ? (
+                <img 
+                  src={show.imageUrl} 
+                  alt={show.name} 
+                  className="w-full h-40 object-cover"
+                />
+              ) : (
+                <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
+                  <i className="fas fa-tv text-gray-400 text-2xl"></i>
+                </div>
+              )}
+              <div className="p-3">
+                <h3 className="font-medium text-teal-700">{show.name}</h3>
+                <p className="text-sm text-gray-600 flex items-center mt-1">
+                  <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
+                    show.stimulationScore <= 2 ? 'bg-green-500' : 
+                    show.stimulationScore === 3 ? 'bg-yellow-500' : 
+                    'bg-orange-500'
+                  }`}></span>
+                  Stimulation: {show.stimulationScore}/5
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
