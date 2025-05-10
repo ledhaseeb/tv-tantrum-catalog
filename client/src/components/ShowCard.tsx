@@ -218,9 +218,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           </Button>
         </div>
         
-        <div className="px-3 pb-0 pt-3 text-xs text-center bg-gradient-to-t from-white to-transparent -mt-6 relative z-10">
+        <div className="px-3 pb-0 pt-3 text-center bg-gradient-to-t from-white to-transparent -mt-6 relative z-10">
           {/* Stimulation text - right below the image */}
-          <div className={`font-medium ${stimulationColor.split(' ')[1]}`}>
+          <div className={`font-semibold ${stimulationColor.split(' ')[1]} text-shadow-md mt-4`} 
+               style={{ 
+                 textShadow: '1.5px 1.5px 0 black, -1.5px -1.5px 0 black, 1.5px -1.5px 0 black, -1.5px 1.5px 0 black',
+                 fontWeight: 700,
+                 fontSize: '0.85rem'
+               }}>
             {getStimulationText(show.stimulationScore)} Stimulation
           </div>
         </div>
