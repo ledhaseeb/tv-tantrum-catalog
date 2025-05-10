@@ -167,13 +167,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return 'border-red-500 text-red-600';
   };
 
-  // Mobile portrait style card (TMDB-like) - much larger and roomier
+  // Mobile portrait style card - clean design as in screenshot
   if (isMobile && viewMode === "grid") {
     const stimulationLabel = getStimulationText(show.stimulationScore);
     
     return (
       <Card 
-        className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer h-full flex flex-col" 
+        className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col" 
         onClick={() => {
           // Scroll to top before triggering the onClick action
           window.scrollTo(0, 0);
@@ -183,19 +183,17 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         {/* Image */}
         <div className="relative">
           {show.imageUrl ? (
-            <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden flex items-center justify-center">
-              <div className="w-full h-full relative">
-                <img 
-                  className="absolute inset-0 w-full h-full object-cover"
-                  src={show.imageUrl}
-                  alt={show.name}
-                  style={{ objectPosition: 'center top' }}
-                />
-              </div>
+            <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden">
+              <img 
+                className="w-full h-full object-cover"
+                src={show.imageUrl}
+                alt={show.name}
+                style={{ objectPosition: 'center top' }}
+              />
             </div>
           ) : (
             <div className="w-full aspect-[2/3] bg-gray-200 flex items-center justify-center">
-              <i className="fas fa-tv text-gray-400 text-4xl"></i>
+              <i className="fas fa-tv text-gray-400 text-3xl"></i>
             </div>
           )}
           
@@ -203,46 +201,32 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           <Button 
             variant="ghost" 
             size="sm"
-            className={`absolute top-2 right-2 p-1 bg-black/30 text-white rounded-full hover:bg-black/50 h-8 w-8 flex items-center justify-center`}
+            className={`absolute top-1 right-1 p-1 bg-black/30 text-white rounded-full hover:bg-black/50 h-7 w-7 flex items-center justify-center`}
             onClick={(e) => {
               e.stopPropagation();
               toggleFavorite(e);
             }}
           >
-            <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
           </Button>
-          
-          {/* Age Range Badge */}
-          <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm rounded-md px-2 py-1 text-sm font-medium shadow-sm">
-            Ages {show.ageRange}
-          </div>
         </div>
         
-        <CardContent className="p-4 flex flex-col flex-grow">
-          {/* Title */}
-          <h3 className="text-base font-bold line-clamp-2 mb-3">{show.name}</h3>
+        <CardContent className="p-3 flex flex-col flex-grow">
+          {/* Title with ellipsis */}
+          <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
           
-          {/* Theme tags if available */}
-          {show.themes && show.themes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              <Badge variant="outline" className={`${getThemeColor(show.themes[0])} text-sm py-0.5 px-2`}>
-                {show.themes[0]}
-              </Badge>
-              {show.themes.length > 1 && (
-                <Badge variant="outline" className="bg-gray-100 text-gray-600 text-sm py-0.5 px-2">
-                  +{show.themes.length - 1}
-                </Badge>
-              )}
-            </div>
-          )}
+          {/* Age Badge */}
+          <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
+            Ages {show.ageRange}
+          </Badge>
           
-          {/* Stimulation score dots */}
-          <div className="mt-auto pt-2">
-            <div className="flex items-center">
-              <div className="flex items-center scale-110 mr-2">
+          {/* Stimulation score dots and label */}
+          <div className="mt-auto">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center justify-center mb-1">
                 {renderStimulationDots()}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-xs text-gray-600 text-center">
                 {stimulationLabel} Stimulation
               </div>
             </div>
