@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings } from "lucide-react";
+import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -13,6 +12,7 @@ export default function Navbar() {
   const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const { user, logoutMutation, isAdmin } = useAuth();
 
   // Fetch shows for search dropdown
@@ -217,81 +217,121 @@ export default function Navbar() {
               )}
             </div>
             
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden ml-4 text-white hover:text-white/80">
-                  <i className="fas fa-bars text-xl"></i>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left">
-                <div className="px-2 pt-4 pb-3 space-y-1">
-                  <h2 className="text-lg font-bold mb-4" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
-                  <Link 
-                    href="/"
-                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-                  >
-                    <Home className="h-5 w-5 mr-3" />
-                    Home
-                  </Link>
-                  <Link 
-                    href="/browse"
-                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-                  >
-                    <Filter className="h-5 w-5 mr-3" />
-                    Browse
-                  </Link>
-                  <Link 
-                    href="/compare"
-                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-                  >
-                    <BarChart2 className="h-5 w-5 mr-3" />
-                    Compare
-                  </Link>
-                  <Link 
-                    href="/about"
-                    className={`flex items-center px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-                  >
-                    <Info className="h-5 w-5 mr-3" />
-                    About
-                  </Link>
-                  
-                  {/* Mobile authentication links */}
-                  {user ? (
-                    <>
-                      {isAdmin && (
-                        <Link 
-                          href="/admin"
-                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                        >
-                          <Settings className="h-5 w-5 mr-2" />
-                          Admin Dashboard
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => logoutMutation.mutate()}
-                        className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                      >
-                        <LogOut className="h-5 w-5 mr-2" />
-                        Logout
-                      </button>
-                      <div className="flex items-center px-3 py-2 text-base font-medium text-gray-500 rounded-md">
-                        <User className="h-5 w-5 mr-2" />
-                        {user.username}
-                      </div>
-                    </>
-                  ) : (
-                    <Link 
-                      href="/auth"
-                      className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden ml-4 text-white hover:text-white/80"
+              onClick={() => setIsNavOpen(true)}
+            >
+              <i className="fas fa-bars text-xl"></i>
+            </Button>
+            
+            {/* Custom mobile navigation overlay */}
+            {isNavOpen && (
+              <div className="fixed inset-0 z-50 md:hidden">
+                {/* Backdrop */}
+                <div 
+                  className="fixed inset-0 bg-black/50"
+                  onClick={() => setIsNavOpen(false)}
+                />
+                
+                {/* Side drawer */}
+                <div className="fixed inset-y-0 left-0 w-64 bg-white p-4 overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-500 hover:bg-gray-100"
+                      onClick={() => setIsNavOpen(false)}
                     >
-                      <User className="h-5 w-5 mr-2" />
-                      Login / Register
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Link 
+                      href="/"
+                      onClick={() => setIsNavOpen(false)}
+                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    >
+                      <Home className="h-5 w-5 mr-3" />
+                      Home
                     </Link>
-                  )}
-                </div>
-                <div className="pt-4 pb-3 border-t border-gray-200">
-                  <div className="px-2">
-                    <form onSubmit={handleSearch} className="relative">
+                    <Link 
+                      href="/browse"
+                      onClick={() => setIsNavOpen(false)}
+                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    >
+                      <Filter className="h-5 w-5 mr-3" />
+                      Browse
+                    </Link>
+                    <Link 
+                      href="/compare"
+                      onClick={() => setIsNavOpen(false)}
+                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    >
+                      <BarChart2 className="h-5 w-5 mr-3" />
+                      Compare
+                    </Link>
+                    <Link 
+                      href="/about"
+                      onClick={() => setIsNavOpen(false)}
+                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                    >
+                      <Info className="h-5 w-5 mr-3" />
+                      About
+                    </Link>
+                    
+                    {/* Authentication links */}
+                    {user ? (
+                      <>
+                        {isAdmin && (
+                          <Link 
+                            href="/admin"
+                            onClick={() => setIsNavOpen(false)}
+                            className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                          >
+                            <Settings className="h-5 w-5 mr-2" />
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            logoutMutation.mutate();
+                            setIsNavOpen(false);
+                          }}
+                          className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                        >
+                          <LogOut className="h-5 w-5 mr-2" />
+                          Logout
+                        </button>
+                        <div className="flex items-center px-3 py-2 text-base font-medium text-gray-500 rounded-md">
+                          <User className="h-5 w-5 mr-2" />
+                          {user.username}
+                        </div>
+                      </>
+                    ) : (
+                      <Link 
+                        href="/auth"
+                        onClick={() => setIsNavOpen(false)}
+                        className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                      >
+                        <User className="h-5 w-5 mr-2" />
+                        Login / Register
+                      </Link>
+                    )}
+                  </div>
+                  
+                  <div className="pt-4 mt-4 border-t border-gray-200">
+                    <form 
+                      onSubmit={(e) => {
+                        handleSearch(e);
+                        setIsNavOpen(false);
+                      }} 
+                      className="relative"
+                    >
                       <Input 
                         type="search" 
                         placeholder="Search shows..." 
@@ -305,8 +345,8 @@ export default function Navbar() {
                     </form>
                   </div>
                 </div>
-              </SheetContent>
-            </Sheet>
+              </div>
+            )}
           </div>
         </div>
       </div>
