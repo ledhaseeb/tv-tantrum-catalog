@@ -962,7 +962,7 @@ function SimilarShows({ showId }: { showId: number }) {
                       <img 
                         src={show.imageUrl} 
                         alt={show.name} 
-                        className="absolute top-0 left-0 w-full h-full object-cover"
+                        className="absolute top-0 left-0 w-full h-full object-contain bg-gray-100"
                       />
                     ) : (
                       <div className="absolute top-0 left-0 w-full h-full bg-gray-200 flex items-center justify-center">
