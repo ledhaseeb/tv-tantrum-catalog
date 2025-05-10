@@ -71,39 +71,39 @@ export default function Home() {
     (show.themes?.includes("Adventure") && show.themes?.includes("Fantasy"))
   ) || allShows?.[0];
   
-  // Filter shows by categories
-  const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 8);
+  // Filter shows by categories - ensure at least 12 shows per category
+  const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 12);
   // Using stimulation score as a proxy for ratings since overallRating is not in the schema
   const highlyRatedShows = allShows?.filter(show => 
     (show.stimulationScore <= 3 && show.themes && show.themes.length >= 3) || 
     (show.stimulationScore <= 2)
-  ).slice(0, 8);
-  const popularShows = popularShowsData || allShows?.slice(0, 8); // Use our tracked popular shows data
+  ).slice(0, 12);
+  const popularShows = popularShowsData?.slice(0, 12) || allShows?.slice(0, 12); // Use our tracked popular shows data
   const highInteractionShows = allShows?.filter(
     show => show.interactivityLevel === 'High' || show.interactivityLevel === 'Moderate-High'
-  ).slice(0, 8);
+  ).slice(0, 12);
   
-  // Find shows by popular themes
+  // Find shows by popular themes - ensure at least 12 shows per category
   const educationalShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('education') || theme.toLowerCase().includes('learning'))
-  ).slice(0, 8);
+  ).slice(0, 12);
   
   const adventureShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('adventure'))
-  ).slice(0, 8);
+  ).slice(0, 12);
   
   const musicalShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('music'))
-  ).slice(0, 8);
+  ).slice(0, 12);
   
   const fantasyShows = allShows?.filter(show => 
     show.themes?.some(theme => theme.toLowerCase().includes('fantasy'))
-  ).slice(0, 8);
+  ).slice(0, 12);
   
   const preschoolerShows = allShows?.filter(show => 
     show.ageRange?.toLowerCase().includes('preschool') || 
     (show.ageRange && parseInt(show.ageRange.split('-')[0]) <= 4)
-  ).slice(0, 8);
+  ).slice(0, 12);
   
   // Filter shows based on search term
   const filteredShows = allShows?.filter((show: TvShow) => {
@@ -171,13 +171,15 @@ export default function Home() {
           <Carousel
             opts={{
               align: "start",
-              loop: false,
+              loop: true,
+              dragFree: true,
+              containScroll: "trimSnaps"
             }}
             className="w-full"
           >
             <CarouselContent className="-ml-2 md:-ml-4">
               {shows.map((show) => (
-                <CarouselItem key={show.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/4">
+                <CarouselItem key={show.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-1/3' : 'md:basis-1/2 lg:basis-1/4'}`}>
                   <ShowCard 
                     show={show} 
                     viewMode="grid"
