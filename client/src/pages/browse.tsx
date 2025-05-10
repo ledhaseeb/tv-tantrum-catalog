@@ -307,7 +307,7 @@ export default function Browse() {
                         show={show} 
                         viewMode="grid"
                         isMobile={true}
-                        onClick={() => setLocation(`/shows/${show.id}`)}
+                        onClick={() => handleShowClick(show.id)}
                       />
                     ))}
                   </div>
@@ -318,7 +318,7 @@ export default function Browse() {
                         key={show.id} 
                         show={show} 
                         viewMode="grid"
-                        onClick={() => setLocation(`/shows/${show.id}`)}
+                        onClick={() => handleShowClick(show.id)}
                       />
                     ))}
                   </div>
