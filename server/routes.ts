@@ -224,6 +224,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint to update a specific show with OMDB image
+  app.post("/api/shows/:id/update-image", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "TV show not found" });
+      }
+      
+      console.log(`Looking up OMDB poster for "${show.name}"`);
+      const omdbData = await omdbService.getShowData(show.name);
+      
+      if (omdbData && omdbData.poster && omdbData.poster !== 'N/A') {
+        // Update the show with the OMDB poster
+        const updatedShow = await storage.updateTvShow(id, {
+          imageUrl: omdbData.poster
+        });
+        
+        if (updatedShow) {
+          res.json({
+            success: true,
+            message: `Updated "${show.name}" with OMDB poster`,
+            show: updatedShow
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            message: "Failed to update show in storage"
+          });
+        }
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "No OMDB poster found for this show"
+        });
+      }
+    } catch (error) {
+      console.error("Error updating show image:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to update show image",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Import data from CSV file
   app.post("/api/import-csv", async (req: Request, res: Response) => {
     try {
