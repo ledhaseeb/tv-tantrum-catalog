@@ -174,7 +174,14 @@ export default function Detail({ id }: DetailProps) {
         <div className="md:flex p-6">
           {/* Left column - Show image and key info */}
           <div className="md:w-1/4 flex-shrink-0 mb-4 md:mb-0 md:mr-6">
-            {showDetail.imageUrl ? (
+            {/* Use OMDb poster if available, otherwise use our image or placeholder */}
+            {showDetail.omdb?.poster && showDetail.omdb.poster !== 'N/A' ? (
+              <img 
+                className="w-full h-auto mb-4 rounded border border-gray-200" 
+                src={showDetail.omdb.poster} 
+                alt={showDetail.name}
+              />
+            ) : showDetail.imageUrl ? (
               <img 
                 className="w-full h-auto mb-4 rounded border border-gray-200" 
                 src={showDetail.imageUrl} 
@@ -211,6 +218,99 @@ export default function Detail({ id }: DetailProps) {
                   </div>
                 </div>
               </div>
+              
+              {/* IMDb Data Section */}
+              {showDetail.omdb && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+                    <img src="https://m.media-amazon.com/images/G/01/imdb/images/desktop-favicon-2165806970._CB485933742_.ico" 
+                         alt="IMDb" 
+                         className="w-4 h-4 mr-1" />
+                    IMDb Information
+                  </h3>
+                  <div className="mt-2 space-y-2">
+                    {showDetail.omdb.imdbRating !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">IMDb Rating:</div>
+                        <div className="text-sm flex items-center">
+                          <span className="text-yellow-500 mr-1">★</span>
+                          {showDetail.omdb.imdbRating}/10
+                        </div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.rated !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Rated:</div>
+                        <div className="text-sm">{showDetail.omdb.rated}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.runtime !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Runtime:</div>
+                        <div className="text-sm">{showDetail.omdb.runtime}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.totalSeasons !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Seasons:</div>
+                        <div className="text-sm">{showDetail.omdb.totalSeasons}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.language !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Language:</div>
+                        <div className="text-sm">{showDetail.omdb.language}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.country !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Country:</div>
+                        <div className="text-sm">{showDetail.omdb.country}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.director !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Director:</div>
+                        <div className="text-sm">{showDetail.omdb.director}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.writer !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Writer:</div>
+                        <div className="text-sm">{showDetail.omdb.writer}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.awards !== 'N/A' && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Awards:</div>
+                        <div className="text-sm">{showDetail.omdb.awards}</div>
+                      </div>
+                    )}
+                    
+                    {showDetail.omdb.imdbId && (
+                      <div className="mt-2">
+                        <a 
+                          href={`https://www.imdb.com/title/${showDetail.omdb.imdbId}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:text-blue-800 flex items-center"
+                        >
+                          View on IMDb 
+                          <i className="fas fa-external-link-alt ml-1"></i>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-700">Overall Stimulation Score:</h3>
