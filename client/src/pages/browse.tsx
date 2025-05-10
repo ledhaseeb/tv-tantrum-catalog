@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
@@ -20,6 +20,7 @@ export default function Browse() {
   const [_, setLocation] = useLocation();
   const search = useSearch();
   const [isMobile, setIsMobile] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null); // Ref for the results section
   const [activeFilters, setActiveFilters] = useState<{
     ageGroup?: string;
     tantrumFactor?: string;
@@ -176,7 +177,18 @@ export default function Browse() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Scroll to the results section instead of the top of the page
+    if (resultsRef.current) {
+      // Adding a small offset to position just above the results
+      const yOffset = -20; 
+      const y = resultsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    }
   };
 
   // Generate pagination items
@@ -296,7 +308,7 @@ export default function Browse() {
                 )}
               </div>
             ) : (
-              <>
+              <div ref={resultsRef}>
                 {/* Show Cards Grid - Mobile uses portrait, desktop uses landscape */}
                 {isMobile ? (
                   <div className="grid grid-cols-2 gap-3">
@@ -348,7 +360,7 @@ export default function Browse() {
                     </Pagination>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
