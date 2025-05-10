@@ -103,6 +103,13 @@ export default function Browse() {
     staleTime: 60000, // 1 minute
   });
   
+  // Handler for navigating to show details
+  const handleShowClick = (id: number) => {
+    // Scroll to top first, then navigate
+    window.scrollTo(0, 0);
+    setLocation(`/shows/${id}`);
+  };
+  
   // Log the results separately
   useEffect(() => {
     if (shows) {

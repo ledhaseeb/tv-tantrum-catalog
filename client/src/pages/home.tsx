@@ -140,6 +140,8 @@ export default function Home() {
   };
   
   const handleShowCardClick = (id: number) => {
+    // Scroll to top first, then navigate
+    window.scrollTo(0, 0);
     setLocation(`/shows/${id}`);
   };
   
