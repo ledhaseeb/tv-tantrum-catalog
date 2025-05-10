@@ -273,6 +273,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Endpoint to update a show with a local image file
+  app.post("/api/shows/:id/update-with-local-image", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const { imageUrl } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+      
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "TV show not found" });
+      }
+      
+      // Update the show with the local image URL
+      const updatedShow = await storage.updateTvShow(id, { imageUrl });
+      
+      if (updatedShow) {
+        res.json({
+          success: true,
+          message: `Updated "${show.name}" with local image`,
+          show: updatedShow
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Failed to update show in storage"
+        });
+      }
+    } catch (error) {
+      console.error("Error updating show with local image:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to update show with local image",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
 
   // Import data from CSV file
   app.post("/api/import-csv", async (req: Request, res: Response) => {
