@@ -185,12 +185,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         {/* Image */}
         <div className="relative">
           {show.imageUrl ? (
-            <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden">
-              <img 
-                className="w-full h-full object-contain"
-                src={show.imageUrl}
-                alt={show.name}
-              />
+            <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden flex items-center justify-center">
+              <div className="w-full h-full relative">
+                <img 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  src={show.imageUrl}
+                  alt={show.name}
+                  style={{ objectPosition: 'center top' }}
+                />
+              </div>
             </div>
           ) : (
             <div className="w-full aspect-[2/3] bg-gray-200 flex items-center justify-center">
@@ -250,12 +253,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         <div className="flex">
           <div className="flex-shrink-0 w-32 sm:w-48">
             {show.imageUrl ? (
-              <div className="h-full w-full bg-gray-100 overflow-hidden">
-                <img 
-                  className="h-full w-full object-contain"
-                  src={show.imageUrl}
-                  alt={show.name}
-                />
+              <div className="h-full w-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                <div className="w-full h-full relative">
+                  <img 
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src={show.imageUrl}
+                    alt={show.name}
+                    style={{ objectPosition: 'center top' }}
+                  />
+                </div>
               </div>
             ) : (
               <div className="h-full w-full bg-gray-200 flex items-center justify-center">
@@ -347,12 +353,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       }}>
       <div className="relative">
         {show.imageUrl ? (
-          <div className="h-44 w-full bg-gray-100 overflow-hidden">
-            <img 
-              className="h-full w-full object-contain"
-              src={show.imageUrl}
-              alt={show.name}
-            />
+          <div className="h-44 w-full bg-gray-100 overflow-hidden flex items-center justify-center">
+            <div className="w-full h-full relative">
+              <img 
+                className="absolute inset-0 w-full h-full object-cover"
+                src={show.imageUrl}
+                alt={show.name}
+                style={{ objectPosition: 'center top' }}
+              />
+            </div>
           </div>
         ) : (
           <div className="h-44 w-full bg-gray-200 flex items-center justify-center">
