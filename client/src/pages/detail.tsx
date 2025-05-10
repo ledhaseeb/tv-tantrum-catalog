@@ -1008,11 +1008,13 @@ function SimilarShows({ showId }: { showId: number }) {
               }}
             >
               {show.imageUrl ? (
-                <img 
-                  src={show.imageUrl} 
-                  alt={show.name} 
-                  className="w-full h-40 object-cover"
-                />
+                <div className="w-full h-40 bg-gray-100 overflow-hidden">
+                  <img 
+                    src={show.imageUrl} 
+                    alt={show.name} 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               ) : (
                 <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
                   <i className="fas fa-tv text-gray-400 text-2xl"></i>
