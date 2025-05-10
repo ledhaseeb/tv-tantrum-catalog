@@ -116,6 +116,22 @@ export default function Browse() {
       console.error('Query error:', error);
     }
   }, [shows, error]);
+  
+  // Effect to detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640); // sm breakpoint in Tailwind
+    };
+    
+    // Check initially
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleFilterChange = (filters: typeof activeFilters) => {
     setActiveFilters(filters);
@@ -272,17 +288,31 @@ export default function Browse() {
               </div>
             ) : (
               <>
-                {/* Show Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {currentShows.map(show => (
-                    <ShowCard 
-                      key={show.id} 
-                      show={show} 
-                      viewMode="grid"
-                      onClick={() => setLocation(`/shows/${show.id}`)}
-                    />
-                  ))}
-                </div>
+                {/* Show Cards Grid - Mobile uses portrait, desktop uses landscape */}
+                {isMobile ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {currentShows.map(show => (
+                      <ShowCard 
+                        key={show.id} 
+                        show={show} 
+                        viewMode="grid"
+                        isMobile={true}
+                        onClick={() => setLocation(`/shows/${show.id}`)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {currentShows.map(show => (
+                      <ShowCard 
+                        key={show.id} 
+                        show={show} 
+                        viewMode="grid"
+                        onClick={() => setLocation(`/shows/${show.id}`)}
+                      />
+                    ))}
+                  </div>
+                )}
                 
                 {/* Pagination */}
                 {totalPages > 1 && (
