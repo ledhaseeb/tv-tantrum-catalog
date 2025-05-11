@@ -9,7 +9,7 @@ import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
 import { updateShowImagesFromOmdb } from "./image-optimizer";
-import { updateCustomImageMap } from "./image-preservator";
+import { updateCustomImageMap, applyCustomImages } from "./image-preservator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
@@ -26,6 +26,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Importing all ${showsData.length} TV shows...`);
       const importedShows = await storage.importShowsFromGitHub(showsData);
       console.log(`Imported ${importedShows.length} TV shows to storage`);
+      
+      // Apply custom images after importing shows
+      await applyCustomImages(
+        storage.getTvShowById.bind(storage), 
+        storage.updateTvShow.bind(storage)
+      );
     }
   } catch (error) {
     console.error("Failed to fetch and import TV shows data:", error);

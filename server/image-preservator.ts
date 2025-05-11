@@ -58,3 +58,26 @@ export function preserveCustomImageUrl(showId: number, currentImageUrl: string |
   const customImageUrl = getCustomImageUrl(showId);
   return customImageUrl || currentImageUrl;
 }
+
+/**
+ * Apply custom images to all shows in storage at server startup
+ */
+export async function applyCustomImages(getShowById: (id: number) => Promise<any>, updateShow: (id: number, data: any) => Promise<any>): Promise<void> {
+  try {
+    const customImageMap = loadCustomImageMap();
+    console.log(`Applying ${Object.keys(customImageMap).length} custom images from customImageMap.json`);
+    
+    for (const [showIdStr, imageUrl] of Object.entries(customImageMap)) {
+      const showId = parseInt(showIdStr);
+      if (isNaN(showId)) continue;
+      
+      const show = await getShowById(showId);
+      if (show) {
+        console.log(`Applying custom image to show ID ${showId}: ${show.name}`);
+        await updateShow(showId, { imageUrl });
+      }
+    }
+  } catch (error) {
+    console.error('Error applying custom images:', error);
+  }
+}
