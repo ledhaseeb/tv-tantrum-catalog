@@ -9,6 +9,7 @@ import {
   type Favorite, type InsertFavorite,
   type TvShowGitHub
 } from "@shared/schema";
+import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
 
 export interface IStorage {
   // User methods
@@ -195,6 +196,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined> {
+    // If we're updating the image URL, save it to our custom map
+    if (show.imageUrl) {
+      updateCustomImageMap(id, show.imageUrl);
+    }
+    
     const [updatedShow] = await db
       .update(tvShows)
       .set(show)
@@ -320,6 +326,10 @@ export class DatabaseStorage implements IStorage {
 
         if (existingShow) {
           // Update the existing show
+          
+          // Check for custom image URL first
+          const preservedImageUrl = preserveCustomImageUrl(existingShow.id, existingShow.imageUrl);
+          
           const [updatedShow] = await db
             .update(tvShows)
             .set({
@@ -336,7 +346,8 @@ export class DatabaseStorage implements IStorage {
               endYear: typeof githubShow.end_year === 'number' && !isNaN(githubShow.end_year) ? githubShow.end_year : existingShow.endYear,
               episodeLength: githubShow.avg_episode_length && !isNaN(parseInt(githubShow.avg_episode_length)) ? parseInt(githubShow.avg_episode_length) : existingShow.episodeLength,
               seasons: githubShow.seasons && !isNaN(parseInt(githubShow.seasons)) ? parseInt(githubShow.seasons) : existingShow.seasons,
-              imageUrl: githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename) || existingShow.imageUrl,
+              // Preserve our custom image URLs during imports
+              imageUrl: preservedImageUrl || githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename) || existingShow.imageUrl,
             })
             .where(eq(tvShows.id, existingShow.id))
             .returning();
