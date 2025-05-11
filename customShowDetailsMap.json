@@ -30,5 +30,16 @@
     "dialogueIntensity": "Low",
     "soundEffectsLevel": "Medium",
     "animationStyle": "Vibrant 3D animation with cultural African themes and colorful settings"
+  },
+  "34": {
+    "stimulationScore": 4,
+    "musicTempo": "Medium-High",
+    "totalMusicLevel": "High",
+    "totalSoundEffectTimeLevel": "High",
+    "sceneFrequency": "High",
+    "interactivityLevel": "Medium",
+    "dialogueIntensity": "Low",
+    "soundEffectsLevel": "High",
+    "animationStyle": "3D CGI animation with realistic textures and environments."
   }
 }
