@@ -268,21 +268,41 @@ export class DatabaseStorage implements IStorage {
       console.log(`Post-filtering shows by themes: ${filters.themes.join(', ')}`);
       console.log(`Before filtering: ${shows.length} shows`);
       
+      // Debug: Let's examine the first few shows
+      console.log(`First 3 shows before filtering:`);
+      shows.slice(0, 3).forEach(show => {
+        console.log(`Show: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
+      });
+      
       shows = shows.filter(show => {
         // Make sure show has themes array
         if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
           return false;
         }
         
-        // Check if ALL selected themes are in the show's themes
-        return filters.themes!.every(filterTheme => 
-          show.themes!.some(showTheme => 
-            showTheme.toLowerCase() === filterTheme.toLowerCase()
-          )
+        // Debug the theme matching for each show
+        const matches = filters.themes!.every(filterTheme => 
+          show.themes!.some(showTheme => {
+            const isMatch = showTheme.toLowerCase() === filterTheme.toLowerCase();
+            return isMatch;
+          })
         );
+        
+        if (matches && show.name === 'Adventure Agents') {
+          console.log(`MATCH FOUND: ${show.name} matches all themes: ${JSON.stringify(show.themes)}`);
+        }
+        
+        return matches;
       });
       
+      // Debug: Let's examine the results
       console.log(`After filtering: ${shows.length} shows remain`);
+      if (shows.length > 0) {
+        console.log(`First 3 matching shows:`);
+        shows.slice(0, 3).forEach(show => {
+          console.log(`MATCH: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
+        });
+      }
     }
     
     return shows;
