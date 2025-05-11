@@ -351,45 +351,82 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             )}
           </div>
           
-          {/* Age Range Slider */}
+          {/* Age Range - using separate min/max sliders */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="block text-sm font-medium text-gray-700">
-                Age Range
-              </Label>
-              <span className="text-sm text-gray-500">
-                {filters.ageRange ? 
-                  (filters.ageRange.min === 0 && filters.ageRange.max === 18) ? 
-                    'Any Age' : 
-                    `${filters.ageRange.min} - ${filters.ageRange.max === 18 ? '18+' : filters.ageRange.max} years` 
-                : 'Any Age'}
-              </span>
-            </div>
-            
-            <div className="py-4">
-              <Slider
-                defaultValue={[0, 18]}
-                value={filters.ageRange ? [filters.ageRange.min, filters.ageRange.max] : [0, 18]}
-                max={18}
-                step={1}
-                minStepsBetweenThumbs={1}
-                onValueChange={(value) => {
-                  handleFilterChange('ageRange', { min: value[0], max: value[1] });
-                }}
-                className="mb-2"
-              />
-              
-              <div className="flex justify-between text-xs text-gray-500 px-1">
-                <span>0</span>
-                <span>3</span>
-                <span>6</span>
-                <span>9</span>
-                <span>12</span>
-                <span>15</span>
-                <span>18+</span>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">
+              Age Range
+            </Label>
+            <div className="flex flex-col space-y-4">
+              {/* Min slider */}
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs font-medium">Minimum: {filters.ageRange?.min || 0} years</span>
+                </div>
+                <div className="relative pt-1">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="18" 
+                    step="1" 
+                    value={filters.ageRange?.min || 0}
+                    onChange={(e) => {
+                      const newMin = parseInt(e.target.value);
+                      const currentMax = filters.ageRange?.max || 18;
+                      handleFilterChange('ageRange', {
+                        min: newMin,
+                        max: Math.max(newMin, currentMax) // Ensure max is at least equal to min
+                      });
+                    }}
+                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                  <span>0</span>
+                  <span>3</span>
+                  <span>6</span>
+                  <span>9</span>
+                  <span>12</span>
+                  <span>15</span>
+                  <span>18</span>
+                </div>
               </div>
               
-              <div className="flex flex-wrap mt-2 gap-1 text-xs text-gray-500">
+              {/* Max slider */}
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs font-medium">Maximum: {filters.ageRange?.max === 18 ? '18+' : filters.ageRange?.max || 18} years</span>
+                </div>
+                <div className="relative pt-1">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="18" 
+                    step="1" 
+                    value={filters.ageRange?.max || 18}
+                    onChange={(e) => {
+                      const newMax = parseInt(e.target.value);
+                      const currentMin = filters.ageRange?.min || 0;
+                      handleFilterChange('ageRange', {
+                        min: Math.min(currentMin, newMax), // Ensure min is at most equal to max
+                        max: newMax
+                      });
+                    }}
+                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                  <span>0</span>
+                  <span>3</span>
+                  <span>6</span>
+                  <span>9</span>
+                  <span>12</span>
+                  <span>15</span>
+                  <span>18</span>
+                </div>
+              </div>
+              
+              {/* Quick selection badges */}
+              <div className="flex flex-wrap gap-1 text-xs text-gray-500 mt-1">
                 <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 0, max: 18 })}>
                   Any Age
                 </Badge>
