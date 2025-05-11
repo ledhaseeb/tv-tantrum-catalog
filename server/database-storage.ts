@@ -265,44 +265,68 @@ export class DatabaseStorage implements IStorage {
     // This needs to happen after the SQL query because
     // PostgreSQL array operations don't easily support checking if an array contains all values from another array
     if (filters.themes && filters.themes.length > 0) {
-      console.log(`Post-filtering shows by themes: ${filters.themes.join(', ')}`);
-      console.log(`Before filtering: ${shows.length} shows`);
+      console.log(`[THEME FILTER] Filtering for these themes: ${filters.themes.join(', ')}`);
+      console.log(`[THEME FILTER] Found ${shows.length} shows before filtering`);
+      
+      // Let's see what themes are available in the data
+      // Create a set of unique themes for reporting
+      const uniqueThemes = new Set<string>();
+      shows.forEach(show => {
+        if (show.themes && Array.isArray(show.themes)) {
+          show.themes.forEach(theme => uniqueThemes.add(theme));
+        }
+      });
+      console.log(`[THEME FILTER] Available themes in data: ${Array.from(uniqueThemes).sort().join(', ')}`);
       
       // Debug: Let's examine the first few shows
-      console.log(`First 3 shows before filtering:`);
-      shows.slice(0, 3).forEach(show => {
-        console.log(`Show: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
+      console.log(`[THEME FILTER] First 2 shows before filtering:`);
+      shows.slice(0, 2).forEach(show => {
+        console.log(`[THEME FILTER] Show: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
       });
       
-      shows = shows.filter(show => {
+      // This is already correct - we're using 'every' to ensure ALL filter themes are present in the show's themes
+      const filteredShows = shows.filter(show => {
         // Make sure show has themes array
         if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
           return false;
         }
         
-        // Debug the theme matching for each show
-        const matches = filters.themes!.every(filterTheme => 
-          show.themes!.some(showTheme => {
+        // Using 'every' means ALL filter themes must be present
+        // Using 'some' inside means each filter theme needs to match at least one of the show's themes
+        const matches = filters.themes!.every(filterTheme => {
+          const themeMatches = show.themes!.some(showTheme => {
+            // Case-insensitive comparison
             const isMatch = showTheme.toLowerCase() === filterTheme.toLowerCase();
             return isMatch;
-          })
-        );
+          });
+          
+          if (!themeMatches && show.name === 'Blippi') {
+            console.log(`[THEME FILTER] Blippi does not have theme: ${filterTheme}`);
+            console.log(`[THEME FILTER] Blippi themes: ${JSON.stringify(show.themes)}`);
+          }
+          
+          return themeMatches;
+        });
         
-        if (matches && show.name === 'Adventure Agents') {
-          console.log(`MATCH FOUND: ${show.name} matches all themes: ${JSON.stringify(show.themes)}`);
+        if (matches) {
+          console.log(`[THEME FILTER] MATCH: ${show.name} has all required themes`);
         }
         
         return matches;
       });
       
-      // Debug: Let's examine the results
-      console.log(`After filtering: ${shows.length} shows remain`);
-      if (shows.length > 0) {
-        console.log(`First 3 matching shows:`);
-        shows.slice(0, 3).forEach(show => {
-          console.log(`MATCH: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
+      console.log(`[THEME FILTER] Found ${filteredShows.length} shows after filtering`);
+      
+      if (filteredShows.length > 0) {
+        console.log(`[THEME FILTER] First 2 matching shows:`);
+        filteredShows.slice(0, 2).forEach(show => {
+          console.log(`[THEME FILTER] MATCH: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
         });
+      } else {
+        console.log(`[THEME FILTER] No matches found for themes: ${filters.themes.join(', ')}`);
       }
+      
+      shows = filteredShows;
     }
     
     return shows;
