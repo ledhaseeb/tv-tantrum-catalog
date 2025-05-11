@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, sql, desc, inArray, like, count } from "drizzle-orm";
+import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches,
   type User, type InsertUser, 
@@ -110,7 +110,68 @@ export class DatabaseStorage implements IStorage {
     // Apply filters
     const conditions = [];
     
-    if (filters.ageGroup) {
+    // Handle age range filtering
+    if (filters.ageRange) {
+      const { min, max } = filters.ageRange;
+      
+      // Extract the min and max from the show's ageRange string
+      // Patterns we handle: "0-2", "3-5", "6-8", "9-12", "13+", "Any Age"
+      conditions.push(
+        or(
+          // Special case for "Any Age"
+          eq(tvShows.ageRange, "Any Age"),
+          
+          // Match exact ranges
+          and(
+            or(
+              // Handle standard age ranges like "3-5"
+              and(
+                not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+                sql`
+                  CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) >= ${min} AND
+                  CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) <= ${max}
+                `
+              ),
+              
+              // Handle ranges with + like "13+"
+              and(
+                like(tvShows.ageRange, "%+%"),
+                sql`CAST(SUBSTRING(${tvShows.ageRange} FROM 1 FOR POSITION('+' IN ${tvShows.ageRange})-1) AS INTEGER) BETWEEN ${min} AND ${max}`
+              )
+            )
+          ),
+          
+          // Include shows where the lower end of the range overlaps with our filter range
+          and(
+            not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+            sql`
+              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) >= ${min} AND
+              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) <= ${max}
+            `
+          ),
+          
+          // Include shows where the upper end of the range overlaps with our filter range
+          and(
+            not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+            sql`
+              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) >= ${min} AND
+              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) <= ${max}
+            `
+          ),
+          
+          // Include shows that completely span our filter range
+          and(
+            not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+            sql`
+              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) <= ${min} AND
+              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) >= ${max}
+            `
+          )
+        )
+      );
+    } 
+    // Legacy support for exact age group matching
+    else if (filters.ageGroup) {
       conditions.push(eq(tvShows.ageRange, filters.ageGroup));
     }
     

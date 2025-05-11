@@ -23,6 +23,7 @@ export default function Browse() {
   const resultsRef = useRef<HTMLDivElement>(null); // Ref for the results section
   const [activeFilters, setActiveFilters] = useState<{
     ageGroup?: string;
+    ageRange?: {min: number, max: number};
     tantrumFactor?: string;
     sortBy?: string;
     search?: string;
@@ -47,10 +48,24 @@ export default function Browse() {
       initialFilters.search = searchQuery;
     }
     
-    // Get age group from URL
+    // Get age group from URL (legacy support)
     const ageGroup = searchParams.get('ageGroup');
     if (ageGroup) {
       initialFilters.ageGroup = ageGroup;
+    }
+    
+    // Get age range from URL
+    const ageRange = searchParams.get('ageRange');
+    if (ageRange) {
+      try {
+        const parsedRange = JSON.parse(decodeURIComponent(ageRange));
+        if (parsedRange && typeof parsedRange === 'object' && 'min' in parsedRange && 'max' in parsedRange) {
+          initialFilters.ageRange = parsedRange;
+          console.log('Parsed age range:', parsedRange);
+        }
+      } catch (e) {
+        console.error('Error parsing age range:', e);
+      }
     }
     
     // Get themes from URL
@@ -150,7 +165,15 @@ export default function Browse() {
     // Update URL with new filters
     const searchParams = new URLSearchParams();
     if (filters.search) searchParams.set('search', filters.search);
-    if (filters.ageGroup) searchParams.set('ageGroup', filters.ageGroup);
+    
+    // Handle age filters
+    if (filters.ageRange) {
+      searchParams.set('ageRange', encodeURIComponent(JSON.stringify(filters.ageRange)));
+    } else if (filters.ageGroup) {
+      // Legacy support for ageGroup parameter
+      searchParams.set('ageGroup', filters.ageGroup);
+    }
+    
     if (filters.themes && filters.themes.length > 0) searchParams.set('themes', filters.themes.join(','));
     if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
     if (filters.tantrumFactor) searchParams.set('tantrumFactor', filters.tantrumFactor);

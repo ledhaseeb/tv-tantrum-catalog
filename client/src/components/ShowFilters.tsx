@@ -168,6 +168,15 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     switch (key) {
       case 'ageGroup':
         return `Age: ${value}`;
+      case 'ageRange':
+        const ageRange = value as {min: number, max: number};
+        if (ageRange.min === 0 && ageRange.max === 18) {
+          return 'Age: Any';
+        } else if (ageRange.max === 18) {
+          return `Age: ${ageRange.min}+`;
+        } else {
+          return `Age: ${ageRange.min}-${ageRange.max}`;
+        }
       case 'tantrumFactor':
         switch (value) {
           case 'low': return 'Low Stimulation (1)';
