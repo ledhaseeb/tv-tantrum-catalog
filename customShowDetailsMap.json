@@ -1,1 +1,23 @@
-{}
+{
+  "2": {
+    "stimulationScore": 2.5,
+    "musicTempo": "Slow",
+    "totalMusicLevel": "Low",
+    "totalSoundEffectTimeLevel": "Low",
+    "sceneFrequency": "Slow",
+    "interactivityLevel": "Low",
+    "dialogueIntensity": "Medium",
+    "soundEffectsLevel": "Low",
+    "animationStyle": "Smooth 2D animation with colorful characters and educational concepts visualized"
+  },
+  "8": {
+    "stimulationScore": 3.2,
+    "musicTempo": "Medium",
+    "totalMusicLevel": "Medium",
+    "sceneFrequency": "Medium",
+    "interactivityLevel": "High",
+    "dialogueIntensity": "Low",
+    "soundEffectsLevel": "Medium",
+    "animationStyle": "Vibrant 3D animation with cultural African themes and colorful settings"
+  }
+}
