@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
 import { TvShow } from "@shared/schema";
-import { Search, CheckIcon } from "lucide-react";
+import { Search, CheckIcon, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface FiltersType {
@@ -656,7 +656,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                     className="ml-1 focus:outline-none"
                     onClick={() => removeFilter(key as keyof FiltersType)}
                   >
-                    <i className="fas fa-times-circle"></i>
+                    <X className="h-3.5 w-3.5 text-gray-500" />
                   </button>
                 </Badge>
               );
