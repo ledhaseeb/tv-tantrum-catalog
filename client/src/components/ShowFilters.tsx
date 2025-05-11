@@ -427,28 +427,76 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             </div>
           </div>
           
-          {/* Themes checkboxes */}
+          {/* Themes dropdown */}
           <div>
             <Label className="block text-sm font-medium text-gray-700 mb-2">
-              Themes
+              Primary Theme
             </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1 gap-x-4 max-h-[200px] overflow-y-auto">
-              {commonThemes.map((theme) => (
-                <div key={theme} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={`theme-${theme.toLowerCase().replace(/\s+/g, '-')}`}
-                    checked={selectedThemes.includes(theme)}
-                    onCheckedChange={() => handleThemeToggle(theme)} 
-                  />
-                  <Label 
-                    htmlFor={`theme-${theme.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="text-sm"
-                  >
+            <Select
+              value={selectedThemes.length ? selectedThemes[0] : ""}
+              onValueChange={(value) => {
+                // Clear previous selections and set this as the only theme
+                if (value) {
+                  setSelectedThemes([value]);
+                  handleFilterChange('themes', [value]);
+                } else {
+                  setSelectedThemes([]);
+                  handleFilterChange('themes', undefined);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Any Theme</SelectItem>
+                {commonThemes.map((theme) => (
+                  <SelectItem key={theme} value={theme}>
                     {theme}
-                  </Label>
-                </div>
-              ))}
-            </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Secondary theme dropdown (only appears when primary theme is selected) */}
+            {selectedThemes.length > 0 && (
+              <div className="mt-4">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
+                  Secondary Theme (Optional)
+                </Label>
+                <Select
+                  value={selectedThemes.length > 1 ? selectedThemes[1] : ""}
+                  onValueChange={(value) => {
+                    if (value) {
+                      // Add as second theme
+                      const newThemes = [selectedThemes[0], value];
+                      setSelectedThemes(newThemes);
+                      handleFilterChange('themes', newThemes);
+                    } else {
+                      // Remove secondary theme
+                      const newThemes = [selectedThemes[0]];
+                      setSelectedThemes(newThemes);
+                      handleFilterChange('themes', newThemes);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a secondary theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No Secondary Theme</SelectItem>
+                    {commonThemes
+                      .filter(theme => theme !== selectedThemes[0]) // Exclude primary theme
+                      .map((theme) => (
+                        <SelectItem key={theme} value={theme}>
+                          {theme}
+                        </SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           
           {/* Interaction Level */}
