@@ -170,9 +170,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         return `Age: ${value}`;
       case 'ageRange':
         const ageRange = value as {min: number, max: number};
-        if (ageRange.min === 0 && ageRange.max === 18) {
+        if (ageRange.min === 0 && ageRange.max === 13) {
           return 'Age: Any';
-        } else if (ageRange.max === 18) {
+        } else if (ageRange.max === 13) {
           return `Age: ${ageRange.min}+`;
         } else {
           return `Age: ${ageRange.min}-${ageRange.max}`;
@@ -366,12 +366,12 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   <input 
                     type="range" 
                     min="0" 
-                    max="18" 
+                    max="13" 
                     step="1" 
                     value={filters.ageRange?.min || 0}
                     onChange={(e) => {
                       const newMin = parseInt(e.target.value);
-                      const currentMax = filters.ageRange?.max || 18;
+                      const currentMax = filters.ageRange?.max || 13;
                       handleFilterChange('ageRange', {
                         min: newMin,
                         max: Math.max(newMin, currentMax) // Ensure max is at least equal to min
@@ -382,27 +382,27 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 </div>
                 <div className="flex justify-between text-[10px] text-gray-600 mt-1">
                   <span>0</span>
-                  <span>3</span>
+                  <span>2</span>
+                  <span>4</span>
                   <span>6</span>
-                  <span>9</span>
-                  <span>12</span>
-                  <span>15</span>
-                  <span>18</span>
+                  <span>8</span>
+                  <span>10</span>
+                  <span>13</span>
                 </div>
               </div>
               
               {/* Max slider */}
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-xs font-medium">Maximum: {filters.ageRange?.max === 18 ? '18+' : filters.ageRange?.max || 18} years</span>
+                  <span className="text-xs font-medium">Maximum: {filters.ageRange?.max === 13 ? '13+' : filters.ageRange?.max || 13} years</span>
                 </div>
                 <div className="relative pt-1">
                   <input 
                     type="range" 
                     min="0" 
-                    max="18" 
+                    max="13" 
                     step="1" 
-                    value={filters.ageRange?.max || 18}
+                    value={filters.ageRange?.max || 13}
                     onChange={(e) => {
                       const newMax = parseInt(e.target.value);
                       const currentMin = filters.ageRange?.min || 0;
@@ -416,35 +416,13 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 </div>
                 <div className="flex justify-between text-[10px] text-gray-600 mt-1">
                   <span>0</span>
-                  <span>3</span>
+                  <span>2</span>
+                  <span>4</span>
                   <span>6</span>
-                  <span>9</span>
-                  <span>12</span>
-                  <span>15</span>
-                  <span>18</span>
+                  <span>8</span>
+                  <span>10</span>
+                  <span>13+</span>
                 </div>
-              </div>
-              
-              {/* Quick selection badges */}
-              <div className="flex flex-wrap gap-1 text-xs text-gray-500 mt-1">
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 0, max: 18 })}>
-                  Any Age
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 0, max: 2 })}>
-                  Toddler (0-2)
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 3, max: 5 })}>
-                  Preschool (3-5)
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 6, max: 8 })}>
-                  Early Elem. (6-8)
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 9, max: 12 })}>
-                  Late Elem. (9-12)
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 13, max: 18 })}>
-                  Teen (13+)
-                </Badge>
               </div>
             </div>
           </div>
