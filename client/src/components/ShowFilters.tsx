@@ -53,11 +53,14 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const [selectedThemes, setSelectedThemes] = useState<string[]>(activeFilters.themes || []);
   const [openAutoComplete, setOpenAutoComplete] = useState(false);
   
-  // Fetch shows for autocomplete
+  // Fetch shows for autocomplete and theme analysis
   const { data: shows } = useQuery<TvShow[]>({
     queryKey: ['/api/shows'],
     staleTime: 300000, // 5 minutes
   });
+  
+  // Computed state for relevant secondary themes based on the primary theme
+  const [relevantSecondaryThemes, setRelevantSecondaryThemes] = useState<string[]>([]);
   
   // Common themes from the database
   const commonThemes = [
@@ -118,6 +121,55 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     setSearchInput(activeFilters.search || "");
     setSelectedThemes(activeFilters.themes || []);
   }, [activeFilters]);
+  
+  // Update relevant secondary themes when shows data loads or selected themes change
+  useEffect(() => {
+    if (shows && selectedThemes.length > 0) {
+      findRelevantSecondaryThemes(selectedThemes[0]);
+    } else {
+      // Reset if no primary theme is selected
+      setRelevantSecondaryThemes([]);
+    }
+  }, [shows, selectedThemes[0]]);
+  
+  // Find relevant secondary themes based on shows that have the primary theme
+  const findRelevantSecondaryThemes = (primaryTheme: string) => {
+    if (!shows || !primaryTheme || primaryTheme === "any") {
+      setRelevantSecondaryThemes([]);
+      return;
+    }
+
+    // Find all shows that have the primary theme
+    const showsWithPrimaryTheme = shows.filter(show => 
+      show.themes && Array.isArray(show.themes) && show.themes.includes(primaryTheme)
+    );
+
+    // Count occurrences of each secondary theme
+    const themeCounts: Record<string, number> = {};
+    
+    showsWithPrimaryTheme.forEach(show => {
+      if (show.themes && Array.isArray(show.themes)) {
+        show.themes.forEach(theme => {
+          // Skip the primary theme
+          if (theme !== primaryTheme) {
+            themeCounts[theme] = (themeCounts[theme] || 0) + 1;
+          }
+        });
+      }
+    });
+
+    // Sort themes by frequency (most frequent first)
+    const sortedThemes = Object.entries(themeCounts)
+      .sort((a, b) => b[1] - a[1])  // Sort by count
+      .map(([theme]) => theme);     // Take just the theme name
+
+    // If we found relevant themes, use them; otherwise fall back to all themes
+    const relevantThemes = sortedThemes.length > 0 
+      ? sortedThemes 
+      : commonThemes.filter(theme => theme !== primaryTheme);
+    
+    setRelevantSecondaryThemes(relevantThemes);
+  };
   
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
     const updatedFilters = { ...filters, [key]: value };
@@ -439,9 +491,12 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 if (value && value !== "any") {
                   setSelectedThemes([value]);
                   handleFilterChange('themes', [value]);
+                  // Immediately update relevant secondary themes
+                  findRelevantSecondaryThemes(value);
                 } else {
                   setSelectedThemes([]);
                   handleFilterChange('themes', undefined);
+                  setRelevantSecondaryThemes([]);
                 }
               }}
             >
@@ -485,9 +540,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Secondary Theme</SelectItem>
-                    {commonThemes
-                      .filter(theme => theme !== selectedThemes[0]) // Exclude primary theme
-                      .map((theme) => (
+                    {relevantSecondaryThemes.map((theme) => (
                         <SelectItem key={theme} value={theme}>
                           {theme}
                         </SelectItem>
