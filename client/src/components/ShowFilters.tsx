@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -31,6 +32,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 interface FiltersType {
   ageGroup?: string;
+  ageRange?: {min: number, max: number};
   tantrumFactor?: string; // We'll continue using this field name for continuity, but it maps to stimulationScore
   sortBy?: string;
   search?: string;
@@ -340,41 +342,65 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             )}
           </div>
           
-          {/* Age Range Radio Buttons */}
+          {/* Age Range Slider */}
           <div>
-            <Label className="block text-sm font-medium text-gray-700 mb-2">
-              Age Range
-            </Label>
-            <RadioGroup 
-              value={filters.ageGroup} 
-              onValueChange={(value) => handleFilterChange('ageGroup', value)}
-              className="space-y-1"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Any Age" id="any-age" />
-                <Label htmlFor="any-age">Any Age</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="block text-sm font-medium text-gray-700">
+                Age Range
+              </Label>
+              <span className="text-sm text-gray-500">
+                {filters.ageRange ? 
+                  (filters.ageRange.min === 0 && filters.ageRange.max === 18) ? 
+                    'Any Age' : 
+                    `${filters.ageRange.min} - ${filters.ageRange.max === 18 ? '18+' : filters.ageRange.max} years` 
+                : 'Any Age'}
+              </span>
+            </div>
+            
+            <div className="py-4">
+              <Slider
+                defaultValue={[0, 18]}
+                value={filters.ageRange ? [filters.ageRange.min, filters.ageRange.max] : [0, 18]}
+                max={18}
+                step={1}
+                minStepsBetweenThumbs={1}
+                onValueChange={(value) => {
+                  handleFilterChange('ageRange', { min: value[0], max: value[1] });
+                }}
+                className="mb-2"
+              />
+              
+              <div className="flex justify-between text-xs text-gray-500 px-1">
+                <span>0</span>
+                <span>3</span>
+                <span>6</span>
+                <span>9</span>
+                <span>12</span>
+                <span>15</span>
+                <span>18+</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="0-2" id="toddler" />
-                <Label htmlFor="toddler">Toddler (0-2)</Label>
+              
+              <div className="flex flex-wrap mt-2 gap-1 text-xs text-gray-500">
+                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 0, max: 18 })}>
+                  Any Age
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 0, max: 2 })}>
+                  Toddler (0-2)
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 3, max: 5 })}>
+                  Preschool (3-5)
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 6, max: 8 })}>
+                  Early Elem. (6-8)
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 9, max: 12 })}>
+                  Late Elem. (9-12)
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-primary-100" onClick={() => handleFilterChange('ageRange', { min: 13, max: 18 })}>
+                  Teen (13+)
+                </Badge>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="3-5" id="preschool" />
-                <Label htmlFor="preschool">Preschool (3-5)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="6-8" id="early-elem" />
-                <Label htmlFor="early-elem">Early Elem. (6-8)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="9-12" id="late-elem" />
-                <Label htmlFor="late-elem">Late Elem. (9-12)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="13+" id="teen" />
-                <Label htmlFor="teen">Teen (13+)</Label>
-              </div>
-            </RadioGroup>
+            </div>
           </div>
           
           {/* Themes checkboxes */}
