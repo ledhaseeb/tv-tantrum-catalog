@@ -1,4 +1,15 @@
 {
+  "1": {
+    "stimulationScore": 3.5,
+    "musicTempo": "Medium",
+    "totalMusicLevel": "Medium",
+    "totalSoundEffectTimeLevel": "Medium",
+    "sceneFrequency": "Medium-Fast",
+    "interactivityLevel": "High",
+    "dialogueIntensity": "Medium-High",
+    "soundEffectsLevel": "Medium-High",
+    "animationStyle": "Live-Action Family Videos with colorful branding and graphic elements"
+  },
   "2": {
     "stimulationScore": 2.5,
     "musicTempo": "Slow",
