@@ -580,19 +580,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse ID once
       const id = parseInt(req.params.id);
       
-      // Skip authentication for Booba fix (ID 34)
-      const isBooba = id === 34;
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
       
-      // Skip authentication checks for Booba
-      if (!isBooba) {
-        // Check if user is authenticated and is an admin
-        if (!req.isAuthenticated()) {
-          return res.status(401).json({ message: "You must be logged in" });
-        }
-        
-        if (!req.user?.isAdmin) {
-          return res.status(403).json({ message: "Not authorized to update shows" });
-        }
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to update shows" });
       }
       
       if (isNaN(id)) {
