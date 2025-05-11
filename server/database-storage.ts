@@ -215,6 +215,14 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`(${tvShows.name} ILIKE ${searchTerm} OR ${tvShows.description} ILIKE ${searchTerm})`);
     }
     
+    // Filter by themes
+    if (filters.themes && filters.themes.length > 0) {
+      // We need a way to check if all themes are present in the array
+      // For multiple themes, we'll need a post-query filter since PostgreSQL array operations 
+      // don't easily support checking if an array contains all values from another array
+      console.log(`Filtering by themes: ${filters.themes.join(', ')}`);
+    }
+    
     // Apply all conditions
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -250,7 +258,34 @@ export class DatabaseStorage implements IStorage {
       query = query.orderBy(tvShows.name);
     }
     
-    return await query;
+    // Execute query
+    let shows = await query;
+    
+    // Post-process for theme filtering
+    // This needs to happen after the SQL query because
+    // PostgreSQL array operations don't easily support checking if an array contains all values from another array
+    if (filters.themes && filters.themes.length > 0) {
+      console.log(`Post-filtering shows by themes: ${filters.themes.join(', ')}`);
+      console.log(`Before filtering: ${shows.length} shows`);
+      
+      shows = shows.filter(show => {
+        // Make sure show has themes array
+        if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
+          return false;
+        }
+        
+        // Check if ALL selected themes are in the show's themes
+        return filters.themes!.every(filterTheme => 
+          show.themes!.some(showTheme => 
+            showTheme.toLowerCase() === filterTheme.toLowerCase()
+          )
+        );
+      });
+      
+      console.log(`After filtering: ${shows.length} shows remain`);
+    }
+    
+    return shows;
   }
 
   async addTvShow(show: InsertTvShow): Promise<TvShow> {
