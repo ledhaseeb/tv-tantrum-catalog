@@ -543,8 +543,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               </SelectContent>
             </Select>
           </div>
-
-
           
           {/* Stimulation Score Range - always visible */}
           <div>
@@ -615,18 +613,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   <span>5</span>
                 </div>
               </div>
-              
-              <div className="flex justify-between text-xs text-gray-600 mt-1">
-                <span className="font-medium text-green-600">Low</span>
-                <span className="font-medium text-green-600">Low-Med</span>
-                <span className="font-medium text-yellow-600">Med</span>
-                <span className="font-medium text-yellow-600">Med-High</span>
-                <span className="font-medium text-red-600">High</span>
-              </div>
             </div>
           </div>
           
-          <div className="flex flex-col gap-3">
+          {/* Apply Filters and Reset */}
+          <div className="space-y-2">
             <Button
               type="button"
               onClick={handleApplyFilters}
