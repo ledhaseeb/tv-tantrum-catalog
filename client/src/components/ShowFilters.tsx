@@ -433,10 +433,10 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               Primary Theme
             </Label>
             <Select
-              value={selectedThemes.length ? selectedThemes[0] : ""}
+              value={selectedThemes.length ? selectedThemes[0] : "any"}
               onValueChange={(value) => {
                 // Clear previous selections and set this as the only theme
-                if (value) {
+                if (value && value !== "any") {
                   setSelectedThemes([value]);
                   handleFilterChange('themes', [value]);
                 } else {
@@ -449,7 +449,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 <SelectValue placeholder="Select a theme" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Theme</SelectItem>
+                <SelectItem value="any">Any Theme</SelectItem>
                 {commonThemes.map((theme) => (
                   <SelectItem key={theme} value={theme}>
                     {theme}
@@ -465,9 +465,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   Secondary Theme (Optional)
                 </Label>
                 <Select
-                  value={selectedThemes.length > 1 ? selectedThemes[1] : ""}
+                  value={selectedThemes.length > 1 ? selectedThemes[1] : "none"}
                   onValueChange={(value) => {
-                    if (value) {
+                    if (value && value !== "none") {
                       // Add as second theme
                       const newThemes = [selectedThemes[0], value];
                       setSelectedThemes(newThemes);
@@ -484,7 +484,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                     <SelectValue placeholder="Select a secondary theme" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Secondary Theme</SelectItem>
+                    <SelectItem value="none">No Secondary Theme</SelectItem>
                     {commonThemes
                       .filter(theme => theme !== selectedThemes[0]) // Exclude primary theme
                       .map((theme) => (
