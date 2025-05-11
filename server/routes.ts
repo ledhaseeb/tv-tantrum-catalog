@@ -9,6 +9,7 @@ import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
 import { updateShowImagesFromOmdb } from "./image-optimizer";
+import { updateCustomImageMap } from "./image-preservator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
@@ -241,6 +242,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const omdbData = await omdbService.getShowData(show.name);
       
       if (omdbData && omdbData.poster && omdbData.poster !== 'N/A') {
+        // Save to our custom image map and update the show
+        updateCustomImageMap(id, omdbData.poster);
+        
         // Update the show with the OMDB poster
         const updatedShow = await storage.updateTvShow(id, {
           imageUrl: omdbData.poster
@@ -291,6 +295,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!show) {
         return res.status(404).json({ message: "TV show not found" });
       }
+      
+      // Save to our custom image map and update the show
+      updateCustomImageMap(id, imageUrl);
       
       // Update the show with the local image URL
       const updatedShow = await storage.updateTvShow(id, { imageUrl });
