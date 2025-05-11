@@ -43,5 +43,13 @@
     "dialogueIntensity": "Low",
     "soundEffectsLevel": "High",
     "animationStyle": "3D CGI animation with realistic textures and environments."
+  },
+  "45": {
+    "name": "Charlie's Colorforms City",
+    "description": "Charlie's Colorforms City is a 2D Digital Animation using Colorforms-inspired designs. Color Palette: Bright and bold primary colors with simple shapes. A show for 2-5 year olds, it features Creativity & Imagination, Preschool-Basics, Shapes, Colours, Critical Thinking, Cognitive Development, and Repetitive Learning themes."
+  },
+  "48": {
+    "name": "City Vehicles",
+    "description": "City Vehicles is a 3D CGI Animation with Bright Colors and Realistic Models show for 2-5 year olds. It features Vehicle Themes, Creativity & Imagination, Engineering Concepts, Mechanics, Problem Solving, Teamwork, Music, and Entertainment themes."
   }
 }
