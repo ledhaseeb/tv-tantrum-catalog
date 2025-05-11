@@ -210,6 +210,11 @@ export class DatabaseStorage implements IStorage {
       'animationStyle', 'ageRange', 'themes', 'description'
     ];
     
+    // Round stimulation score to whole numbers if it exists
+    if ('stimulationScore' in show && show.stimulationScore !== undefined) {
+      show.stimulationScore = Math.round(Number(show.stimulationScore));
+    }
+    
     // Check if we're updating any important fields
     let hasImportantFields = false;
     for (const field of importantFields) {
@@ -357,7 +362,9 @@ export class DatabaseStorage implements IStorage {
           const updateData = {
             // Use the correct property names from the TvShowGitHub type
             description: existingShow.description, // Keep existing description if not provided
-            stimulationScore: typeof githubShow.stimulation_score === 'number' ? githubShow.stimulation_score : existingShow.stimulationScore,
+            stimulationScore: typeof githubShow.stimulation_score === 'number' 
+              ? Math.round(githubShow.stimulation_score) 
+              : Math.round(existingShow.stimulationScore),
             dialogueIntensity: githubShow.dialogue_intensity || existingShow.dialogueIntensity,
             soundEffectsLevel: githubShow.sound_effects_level || existingShow.soundEffectsLevel,
             interactivityLevel: githubShow.interactivity_level || existingShow.interactivityLevel,
@@ -388,7 +395,7 @@ export class DatabaseStorage implements IStorage {
           const tvShow: InsertTvShow = {
             name: githubShow.title,
             description: 'A children\'s TV show', // Default description
-            stimulationScore: typeof githubShow.stimulation_score === 'number' ? githubShow.stimulation_score : 3,
+            stimulationScore: typeof githubShow.stimulation_score === 'number' ? Math.round(githubShow.stimulation_score) : 3,
             dialogueIntensity: githubShow.dialogue_intensity || 'Medium',
             soundEffectsLevel: githubShow.sound_effects_level || 'Medium',
             interactivityLevel: githubShow.interactivity_level || 'Medium',

@@ -1,6 +1,6 @@
 {
   "1": {
-    "stimulationScore": 3.5,
+    "stimulationScore": 4,
     "musicTempo": "Medium",
     "totalMusicLevel": "Medium",
     "totalSoundEffectTimeLevel": "Medium",
@@ -11,7 +11,7 @@
     "animationStyle": "Live-Action Family Videos with colorful branding and graphic elements"
   },
   "2": {
-    "stimulationScore": 2.5,
+    "stimulationScore": 3,
     "musicTempo": "Slow",
     "totalMusicLevel": "Low",
     "totalSoundEffectTimeLevel": "Low",
@@ -22,7 +22,7 @@
     "animationStyle": "Smooth 2D animation with colorful characters and educational concepts visualized"
   },
   "8": {
-    "stimulationScore": 3.2,
+    "stimulationScore": 3,
     "musicTempo": "Medium",
     "totalMusicLevel": "Medium",
     "sceneFrequency": "Medium",
