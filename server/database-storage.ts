@@ -23,6 +23,7 @@ export interface IStorage {
   getTvShowById(id: number): Promise<TvShow | undefined>;
   getTvShowsByFilter(filters: { 
     ageGroup?: string; 
+    ageRange?: {min: number, max: number};
     tantrumFactor?: string; 
     sortBy?: string; 
     search?: string;

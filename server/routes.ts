@@ -52,6 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { 
         ageGroup, 
+        ageRange,
         tantrumFactor, 
         sortBy, 
         search, 
@@ -68,6 +69,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processedThemes = themes.split(',').map(t => t.trim()).filter(Boolean);
       }
       
+      // Process ageRange - can be JSON string
+      let processedAgeRange: { min: number, max: number } | undefined = undefined;
+      if (typeof ageRange === 'string' && ageRange.trim()) {
+        try {
+          processedAgeRange = JSON.parse(ageRange);
+        } catch (e) {
+          console.error("Failed to parse ageRange:", e);
+        }
+      }
+      
       // Process stimulationScoreRange - can be JSON string
       let processedStimulationScoreRange: { min: number, max: number } | undefined = undefined;
       if (typeof stimulationScoreRange === 'string' && stimulationScoreRange.trim()) {
@@ -80,6 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const filters = {
         ageGroup: typeof ageGroup === 'string' ? ageGroup : undefined,
+        ageRange: processedAgeRange,
         tantrumFactor: typeof tantrumFactor === 'string' ? tantrumFactor : undefined,
         sortBy: typeof sortBy === 'string' ? sortBy : undefined,
         search: typeof search === 'string' ? search : undefined,
