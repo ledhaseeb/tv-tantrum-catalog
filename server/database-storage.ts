@@ -10,6 +10,7 @@ import {
   type TvShowGitHub
 } from "@shared/schema";
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
+import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
 
 export interface IStorage {
   // User methods
@@ -201,6 +202,28 @@ export class DatabaseStorage implements IStorage {
       updateCustomImageMap(id, show.imageUrl);
     }
     
+    // Save stimulation metrics and other important details to our custom details map
+    const stimulationMetrics: Record<string, any> = {};
+    const importantFields = [
+      'stimulationScore', 'musicTempo', 'totalMusicLevel', 'totalSoundEffectTimeLevel', 
+      'sceneFrequency', 'interactivityLevel', 'dialogueIntensity', 'soundEffectsLevel',
+      'animationStyle', 'ageRange', 'themes', 'description'
+    ];
+    
+    // Check if we're updating any important fields
+    let hasImportantFields = false;
+    for (const field of importantFields) {
+      if (field in show && show[field as keyof typeof show] !== undefined) {
+        stimulationMetrics[field] = show[field as keyof typeof show];
+        hasImportantFields = true;
+      }
+    }
+    
+    // Save to custom details map if we have important fields to preserve
+    if (hasImportantFields) {
+      updateCustomShowDetails(id, stimulationMetrics);
+    }
+    
     const [updatedShow] = await db
       .update(tvShows)
       .set(show)
@@ -330,25 +353,32 @@ export class DatabaseStorage implements IStorage {
           // Check for custom image URL first
           const preservedImageUrl = preserveCustomImageUrl(existingShow.id, existingShow.imageUrl);
           
+          // Create the update object with GitHub data
+          const updateData = {
+            // Use the correct property names from the TvShowGitHub type
+            description: existingShow.description, // Keep existing description if not provided
+            stimulationScore: typeof githubShow.stimulation_score === 'number' ? githubShow.stimulation_score : existingShow.stimulationScore,
+            dialogueIntensity: githubShow.dialogue_intensity || existingShow.dialogueIntensity,
+            soundEffectsLevel: githubShow.sound_effects_level || existingShow.soundEffectsLevel,
+            interactivityLevel: githubShow.interactivity_level || existingShow.interactivityLevel,
+            ageRange: githubShow.target_age_group || existingShow.ageRange,
+            themes: githubShow.themes || existingShow.themes,
+            availableOn: [githubShow.platform] || existingShow.availableOn,
+            releaseYear: typeof githubShow.release_year === 'number' && !isNaN(githubShow.release_year) ? githubShow.release_year : existingShow.releaseYear,
+            endYear: typeof githubShow.end_year === 'number' && !isNaN(githubShow.end_year) ? githubShow.end_year : existingShow.endYear,
+            episodeLength: githubShow.avg_episode_length && !isNaN(parseInt(githubShow.avg_episode_length)) ? parseInt(githubShow.avg_episode_length) : existingShow.episodeLength,
+            seasons: githubShow.seasons && !isNaN(parseInt(githubShow.seasons)) ? parseInt(githubShow.seasons) : existingShow.seasons,
+            // Preserve our custom image URLs during imports
+            imageUrl: preservedImageUrl || githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename) || existingShow.imageUrl,
+          };
+          
+          // Apply custom details preservation - this will prioritize any custom stimulation metrics
+          // and other important details we've saved from admin edits
+          const mergedData = preserveCustomShowDetails(existingShow.id, existingShow, updateData);
+          
           const [updatedShow] = await db
             .update(tvShows)
-            .set({
-              // Use the correct property names from the TvShowGitHub type
-              description: existingShow.description, // Keep existing description if not provided
-              stimulationScore: typeof githubShow.stimulation_score === 'number' ? githubShow.stimulation_score : existingShow.stimulationScore,
-              dialogueIntensity: githubShow.dialogue_intensity || existingShow.dialogueIntensity,
-              soundEffectsLevel: githubShow.sound_effects_level || existingShow.soundEffectsLevel,
-              interactivityLevel: githubShow.interactivity_level || existingShow.interactivityLevel,
-              ageRange: githubShow.target_age_group || existingShow.ageRange,
-              themes: githubShow.themes || existingShow.themes,
-              availableOn: [githubShow.platform] || existingShow.availableOn,
-              releaseYear: typeof githubShow.release_year === 'number' && !isNaN(githubShow.release_year) ? githubShow.release_year : existingShow.releaseYear,
-              endYear: typeof githubShow.end_year === 'number' && !isNaN(githubShow.end_year) ? githubShow.end_year : existingShow.endYear,
-              episodeLength: githubShow.avg_episode_length && !isNaN(parseInt(githubShow.avg_episode_length)) ? parseInt(githubShow.avg_episode_length) : existingShow.episodeLength,
-              seasons: githubShow.seasons && !isNaN(parseInt(githubShow.seasons)) ? parseInt(githubShow.seasons) : existingShow.seasons,
-              // Preserve our custom image URLs during imports
-              imageUrl: preservedImageUrl || githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename) || existingShow.imageUrl,
-            })
+            .set(mergedData)
             .where(eq(tvShows.id, existingShow.id))
             .returning();
 

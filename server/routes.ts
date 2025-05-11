@@ -10,6 +10,7 @@ import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
 import { updateShowImagesFromOmdb } from "./image-optimizer";
 import { updateCustomImageMap, applyCustomImages } from "./image-preservator";
+import { applyCustomShowDetails } from "./details-preservator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
@@ -30,6 +31,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Apply custom images after importing shows
       await applyCustomImages(
         storage.getTvShowById.bind(storage), 
+        storage.updateTvShow.bind(storage)
+      );
+      
+      // Apply custom show details after importing shows
+      await applyCustomShowDetails(
+        storage.getTvShowById.bind(storage),
         storage.updateTvShow.bind(storage)
       );
     }
