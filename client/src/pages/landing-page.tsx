@@ -55,11 +55,11 @@ export default function LandingPage() {
           <Card className="bg-card/50 backdrop-blur shadow-xl transform rotate-1">
             <CardContent className="p-6">
               <img 
-                src="/img/tv-tantrum-preview.png" 
+                src="/img/tv-tantrum-preview.svg" 
                 alt="TV Tantrum Preview" 
                 className="rounded-lg shadow-md"
                 onError={(e) => {
-                  e.currentTarget.src = "https://placehold.co/600x400/F1F5F9/64748b?text=TV+Tantrum+Preview";
+                  e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23F1F5F9' /%3E%3Cg fill='%2364748b'%3E%3Ctext x='300' y='180' font-family='Arial, sans-serif' font-size='24' text-anchor='middle'%3ETV Tantrum Preview%3C/text%3E%3Ctext x='300' y='220' font-family='Arial, sans-serif' font-size='16' text-anchor='middle'%3EComing Soon%3C/text%3E%3C/g%3E%3C/svg%3E";
                 }}
               />
             </CardContent>

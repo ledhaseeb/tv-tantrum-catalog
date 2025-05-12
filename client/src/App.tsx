@@ -13,42 +13,86 @@ import Compare from "@/pages/compare";
 import About from "@/pages/about";
 import AuthPage from "@/pages/auth-page";
 import AdminPage from "@/pages/admin-page";
+import LandingPage from "@/pages/landing-page";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <div className="flex-grow">
-        <Switch>
-          <Route path="/">
-            <Home />
-          </Route>
-          <Route path="/browse">
-            <Browse />
-          </Route>
-          <Route path="/shows/:id">
-            {(params) => <Detail id={parseInt(params.id, 10)} />}
-          </Route>
-          <Route path="/compare">
-            <Compare />
-          </Route>
-          <Route path="/about">
-            <About />
-          </Route>
-          <Route path="/auth">
-            <AuthPage />
-          </Route>
-          <Route path="/admin">
-            <AdminPage />
-          </Route>
-          <Route>
-            <NotFound />
-          </Route>
-        </Switch>
-      </div>
-      <Footer />
+      <Switch>
+        <Route path="/">
+          <LandingPage />
+        </Route>
+        <Route path="/home">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Home />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/browse">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Browse />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/shows/:id">
+          {(params) => (
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <Detail id={parseInt(params.id, 10)} />
+              </div>
+              <Footer />
+            </div>
+          )}
+        </Route>
+        <Route path="/compare">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Compare />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/about">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <About />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/auth">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <AuthPage />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/admin">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <AdminPage />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route>
+          <NotFound />
+        </Route>
+      </Switch>
     </div>
   );
 }
