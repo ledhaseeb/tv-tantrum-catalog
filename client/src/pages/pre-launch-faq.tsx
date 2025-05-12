@@ -48,7 +48,7 @@ export default function PreLaunchFAQ() {
               When will TV Tantrum launch?
             </AccordionTrigger>
             <AccordionContent className="text-lg">
-              We're currently in the final stages of development and plan to launch in the coming months. 
+              We're currently in the final stages of development and plan to launch in the coming weeks. 
               Join our waitlist to be the first to know when we go live and to get early access to the platform.
             </AccordionContent>
           </AccordionItem>
@@ -80,10 +80,10 @@ export default function PreLaunchFAQ() {
               Will TV Tantrum be free to use?
             </AccordionTrigger>
             <AccordionContent className="text-lg">
-              TV Tantrum will offer both free and premium features. Basic information about shows will be 
-              available to all users, while more detailed analyses and personalized recommendations will be 
-              part of our premium membership. Early subscribers from our waitlist will receive special 
-              promotional offers.
+              Yes! TV Tantrum will be completely free to use. All features, including detailed show analyses, 
+              filtering tools, and personalized recommendations will be available to everyone at no cost. 
+              We believe that all parents should have access to this important information regardless of 
+              their financial situation.
             </AccordionContent>
           </AccordionItem>
           
@@ -92,8 +92,9 @@ export default function PreLaunchFAQ() {
               How do I suggest a show to be analyzed?
             </AccordionTrigger>
             <AccordionContent className="text-lg">
-              Once we launch, registered users will be able to suggest shows for analysis through their account. 
-              During our pre-launch phase, you can email suggestions to suggestions@tvtantrum.com.
+              Once we launch, registered users will be able to suggest shows for analysis by using a simple 
+              request form directly on our website. Our content team reviews all suggestions and prioritizes 
+              new additions based on popularity and educational value.
             </AccordionContent>
           </AccordionItem>
           
