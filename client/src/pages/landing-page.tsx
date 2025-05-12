@@ -40,23 +40,17 @@ export default function LandingPage() {
             TV Tantrum helps parents understand how stimulating different TV shows are, 
             so you can make informed choices about what your children watch.
           </p>
-          <p className="mt-3 text-lg text-primary font-medium">
-            Sign up now to secure early access! Only pre-registered users will be able to 
-            access TV Tantrum during our exclusive early access period.
-          </p>
           
-          <div className="mt-8 flex flex-col md:flex-row gap-4">
+          <div className="mt-6 flex justify-start">
             <Button className="text-lg px-8 py-6" size="lg">
               <a href="#register">Join the Waitlist</a>
             </Button>
-            <Button variant="outline" className="text-lg px-8 py-6" size="lg" 
-              onClick={() => toast({
-                title: "Coming Soon!",
-                description: "This feature will be available at launch. Join our waitlist to be notified!",
-              })}>
-              Learn More
-            </Button>
           </div>
+          
+          <p className="mt-4 text-lg text-primary font-medium">
+            Sign up now to secure early access! Only pre-registered users will be able to 
+            access TV Tantrum during our exclusive early access period.
+          </p>
         </div>
         
         <div className="relative">
