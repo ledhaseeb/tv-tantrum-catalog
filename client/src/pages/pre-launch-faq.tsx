@@ -49,7 +49,8 @@ export default function PreLaunchFAQ() {
             </AccordionTrigger>
             <AccordionContent className="text-lg">
               We're currently in the final stages of development and plan to launch in the coming weeks. 
-              Join our waitlist to be the first to know when we go live and to get early access to the platform.
+              Join our waitlist now to qualify for early access to the platform before the public launch. 
+              Only users who pre-register will be able to access TV Tantrum during the early access period.
             </AccordionContent>
           </AccordionItem>
 

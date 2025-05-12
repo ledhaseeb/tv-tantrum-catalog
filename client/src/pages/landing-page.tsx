@@ -40,6 +40,10 @@ export default function LandingPage() {
             TV Tantrum helps parents understand how stimulating different TV shows are, 
             so you can make informed choices about what your children watch.
           </p>
+          <p className="mt-3 text-lg text-primary font-medium">
+            Sign up now to secure early access! Only pre-registered users will be able to 
+            access TV Tantrum during our exclusive early access period.
+          </p>
           
           <div className="mt-8 flex flex-col md:flex-row gap-4">
             <Button className="text-lg px-8 py-6" size="lg">
@@ -110,8 +114,11 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto bg-card rounded-xl shadow-lg overflow-hidden">
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-6 text-center">Join the Waitlist</h2>
-            <p className="text-center text-muted-foreground mb-8">
+            <p className="text-center text-muted-foreground mb-2">
               Be the first to know when TV Tantrum launches. Get early access and exclusive updates!
+            </p>
+            <p className="text-center text-primary font-medium mb-6">
+              Remember, only pre-registered users will be granted access during our early access period before public launch!
             </p>
             
             <div className="h-[500px]">
