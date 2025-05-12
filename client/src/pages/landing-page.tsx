@@ -108,11 +108,8 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto bg-card rounded-xl shadow-lg overflow-hidden">
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-6 text-center">Join the Waitlist</h2>
-            <p className="text-center text-muted-foreground mb-2">
+            <p className="text-center text-muted-foreground mb-6">
               Be the first to know when TV Tantrum launches. Get early access and exclusive updates!
-            </p>
-            <p className="text-center text-primary font-medium mb-6">
-              Remember, only pre-registered users will be granted access during our early access period before public launch!
             </p>
             
             <div className="h-[500px]">
@@ -135,6 +132,10 @@ export default function LandingPage() {
               />
               <script src="https://link.msgsndr.com/js/form_embed.js" async></script>
             </div>
+            
+            <p className="text-center text-primary font-medium mt-4">
+              Remember, only pre-registered users will be granted access during our early access period before public launch!
+            </p>
           </div>
         </div>
       </section>
