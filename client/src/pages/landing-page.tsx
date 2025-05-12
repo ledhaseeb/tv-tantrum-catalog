@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import GhlScriptLoader from "@/components/GhlScriptLoader";
+// Import the preview image to ensure it's properly bundled
+import previewImage from "../assets/tv-tantrum-preview.png";
 
 export default function LandingPage() {
   const { toast } = useToast();
@@ -55,7 +57,7 @@ export default function LandingPage() {
           <Card className="bg-card/50 backdrop-blur shadow-xl transform rotate-1">
             <CardContent className="p-6">
               <img 
-                src="/img/tv-tantrum-preview.png" 
+                src={previewImage} 
                 alt="TV Tantrum Preview" 
                 className="rounded-lg shadow-md w-full"
                 onError={(e) => {
