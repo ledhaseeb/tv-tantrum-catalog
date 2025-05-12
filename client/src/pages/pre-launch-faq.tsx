@@ -20,9 +20,6 @@ export default function PreLaunchFAQ() {
           <Button variant="ghost" asChild>
             <Link href="/about">About</Link>
           </Button>
-          <Button variant="outline" asChild>
-            <a href="mailto:support@tvtantrum.com">Contact</a>
-          </Button>
         </div>
       </header>
 

@@ -24,9 +24,6 @@ export default function LandingPage() {
           <Button variant="ghost" asChild>
             <Link href="/faq">FAQ</Link>
           </Button>
-          <Button variant="outline" asChild>
-            <a href="mailto:support@tvtantrum.com">Contact</a>
-          </Button>
         </div>
       </header>
 
