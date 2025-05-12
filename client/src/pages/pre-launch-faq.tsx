@@ -1,0 +1,129 @@
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+export default function PreLaunchFAQ() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+      {/* Header */}
+      <header className="container mx-auto py-6 flex justify-between items-center">
+        <div className="text-3xl font-bold text-primary">TV Tantrum</div>
+        <div className="flex space-x-4">
+          <Button variant="ghost" asChild>
+            <Link href="/">Home</Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/about">About</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <a href="mailto:support@tvtantrum.com">Contact</a>
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="container mx-auto py-12 px-4 max-w-3xl">
+        <h1 className="text-4xl font-bold mb-8 text-center">Frequently Asked Questions</h1>
+        
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="text-xl font-medium">
+              What is TV Tantrum?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              TV Tantrum is a platform that analyzes children's TV shows based on their sensory impact. 
+              We provide detailed information about elements like animation style, scene frequency, music tempo, 
+              dialogue intensity, and overall stimulation level to help parents make informed decisions about 
+              what their children watch.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-2">
+            <AccordionTrigger className="text-xl font-medium">
+              When will TV Tantrum launch?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              We're currently in the final stages of development and plan to launch in the coming months. 
+              Join our waitlist to be the first to know when we go live and to get early access to the platform.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-3">
+            <AccordionTrigger className="text-xl font-medium">
+              What is a "stimulation score"?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              A stimulation score is our proprietary rating that measures how stimulating a show is for a child's 
+              developing brain. Shows with higher scores contain more fast-paced scenes, louder sound effects, 
+              and more intense visual elements. This score helps parents find content that matches their child's 
+              sensory preferences and needs.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-4">
+            <AccordionTrigger className="text-xl font-medium">
+              How many shows does TV Tantrum analyze?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              At launch, we'll have detailed analyses of over 300 popular children's shows, with new shows 
+              being added regularly. We prioritize shows based on popularity and user requests.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-5">
+            <AccordionTrigger className="text-xl font-medium">
+              Will TV Tantrum be free to use?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              TV Tantrum will offer both free and premium features. Basic information about shows will be 
+              available to all users, while more detailed analyses and personalized recommendations will be 
+              part of our premium membership. Early subscribers from our waitlist will receive special 
+              promotional offers.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-6">
+            <AccordionTrigger className="text-xl font-medium">
+              How do I suggest a show to be analyzed?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              Once we launch, registered users will be able to suggest shows for analysis through their account. 
+              During our pre-launch phase, you can email suggestions to suggestions@tvtantrum.com.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-7">
+            <AccordionTrigger className="text-xl font-medium">
+              What age ranges does TV Tantrum cover?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
+              We analyze shows suitable for children from ages 0-13+, with particular focus on the crucial 
+              developmental stages from toddlerhood through elementary school years.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        <div className="mt-12 text-center">
+          <Button size="lg" className="px-8 py-6 text-lg" asChild>
+            <Link href="/#register">Join the Waitlist</Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-muted py-12 mt-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-muted-foreground">
+            <p>© {new Date().getFullYear()} TV Tantrum. All rights reserved.</p>
+            <p className="mt-2">Have another question? Email us at support@tvtantrum.com</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

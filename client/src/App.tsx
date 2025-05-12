@@ -14,72 +14,98 @@ import About from "@/pages/about";
 import AuthPage from "@/pages/auth-page";
 import AdminPage from "@/pages/admin-page";
 import LandingPage from "@/pages/landing-page";
+import PreLaunchAbout from "@/pages/pre-launch-about";
+import PreLaunchFAQ from "@/pages/pre-launch-faq";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
+  // Access URL to check for development mode
+  const isDevMode = window.location.search.includes('dev=true');
+
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
+        {/* Pre-Launch Routes */}
         <Route path="/">
           <LandingPage />
         </Route>
-        <Route path="/home">
-          <div className="flex-grow flex flex-col">
-            <Navbar />
-            <div className="flex-grow">
-              <Home />
-            </div>
-            <Footer />
-          </div>
+        <Route path="/about">
+          <PreLaunchAbout />
         </Route>
-        <Route path="/browse">
-          <div className="flex-grow flex flex-col">
-            <Navbar />
-            <div className="flex-grow">
-              <Browse />
-            </div>
-            <Footer />
-          </div>
+        <Route path="/faq">
+          <PreLaunchFAQ />
         </Route>
-        <Route path="/shows/:id">
-          {(params) => (
+        
+        {/* Main App Routes - Only accessible with dev parameter or after launch */}
+        {isDevMode && (
+          <Route path="/home">
             <div className="flex-grow flex flex-col">
               <Navbar />
               <div className="flex-grow">
-                <Detail id={parseInt(params.id, 10)} />
+                <Home />
               </div>
               <Footer />
             </div>
-          )}
-        </Route>
-        <Route path="/compare">
-          <div className="flex-grow flex flex-col">
-            <Navbar />
-            <div className="flex-grow">
-              <Compare />
+          </Route>
+        )}
+        {isDevMode && (
+          <Route path="/browse">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <Browse />
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
-        </Route>
-        <Route path="/about">
-          <div className="flex-grow flex flex-col">
-            <Navbar />
-            <div className="flex-grow">
-              <About />
+          </Route>
+        )}
+        {isDevMode && (
+          <Route path="/shows/:id">
+            {(params) => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <Detail id={parseInt(params.id, 10)} />
+                </div>
+                <Footer />
+              </div>
+            )}
+          </Route>
+        )}
+        {isDevMode && (
+          <Route path="/compare">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <Compare />
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
-        </Route>
-        <Route path="/auth">
-          <div className="flex-grow flex flex-col">
-            <Navbar />
-            <div className="flex-grow">
-              <AuthPage />
+          </Route>
+        )}
+        {isDevMode && (
+          <Route path="/app-about">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <About />
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
-        </Route>
+          </Route>
+        )}
+        {isDevMode && (
+          <Route path="/auth">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <AuthPage />
+              </div>
+              <Footer />
+            </div>
+          </Route>
+        )}
         <Route path="/admin">
           <div className="flex-grow flex flex-col">
             <Navbar />

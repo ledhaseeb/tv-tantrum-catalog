@@ -14,7 +14,9 @@ export default function LandingPage() {
       <GhlScriptLoader />
       {/* Header */}
       <header className="container mx-auto py-6 flex justify-between items-center">
-        <div className="text-3xl font-bold text-primary">TV Tantrum</div>
+        <Link href="/">
+          <div className="text-3xl font-bold text-primary cursor-pointer">TV Tantrum</div>
+        </Link>
         <div className="flex space-x-4">
           <Button variant="ghost" asChild>
             <Link href="/about">About</Link>
