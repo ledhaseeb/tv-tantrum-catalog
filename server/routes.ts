@@ -47,8 +47,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows
   app.get("/api/shows", async (req: Request, res: Response) => {
     try {
-      // Debug what's coming in as query parameters
-      console.log("Shows API - Query params:", req.query);
       
       const { 
         ageGroup, 
@@ -102,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stimulationScoreRange: processedStimulationScoreRange
       };
       
-      console.log("Shows API - Processed filters:", filters);
+
       
       const shows = await storage.getTvShowsByFilter(filters);
       
@@ -113,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const show of topResults) {
           await storage.trackShowSearch(show.id);
         }
-        console.log(`Tracked search for term "${search}" with ${topResults.length} top results`);
+
       }
       res.json(shows);
     } catch (error) {

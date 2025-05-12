@@ -265,27 +265,8 @@ export class DatabaseStorage implements IStorage {
     // This needs to happen after the SQL query because
     // PostgreSQL array operations don't easily support checking if an array contains all values from another array
     if (filters.themes && filters.themes.length > 0) {
-      console.log(`[THEME FILTER] Filtering for these themes: ${filters.themes.join(', ')}`);
-      console.log(`[THEME FILTER] Found ${shows.length} shows before filtering`);
-      
-      // Let's see what themes are available in the data
-      // Create a set of unique themes for reporting
-      const uniqueThemes = new Set<string>();
-      shows.forEach(show => {
-        if (show.themes && Array.isArray(show.themes)) {
-          show.themes.forEach(theme => uniqueThemes.add(theme));
-        }
-      });
-      console.log(`[THEME FILTER] Available themes in data: ${Array.from(uniqueThemes).sort().join(', ')}`);
-      
-      // Debug: Let's examine the first few shows
-      console.log(`[THEME FILTER] First 2 shows before filtering:`);
-      shows.slice(0, 2).forEach(show => {
-        console.log(`[THEME FILTER] Show: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
-      });
-      
-      // This is already correct - we're using 'every' to ensure ALL filter themes are present in the show's themes
-      const filteredShows = shows.filter(show => {
+      // Filter for shows that have ALL the requested themes
+      shows = shows.filter(show => {
         // Make sure show has themes array
         if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
           return false;
@@ -293,40 +274,13 @@ export class DatabaseStorage implements IStorage {
         
         // Using 'every' means ALL filter themes must be present
         // Using 'some' inside means each filter theme needs to match at least one of the show's themes
-        const matches = filters.themes!.every(filterTheme => {
-          const themeMatches = show.themes!.some(showTheme => {
+        return filters.themes!.every(filterTheme => 
+          show.themes!.some(showTheme => 
             // Case-insensitive comparison
-            const isMatch = showTheme.toLowerCase() === filterTheme.toLowerCase();
-            return isMatch;
-          });
-          
-          if (!themeMatches && show.name === 'Blippi') {
-            console.log(`[THEME FILTER] Blippi does not have theme: ${filterTheme}`);
-            console.log(`[THEME FILTER] Blippi themes: ${JSON.stringify(show.themes)}`);
-          }
-          
-          return themeMatches;
-        });
-        
-        if (matches) {
-          console.log(`[THEME FILTER] MATCH: ${show.name} has all required themes`);
-        }
-        
-        return matches;
+            showTheme.toLowerCase() === filterTheme.toLowerCase()
+          )
+        );
       });
-      
-      console.log(`[THEME FILTER] Found ${filteredShows.length} shows after filtering`);
-      
-      if (filteredShows.length > 0) {
-        console.log(`[THEME FILTER] First 2 matching shows:`);
-        filteredShows.slice(0, 2).forEach(show => {
-          console.log(`[THEME FILTER] MATCH: ${show.name}, Themes: ${JSON.stringify(show.themes || [])}`);
-        });
-      } else {
-        console.log(`[THEME FILTER] No matches found for themes: ${filters.themes.join(', ')}`);
-      }
-      
-      shows = filteredShows;
     }
     
     return shows;
