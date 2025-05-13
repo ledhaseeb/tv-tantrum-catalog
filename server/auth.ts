@@ -196,6 +196,33 @@ export function setupAuth(app: Express) {
     res.json(req.user);
   });
   
+  // Check if a username is available
+  app.get("/api/check-username", async (req, res) => {
+    try {
+      const { username } = req.query;
+      
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ 
+          message: "Username parameter is required", 
+          available: false 
+        });
+      }
+      
+      const existingUser = await storage.getUserByUsername(username);
+      
+      res.json({ 
+        available: !existingUser,
+        message: existingUser ? "Username is already taken" : "Username is available"
+      });
+    } catch (error) {
+      console.error("Error checking username availability:", error);
+      res.status(500).json({ 
+        message: "Failed to check username availability", 
+        available: false 
+      });
+    }
+  });
+  
   // User management endpoints (admin only)
   app.get("/api/users", async (req, res) => {
     if (!req.isAuthenticated() || !req.user.isAdmin) {

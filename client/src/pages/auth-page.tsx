@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -35,6 +36,34 @@ export default function AuthPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user, loginMutation, registerMutation } = useAuth();
+  const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
+  const [usernameValue, setUsernameValue] = useState("");
+  
+  // Username availability check
+  useEffect(() => {
+    // Don't check if username is less than 3 characters
+    if (!usernameValue || usernameValue.length < 3) {
+      setUsernameStatus(null);
+      return;
+    }
+    
+    // Set status to checking before API call
+    setUsernameStatus('checking');
+    
+    // Debounce the API call - only make it after user stops typing
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/check-username?username=${encodeURIComponent(usernameValue)}`);
+        const data = await response.json();
+        setUsernameStatus(data.available ? 'available' : 'taken');
+      } catch (error) {
+        console.error('Failed to check username availability:', error);
+        setUsernameStatus(null);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [usernameValue]);
   
   // Redirect if user is already logged in
   if (user) {
@@ -229,13 +258,50 @@ export default function AuthPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Choose a display name"
-                                {...field}
-                                disabled={registerMutation.isPending}
-                              />
-                            </FormControl>
+                            <div className="relative">
+                              <FormControl>
+                                <Input 
+                                  placeholder="Choose a display name"
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    setUsernameValue(e.target.value);
+                                  }}
+                                  disabled={registerMutation.isPending}
+                                  className={usernameStatus === 'taken' ? "pr-10 border-red-500 focus-visible:ring-red-500" : 
+                                            usernameStatus === 'available' ? "pr-10 border-green-500 focus-visible:ring-green-500" : 
+                                            "pr-10"}
+                                />
+                              </FormControl>
+                              {usernameStatus === 'checking' && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <svg className="animate-spin h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                </div>
+                              )}
+                              {usernameStatus === 'available' && field.value.length >= 3 && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                </div>
+                              )}
+                              {usernameStatus === 'taken' && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <XCircle className="h-5 w-5 text-red-500" />
+                                </div>
+                              )}
+                            </div>
+                            {usernameStatus === 'taken' && (
+                              <p className="text-sm font-medium text-red-500">
+                                Username is already taken
+                              </p>
+                            )}
+                            {usernameStatus === 'available' && field.value.length >= 3 && (
+                              <p className="text-sm font-medium text-green-500">
+                                Username is available
+                              </p>
+                            )}
                             <FormDescription>
                               This will be used for your reviews and comments
                             </FormDescription>
