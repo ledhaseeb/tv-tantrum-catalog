@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches,
@@ -62,18 +62,75 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+      
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      
+      return {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        password: result.rows[0].password,
+        username: result.rows[0].username,
+        isAdmin: result.rows[0].is_admin,
+        country: result.rows[0].country,
+        createdAt: result.rows[0].created_at,
+        isApproved: result.rows[0].is_approved
+      };
+    } catch (error) {
+      console.error(`Error getting user by ID ${id}:`, error);
+      return undefined;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      
+      return {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        password: result.rows[0].password,
+        username: result.rows[0].username,
+        isAdmin: result.rows[0].is_admin,
+        country: result.rows[0].country,
+        createdAt: result.rows[0].created_at,
+        isApproved: result.rows[0].is_approved
+      };
+    } catch (error) {
+      console.error(`Error getting user by email ${email}:`, error);
+      return undefined;
+    }
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+      
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      
+      return {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        password: result.rows[0].password,
+        username: result.rows[0].username,
+        isAdmin: result.rows[0].is_admin,
+        country: result.rows[0].country,
+        createdAt: result.rows[0].created_at,
+        isApproved: result.rows[0].is_approved
+      };
+    } catch (error) {
+      console.error(`Error getting user by username ${username}:`, error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -89,10 +146,32 @@ export class DatabaseStorage implements IStorage {
       
       console.log('Creating user with data:', {...userToInsert, password: '[REDACTED]'});
       
-      const [user] = await db
-        .insert(users)
-        .values(userToInsert)
-        .returning();
+      // Try direct SQL insertion instead of using Drizzle ORM
+      const result = await pool.query(`
+        INSERT INTO users (email, password, username, is_admin, country, created_at, is_approved) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        RETURNING *
+      `, [
+        userToInsert.email,
+        userToInsert.password,
+        userToInsert.username,
+        userToInsert.isAdmin || false,
+        userToInsert.country || '',
+        userToInsert.createdAt,
+        userToInsert.isApproved || false
+      ]);
+      
+      // Convert from raw SQL result to our expected User type
+      const user: User = {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        password: result.rows[0].password,
+        username: result.rows[0].username,
+        isAdmin: result.rows[0].is_admin,
+        country: result.rows[0].country,
+        createdAt: result.rows[0].created_at,
+        isApproved: result.rows[0].is_approved
+      };
       
       console.log('User created successfully with ID:', user.id);
       return user;
@@ -103,16 +182,63 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
+    try {
+      // Use direct SQL query instead of Drizzle ORM
+      const result = await pool.query('SELECT * FROM users ORDER BY id DESC');
+      
+      // Map the SQL results to our User type
+      const userList: User[] = result.rows.map(row => ({
+        id: row.id,
+        email: row.email,
+        password: row.password,
+        username: row.username,
+        isAdmin: row.is_admin,
+        country: row.country,
+        createdAt: row.created_at,
+        isApproved: row.is_approved
+      }));
+      
+      console.log(`Fetched ${userList.length} users from database`);
+      return userList;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
   }
   
   async updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined> {
-    const [updatedUser] = await db
-      .update(users)
-      .set({ isApproved })
-      .where(eq(users.id, userId))
-      .returning();
-    return updatedUser;
+    try {
+      // Use direct SQL query instead of Drizzle ORM
+      const result = await pool.query(`
+        UPDATE users 
+        SET is_approved = $1 
+        WHERE id = $2 
+        RETURNING *
+      `, [isApproved, userId]);
+      
+      if (result.rows.length === 0) {
+        console.log(`No user found with ID ${userId} to update approval status`);
+        return undefined;
+      }
+      
+      // Map the SQL result to our User type
+      const updatedUser: User = {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        password: result.rows[0].password,
+        username: result.rows[0].username,
+        isAdmin: result.rows[0].is_admin,
+        country: result.rows[0].country,
+        createdAt: result.rows[0].created_at,
+        isApproved: result.rows[0].is_approved
+      };
+      
+      console.log(`Updated approval status for user ${updatedUser.id} to ${isApproved}`);
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error updating approval status for user ${userId}:`, error);
+      return undefined;
+    }
   }
 
   async getAllTvShows(): Promise<TvShow[]> {
