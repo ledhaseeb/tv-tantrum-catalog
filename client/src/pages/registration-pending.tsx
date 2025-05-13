@@ -17,8 +17,8 @@ export default function RegistrationPendingPage() {
     localStorage.setItem("earlyAccessShown", "true");
   }, []);
   
-  // Function to handle logout and redirect to auth page
-  const handleLogoutAndRedirect = async (e: React.MouseEvent) => {
+  // Function to handle logout and redirect to early access login page
+  const handleLogoutAndRedirect = (e: React.MouseEvent) => {
     e.preventDefault();
     
     try {
@@ -26,24 +26,22 @@ export default function RegistrationPendingPage() {
       localStorage.setItem("earlyAccessToken", "tv-tantrum-early-2025");
       localStorage.setItem("earlyAccessShown", "true");
       
-      // Log the user out
-      await logoutMutation.mutateAsync();
-      
       // Clean up any user data in localStorage
       localStorage.removeItem("tvtantrum_auth");
       
-      // Redirect to auth page
-      navigate("/auth");
+      // Use direct window.location.href to force a full page reload
+      // This ensures all React Query state is cleared and no "checking authentication" screen
+      window.location.href = "/early-access";
       
       toast({
-        title: "Logged out",
-        description: "You have been logged out successfully.",
+        title: "Success",
+        description: "Redirecting you to the login page...",
       });
     } catch (error) {
-      console.error("Error logging out:", error);
+      console.error("Error during redirect:", error);
       toast({
         title: "Error",
-        description: "There was an error logging you out. Please try again.",
+        description: "There was an error redirecting you. Please try again.",
         variant: "destructive",
       });
     }
@@ -83,8 +81,18 @@ export default function RegistrationPendingPage() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-3">
           <div className="flex flex-col gap-3 w-full">
-            <Button variant="default" asChild className="w-full">
-              <Link href="/">Return to Home</Link>
+            <Button 
+              variant="default" 
+              className="w-full"
+              onClick={(e) => {
+                e.preventDefault();
+                // Clear auth data from localStorage
+                localStorage.removeItem("tvtantrum_auth");
+                // Direct navigation to home page
+                window.location.href = "/";
+              }}
+            >
+              Return to Home
             </Button>
             <Button 
               variant="outline" 
