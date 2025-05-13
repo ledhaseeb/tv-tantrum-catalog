@@ -12,12 +12,17 @@ export default function EarlyAccessPage() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
+    // If user is already logged in, don't do token check
+    if (user) return;
+    
     // Check if user has the early access token - redirect to token entry page if not
     const token = localStorage.getItem("earlyAccessToken");
-    if (!token) {
+    const expectedToken = "tv-tantrum-early-2025";
+    
+    if (!token || token !== expectedToken) {
       setLocation("/token-entry");
     }
-  }, [setLocation]);
+  }, [setLocation, user]);
 
   // Redirect if user is already logged in
   useEffect(() => {

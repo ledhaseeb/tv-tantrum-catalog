@@ -22,15 +22,14 @@ export default function TokenEntryPage() {
     }
   }, [user, setLocation]);
 
-  // We're disabling automatic redirect if token exists
-  // This ensures users always go through the token verification page first
-  // useEffect(() => {
-  //   const storedToken = localStorage.getItem("earlyAccessToken");
-  //   if (storedToken === expectedToken) {
-  //     // Keep directing to the early access auth page when token is already stored
-  //     setLocation("/early-access");
-  //   }
-  // }, [setLocation]);
+  // Enable automatic redirect when a valid token exists
+  useEffect(() => {
+    const storedToken = localStorage.getItem("earlyAccessToken");
+    if (storedToken === expectedToken) {
+      // Redirect to early access auth page when token is already stored
+      setLocation("/early-access");
+    }
+  }, [setLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
