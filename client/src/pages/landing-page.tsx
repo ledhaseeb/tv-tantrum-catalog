@@ -13,7 +13,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       <GhlScriptLoader />
       {/* Header */}
-      <header className="container mx-auto py-6 flex justify-between items-center">
+      <header className="container mx-auto py-6 px-4 sm:px-6 flex justify-between items-center">
         <Link href="/">
           <div className="text-3xl font-bold text-primary cursor-pointer">TV Tantrum</div>
         </Link>
@@ -31,7 +31,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="container mx-auto py-20 px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
             <span className="text-primary">Discover</span> children's TV shows based on sensory impact
@@ -72,7 +72,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto py-16 text-center">
+      <section className="container mx-auto py-16 px-4 sm:px-6 text-center">
         <h2 className="text-3xl font-bold mb-12">Why Parents Choose TV Tantrum</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -103,7 +103,7 @@ export default function LandingPage() {
       </section>
 
       {/* Registration Form */}
-      <section id="register" className="container mx-auto py-16 px-4">
+      <section id="register" className="container mx-auto py-16 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto bg-card rounded-xl shadow-lg overflow-hidden">
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-6 text-center">Join the Waitlist</h2>
@@ -143,7 +143,7 @@ export default function LandingPage() {
       </section>
 
       {/* Simple Copyright Footer */}
-      <div className="container mx-auto py-8 text-center text-muted-foreground">
+      <div className="container mx-auto py-8 px-4 sm:px-6 text-center text-muted-foreground">
         <p>© {new Date().getFullYear()} TV Tantrum. All rights reserved.</p>
       </div>
     </div>
