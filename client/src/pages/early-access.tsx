@@ -30,6 +30,7 @@ export default function EarlyAccessPage() {
   const [loginPassword, setLoginPassword] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerUsername, setRegisterUsername] = useState("");
+  const [registerCountry, setRegisterCountry] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
   const [activeTab, setActiveTab] = useState("login");
@@ -100,6 +101,7 @@ export default function EarlyAccessPage() {
       await registerMutation.mutateAsync({
         email: registerEmail,
         username: registerUsername,
+        country: registerCountry,
         password: registerPassword,
       });
       toast({
@@ -265,6 +267,16 @@ export default function EarlyAccessPage() {
                     onChange={(e) => setRegisterUsername(e.target.value)}
                     placeholder="yourusername"
                     required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    type="text"
+                    value={registerCountry}
+                    onChange={(e) => setRegisterCountry(e.target.value)}
+                    placeholder="Your country"
                   />
                 </div>
                 <div className="space-y-2">
