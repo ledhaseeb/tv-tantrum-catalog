@@ -348,7 +348,7 @@ export default function AuthPage() {
   // Handle successful authentication
   const handleAuthSuccess = useCallback(() => {
     if (user) {
-      const redirectPath = user.isAdmin ? "/admin" : user.isApproved ? "/" : "/registration-pending";
+      const redirectPath = user.isAdmin ? "/admin" : user.isApproved ? "/home" : "/registration-pending";
       navigate(redirectPath);
     }
   }, [navigate, user]);
@@ -435,7 +435,7 @@ export default function AuthPage() {
   
   // If we have user data, redirect (handled by useEffect)
   if (user) {
-    const redirectPath = user.isAdmin ? "/admin" : user.isApproved ? "/" : "/registration-pending";
+    const redirectPath = user.isAdmin ? "/admin" : user.isApproved ? "/home" : "/registration-pending";
     navigate(redirectPath);
     return null;
   }

@@ -84,7 +84,7 @@ export default function RegistrationPendingPage() {
         <CardFooter className="flex flex-col space-y-3">
           <div className="flex flex-col gap-3 w-full">
             <Button variant="default" asChild className="w-full">
-              <Link href="/">Return to Home</Link>
+              <Link href="/home">Return to Home</Link>
             </Button>
             <Button 
               variant="outline" 
