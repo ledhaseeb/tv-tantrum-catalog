@@ -19,6 +19,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   country: true,
   isAdmin: true,
+  isApproved: true,
 });
 
 // User favorites table to track shows a user has favorited
