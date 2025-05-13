@@ -78,10 +78,11 @@ export default function EarlyAccessPage() {
         password: loginPassword,
       });
     } catch (error) {
-      // Error is handled by the mutation
+      // Check if the error is about pending approval
       if ((error as Error).message.includes("pending approval")) {
         navigate("/registration-pending");
       }
+      // Other errors are handled by the mutation's onError
     }
   };
 

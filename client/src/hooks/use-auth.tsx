@@ -52,8 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Login failed");
+        const errorData = await res.json().catch(() => null);
+        if (errorData && errorData.message) {
+          throw new Error(errorData.message);
+        }
+        throw new Error("Login failed");
       }
       
       return await res.json();
@@ -81,8 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Registration failed");
+        const errorData = await res.json().catch(() => null);
+        if (errorData && errorData.message) {
+          throw new Error(errorData.message);
+        }
+        throw new Error("Registration failed");
       }
       
       return await res.json();
