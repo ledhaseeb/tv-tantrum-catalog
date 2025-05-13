@@ -44,22 +44,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-        credentials: "include"
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        if (errorData && errorData.message) {
-          throw new Error(errorData.message);
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+          credentials: "include"
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.log('Login error response:', errorData);
+          
+          // Create a custom error object with properties for approval status
+          const error = new Error(errorData.message || "Login failed");
+          // @ts-ignore - Adding custom property
+          error.isPendingApproval = errorData.message?.includes("pending approval") || false;
+          throw error;
         }
-        throw new Error("Login failed");
+        
+        return await res.json();
+      } catch (err) {
+        console.log('Login mutation caught error:', err);
+        throw err;
       }
-      
-      return await res.json();
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);

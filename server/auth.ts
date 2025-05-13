@@ -155,9 +155,12 @@ export function setupAuth(app: Express) {
 
   app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err: Error | null, user: Express.User | false, info: { message: string } | undefined) => {
+      console.log('Login attempt:', { err, user: !!user, info });
+      
       if (err) return next(err);
       if (!user) {
         // Pass along the specific error message from the authentication strategy
+        console.log('Login failed:', info);
         return res.status(401).json({ message: info?.message || "Invalid email or password" });
       }
       req.login(user, (err) => {

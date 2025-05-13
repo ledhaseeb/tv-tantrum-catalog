@@ -79,9 +79,13 @@ export default function AuthPage() {
         });
         navigate(getRedirectPath());
       },
-      onError: (error) => {
-        // Check if the error is about pending approval
-        if (error.message.includes("pending approval")) {
+      onError: (error: any) => {
+        // Debug the error
+        console.log('Login error in auth-page:', error.message, error);
+        
+        // Check if the error is about pending approval by looking at our custom property
+        if (error.isPendingApproval || error.message.includes("pending approval")) {
+          console.log('Detected pending approval, redirecting...');
           toast({
             title: "Account Pending Approval",
             description: "Your account has been created but requires admin approval.",
