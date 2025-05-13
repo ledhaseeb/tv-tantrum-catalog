@@ -39,18 +39,26 @@ export default function EarlyAccessPage() {
   const [loginIsLoading, setLoginIsLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
 
-  // Check if the token in the URL is valid
+  // Check if the token in the URL is valid or if user has previously accessed early access
   useEffect(() => {
+    // Always check localStorage first
+    if (localStorage.getItem("earlyAccessShown") === "true") {
+      console.log("Found earlyAccessShown in localStorage, skipping token check");
+      setIsValidToken(true);
+      setToken(EARLY_ACCESS_TOKEN);
+      return;
+    }
+    
+    // If not in localStorage, check URL params
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
     
     if (urlToken === EARLY_ACCESS_TOKEN) {
+      console.log("Valid token in URL, setting localStorage");
       setIsValidToken(true);
       setToken(urlToken);
-    } else if (urlToken === null && localStorage.getItem("earlyAccessShown")) {
-      // If user has previously entered a valid token, allow them to return
-      setIsValidToken(true);
-      setToken(EARLY_ACCESS_TOKEN);
+      // Store in localStorage that user has successfully accessed early access
+      localStorage.setItem("earlyAccessShown", "true");
     }
   }, []);
 
@@ -96,6 +104,7 @@ export default function EarlyAccessPage() {
       window.history.pushState({}, "", newUrl);
       // Store in localStorage that user has successfully accessed early access
       localStorage.setItem("earlyAccessShown", "true");
+      console.log("Token submission successful, localStorage item set");
     } else {
       toast({
         title: "Invalid Token",

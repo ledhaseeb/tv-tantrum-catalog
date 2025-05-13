@@ -1,8 +1,14 @@
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
 export default function RegistrationPendingPage() {
+  // Set early access token in localStorage when this page loads
+  useEffect(() => {
+    console.log("Registration pending page loaded, setting earlyAccessShown in localStorage");
+    localStorage.setItem("earlyAccessShown", "true");
+  }, []);
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted">
       <Card className="w-full max-w-md">
@@ -41,7 +47,11 @@ export default function RegistrationPendingPage() {
             <Button variant="default" asChild className="w-full">
               <Link href="/">Return to Home</Link>
             </Button>
-            <Button variant="outline" asChild className="w-full">
+            <Button 
+              variant="outline" 
+              asChild 
+              className="w-full"
+            >
               <Link href="/early-access">Return to Login</Link>
             </Button>
           </div>
