@@ -76,7 +76,9 @@ export function setupAuth(app: Express) {
         try {
           const user = await storage.getUserByEmail(email);
           if (!user || !(await comparePasswords(password, user.password))) {
-            return done(null, false);
+            return done(null, false, { message: "Invalid email or password" });
+          } else if (!user.isAdmin && !user.isApproved) {
+            return done(null, false, { message: "Your account is pending approval" });
           } else {
             // Don't send back password with the user object
             const { password: _, ...safeUser } = user;
@@ -165,5 +167,53 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     res.json(req.user);
+  });
+  
+  // User management endpoints (admin only)
+  app.get("/api/users", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const users = await storage.getAllUsers();
+      // Remove passwords before sending the response
+      const safeUsers = users.map(user => {
+        const { password, ...safeUser } = user;
+        return safeUser;
+      });
+      
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching users" });
+    }
+  });
+  
+  app.patch("/api/users/:userId/approve", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    const userId = parseInt(req.params.userId, 10);
+    const { isApproved } = req.body;
+    
+    if (typeof isApproved !== 'boolean') {
+      return res.status(400).json({ message: "Invalid approval status" });
+    }
+    
+    try {
+      const updatedUser = await storage.updateUserApproval(userId, isApproved);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password before sending the response
+      const { password, ...safeUser } = updatedUser;
+      
+      res.json(safeUser);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating user approval status" });
+    }
   });
 }

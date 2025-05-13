@@ -16,7 +16,10 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -83,6 +86,19 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+  
+  async updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ isApproved })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
   }
 
   async getAllTvShows(): Promise<TvShow[]> {

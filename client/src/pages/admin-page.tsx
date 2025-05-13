@@ -39,8 +39,21 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, Edit, RefreshCw, ImageIcon } from 'lucide-react';
-import { TvShow } from '@shared/schema';
+import { 
+  Loader2, 
+  Search, 
+  Edit, 
+  RefreshCw, 
+  ImageIcon, 
+  User, 
+  CheckCircle, 
+  XCircle, 
+  Clock,
+  Shield,
+  Check,
+  X
+} from 'lucide-react';
+import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export default function AdminPage() {
