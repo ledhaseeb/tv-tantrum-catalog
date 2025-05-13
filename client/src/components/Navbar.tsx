@@ -104,8 +104,8 @@ export default function Navbar() {
                 Compare
               </Link>
               <Link 
-                href="/about"
-                className={`${location === '/about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
+                href="/app-about"
+                className={`${location === '/app-about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <Info className="w-4 h-4 mr-2" />
                 About
@@ -278,9 +278,9 @@ export default function Navbar() {
                       Compare
                     </Link>
                     <Link 
-                      href="/about"
+                      href="/app-about"
                       onClick={() => setIsNavOpen(false)}
-                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/app-about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
                     >
                       <Info className="h-5 w-5 mr-3" />
                       About
