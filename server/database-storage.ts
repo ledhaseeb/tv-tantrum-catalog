@@ -77,15 +77,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const now = new Date().toISOString();
-    const [user] = await db
-      .insert(users)
-      .values({
+    try {
+      const now = new Date().toISOString();
+      
+      // Ensure username is never null to match schema requirements
+      const userToInsert = {
         ...insertUser,
+        username: insertUser.username || '', // Convert null to empty string if needed
         createdAt: now,
-      })
-      .returning();
-    return user;
+      };
+      
+      console.log('Creating user with data:', {...userToInsert, password: '[REDACTED]'});
+      
+      const [user] = await db
+        .insert(users)
+        .values(userToInsert)
+        .returning();
+      
+      console.log('User created successfully with ID:', user.id);
+      return user;
+    } catch (error) {
+      console.error('Error creating user in database:', error);
+      throw error; // Re-throw to be caught by the API layer
+    }
   }
   
   async getAllUsers(): Promise<User[]> {
