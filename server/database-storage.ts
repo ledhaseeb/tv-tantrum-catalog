@@ -86,79 +86,79 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const client = await pool.connect();
+    console.log(`Searching for user with email: ${email}`);
+    
+    // First, try a simple query to verify the database is accessible
+    try {
+      const checkResult = await pool.query('SELECT COUNT(*) FROM users');
+      console.log(`Total users in database: ${checkResult.rows[0].count}`);
+    } catch (error) {
+      console.error('Error checking user count:', error);
+    }
     
     try {
-      // Use transaction for consistency
-      await client.query('BEGIN');
+      // Try direct query without transaction to see if that's the issue
+      const directResult = await pool.query('SELECT * FROM users WHERE email = $1 LIMIT 1', [email]);
+      console.log(`Direct query result:`, {
+        rowCount: directResult.rowCount,
+        found: directResult.rows.length > 0,
+        id: directResult.rows[0]?.id
+      });
       
-      // Execute the query
-      const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-      
-      // Commit the transaction
-      await client.query('COMMIT');
-      
-      if (result.rows.length === 0) {
-        return undefined;
+      if (directResult.rows.length > 0) {
+        // Use direct query result without transaction
+        return {
+          id: directResult.rows[0].id,
+          email: directResult.rows[0].email,
+          password: directResult.rows[0].password,
+          username: directResult.rows[0].username,
+          isAdmin: directResult.rows[0].is_admin,
+          country: directResult.rows[0].country,
+          createdAt: directResult.rows[0].created_at,
+          isApproved: directResult.rows[0].is_approved
+        };
+      } else {
+        console.log(`User with email ${email} not found in direct query`);
       }
-      
-      return {
-        id: result.rows[0].id,
-        email: result.rows[0].email,
-        password: result.rows[0].password,
-        username: result.rows[0].username,
-        isAdmin: result.rows[0].is_admin,
-        country: result.rows[0].country,
-        createdAt: result.rows[0].created_at,
-        isApproved: result.rows[0].is_approved
-      };
-    } catch (error) {
-      // Rollback on error
-      await client.query('ROLLBACK');
-      console.error(`Error getting user by email ${email}:`, error);
-      return undefined;
-    } finally {
-      // Always release the client
-      client.release();
+    } catch (directError) {
+      console.error(`Error in direct query for email ${email}:`, directError);
     }
+    
+    return undefined;
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const client = await pool.connect();
+    console.log(`Searching for user with username: ${username}`);
     
     try {
-      // Use transaction for consistency
-      await client.query('BEGIN');
+      // Try direct query without transaction
+      const directResult = await pool.query('SELECT * FROM users WHERE username = $1 LIMIT 1', [username]);
+      console.log(`Direct query result for username:`, {
+        rowCount: directResult.rowCount,
+        found: directResult.rows.length > 0,
+        id: directResult.rows[0]?.id
+      });
       
-      // Execute the query
-      const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
-      
-      // Commit the transaction
-      await client.query('COMMIT');
-      
-      if (result.rows.length === 0) {
-        return undefined;
+      if (directResult.rows.length > 0) {
+        // Use direct query result without transaction
+        return {
+          id: directResult.rows[0].id,
+          email: directResult.rows[0].email,
+          password: directResult.rows[0].password,
+          username: directResult.rows[0].username,
+          isAdmin: directResult.rows[0].is_admin,
+          country: directResult.rows[0].country,
+          createdAt: directResult.rows[0].created_at,
+          isApproved: directResult.rows[0].is_approved
+        };
+      } else {
+        console.log(`User with username ${username} not found in direct query`);
       }
-      
-      return {
-        id: result.rows[0].id,
-        email: result.rows[0].email,
-        password: result.rows[0].password,
-        username: result.rows[0].username,
-        isAdmin: result.rows[0].is_admin,
-        country: result.rows[0].country,
-        createdAt: result.rows[0].created_at,
-        isApproved: result.rows[0].is_approved
-      };
-    } catch (error) {
-      // Rollback on error
-      await client.query('ROLLBACK');
-      console.error(`Error getting user by username ${username}:`, error);
-      return undefined;
-    } finally {
-      // Always release the client
-      client.release();
+    } catch (directError) {
+      console.error(`Error in direct query for username ${username}:`, directError);
     }
+    
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
