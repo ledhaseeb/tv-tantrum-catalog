@@ -17,7 +17,7 @@ export default function PreLaunchAbout() {
             <Link href="/faq">FAQ</Link>
           </Button>
           <Button variant="outline" className="text-primary border-primary hover:bg-primary/10" asChild>
-            <Link href="/early-access">Early Access</Link>
+            <Link href="/token-entry">Early Access</Link>
           </Button>
         </div>
       </header>
