@@ -1,14 +1,46 @@
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegistrationPendingPage() {
+  const { logoutMutation } = useAuth();
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+  
   // Set early access token in localStorage when this page loads
   useEffect(() => {
     console.log("Registration pending page loaded, setting earlyAccessShown in localStorage");
     localStorage.setItem("earlyAccessShown", "true");
   }, []);
+  
+  // Function to handle logout and redirect to auth page
+  const handleLogoutAndRedirect = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Log the user out
+      await logoutMutation.mutateAsync();
+      
+      // Redirect to auth page with early access token
+      navigate("/auth?token=tv-tantrum-early-2025");
+      
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Error",
+        description: "There was an error logging you out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted">
       <Card className="w-full max-w-md">
@@ -49,10 +81,10 @@ export default function RegistrationPendingPage() {
             </Button>
             <Button 
               variant="outline" 
-              asChild 
               className="w-full"
+              onClick={handleLogoutAndRedirect}
             >
-              <Link href="/auth">Return to Login</Link>
+              Return to Login
             </Button>
           </div>
           <p className="text-sm text-muted-foreground text-center">
