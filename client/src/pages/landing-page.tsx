@@ -133,6 +133,9 @@ export default function LandingPage() {
             <p className="text-center text-primary font-medium mt-4">
               Remember, only pre-registered users will be granted access during our early access period before public launch!
             </p>
+            <p className="text-center text-muted-foreground text-sm mt-2">
+              Already have an early access token? <Link href="/early-access" className="text-primary hover:underline">Click here</Link>
+            </p>
           </div>
         </div>
       </section>
