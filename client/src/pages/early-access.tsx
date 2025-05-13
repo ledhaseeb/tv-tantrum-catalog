@@ -77,9 +77,17 @@ export default function EarlyAccessPage() {
         email: loginEmail,
         password: loginPassword,
       });
-    } catch (error) {
+    } catch (error: any) {
+      // Debug the error
+      console.log('Login error in early-access:', error.message, error);
+      
       // Check if the error is about pending approval
-      if ((error as Error).message.includes("pending approval")) {
+      if (error.isPendingApproval || (error.message && error.message.includes("pending approval"))) {
+        console.log('Detected pending approval in early-access, redirecting...');
+        toast({
+          title: "Account Pending Approval",
+          description: "Your account has been created but requires admin approval.",
+        });
         navigate("/registration-pending");
       }
       // Other errors are handled by the mutation's onError

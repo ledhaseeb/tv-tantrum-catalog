@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Create a custom error object with properties for approval status
           const error = new Error(errorData.message || "Login failed");
           // @ts-ignore - Adding custom property
-          error.isPendingApproval = errorData.message?.includes("pending approval") || false;
+          error.isPendingApproval = errorData.isPendingApproval || errorData.message?.includes("pending approval") || false;
           throw error;
         }
         

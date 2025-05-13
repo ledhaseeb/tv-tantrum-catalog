@@ -161,7 +161,19 @@ export function setupAuth(app: Express) {
       if (!user) {
         // Pass along the specific error message from the authentication strategy
         console.log('Login failed:', info);
-        return res.status(401).json({ message: info?.message || "Invalid email or password" });
+        
+        // Check if the message is about pending approval
+        if (info?.message && info.message.includes("pending approval")) {
+          return res.status(403).json({ 
+            message: info.message,
+            isPendingApproval: true
+          });
+        }
+        
+        return res.status(401).json({ 
+          message: info?.message || "Invalid email or password",
+          isPendingApproval: false
+        });
       }
       req.login(user, (err) => {
         if (err) return next(err);
