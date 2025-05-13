@@ -47,13 +47,6 @@ export default function RegistrationPendingPage() {
             <Button variant="default" asChild className="w-full">
               <Link href="/">Return to Home</Link>
             </Button>
-            <Button 
-              variant="outline" 
-              asChild 
-              className="w-full"
-            >
-              <Link href="/early-access">Return to Login</Link>
-            </Button>
           </div>
           <p className="text-sm text-muted-foreground text-center">
             Have questions? Email us at <span className="text-primary font-medium">support@tvtantrum.com</span>

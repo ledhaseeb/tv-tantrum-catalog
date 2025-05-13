@@ -20,6 +20,7 @@ import EarlyAccessPage from "@/pages/early-access";
 import RegistrationPendingPage from "@/pages/registration-pending";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
+import { ApprovedRoute } from "@/lib/protected-route-approved";
 
 function Router() {
   // Access URL to check for development mode
@@ -48,8 +49,9 @@ function Router() {
           <RegistrationPendingPage />
         </Route>
         
-        {/* Main App Routes - Accessible with dev parameter or after early access approval */}
-        {(isDevMode || hasEarlyAccess) && (
+        {/* Main App Routes - Accessible only with approved accounts or in dev mode */}
+        {isDevMode ? (
+          // In dev mode, use regular routes without approval check
           <Route path="/home">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -59,8 +61,23 @@ function Router() {
               <Footer />
             </div>
           </Route>
+        ) : (
+          // In production, use ApprovedRoute that checks for approval status
+          <ApprovedRoute 
+            path="/home" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <Home />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
         )}
-        {(isDevMode || hasEarlyAccess) && (
+        
+        {isDevMode ? (
           <Route path="/browse">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -70,8 +87,22 @@ function Router() {
               <Footer />
             </div>
           </Route>
+        ) : (
+          <ApprovedRoute 
+            path="/browse" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <Browse />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
         )}
-        {(isDevMode || hasEarlyAccess) && (
+
+        {isDevMode ? (
           <Route path="/shows/:id">
             {(params) => (
               <div className="flex-grow flex flex-col">
@@ -83,8 +114,27 @@ function Router() {
               </div>
             )}
           </Route>
+        ) : (
+          // This is a special case since it has a parameter
+          <Route path="/shows/:id">
+            {(params) => (
+              <ApprovedRoute 
+                path={`/shows/${params.id}`} 
+                component={() => (
+                  <div className="flex-grow flex flex-col">
+                    <Navbar />
+                    <div className="flex-grow">
+                      <Detail id={parseInt(params.id, 10)} />
+                    </div>
+                    <Footer />
+                  </div>
+                )} 
+              />
+            )}
+          </Route>
         )}
-        {(isDevMode || hasEarlyAccess) && (
+
+        {isDevMode ? (
           <Route path="/compare">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -94,8 +144,22 @@ function Router() {
               <Footer />
             </div>
           </Route>
+        ) : (
+          <ApprovedRoute 
+            path="/compare" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <Compare />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
         )}
-        {(isDevMode || hasEarlyAccess) && (
+
+        {isDevMode ? (
           <Route path="/app-about">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -105,27 +169,56 @@ function Router() {
               <Footer />
             </div>
           </Route>
-        )}
-        {(isDevMode || hasEarlyAccess) && (
-          <Route path="/auth">
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <AuthPage />
+        ) : (
+          <ApprovedRoute 
+            path="/app-about" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <About />
+                </div>
+                <Footer />
               </div>
-              <Footer />
-            </div>
-          </Route>
+            )} 
+          />
         )}
-        <Route path="/admin">
+
+        {/* Auth page is always accessible */}
+        <Route path="/auth">
           <div className="flex-grow flex flex-col">
             <Navbar />
             <div className="flex-grow">
-              <AdminPage />
+              <AuthPage />
             </div>
             <Footer />
           </div>
         </Route>
+        {/* Admin route with approval and admin check */}
+        {isDevMode ? (
+          <Route path="/admin">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <AdminPage />
+              </div>
+              <Footer />
+            </div>
+          </Route>
+        ) : (
+          <ApprovedRoute 
+            path="/admin" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <AdminPage />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
+        )}
         <Route>
           <NotFound />
         </Route>
