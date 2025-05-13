@@ -576,6 +576,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Check if username is available
+  app.get("/api/check-username", async (req: Request, res: Response) => {
+    try {
+      const username = req.query.username as string;
+      
+      if (!username || username.length < 2) {
+        return res.status(400).json({ available: false, message: "Username is too short" });
+      }
+      
+      const existingUser = await storage.getUserByUsername(username);
+      res.json({ available: !existingUser });
+    } catch (error) {
+      console.error("Error checking username:", error);
+      res.status(500).json({ available: false, message: "Server error" });
+    }
+  });
+  
+  // Check if email is available
+  app.get("/api/check-email", async (req: Request, res: Response) => {
+    try {
+      const email = req.query.email as string;
+      
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ available: false, message: "Invalid email format" });
+      }
+      
+      const existingUser = await storage.getUserByEmail(email);
+      res.json({ available: !existingUser });
+    } catch (error) {
+      console.error("Error checking email:", error);
+      res.status(500).json({ available: false, message: "Server error" });
+    }
+  });
+  
   // Update a TV show (admin only)
   app.patch("/api/shows/:id", async (req: Request, res: Response) => {
     try {

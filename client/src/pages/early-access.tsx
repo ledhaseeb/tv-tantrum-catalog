@@ -1,669 +1,140 @@
 import { useState, useEffect } from "react";
-import { useLocation, useRouter } from "wouter";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { queryClient } from "@/lib/queryClient";
-
-// Secret token for early access
-const EARLY_ACCESS_TOKEN = "tv-tantrum-early-2025";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoginForm } from "@/components/LoginForm";
+import { RegistrationForm } from "@/components/RegistrationForm";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function EarlyAccessPage() {
-  const [location, navigate] = useLocation();
-  const { toast } = useToast();
-  const { user, isLoading, loginMutation, registerMutation } = useAuth();
-  const [token, setToken] = useState("");
-  const [isValidToken, setIsValidToken] = useState(false);
-  const [loginIdentifier, setLoginIdentifier] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerUsername, setRegisterUsername] = useState("");
-  const [registerCountry, setRegisterCountry] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
-  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
   const [activeTab, setActiveTab] = useState("login");
-  const [loginIsLoading, setLoginIsLoading] = useState(false);
-  const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
-  // Check if the token in the URL is valid or if user has previously accessed early access
   useEffect(() => {
-    // Always check localStorage first
-    if (localStorage.getItem("earlyAccessShown") === "true") {
-      console.log("Found earlyAccessShown in localStorage, skipping token check");
-      setIsValidToken(true);
-      setToken(EARLY_ACCESS_TOKEN);
-      return;
+    // Check if user has the early access token
+    const token = localStorage.getItem("earlyAccessToken");
+    if (!token) {
+      setLocation("/token-entry");
     }
-    
-    // If not in localStorage, check URL params
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get("token");
-    
-    if (urlToken === EARLY_ACCESS_TOKEN) {
-      console.log("Valid token in URL, setting localStorage");
-      setIsValidToken(true);
-      setToken(urlToken);
-      // Store in localStorage that user has successfully accessed early access
-      localStorage.setItem("earlyAccessShown", "true");
-    }
-  }, []);
-
-  // Username availability check
-  useEffect(() => {
-    // Don't check if username is less than 3 characters
-    if (!registerUsername || registerUsername.length < 3) {
-      setUsernameStatus(null);
-      return;
-    }
-    
-    // Set status to checking before API call
-    setUsernameStatus('checking');
-    
-    // Debounce the API call - only make it after user stops typing
-    const timeoutId = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/check-username?username=${encodeURIComponent(registerUsername)}`);
-        const data = await response.json();
-        setUsernameStatus(data.available ? 'available' : 'taken');
-      } catch (error) {
-        console.error('Failed to check username availability:', error);
-        setUsernameStatus(null);
-      }
-    }, 500);
-    
-    return () => clearTimeout(timeoutId);
-  }, [registerUsername]);
+  }, [setLocation]);
 
   // Redirect if user is already logged in
   useEffect(() => {
-    if (user && !isLoading) {
-      navigate("/home");
+    if (user) {
+      setLocation("/home");
     }
-  }, [user, isLoading, navigate]);
-
-  const handleTokenSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (token === EARLY_ACCESS_TOKEN) {
-      setIsValidToken(true);
-      // Update URL with token
-      const newUrl = `${window.location.pathname}?token=${token}`;
-      window.history.pushState({}, "", newUrl);
-      // Store in localStorage that user has successfully accessed early access
-      localStorage.setItem("earlyAccessShown", "true");
-      console.log("Token submission successful, localStorage item set");
-    } else {
-      toast({
-        title: "Invalid Token",
-        description: "The early access token you entered is not valid.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginIsLoading(true);
-    
-    try {
-      // Make a direct fetch request instead of using the mutation to handle specific errors
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          identifier: loginIdentifier, // Can be either email or username
-          password: loginPassword,
-        }),
-        credentials: "include"
-      });
-      
-      // Get the JSON response regardless of success or failure
-      const data = await res.json();
-      console.log('Login response in early-access:', { status: res.status, data });
-      
-      if (res.ok) {
-        // Login successful
-        console.log('Login successful, redirecting to home');
-        queryClient.setQueryData(["/api/user"], data);
-        navigate("/home");
-      } else if (res.status === 403 && data.isPendingApproval) {
-        // Special case: Pending approval (status 403 with isPendingApproval flag)
-        console.log('Detected pending approval by status code 403, redirecting...');
-        toast({
-          title: "Account Pending Approval",
-          description: "Your account has been created but requires admin approval.",
-        });
-        navigate("/registration-pending");
-      } else if (data.message && data.message.includes("pending approval")) {
-        // Fallback check for pending approval (message content)
-        console.log('Detected pending approval in message text, redirecting...');
-        toast({
-          title: "Account Pending Approval",
-          description: "Your account has been created but requires admin approval.",
-        });
-        navigate("/registration-pending");
-      } else {
-        // Handle other error cases
-        toast({
-          title: "Login failed",
-          description: data.message || "Invalid email or password",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Login error in early-access:', error);
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoginIsLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Check password match
-    if (registerPassword !== registerPasswordConfirm) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check username availability one more time before submitting
-    if (usernameStatus === 'taken') {
-      toast({
-        title: "Username already taken",
-        description: "Please choose a different username.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // If username is still being checked, wait for the check to complete
-    if (usernameStatus === 'checking') {
-      toast({
-        title: "Please wait",
-        description: "We're still checking if your username is available.",
-      });
-      return;
-    }
-    
-    try {
-      await registerMutation.mutateAsync({
-        email: registerEmail,
-        username: registerUsername,
-        country: registerCountry,
-        password: registerPassword,
-      });
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created and is pending admin approval.",
-      });
-      // Redirect to the pending registration page
-      navigate("/registration-pending");
-    } catch (error) {
-      // Show specific error messages
-      const errorMsg = (error as Error).message || "Registration failed";
-      
-      // Custom error handling based on the error message
-      if (errorMsg.includes("Username already taken")) {
-        toast({
-          title: "Username already taken",
-          description: "Please choose a different username.",
-          variant: "destructive",
-        });
-        // Update username status
-        setUsernameStatus('taken');
-      } else if (errorMsg.includes("Email already registered")) {
-        toast({
-          title: "Email already registered",
-          description: "This email is already registered in our system.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Registration failed",
-          description: errorMsg,
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-
-
-  if (!isValidToken) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Early Access</CardTitle>
-            <CardDescription className="text-center">
-              Enter your early access token to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleTokenSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="token">Early Access Token</Label>
-                <Input
-                  id="token"
-                  type="text"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Enter your token"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Submit
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="outline" asChild>
-              <Link href="/">Return to Home</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+  }, [user, setLocation]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">TV Tantrum Early Access</CardTitle>
-          <CardDescription className="text-center">
-            Log in or create an account to access the beta version
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="identifier">Email or Username</Label>
-                  <Input
-                    id="identifier"
-                    type="text"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="Email or username"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    "Login"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <div className="relative">
-                    <Input
-                      id="username"
-                      type="text"
-                      value={registerUsername}
-                      onChange={(e) => setRegisterUsername(e.target.value)}
-                      placeholder="yourusername"
-                      required
-                      className={usernameStatus === 'taken' ? "pr-10 border-red-500 focus-visible:ring-red-500" : 
-                                usernameStatus === 'available' ? "pr-10 border-green-500 focus-visible:ring-green-500" : 
-                                "pr-10"}
-                    />
-                    {usernameStatus === 'checking' && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <svg className="animate-spin h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                      </div>
-                    )}
-                    {usernameStatus === 'available' && registerUsername.length >= 3 && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      </div>
-                    )}
-                    {usernameStatus === 'taken' && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <XCircle className="h-5 w-5 text-red-500" />
-                      </div>
-                    )}
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left Column - Forms */}
+      <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full">
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center font-bold">Early Access</CardTitle>
+              <CardDescription className="text-center">
+                Welcome to TV Tantrum's exclusive early access. Login or create an account to get started.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
+                </TabsList>
+                <TabsContent value="login">
+                  <LoginForm onSuccess={() => setLocation("/home")} />
+                  <div className="mt-4 text-center text-sm">
+                    <span className="text-muted-foreground">Don't have an account?</span>{" "}
+                    <button 
+                      className="text-primary hover:underline"
+                      onClick={() => setActiveTab("register")}
+                    >
+                      Register here
+                    </button>
                   </div>
-                  {usernameStatus === 'taken' && (
-                    <p className="text-sm font-medium text-red-500">
-                      Username is already taken
-                    </p>
-                  )}
-                  {usernameStatus === 'available' && registerUsername.length >= 3 && (
-                    <p className="text-sm font-medium text-green-500">
-                      Username is available
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Select 
-                    value={registerCountry}
-                    onValueChange={(value) => setRegisterCountry(value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your country" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[200px]">
-                      <SelectItem value="Afghanistan">Afghanistan</SelectItem>
-                      <SelectItem value="Albania">Albania</SelectItem>
-                      <SelectItem value="Algeria">Algeria</SelectItem>
-                      <SelectItem value="Andorra">Andorra</SelectItem>
-                      <SelectItem value="Angola">Angola</SelectItem>
-                      <SelectItem value="Antigua and Barbuda">Antigua and Barbuda</SelectItem>
-                      <SelectItem value="Argentina">Argentina</SelectItem>
-                      <SelectItem value="Armenia">Armenia</SelectItem>
-                      <SelectItem value="Australia">Australia</SelectItem>
-                      <SelectItem value="Austria">Austria</SelectItem>
-                      <SelectItem value="Azerbaijan">Azerbaijan</SelectItem>
-                      <SelectItem value="Bahamas">Bahamas</SelectItem>
-                      <SelectItem value="Bahrain">Bahrain</SelectItem>
-                      <SelectItem value="Bangladesh">Bangladesh</SelectItem>
-                      <SelectItem value="Barbados">Barbados</SelectItem>
-                      <SelectItem value="Belarus">Belarus</SelectItem>
-                      <SelectItem value="Belgium">Belgium</SelectItem>
-                      <SelectItem value="Belize">Belize</SelectItem>
-                      <SelectItem value="Benin">Benin</SelectItem>
-                      <SelectItem value="Bhutan">Bhutan</SelectItem>
-                      <SelectItem value="Bolivia">Bolivia</SelectItem>
-                      <SelectItem value="Bosnia and Herzegovina">Bosnia and Herzegovina</SelectItem>
-                      <SelectItem value="Botswana">Botswana</SelectItem>
-                      <SelectItem value="Brazil">Brazil</SelectItem>
-                      <SelectItem value="Brunei">Brunei</SelectItem>
-                      <SelectItem value="Bulgaria">Bulgaria</SelectItem>
-                      <SelectItem value="Burkina Faso">Burkina Faso</SelectItem>
-                      <SelectItem value="Burundi">Burundi</SelectItem>
-                      <SelectItem value="Cabo Verde">Cabo Verde</SelectItem>
-                      <SelectItem value="Cambodia">Cambodia</SelectItem>
-                      <SelectItem value="Cameroon">Cameroon</SelectItem>
-                      <SelectItem value="Canada">Canada</SelectItem>
-                      <SelectItem value="Central African Republic">Central African Republic</SelectItem>
-                      <SelectItem value="Chad">Chad</SelectItem>
-                      <SelectItem value="Chile">Chile</SelectItem>
-                      <SelectItem value="China">China</SelectItem>
-                      <SelectItem value="Colombia">Colombia</SelectItem>
-                      <SelectItem value="Comoros">Comoros</SelectItem>
-                      <SelectItem value="Congo">Congo</SelectItem>
-                      <SelectItem value="Costa Rica">Costa Rica</SelectItem>
-                      <SelectItem value="Croatia">Croatia</SelectItem>
-                      <SelectItem value="Cuba">Cuba</SelectItem>
-                      <SelectItem value="Cyprus">Cyprus</SelectItem>
-                      <SelectItem value="Czech Republic">Czech Republic</SelectItem>
-                      <SelectItem value="Denmark">Denmark</SelectItem>
-                      <SelectItem value="Djibouti">Djibouti</SelectItem>
-                      <SelectItem value="Dominica">Dominica</SelectItem>
-                      <SelectItem value="Dominican Republic">Dominican Republic</SelectItem>
-                      <SelectItem value="Ecuador">Ecuador</SelectItem>
-                      <SelectItem value="Egypt">Egypt</SelectItem>
-                      <SelectItem value="El Salvador">El Salvador</SelectItem>
-                      <SelectItem value="Equatorial Guinea">Equatorial Guinea</SelectItem>
-                      <SelectItem value="Eritrea">Eritrea</SelectItem>
-                      <SelectItem value="Estonia">Estonia</SelectItem>
-                      <SelectItem value="Eswatini">Eswatini</SelectItem>
-                      <SelectItem value="Ethiopia">Ethiopia</SelectItem>
-                      <SelectItem value="Fiji">Fiji</SelectItem>
-                      <SelectItem value="Finland">Finland</SelectItem>
-                      <SelectItem value="France">France</SelectItem>
-                      <SelectItem value="Gabon">Gabon</SelectItem>
-                      <SelectItem value="Gambia">Gambia</SelectItem>
-                      <SelectItem value="Georgia">Georgia</SelectItem>
-                      <SelectItem value="Germany">Germany</SelectItem>
-                      <SelectItem value="Ghana">Ghana</SelectItem>
-                      <SelectItem value="Greece">Greece</SelectItem>
-                      <SelectItem value="Grenada">Grenada</SelectItem>
-                      <SelectItem value="Guatemala">Guatemala</SelectItem>
-                      <SelectItem value="Guinea">Guinea</SelectItem>
-                      <SelectItem value="Guinea-Bissau">Guinea-Bissau</SelectItem>
-                      <SelectItem value="Guyana">Guyana</SelectItem>
-                      <SelectItem value="Haiti">Haiti</SelectItem>
-                      <SelectItem value="Honduras">Honduras</SelectItem>
-                      <SelectItem value="Hungary">Hungary</SelectItem>
-                      <SelectItem value="Iceland">Iceland</SelectItem>
-                      <SelectItem value="India">India</SelectItem>
-                      <SelectItem value="Indonesia">Indonesia</SelectItem>
-                      <SelectItem value="Iran">Iran</SelectItem>
-                      <SelectItem value="Iraq">Iraq</SelectItem>
-                      <SelectItem value="Ireland">Ireland</SelectItem>
-                      <SelectItem value="Israel">Israel</SelectItem>
-                      <SelectItem value="Italy">Italy</SelectItem>
-                      <SelectItem value="Jamaica">Jamaica</SelectItem>
-                      <SelectItem value="Japan">Japan</SelectItem>
-                      <SelectItem value="Jordan">Jordan</SelectItem>
-                      <SelectItem value="Kazakhstan">Kazakhstan</SelectItem>
-                      <SelectItem value="Kenya">Kenya</SelectItem>
-                      <SelectItem value="Kiribati">Kiribati</SelectItem>
-                      <SelectItem value="Kosovo">Kosovo</SelectItem>
-                      <SelectItem value="Kuwait">Kuwait</SelectItem>
-                      <SelectItem value="Kyrgyzstan">Kyrgyzstan</SelectItem>
-                      <SelectItem value="Laos">Laos</SelectItem>
-                      <SelectItem value="Latvia">Latvia</SelectItem>
-                      <SelectItem value="Lebanon">Lebanon</SelectItem>
-                      <SelectItem value="Lesotho">Lesotho</SelectItem>
-                      <SelectItem value="Liberia">Liberia</SelectItem>
-                      <SelectItem value="Libya">Libya</SelectItem>
-                      <SelectItem value="Liechtenstein">Liechtenstein</SelectItem>
-                      <SelectItem value="Lithuania">Lithuania</SelectItem>
-                      <SelectItem value="Luxembourg">Luxembourg</SelectItem>
-                      <SelectItem value="Madagascar">Madagascar</SelectItem>
-                      <SelectItem value="Malawi">Malawi</SelectItem>
-                      <SelectItem value="Malaysia">Malaysia</SelectItem>
-                      <SelectItem value="Maldives">Maldives</SelectItem>
-                      <SelectItem value="Mali">Mali</SelectItem>
-                      <SelectItem value="Malta">Malta</SelectItem>
-                      <SelectItem value="Marshall Islands">Marshall Islands</SelectItem>
-                      <SelectItem value="Mauritania">Mauritania</SelectItem>
-                      <SelectItem value="Mauritius">Mauritius</SelectItem>
-                      <SelectItem value="Mexico">Mexico</SelectItem>
-                      <SelectItem value="Micronesia">Micronesia</SelectItem>
-                      <SelectItem value="Moldova">Moldova</SelectItem>
-                      <SelectItem value="Monaco">Monaco</SelectItem>
-                      <SelectItem value="Mongolia">Mongolia</SelectItem>
-                      <SelectItem value="Montenegro">Montenegro</SelectItem>
-                      <SelectItem value="Morocco">Morocco</SelectItem>
-                      <SelectItem value="Mozambique">Mozambique</SelectItem>
-                      <SelectItem value="Myanmar">Myanmar</SelectItem>
-                      <SelectItem value="Namibia">Namibia</SelectItem>
-                      <SelectItem value="Nauru">Nauru</SelectItem>
-                      <SelectItem value="Nepal">Nepal</SelectItem>
-                      <SelectItem value="Netherlands">Netherlands</SelectItem>
-                      <SelectItem value="New Zealand">New Zealand</SelectItem>
-                      <SelectItem value="Nicaragua">Nicaragua</SelectItem>
-                      <SelectItem value="Niger">Niger</SelectItem>
-                      <SelectItem value="Nigeria">Nigeria</SelectItem>
-                      <SelectItem value="North Korea">North Korea</SelectItem>
-                      <SelectItem value="North Macedonia">North Macedonia</SelectItem>
-                      <SelectItem value="Norway">Norway</SelectItem>
-                      <SelectItem value="Oman">Oman</SelectItem>
-                      <SelectItem value="Pakistan">Pakistan</SelectItem>
-                      <SelectItem value="Palau">Palau</SelectItem>
-                      <SelectItem value="Palestine">Palestine</SelectItem>
-                      <SelectItem value="Panama">Panama</SelectItem>
-                      <SelectItem value="Papua New Guinea">Papua New Guinea</SelectItem>
-                      <SelectItem value="Paraguay">Paraguay</SelectItem>
-                      <SelectItem value="Peru">Peru</SelectItem>
-                      <SelectItem value="Philippines">Philippines</SelectItem>
-                      <SelectItem value="Poland">Poland</SelectItem>
-                      <SelectItem value="Portugal">Portugal</SelectItem>
-                      <SelectItem value="Qatar">Qatar</SelectItem>
-                      <SelectItem value="Romania">Romania</SelectItem>
-                      <SelectItem value="Russia">Russia</SelectItem>
-                      <SelectItem value="Rwanda">Rwanda</SelectItem>
-                      <SelectItem value="Saint Kitts and Nevis">Saint Kitts and Nevis</SelectItem>
-                      <SelectItem value="Saint Lucia">Saint Lucia</SelectItem>
-                      <SelectItem value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</SelectItem>
-                      <SelectItem value="Samoa">Samoa</SelectItem>
-                      <SelectItem value="San Marino">San Marino</SelectItem>
-                      <SelectItem value="Sao Tome and Principe">Sao Tome and Principe</SelectItem>
-                      <SelectItem value="Saudi Arabia">Saudi Arabia</SelectItem>
-                      <SelectItem value="Senegal">Senegal</SelectItem>
-                      <SelectItem value="Serbia">Serbia</SelectItem>
-                      <SelectItem value="Seychelles">Seychelles</SelectItem>
-                      <SelectItem value="Sierra Leone">Sierra Leone</SelectItem>
-                      <SelectItem value="Singapore">Singapore</SelectItem>
-                      <SelectItem value="Slovakia">Slovakia</SelectItem>
-                      <SelectItem value="Slovenia">Slovenia</SelectItem>
-                      <SelectItem value="Solomon Islands">Solomon Islands</SelectItem>
-                      <SelectItem value="Somalia">Somalia</SelectItem>
-                      <SelectItem value="South Africa">South Africa</SelectItem>
-                      <SelectItem value="South Korea">South Korea</SelectItem>
-                      <SelectItem value="South Sudan">South Sudan</SelectItem>
-                      <SelectItem value="Spain">Spain</SelectItem>
-                      <SelectItem value="Sri Lanka">Sri Lanka</SelectItem>
-                      <SelectItem value="Sudan">Sudan</SelectItem>
-                      <SelectItem value="Suriname">Suriname</SelectItem>
-                      <SelectItem value="Sweden">Sweden</SelectItem>
-                      <SelectItem value="Switzerland">Switzerland</SelectItem>
-                      <SelectItem value="Syria">Syria</SelectItem>
-                      <SelectItem value="Taiwan">Taiwan</SelectItem>
-                      <SelectItem value="Tajikistan">Tajikistan</SelectItem>
-                      <SelectItem value="Tanzania">Tanzania</SelectItem>
-                      <SelectItem value="Thailand">Thailand</SelectItem>
-                      <SelectItem value="Timor-Leste">Timor-Leste</SelectItem>
-                      <SelectItem value="Togo">Togo</SelectItem>
-                      <SelectItem value="Tonga">Tonga</SelectItem>
-                      <SelectItem value="Trinidad and Tobago">Trinidad and Tobago</SelectItem>
-                      <SelectItem value="Tunisia">Tunisia</SelectItem>
-                      <SelectItem value="Turkey">Turkey</SelectItem>
-                      <SelectItem value="Turkmenistan">Turkmenistan</SelectItem>
-                      <SelectItem value="Tuvalu">Tuvalu</SelectItem>
-                      <SelectItem value="Uganda">Uganda</SelectItem>
-                      <SelectItem value="Ukraine">Ukraine</SelectItem>
-                      <SelectItem value="United Arab Emirates">United Arab Emirates</SelectItem>
-                      <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                      <SelectItem value="United States">United States</SelectItem>
-                      <SelectItem value="Uruguay">Uruguay</SelectItem>
-                      <SelectItem value="Uzbekistan">Uzbekistan</SelectItem>
-                      <SelectItem value="Vanuatu">Vanuatu</SelectItem>
-                      <SelectItem value="Vatican City">Vatican City</SelectItem>
-                      <SelectItem value="Venezuela">Venezuela</SelectItem>
-                      <SelectItem value="Vietnam">Vietnam</SelectItem>
-                      <SelectItem value="Yemen">Yemen</SelectItem>
-                      <SelectItem value="Zambia">Zambia</SelectItem>
-                      <SelectItem value="Zimbabwe">Zimbabwe</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Password</Label>
-                  <Input
-                    id="register-password"
-                    type="password"
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={registerPasswordConfirm}
-                    onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={registerMutation.isPending}
-                >
-                  {registerMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground text-center">
-            By registering, you'll receive early access once your account
-            is approved by an administrator.
+                </TabsContent>
+                <TabsContent value="register">
+                  <RegistrationForm onSuccess={() => setLocation("/registration-pending")} />
+                  <div className="mt-4 text-center text-sm">
+                    <span className="text-muted-foreground">Already have an account?</span>{" "}
+                    <button 
+                      className="text-primary hover:underline"
+                      onClick={() => setActiveTab("login")}
+                    >
+                      Login here
+                    </button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+          <div className="mt-4 text-center">
+            <button 
+              className="text-sm text-muted-foreground hover:underline"
+              onClick={() => {
+                localStorage.removeItem("earlyAccessToken");
+                setLocation("/token-entry");
+              }}
+            >
+              ← Back to token entry
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column - Hero Image & Info */}
+      <div className="w-full md:w-1/2 bg-primary p-8 flex items-center justify-center">
+        <div className="max-w-md text-white">
+          <h1 className="text-3xl md:text-4xl font-bold mb-6">
+            Making Children's TV Viewing a Better Experience
+          </h1>
+          <p className="text-lg mb-6">
+            TV Tantrum helps parents navigate children's media by providing detailed sensory scores and 
+            comparative analytics of popular shows.
           </p>
-        </CardFooter>
-      </Card>
+          <div className="space-y-4">
+            <div className="flex items-start">
+              <div className="bg-white/20 rounded-full p-1 mr-3 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold">Sensory Impact Analysis</h3>
+                <p className="text-sm text-white/80">Understand the stimulation level of each show</p>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <div className="bg-white/20 rounded-full p-1 mr-3 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold">Age-Appropriate Filtering</h3>
+                <p className="text-sm text-white/80">Find shows that match your child's developmental stage</p>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <div className="bg-white/20 rounded-full p-1 mr-3 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold">Compare Shows</h3>
+                <p className="text-sm text-white/80">Direct comparisons to make informed choices</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

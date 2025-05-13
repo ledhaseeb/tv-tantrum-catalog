@@ -16,7 +16,7 @@ import AdminPage from "@/pages/admin-page";
 import LandingPage from "@/pages/landing-page";
 import PreLaunchAbout from "@/pages/pre-launch-about";
 import PreLaunchFAQ from "@/pages/pre-launch-faq";
-import EarlyAccessPage from "@/pages/early-access";
+import TokenEntryPage from "@/pages/token-entry";
 import RegistrationPendingPage from "@/pages/registration-pending";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -43,8 +43,11 @@ function Router() {
         <Route path="/faq">
           <PreLaunchFAQ />
         </Route>
+        <Route path="/token-entry">
+          <TokenEntryPage />
+        </Route>
         <Route path="/early-access">
-          <EarlyAccessPage />
+          <AuthPage />
         </Route>
         <Route path="/registration-pending">
           <RegistrationPendingPage />
