@@ -316,7 +316,7 @@ export default function AuthPage() {
                       />
                       
                       <FormField
-                        control={loginForm.control}
+                        control={loginFormMethods.control}
                         name="password"
                         render={({ field }) => (
                           <FormItem>
@@ -369,10 +369,10 @@ export default function AuthPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Form {...registerForm}>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                  <Form {...registerFormMethods}>
+                    <form onSubmit={registerFormMethods.handleSubmit(onRegisterSubmit)} className="space-y-4">
                       <FormField
-                        control={registerForm.control}
+                        control={registerFormMethods.control}
                         name="username"
                         render={({ field }) => (
                           <FormItem>
@@ -430,7 +430,7 @@ export default function AuthPage() {
                       />
                       
                       <FormField
-                        control={registerForm.control}
+                        control={registerFormMethods.control}
                         name="email"
                         render={({ field }) => (
                           <FormItem>
@@ -452,7 +452,7 @@ export default function AuthPage() {
                       />
                       
                       <FormField
-                        control={registerForm.control}
+                        control={registerFormMethods.control}
                         name="password"
                         render={({ field }) => (
                           <FormItem>
@@ -471,7 +471,7 @@ export default function AuthPage() {
                       />
                       
                       <FormField
-                        control={registerForm.control}
+                        control={registerFormMethods.control}
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
