@@ -101,6 +101,13 @@ export default function AuthPage() {
     return () => clearTimeout(timeoutId);
   }, [usernameValue]);
   
+  // Helper function to get the redirect path from URL if available
+  const getRedirectPath = () => {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    return redirect ? decodeURIComponent(redirect) : '/';
+  };
+
   // Display a loading state while checking authentication
   if (isCheckingStoredAuth) {
     return (
@@ -140,12 +147,6 @@ export default function AuthPage() {
   });
 
   // Handle login submission
-  // Get the redirect path from URL if available
-  const getRedirectPath = () => {
-    const params = new URLSearchParams(window.location.search);
-    const redirect = params.get('redirect');
-    return redirect ? decodeURIComponent(redirect) : '/';
-  };
 
   function onLoginSubmit(data: LoginFormValues) {
     loginMutation.mutate(data, {

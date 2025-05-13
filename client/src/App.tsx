@@ -24,6 +24,9 @@ import { AuthProvider } from "@/hooks/use-auth";
 function Router() {
   // Access URL to check for development mode
   const isDevMode = window.location.search.includes('dev=true');
+  
+  // Check if user has early access token stored in localStorage
+  const hasEarlyAccess = localStorage.getItem("earlyAccessShown") === "true";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -45,8 +48,8 @@ function Router() {
           <RegistrationPendingPage />
         </Route>
         
-        {/* Main App Routes - Only accessible with dev parameter or after launch */}
-        {isDevMode && (
+        {/* Main App Routes - Accessible with dev parameter or after early access approval */}
+        {(isDevMode || hasEarlyAccess) && (
           <Route path="/home">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -57,7 +60,7 @@ function Router() {
             </div>
           </Route>
         )}
-        {isDevMode && (
+        {(isDevMode || hasEarlyAccess) && (
           <Route path="/browse">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -68,7 +71,7 @@ function Router() {
             </div>
           </Route>
         )}
-        {isDevMode && (
+        {(isDevMode || hasEarlyAccess) && (
           <Route path="/shows/:id">
             {(params) => (
               <div className="flex-grow flex flex-col">
@@ -81,7 +84,7 @@ function Router() {
             )}
           </Route>
         )}
-        {isDevMode && (
+        {(isDevMode || hasEarlyAccess) && (
           <Route path="/compare">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -92,7 +95,7 @@ function Router() {
             </div>
           </Route>
         )}
-        {isDevMode && (
+        {(isDevMode || hasEarlyAccess) && (
           <Route path="/app-about">
             <div className="flex-grow flex flex-col">
               <Navbar />
@@ -103,7 +106,7 @@ function Router() {
             </div>
           </Route>
         )}
-        {isDevMode && (
+        {(isDevMode || hasEarlyAccess) && (
           <Route path="/auth">
             <div className="flex-grow flex flex-col">
               <Navbar />
