@@ -189,7 +189,7 @@ export function setupAuth(app: Express) {
         }
         
         return res.status(401).json({ 
-          message: info?.message || "Invalid email or password",
+          message: info?.message || "Invalid username, email, or password",
           isPendingApproval: false
         });
       }
