@@ -155,15 +155,52 @@ export function setupAuth(app: Express) {
       }
 
       try {
-        const hashedPassword = await hashPassword(password);
-        const user = await storage.createUser({
-          email,
-          password: hashedPassword,
-          username,
-          country: country || '',
-          isAdmin: false,  // By default, users are not admins
-          isApproved: false  // By default, users need approval
-        });
+        // Use direct database insertion with transaction
+        const client = await pool.connect();
+        let user;
+        
+        try {
+          await client.query('BEGIN');
+          
+          const hashedPassword = await hashPassword(password);
+          const now = new Date().toISOString();
+          
+          // Direct SQL insert with transaction
+          const result = await client.query(`
+            INSERT INTO users (email, password, username, is_admin, country, created_at, is_approved) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            RETURNING *
+          `, [
+            email,
+            hashedPassword,
+            username,
+            false, // isAdmin
+            country || '',
+            now,
+            false // isApproved
+          ]);
+          
+          await client.query('COMMIT');
+          
+          // Map result to user object
+          user = {
+            id: result.rows[0].id,
+            email: result.rows[0].email,
+            password: result.rows[0].password,
+            username: result.rows[0].username,
+            isAdmin: result.rows[0].is_admin,
+            country: result.rows[0].country,
+            createdAt: result.rows[0].created_at,
+            isApproved: result.rows[0].is_approved
+          };
+          
+          console.log('User successfully inserted into database:', { id: user.id });
+        } catch (dbErr) {
+          await client.query('ROLLBACK');
+          throw dbErr;
+        } finally {
+          client.release();
+        }
 
         // Don't send back password with the user object
         const { password: _, ...safeUser } = user;

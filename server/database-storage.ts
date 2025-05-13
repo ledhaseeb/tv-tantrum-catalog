@@ -134,7 +134,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const client = await pool.connect();
+    
     try {
+      // Start transaction
+      await client.query('BEGIN');
+      
       const now = new Date().toISOString();
       
       // Ensure username is never null to match schema requirements
@@ -146,8 +151,8 @@ export class DatabaseStorage implements IStorage {
       
       console.log('Creating user with data:', {...userToInsert, password: '[REDACTED]'});
       
-      // Try direct SQL insertion instead of using Drizzle ORM
-      const result = await pool.query(`
+      // Use client instead of pool for transaction
+      const result = await client.query(`
         INSERT INTO users (email, password, username, is_admin, country, created_at, is_approved) 
         VALUES ($1, $2, $3, $4, $5, $6, $7) 
         RETURNING *
@@ -160,6 +165,9 @@ export class DatabaseStorage implements IStorage {
         userToInsert.createdAt,
         userToInsert.isApproved || false
       ]);
+      
+      // Explicitly commit the transaction
+      await client.query('COMMIT');
       
       // Convert from raw SQL result to our expected User type
       const user: User = {
@@ -176,8 +184,13 @@ export class DatabaseStorage implements IStorage {
       console.log('User created successfully with ID:', user.id);
       return user;
     } catch (error) {
+      // Rollback transaction on error
+      await client.query('ROLLBACK');
       console.error('Error creating user in database:', error);
       throw error; // Re-throw to be caught by the API layer
+    } finally {
+      // Always release the client back to the pool
+      client.release();
     }
   }
   
