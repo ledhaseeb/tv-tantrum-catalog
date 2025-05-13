@@ -39,7 +39,10 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   function onSubmit(values: z.infer<typeof formSchema>) {
     setAuthError(null);
     
-    loginMutation.mutate(values, {
+    loginMutation.mutate({ 
+      identifier: values.username, // username field can be either username or email
+      password: values.password 
+    }, {
       onSuccess: () => {
         if (onSuccess) {
           onSuccess();
