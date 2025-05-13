@@ -41,6 +41,7 @@ export default function AuthPage() {
   const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
   const [usernameValue, setUsernameValue] = useState("");
   const [isCheckingStoredAuth, setIsCheckingStoredAuth] = useState(true);
+  const [earlyAccessToken, setEarlyAccessToken] = useState<string | null>(null);
   
   // Check if there's stored authentication on page load
   useEffect(() => {
@@ -75,6 +76,29 @@ export default function AuthPage() {
     checkStoredAuth();
   }, []);
   
+  // Check for early access token in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    
+    if (token) {
+      console.log("Found token in URL:", token);
+      setEarlyAccessToken(token);
+      localStorage.setItem("earlyAccessToken", token);
+      
+      // Switch to register tab when token is present
+      if (token === "tv-tantrum-early-2025") {
+        setActiveTab("register");
+      }
+    } else {
+      // Try to get token from localStorage if not in URL
+      const storedToken = localStorage.getItem("earlyAccessToken");
+      if (storedToken) {
+        setEarlyAccessToken(storedToken);
+      }
+    }
+  }, []);
+
   // Username availability check
   useEffect(() => {
     // Don't check if username is less than 3 characters
