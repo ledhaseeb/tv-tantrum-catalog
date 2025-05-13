@@ -86,8 +86,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    const client = await pool.connect();
+    
     try {
-      const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      // Use transaction for consistency
+      await client.query('BEGIN');
+      
+      // Execute the query
+      const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      
+      // Commit the transaction
+      await client.query('COMMIT');
       
       if (result.rows.length === 0) {
         return undefined;
@@ -104,14 +113,28 @@ export class DatabaseStorage implements IStorage {
         isApproved: result.rows[0].is_approved
       };
     } catch (error) {
+      // Rollback on error
+      await client.query('ROLLBACK');
       console.error(`Error getting user by email ${email}:`, error);
       return undefined;
+    } finally {
+      // Always release the client
+      client.release();
     }
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
+    const client = await pool.connect();
+    
     try {
-      const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+      // Use transaction for consistency
+      await client.query('BEGIN');
+      
+      // Execute the query
+      const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+      
+      // Commit the transaction
+      await client.query('COMMIT');
       
       if (result.rows.length === 0) {
         return undefined;
@@ -128,8 +151,13 @@ export class DatabaseStorage implements IStorage {
         isApproved: result.rows[0].is_approved
       };
     } catch (error) {
+      // Rollback on error
+      await client.query('ROLLBACK');
       console.error(`Error getting user by username ${username}:`, error);
       return undefined;
+    } finally {
+      // Always release the client
+      client.release();
     }
   }
 
@@ -195,9 +223,17 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAllUsers(): Promise<User[]> {
+    const client = await pool.connect();
+    
     try {
-      // Use direct SQL query instead of Drizzle ORM
-      const result = await pool.query('SELECT * FROM users ORDER BY id DESC');
+      // Use a transaction to ensure data consistency
+      await client.query('BEGIN');
+      
+      // Execute the query with the client
+      const result = await client.query('SELECT * FROM users ORDER BY id DESC');
+      
+      // Commit the transaction
+      await client.query('COMMIT');
       
       // Map the SQL results to our User type
       const userList: User[] = result.rows.map(row => ({
@@ -214,15 +250,25 @@ export class DatabaseStorage implements IStorage {
       console.log(`Fetched ${userList.length} users from database`);
       return userList;
     } catch (error) {
+      // Rollback the transaction on error
+      await client.query('ROLLBACK');
       console.error('Error fetching users:', error);
       return [];
+    } finally {
+      // Release the client back to the pool
+      client.release();
     }
   }
   
   async updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined> {
+    const client = await pool.connect();
+    
     try {
-      // Use direct SQL query instead of Drizzle ORM
-      const result = await pool.query(`
+      // Start transaction
+      await client.query('BEGIN');
+      
+      // Execute update with transaction
+      const result = await client.query(`
         UPDATE users 
         SET is_approved = $1 
         WHERE id = $2 
@@ -230,9 +276,13 @@ export class DatabaseStorage implements IStorage {
       `, [isApproved, userId]);
       
       if (result.rows.length === 0) {
+        await client.query('ROLLBACK');
         console.log(`No user found with ID ${userId} to update approval status`);
         return undefined;
       }
+      
+      // Commit the transaction
+      await client.query('COMMIT');
       
       // Map the SQL result to our User type
       const updatedUser: User = {
@@ -249,8 +299,13 @@ export class DatabaseStorage implements IStorage {
       console.log(`Updated approval status for user ${updatedUser.id} to ${isApproved}`);
       return updatedUser;
     } catch (error) {
+      // Rollback on error
+      await client.query('ROLLBACK');
       console.error(`Error updating approval status for user ${userId}:`, error);
       return undefined;
+    } finally {
+      // Always release the client
+      client.release();
     }
   }
 
