@@ -158,8 +158,8 @@ export default function AuthPage() {
     return null;
   }
 
-  // Login form
-  const loginForm = useForm<LoginFormValues>({
+  // Login and register forms - initialize outside conditional rendering to avoid hook issues
+  const loginFormMethods = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       identifier: "",
@@ -167,8 +167,7 @@ export default function AuthPage() {
     },
   });
 
-  // Register form
-  const registerForm = useForm<RegisterFormValues>({
+  const registerFormMethods = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
@@ -295,10 +294,10 @@ export default function AuthPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Form {...loginForm}>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <Form {...loginFormMethods}>
+                    <form onSubmit={loginFormMethods.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
-                        control={loginForm.control}
+                        control={loginFormMethods.control}
                         name="identifier"
                         render={({ field }) => (
                           <FormItem>
