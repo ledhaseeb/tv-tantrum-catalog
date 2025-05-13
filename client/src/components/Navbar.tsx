@@ -78,13 +78,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0">
+            <Link href="/home" className="flex-shrink-0">
               <h1 className="text-2xl font-heading font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h1>
             </Link>
             <nav className="hidden md:ml-10 md:flex space-x-8">
               <Link 
-                href="/"
-                className={`${location === '/' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
+                href="/home"
+                className={`${location === '/home' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <Home className="w-4 h-4 mr-2" />
                 Home
@@ -239,7 +239,9 @@ export default function Navbar() {
                 {/* Side drawer */}
                 <div className="fixed inset-y-0 left-0 w-64 bg-white p-4 overflow-y-auto">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
+                    <Link href="/home" onClick={() => setIsNavOpen(false)}>
+                      <h2 className="text-lg font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
+                    </Link>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -252,9 +254,9 @@ export default function Navbar() {
                   
                   <div className="space-y-1">
                     <Link 
-                      href="/"
+                      href="/home"
                       onClick={() => setIsNavOpen(false)}
-                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
+                      className={`flex items-center px-3 py-2 text-base font-medium ${location === '/home' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
                     >
                       <Home className="h-5 w-5 mr-3" />
                       Home
