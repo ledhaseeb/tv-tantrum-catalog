@@ -40,6 +40,40 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
   const [usernameValue, setUsernameValue] = useState("");
+  const [isCheckingStoredAuth, setIsCheckingStoredAuth] = useState(true);
+  
+  // Check if there's stored authentication on page load
+  useEffect(() => {
+    const checkStoredAuth = () => {
+      try {
+        const storedAuth = localStorage.getItem('tvtantrum_auth');
+        if (storedAuth) {
+          const authData = JSON.parse(storedAuth);
+          
+          // Check if the stored auth is valid (less than 24 hours old)
+          if (authData.isLoggedIn && authData.timestamp) {
+            const storedTime = new Date(authData.timestamp);
+            const now = new Date();
+            const hoursDiff = (now.getTime() - storedTime.getTime()) / (1000 * 60 * 60);
+            
+            if (hoursDiff < 24) {
+              console.log("Found valid stored auth, waiting for user data...");
+              return true;
+            }
+          }
+        }
+        return false;
+      } catch (e) {
+        console.error('Error checking stored auth:', e);
+        return false;
+      } finally {
+        setIsCheckingStoredAuth(false);
+      }
+    };
+    
+    // Perform the check
+    checkStoredAuth();
+  }, []);
   
   // Username availability check
   useEffect(() => {
@@ -67,9 +101,21 @@ export default function AuthPage() {
     return () => clearTimeout(timeoutId);
   }, [usernameValue]);
   
+  // Display a loading state while checking authentication
+  if (isCheckingStoredAuth) {
+    return (
+      <div className="container mx-auto flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+  
   // Redirect if user is already logged in
   if (user) {
-    navigate("/");
+    navigate(getRedirectPath());
     return null;
   }
 
