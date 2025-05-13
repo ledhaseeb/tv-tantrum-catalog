@@ -69,6 +69,11 @@ export default function AdminPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOptimizingImages, setIsOptimizingImages] = useState(false);
+  const [users, setUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isApprovingUser, setIsApprovingUser] = useState(false);
 
   // Form state
   const [formState, setFormState] = useState({
@@ -98,6 +103,51 @@ export default function AdminPage() {
       setLocation('/');
     }
   }, [isLoading, isAdmin, setLocation, toast]);
+
+  // Load all users (admin only)
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!isAdmin) return;
+      
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        
+        const data = await response.json();
+        setUsers(data);
+        setFilteredUsers(data);
+        setIsLoadingUsers(false);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load users. Please try again.",
+          variant: "destructive"
+        });
+        setIsLoadingUsers(false);
+      }
+    };
+    
+    if (isAdmin) {
+      fetchUsers();
+    }
+  }, [isAdmin, toast]);
+
+  // Filter users based on search term
+  useEffect(() => {
+    if (userSearchTerm.trim() === '') {
+      setFilteredUsers(users);
+    } else {
+      const term = userSearchTerm.toLowerCase();
+      const filtered = users.filter(user => 
+        user.username?.toLowerCase().includes(term) || 
+        user.email.toLowerCase().includes(term)
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [userSearchTerm, users]);
 
   // Load all shows
   useEffect(() => {
@@ -343,6 +393,44 @@ export default function AdminPage() {
     };
   };
   
+  // Handle user approval/rejection
+  const handleUserApproval = async (userId: number, approve: boolean) => {
+    setIsApprovingUser(true);
+    try {
+      const response = await apiRequest('PATCH', `/api/users/${userId}/approve`, { isApproved: approve });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to update user approval status');
+      }
+      
+      const updatedUser = await response.json();
+      
+      // Update the users list
+      setUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, isApproved: approve } : user
+      ));
+      
+      setFilteredUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, isApproved: approve } : user
+      ));
+      
+      toast({
+        title: approve ? "User Approved" : "User Rejected",
+        description: `Successfully ${approve ? 'approved' : 'rejected'} user ${updatedUser.username || updatedUser.email}`,
+      });
+    } catch (error) {
+      console.error('Error updating user approval status:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update user approval status",
+        variant: "destructive"
+      });
+    } finally {
+      setIsApprovingUser(false);
+    }
+  };
+  
   // Update show
   const handleUpdateShow = async () => {
     if (!selectedShow) return;
@@ -429,6 +517,7 @@ export default function AdminPage() {
       <Tabs defaultValue="shows">
         <TabsList className="mb-4">
           <TabsTrigger value="shows">TV Shows</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         
@@ -497,6 +586,113 @@ export default function AdminPage() {
                 Showing {filteredShows.length} of {shows.length} shows
               </div>
             </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="users">
+          <Card>
+            <CardHeader>
+              <CardTitle>User Management</CardTitle>
+              <CardDescription>
+                Manage users and approve early access requests
+              </CardDescription>
+              <div className="relative mt-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  placeholder="Search users..."
+                  className="pl-10"
+                  value={userSearchTerm}
+                  onChange={(e) => setUserSearchTerm(e.target.value)}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoadingUsers ? (
+                <div className="flex justify-center items-center py-6">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="py-6 text-center text-muted-foreground">
+                  No users found
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>{user.id}</TableCell>
+                          <TableCell>{user.username || '-'}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            {user.isAdmin ? (
+                              <div className="flex items-center space-x-1 text-blue-600">
+                                <Shield size={16} />
+                                <span>Admin</span>
+                              </div>
+                            ) : user.isApproved ? (
+                              <div className="flex items-center space-x-1 text-green-600">
+                                <CheckCircle size={16} />
+                                <span>Approved</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center space-x-1 text-orange-600">
+                                <Clock size={16} />
+                                <span>Pending</span>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              {!user.isAdmin && (
+                                <>
+                                  {!user.isApproved ? (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="h-8 px-2 text-green-600"
+                                      onClick={() => handleUserApproval(user.id, true)}
+                                      disabled={isApprovingUser}
+                                    >
+                                      <Check className="h-4 w-4" />
+                                      <span className="ml-1">Approve</span>
+                                    </Button>
+                                  ) : (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="h-8 px-2 text-red-600"
+                                      onClick={() => handleUserApproval(user.id, false)}
+                                      disabled={isApprovingUser}
+                                    >
+                                      <X className="h-4 w-4" />
+                                      <span className="ml-1">Revoke</span>
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </TabsContent>
         
