@@ -11,11 +11,11 @@ export default function PreLaunchFAQ() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
-      <header className="container mx-auto py-6 flex justify-between items-center">
+      <header className="container mx-auto py-6 px-4 sm:px-6 flex justify-between items-center">
         <Link href="/">
           <div className="text-3xl font-bold text-primary cursor-pointer">TV Tantrum</div>
         </Link>
-        <div className="flex space-x-4">
+        <div className="flex space-x-2 sm:space-x-4">
           <Button variant="ghost" asChild>
             <Link href="/">Home</Link>
           </Button>

@@ -9,7 +9,7 @@ export default function PreLaunchAbout() {
         <Link href="/">
           <div className="text-3xl font-bold text-primary cursor-pointer">TV Tantrum</div>
         </Link>
-        <div className="flex space-x-4">
+        <div className="flex space-x-2 sm:space-x-4">
           <Button variant="ghost" asChild>
             <Link href="/">Home</Link>
           </Button>
