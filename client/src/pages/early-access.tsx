@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 
 // Secret token for early access
@@ -37,6 +37,7 @@ export default function EarlyAccessPage() {
   const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
   const [activeTab, setActiveTab] = useState("login");
   const [loginIsLoading, setLoginIsLoading] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
 
   // Check if the token in the URL is valid
   useEffect(() => {
@@ -48,6 +49,32 @@ export default function EarlyAccessPage() {
       setToken(urlToken);
     }
   }, []);
+
+  // Username availability check
+  useEffect(() => {
+    // Don't check if username is less than 3 characters
+    if (!registerUsername || registerUsername.length < 3) {
+      setUsernameStatus(null);
+      return;
+    }
+    
+    // Set status to checking before API call
+    setUsernameStatus('checking');
+    
+    // Debounce the API call - only make it after user stops typing
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/check-username?username=${encodeURIComponent(registerUsername)}`);
+        const data = await response.json();
+        setUsernameStatus(data.available ? 'available' : 'taken');
+      } catch (error) {
+        console.error('Failed to check username availability:', error);
+        setUsernameStatus(null);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [registerUsername]);
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -136,11 +163,31 @@ export default function EarlyAccessPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check password match
     if (registerPassword !== registerPasswordConfirm) {
       toast({
         title: "Passwords don't match",
         description: "Please make sure your passwords match.",
         variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check username availability one more time before submitting
+    if (usernameStatus === 'taken') {
+      toast({
+        title: "Username already taken",
+        description: "Please choose a different username.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // If username is still being checked, wait for the check to complete
+    if (usernameStatus === 'checking') {
+      toast({
+        title: "Please wait",
+        description: "We're still checking if your username is available.",
       });
       return;
     }
@@ -169,6 +216,8 @@ export default function EarlyAccessPage() {
           description: "Please choose a different username.",
           variant: "destructive",
         });
+        // Update username status
+        setUsernameStatus('taken');
       } else if (errorMsg.includes("Email already registered")) {
         toast({
           title: "Email already registered",
@@ -303,14 +352,47 @@ export default function EarlyAccessPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={registerUsername}
-                    onChange={(e) => setRegisterUsername(e.target.value)}
-                    placeholder="yourusername"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="username"
+                      type="text"
+                      value={registerUsername}
+                      onChange={(e) => setRegisterUsername(e.target.value)}
+                      placeholder="yourusername"
+                      required
+                      className={usernameStatus === 'taken' ? "pr-10 border-red-500 focus-visible:ring-red-500" : 
+                                usernameStatus === 'available' ? "pr-10 border-green-500 focus-visible:ring-green-500" : 
+                                "pr-10"}
+                    />
+                    {usernameStatus === 'checking' && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <svg className="animate-spin h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    )}
+                    {usernameStatus === 'available' && registerUsername.length >= 3 && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                    {usernameStatus === 'taken' && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <XCircle className="h-5 w-5 text-red-500" />
+                      </div>
+                    )}
+                  </div>
+                  {usernameStatus === 'taken' && (
+                    <p className="text-sm font-medium text-red-500">
+                      Username is already taken
+                    </p>
+                  )}
+                  {usernameStatus === 'available' && registerUsername.length >= 3 && (
+                    <p className="text-sm font-medium text-green-500">
+                      Username is available
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">Country</Label>

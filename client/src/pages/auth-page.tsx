@@ -133,6 +133,25 @@ export default function AuthPage() {
 
   // Handle registration submission
   function onRegisterSubmit(data: RegisterFormValues) {
+    // Check username availability before submitting
+    if (usernameStatus === 'taken') {
+      toast({
+        title: "Username already taken",
+        description: "Please choose a different username.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // If username is still being checked, wait for the check to complete
+    if (usernameStatus === 'checking') {
+      toast({
+        title: "Please wait",
+        description: "We're still checking if your username is available.",
+      });
+      return;
+    }
+    
     // Remove confirmPassword as it's not needed for the API
     const { confirmPassword, ...registerData } = data;
     
@@ -145,11 +164,21 @@ export default function AuthPage() {
         navigate("/registration-pending");
       },
       onError: (error) => {
-        toast({
-          title: "Registration failed",
-          description: error.message || "Please try a different username",
-          variant: "destructive",
-        });
+        // If the error is about username already taken, update the usernameStatus
+        if (error.message?.includes("Username already taken")) {
+          setUsernameStatus('taken');
+          toast({
+            title: "Username already taken",
+            description: "Please choose a different username.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Registration failed",
+            description: error.message || "Please try again",
+            variant: "destructive",
+          });
+        }
       },
     });
   }
