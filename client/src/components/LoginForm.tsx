@@ -40,7 +40,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     setAuthError(null);
     
     loginMutation.mutate({ 
-      identifier: values.username, // username field can be either username or email
+      identifier: values.username, // Using identifier which works for both username or email
       password: values.password 
     }, {
       onSuccess: () => {

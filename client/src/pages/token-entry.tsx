@@ -45,6 +45,7 @@ export default function TokenEntryPage() {
           description: "Your early access token has been verified.",
           variant: "default"
         });
+        // Redirect to early access login/registration page after successful verification
         setLocation("/early-access");
       } else {
         toast({

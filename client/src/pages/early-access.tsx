@@ -12,7 +12,7 @@ export default function EarlyAccessPage() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    // Check if user has the early access token
+    // Check if user has the early access token - redirect to token entry page if not
     const token = localStorage.getItem("earlyAccessToken");
     if (!token) {
       setLocation("/token-entry");
