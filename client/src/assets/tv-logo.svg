@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="256px" height="256px" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="none" fill="none">
+        <path d="M216,56 L40,56 C26.745166,56 16,66.745166 16,80 L16,176 C16,189.254834 26.745166,200 40,200 L216,200 C229.254834,200 240,189.254834 240,176 L240,80 C240,66.745166 229.254834,56 216,56 Z" id="tv-body" stroke="#2F3336" stroke-width="16" fill="none" />
+        <path d="M128,56 L128,200" id="divider" stroke="#FFFFFF" stroke-width="2" fill="none" />
+        <path d="M64,122 C68,130 96,138 128,122" id="happy-mouth" stroke="#2F3336" stroke-width="7" stroke-linecap="round" fill="none" />
+        <path d="M64,150 C83.8071187,150 100,134 100,134 L128,150 L156,134 C156,134 172.192881,150 192,150 L192,200 L40,200 L64,150 Z" id="water" fill="#64D2D2" />
+        <circle id="happy-left-eye" fill="#2F3336" cx="80" cy="100" r="10" />
+        <circle id="happy-right-eye" fill="#2F3336" cx="112" cy="100" r="10" />
+        <path d="M128,56 L240,56 L240,200 L128,200 Z" id="angry-side" fill="#FF7557" />
+        <circle id="angry-left-eye" fill="#FFFFFF" stroke="#2F3336" stroke-width="4" cx="160" cy="100" r="12" />
+        <circle id="angry-left-pupil" fill="#2F3336" cx="160" cy="100" r="6" />
+        <circle id="angry-right-eye" fill="#FFFFFF" stroke="#2F3336" stroke-width="4" cx="192" cy="100" r="12" />
+        <circle id="angry-right-pupil" fill="#2F3336" cx="192" cy="100" r="6" />
+        <path d="M176,112 C176,112 174,122 176,128" id="nose" stroke="#2F3336" stroke-width="4" stroke-linecap="round" />
+        <path d="M148,148 C156,140 168,148 176,148 C184,148 196,140 204,148 L204,148 C204,148 196,172 176,172 C156,172 148,148 148,148 Z" id="angry-mouth" fill="#2F3336" />
+        <path d="M82,12 L114,46" id="antenna-left" stroke="#2F3336" stroke-width="10" stroke-linecap="round" />
+        <path d="M174,12 L142,46" id="antenna-right" stroke="#2F3336" stroke-width="10" stroke-linecap="round" />
+        <circle id="antenna-ball-left" fill="#2F3336" cx="82" cy="12" r="10" />
+        <circle id="antenna-ball-right" fill="#2F3336" cx="174" cy="12" r="10" />
+        <path d="M72,232 L96,200" id="leg-left" stroke="#2F3336" stroke-width="10" stroke-linecap="round" />
+        <path d="M184,232 L160,200" id="leg-right" stroke="#2F3336" stroke-width="10" stroke-linecap="round" />
+        <path d="M154,86 L170,70" id="angry-eyebrow-right" stroke="#2F3336" stroke-width="6" stroke-linecap="round" />
+        <path d="M180,86 L196,70" id="angry-eyebrow-left" stroke="#2F3336" stroke-width="6" stroke-linecap="round" />
+        <path d="M174,84 L180,68" id="angry-lines-middle" stroke="#2F3336" stroke-width="4" stroke-linecap="round" />
+    </g>
+</svg>

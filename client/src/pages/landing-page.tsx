@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import GhlScriptLoader from "@/components/GhlScriptLoader";
 // Import the preview image to ensure it's properly bundled
 import previewImage from "../assets/tv-tantrum-preview.png";
+import tvLogo from "../assets/tv-logo.svg";
 
 export default function LandingPage() {
   const { toast } = useToast();
@@ -15,7 +16,10 @@ export default function LandingPage() {
       {/* Header */}
       <header className="container mx-auto py-6 flex justify-between items-center">
         <Link href="/">
-          <div className="text-3xl font-bold text-primary cursor-pointer">TV Tantrum</div>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <img src={tvLogo} alt="TV Tantrum Logo" className="w-10 h-10" />
+            <div className="text-3xl font-bold text-primary">TV Tantrum</div>
+          </div>
         </Link>
         <div className="flex space-x-4">
           <Button variant="ghost" asChild>
