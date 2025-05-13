@@ -80,11 +80,20 @@ export default function AuthPage() {
         navigate(getRedirectPath());
       },
       onError: (error) => {
-        toast({
-          title: "Login failed",
-          description: error.message || "Please check your credentials and try again",
-          variant: "destructive",
-        });
+        // Check if the error is about pending approval
+        if (error.message.includes("pending approval")) {
+          toast({
+            title: "Account Pending Approval",
+            description: "Your account has been created but requires admin approval.",
+          });
+          navigate("/registration-pending");
+        } else {
+          toast({
+            title: "Login failed",
+            description: error.message || "Please check your credentials and try again",
+            variant: "destructive",
+          });
+        }
       },
     });
   }
@@ -98,9 +107,9 @@ export default function AuthPage() {
       onSuccess: () => {
         toast({
           title: "Registration successful",
-          description: "Your account has been created!",
+          description: "Your account has been created and is pending approval.",
         });
-        navigate(getRedirectPath());
+        navigate("/registration-pending");
       },
       onError: (error) => {
         toast({
