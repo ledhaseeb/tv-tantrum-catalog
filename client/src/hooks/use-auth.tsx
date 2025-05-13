@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from "react";
+import React, { createContext, ReactNode, useContext, useEffect } from "react";
 import {
   useQuery,
   useMutation,
@@ -29,20 +29,72 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+
+  // Check if we have stored authentication state
+  const hasStoredAuth = () => {
+    try {
+      const storedAuth = localStorage.getItem('tvtantrum_auth');
+      if (!storedAuth) return false;
+      
+      const authData = JSON.parse(storedAuth);
+      
+      // Check if the stored auth is valid (less than 24 hours old)
+      if (authData.isLoggedIn && authData.timestamp) {
+        const storedTime = new Date(authData.timestamp);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - storedTime.getTime()) / (1000 * 60 * 60);
+        
+        return hoursDiff < 24; // Valid if less than 24 hours old
+      }
+      return false;
+    } catch (e) {
+      console.error('Error reading stored auth:', e);
+      return false;
+    }
+  };
   
   // Fetch current user data
   const {
     data: user,
     error,
     isLoading,
+    refetch
   } = useQuery<User | null, Error>({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     // This ensures we never have undefined, only null for unauthenticated users
     select: (data) => data ?? null,
     // Initialize with null (not authenticated)
-    initialData: null
+    initialData: null,
+    // Always fetch if we have stored auth
+    enabled: hasStoredAuth(),
+    // If auth token is invalid, retry a few times before giving up
+    retry: hasStoredAuth() ? 3 : 0,
+    // Refresh user data every 30 minutes
+    refetchInterval: 30 * 60 * 1000
   });
+  
+  // Effect to manage authentication state
+  useEffect(() => {
+    // If there's an auth error, clear localStorage
+    if (error && (error.message === "Not authenticated" || error.message?.includes("401"))) {
+      localStorage.removeItem('tvtantrum_auth');
+    }
+    
+    // If we have stored auth but no user, try to refetch user data
+    const checkAndRefetchAuth = async () => {
+      try {
+        if (hasStoredAuth() && !user && !isLoading) {
+          console.log("Detected stored auth but no user, trying to refetch...");
+          await refetch();
+        }
+      } catch (err) {
+        console.error("Error refetching user data:", err);
+      }
+    };
+    
+    checkAndRefetchAuth();
+  }, [error, user, isLoading, refetch]);
 
   // Login mutation
   const loginMutation = useMutation({
@@ -73,9 +125,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: (user: User) => {
+      // Store authentication state in localStorage to maintain login across page refreshes
+      localStorage.setItem('tvtantrum_auth', JSON.stringify({
+        isLoggedIn: true,
+        timestamp: new Date().toISOString()
+      }));
+      
+      // Update React Query cache with user data
       queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
+      // Clear any stale auth data
+      localStorage.removeItem('tvtantrum_auth');
+      
       toast({
         title: "Login failed",
         description: error.message,
@@ -105,9 +167,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: User) => {
+      // Store authentication state in localStorage
+      localStorage.setItem('tvtantrum_auth', JSON.stringify({
+        isLoggedIn: true,
+        timestamp: new Date().toISOString()
+      }));
+      
+      // Update React Query cache with user data
       queryClient.setQueryData(["/api/user"], user);
+      
+      // Trigger a refetch to ensure we have the latest user data
+      refetch();
     },
     onError: (error: Error) => {
+      // Clear any stale auth data
+      localStorage.removeItem('tvtantrum_auth');
+      
       toast({
         title: "Registration failed",
         description: error.message,
@@ -130,7 +205,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: () => {
+      // Clear authentication data from localStorage
+      localStorage.removeItem('tvtantrum_auth');
+      
+      // Update React Query cache
       queryClient.setQueryData(["/api/user"], null);
+      
       // Invalidate any query keys that depend on user authentication
       queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
     },
