@@ -111,7 +111,29 @@ export default function EarlyAccessPage() {
       });
       setPendingApproval(true);
     } catch (error) {
-      // Error is handled by the mutation
+      // Show specific error messages
+      const errorMsg = (error as Error).message || "Registration failed";
+      
+      // Custom error handling based on the error message
+      if (errorMsg.includes("Username already taken")) {
+        toast({
+          title: "Username already taken",
+          description: "Please choose a different username.",
+          variant: "destructive",
+        });
+      } else if (errorMsg.includes("Email already registered")) {
+        toast({
+          title: "Email already registered",
+          description: "This email is already registered in our system.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Registration failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
+      }
     }
   };
 

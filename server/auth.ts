@@ -111,15 +111,24 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password, email } = req.body;
+      const { username, password, email, country } = req.body;
       
       if (!email || !password) {
         return res.status(400).send({ message: "Email and password are required" });
       }
 
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
+      // Check for duplicate email
+      const existingUserByEmail = await storage.getUserByEmail(email);
+      if (existingUserByEmail) {
         return res.status(400).send({ message: "Email already registered" });
+      }
+
+      // Check for duplicate username if provided
+      if (username) {
+        const existingUserByUsername = await storage.getUserByUsername(username);
+        if (existingUserByUsername) {
+          return res.status(400).send({ message: "Username already taken" });
+        }
       }
 
       const hashedPassword = await hashPassword(password);
@@ -127,7 +136,9 @@ export function setupAuth(app: Express) {
         email,
         password: hashedPassword,
         username: username || null,
-        isAdmin: false  // By default, users are not admins
+        country: country || null,
+        isAdmin: false,  // By default, users are not admins
+        isApproved: false  // By default, users need approval
       });
 
       // Don't send back password with the user object
