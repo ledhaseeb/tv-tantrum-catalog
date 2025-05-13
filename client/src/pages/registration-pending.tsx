@@ -22,11 +22,15 @@ export default function RegistrationPendingPage() {
     e.preventDefault();
     
     try {
+      // First, make sure the early access token is set in localStorage
+      localStorage.setItem("earlyAccessToken", "tv-tantrum-early-2025");
+      localStorage.setItem("earlyAccessShown", "true");
+      
       // Log the user out
       await logoutMutation.mutateAsync();
       
-      // Redirect to auth page with early access token
-      navigate("/auth?token=tv-tantrum-early-2025");
+      // Redirect to auth page, not using the URL parameter since it's causing errors
+      navigate("/auth");
       
       toast({
         title: "Logged out",

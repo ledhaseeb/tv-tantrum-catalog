@@ -76,25 +76,33 @@ export default function AuthPage() {
     checkStoredAuth();
   }, []);
   
-  // Check for early access token in URL
+  // Check for early access token in localStorage or URL
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    
-    if (token) {
-      console.log("Found token in URL:", token);
-      setEarlyAccessToken(token);
-      localStorage.setItem("earlyAccessToken", token);
+    // First check localStorage for token (preferred method)
+    const storedToken = localStorage.getItem("earlyAccessToken");
+    if (storedToken) {
+      console.log("Found token in localStorage:", storedToken);
+      setEarlyAccessToken(storedToken);
       
-      // Switch to register tab when token is present
-      if (token === "tv-tantrum-early-2025") {
+      // Switch to register tab when valid token is present
+      if (storedToken === "tv-tantrum-early-2025") {
         setActiveTab("register");
       }
-    } else {
-      // Try to get token from localStorage if not in URL
-      const storedToken = localStorage.getItem("earlyAccessToken");
-      if (storedToken) {
-        setEarlyAccessToken(storedToken);
+      return;
+    }
+    
+    // If not in localStorage, check URL (fallback)
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    
+    if (urlToken) {
+      console.log("Found token in URL:", urlToken);
+      setEarlyAccessToken(urlToken);
+      localStorage.setItem("earlyAccessToken", urlToken);
+      
+      // Switch to register tab when token is present
+      if (urlToken === "tv-tantrum-early-2025") {
+        setActiveTab("register");
       }
     }
   }, []);
@@ -221,6 +229,16 @@ export default function AuthPage() {
       toast({
         title: "Please wait",
         description: "We're still checking if your username is available.",
+      });
+      return;
+    }
+    
+    // Make sure we have a valid early access token
+    if (!earlyAccessToken || earlyAccessToken !== "tv-tantrum-early-2025") {
+      toast({
+        title: "Early access token missing",
+        description: "You need a valid early access token to register.",
+        variant: "destructive",
       });
       return;
     }
