@@ -48,8 +48,7 @@ export default function LandingPage() {
           </div>
           
           <p className="mt-4 text-lg text-primary font-medium">
-            Sign up now to secure early access! Only pre-registered users will be able to 
-            access TV Tantrum during our exclusive early access period.
+            Sign up now to secure early access!
           </p>
         </div>
         
@@ -134,7 +133,7 @@ export default function LandingPage() {
             </div>
             
             <p className="text-center text-primary font-medium mt-4">
-              Remember, only pre-registered users will be granted access during our early access period before public launch!
+              Only pre-registered users will be invited to use the platform before public launch!
             </p>
             <p className="text-center text-muted-foreground text-sm mt-2">
               Already have an early access token? <Link href="/token-entry" className="text-primary hover:underline">Click here</Link>
