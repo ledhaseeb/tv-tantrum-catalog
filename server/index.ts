@@ -64,7 +64,17 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen({
+  
+  // Try to close any existing connections
+  const existingServer = await new Promise<Server>((resolve) => {
+    const testServer = createServer();
+    testServer.listen(port, "0.0.0.0", () => {
+      testServer.close(() => resolve(server));
+    });
+    testServer.on('error', () => resolve(server));
+  });
+
+  existingServer.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
