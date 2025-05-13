@@ -15,13 +15,15 @@ import { CheckCircle2, XCircle } from "lucide-react";
 
 // Schema for login form
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  identifier: z.string().min(3, "Please enter a valid email or username"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 // Schema for registration form with additional fields
-const registerSchema = loginSchema.extend({
+const registerSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
   username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
@@ -208,14 +210,14 @@ export default function AuthPage() {
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
                         control={loginForm.control}
-                        name="email"
+                        name="identifier"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>Email or Username</FormLabel>
                             <FormControl>
                               <Input 
-                                type="email"
-                                placeholder="Enter your email address"
+                                type="text"
+                                placeholder="Enter your email or username"
                                 {...field}
                                 disabled={loginMutation.isPending}
                               />

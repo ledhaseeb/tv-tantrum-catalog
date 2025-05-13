@@ -20,7 +20,10 @@ type AuthContextType = {
   isAdmin: boolean;
 };
 
-type LoginData = Pick<InsertUser, "email" | "password">;
+interface LoginData {
+  identifier: string; // Can be either email or username
+  password: string;
+}
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
