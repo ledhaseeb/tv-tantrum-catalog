@@ -623,6 +623,7 @@ export default function AdminPage() {
                         <TableHead>ID</TableHead>
                         <TableHead>Username</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Country</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Created</TableHead>
                         <TableHead>Actions</TableHead>
@@ -634,6 +635,7 @@ export default function AdminPage() {
                           <TableCell>{user.id}</TableCell>
                           <TableCell>{user.username || '-'}</TableCell>
                           <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.country || '-'}</TableCell>
                           <TableCell>
                             {user.isAdmin ? (
                               <div className="flex items-center space-x-1 text-blue-600">
