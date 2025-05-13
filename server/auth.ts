@@ -79,6 +79,7 @@ export function setupAuth(app: Express) {
         try {
           // Check if the identifier is an email (contains @) or a username
           const isEmail = identifier.includes('@');
+          console.log('Login attempt with identifier:', { identifier, isEmail });
           
           // Try to find the user by email or username
           let user;
@@ -88,8 +89,17 @@ export function setupAuth(app: Express) {
             user = await storage.getUserByUsername(identifier);
           }
           
+          console.log('User found:', user ? { id: user.id, email: user.email, exists: true } : 'No user found');
+          
           // Handle authentication failure
-          if (!user || !(await comparePasswords(password, user.password))) {
+          if (!user) {
+            return done(null, false, { message: "Invalid credentials" });
+          }
+          
+          const passwordValid = await comparePasswords(password, user.password);
+          console.log('Password validation:', { passwordValid });
+          
+          if (!passwordValid) {
             return done(null, false, { message: "Invalid credentials" });
           } 
           // Check if user account is approved
