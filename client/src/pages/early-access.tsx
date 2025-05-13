@@ -35,7 +35,6 @@ export default function EarlyAccessPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
   const [activeTab, setActiveTab] = useState("login");
-  const [pendingApproval, setPendingApproval] = useState(false);
 
   // Check if the token in the URL is valid
   useEffect(() => {
@@ -81,7 +80,7 @@ export default function EarlyAccessPage() {
     } catch (error) {
       // Error is handled by the mutation
       if ((error as Error).message.includes("pending approval")) {
-        setPendingApproval(true);
+        navigate("/registration-pending");
       }
     }
   };
@@ -109,7 +108,8 @@ export default function EarlyAccessPage() {
         title: "Registration successful",
         description: "Your account has been created and is pending admin approval.",
       });
-      setPendingApproval(true);
+      // Redirect to the pending registration page
+      navigate("/registration-pending");
     } catch (error) {
       // Show specific error messages
       const errorMsg = (error as Error).message || "Registration failed";
@@ -145,35 +145,7 @@ export default function EarlyAccessPage() {
     );
   }
 
-  if (pendingApproval) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Approval Pending</CardTitle>
-            <CardDescription className="text-center">
-              Your account has been created but requires admin approval.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p>
-              Thank you for registering for early access to TV Tantrum. Your account is
-              pending approval by our administrators.
-            </p>
-            <p>
-              You will be notified via email once your account is approved and you can
-              log in to access the application.
-            </p>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="outline" asChild>
-              <Link href="/">Return to Home</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+
 
   if (!isValidToken) {
     return (

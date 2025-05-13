@@ -17,6 +17,7 @@ import LandingPage from "@/pages/landing-page";
 import PreLaunchAbout from "@/pages/pre-launch-about";
 import PreLaunchFAQ from "@/pages/pre-launch-faq";
 import EarlyAccessPage from "@/pages/early-access";
+import RegistrationPendingPage from "@/pages/registration-pending";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -39,6 +40,9 @@ function Router() {
         </Route>
         <Route path="/early-access">
           <EarlyAccessPage />
+        </Route>
+        <Route path="/registration-pending">
+          <RegistrationPendingPage />
         </Route>
         
         {/* Main App Routes - Only accessible with dev parameter or after launch */}
