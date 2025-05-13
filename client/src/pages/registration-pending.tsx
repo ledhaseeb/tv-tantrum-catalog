@@ -29,7 +29,10 @@ export default function RegistrationPendingPage() {
       // Log the user out
       await logoutMutation.mutateAsync();
       
-      // Redirect to auth page, not using the URL parameter since it's causing errors
+      // Clean up any user data in localStorage
+      localStorage.removeItem("tvtantrum_auth");
+      
+      // Redirect to auth page
       navigate("/auth");
       
       toast({

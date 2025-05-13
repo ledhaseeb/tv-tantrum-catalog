@@ -11,7 +11,7 @@ import Browse from "@/pages/browse";
 import Detail from "@/pages/detail";
 import Compare from "@/pages/compare";
 import About from "@/pages/about";
-import AuthPage from "@/pages/auth-page";
+import AuthPage from "@/pages/auth-page-new";
 import AdminPage from "@/pages/admin-page";
 import LandingPage from "@/pages/landing-page";
 import PreLaunchAbout from "@/pages/pre-launch-about";
