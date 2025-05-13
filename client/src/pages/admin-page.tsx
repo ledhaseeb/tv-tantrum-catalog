@@ -104,36 +104,39 @@ export default function AdminPage() {
     }
   }, [isLoading, isAdmin, setLocation, toast]);
 
+  // Function to fetch users (used in both effect and manual refresh)
+  const fetchUsers = async () => {
+    if (!isAdmin) return;
+    
+    setIsLoadingUsers(true);
+    try {
+      const response = await fetch('/api/users');
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      
+      const data = await response.json();
+      console.log('Fetched users:', data);
+      setUsers(data);
+      setFilteredUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load users. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+    
   // Load all users (admin only)
   useEffect(() => {
-    const fetchUsers = async () => {
-      if (!isAdmin) return;
-      
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        
-        const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
-        setIsLoadingUsers(false);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load users. Please try again.",
-          variant: "destructive"
-        });
-        setIsLoadingUsers(false);
-      }
-    };
-    
     if (isAdmin) {
       fetchUsers();
     }
-  }, [isAdmin, toast]);
+  }, [isAdmin]);
 
   // Filter users based on search term
   useEffect(() => {

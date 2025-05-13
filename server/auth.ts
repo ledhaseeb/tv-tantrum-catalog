@@ -131,8 +131,15 @@ export function setupAuth(app: Express) {
     try {
       const { username, password, email, country } = req.body;
       
+      console.log('Registration attempt:', { email, username, country });
+      
       if (!email || !password) {
         return res.status(400).send({ message: "Email and password are required" });
+      }
+      
+      // Username is required by database schema
+      if (!username) {
+        return res.status(400).send({ message: "Username is required" });
       }
 
       // Check for duplicate email
@@ -141,32 +148,41 @@ export function setupAuth(app: Express) {
         return res.status(400).send({ message: "Email already registered" });
       }
 
-      // Check for duplicate username if provided
-      if (username) {
-        const existingUserByUsername = await storage.getUserByUsername(username);
-        if (existingUserByUsername) {
-          return res.status(400).send({ message: "Username already taken" });
-        }
+      // Check for duplicate username
+      const existingUserByUsername = await storage.getUserByUsername(username);
+      if (existingUserByUsername) {
+        return res.status(400).send({ message: "Username already taken" });
       }
 
-      const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
-        email,
-        password: hashedPassword,
-        username: username || null,
-        country: country || null,
-        isAdmin: false,  // By default, users are not admins
-        isApproved: false  // By default, users need approval
-      });
+      try {
+        const hashedPassword = await hashPassword(password);
+        const user = await storage.createUser({
+          email,
+          password: hashedPassword,
+          username,
+          country: country || '',
+          isAdmin: false,  // By default, users are not admins
+          isApproved: false  // By default, users need approval
+        });
 
-      // Don't send back password with the user object
-      const { password: _, ...safeUser } = user;
+        // Don't send back password with the user object
+        const { password: _, ...safeUser } = user;
 
-      req.login(safeUser as Express.User, (err) => {
-        if (err) return next(err);
-        res.status(201).json(safeUser);
-      });
+        console.log('User registered successfully:', { id: user.id, email: user.email, username: user.username });
+
+        req.login(safeUser as Express.User, (err) => {
+          if (err) {
+            console.error('Error during login after registration:', err);
+            return next(err);
+          }
+          res.status(201).json(safeUser);
+        });
+      } catch (dbError) {
+        console.error('Database error during user creation:', dbError);
+        return res.status(500).send({ message: "Error creating user account. Please try again." });
+      }
     } catch (error) {
+      console.error('Unexpected error during registration:', error);
       next(error);
     }
   });
