@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 // Secret token for early access
 const EARLY_ACCESS_TOKEN = "tv-tantrum-early-2025";
@@ -35,6 +36,7 @@ export default function EarlyAccessPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
   const [activeTab, setActiveTab] = useState("login");
+  const [loginIsLoading, setLoginIsLoading] = useState(false);
 
   // Check if the token in the URL is valid
   useEffect(() => {
@@ -72,25 +74,56 @@ export default function EarlyAccessPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginIsLoading(true);
+    
     try {
-      await loginMutation.mutateAsync({
-        email: loginEmail,
-        password: loginPassword,
+      // Make a direct fetch request instead of using the mutation to handle specific errors
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+        }),
+        credentials: "include"
       });
-    } catch (error: any) {
-      // Debug the error
-      console.log('Login error in early-access:', error.message, error);
       
-      // Check if the error is about pending approval
-      if (error.isPendingApproval || (error.message && error.message.includes("pending approval"))) {
-        console.log('Detected pending approval in early-access, redirecting...');
-        toast({
-          title: "Account Pending Approval",
-          description: "Your account has been created but requires admin approval.",
-        });
-        navigate("/registration-pending");
+      // Get the JSON response regardless of success or failure
+      const data = await res.json();
+      console.log('Login response in early-access:', { status: res.status, data });
+      
+      if (res.ok) {
+        // Login successful
+        console.log('Login successful, redirecting to home');
+        queryClient.setQueryData(["/api/user"], data);
+        navigate("/home");
+      } else {
+        // Check for pending approval
+        if (data.message && data.message.includes("pending approval")) {
+          console.log('Detected pending approval in early-access, redirecting...');
+          toast({
+            title: "Account Pending Approval",
+            description: "Your account has been created but requires admin approval.",
+          });
+          navigate("/registration-pending");
+        } else {
+          // Handle other error cases
+          toast({
+            title: "Login failed",
+            description: data.message || "Invalid email or password",
+            variant: "destructive",
+          });
+        }
       }
-      // Other errors are handled by the mutation's onError
+    } catch (error) {
+      console.error('Login error in early-access:', error);
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoginIsLoading(false);
     }
   };
 
