@@ -18,6 +18,7 @@ type AuthContextType = {
   isFavorite: (showId: number) => Promise<boolean>;
   toggleFavorite: (showId: number) => Promise<void>;
   isAdmin: boolean;
+  isApproved: boolean;
 };
 
 interface LoginData {
@@ -285,6 +286,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if the user has admin privileges
   const isAdmin = user?.isAdmin === true;
+  
+  // Check if the user is approved
+  const isApproved = user?.isApproved === true;
 
   return (
     <AuthContext.Provider
@@ -298,6 +302,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isFavorite,
         toggleFavorite,
         isAdmin,
+        isApproved,
       }}
     >
       {children}

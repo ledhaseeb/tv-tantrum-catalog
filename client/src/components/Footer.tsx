@@ -1,6 +1,12 @@
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Footer() {
+  const { user, isApproved } = useAuth();
+  
+  // Determine the about page URL based on login and approval status
+  const aboutPageUrl = user && isApproved ? "/app-about" : "/about";
+  
   return (
     <footer className="bg-primary text-white py-8 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,14 +33,14 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Resources</h3>
               <ul className="space-y-2">
-                <li><Link href="/about" className="text-white/80 hover:text-white">About Us</Link></li>
+                <li><Link href={aboutPageUrl} className="text-white/80 hover:text-white">About Us</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Connect</h3>
               <ul className="space-y-2">
-                <li><Link href="/about" className="text-white/80 hover:text-white">Contact Us</Link></li>
+                <li><Link href={aboutPageUrl} className="text-white/80 hover:text-white">Contact Us</Link></li>
               </ul>
             </div>
           </div>
