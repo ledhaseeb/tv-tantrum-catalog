@@ -71,15 +71,33 @@ export function setupAuth(app: Express) {
 
   passport.use(
     new LocalStrategy(
-      { usernameField: 'email' },
-      async (email, password, done) => {
+      { 
+        usernameField: 'identifier', // This will accept either email or username
+        passwordField: 'password'
+      },
+      async (identifier, password, done) => {
         try {
-          const user = await storage.getUserByEmail(email);
-          if (!user || !(await comparePasswords(password, user.password))) {
-            return done(null, false, { message: "Invalid email or password" });
-          } else if (!user.isAdmin && !user.isApproved) {
-            return done(null, false, { message: "Your account is pending approval" });
+          // Check if the identifier is an email (contains @) or a username
+          const isEmail = identifier.includes('@');
+          
+          // Try to find the user by email or username
+          let user;
+          if (isEmail) {
+            user = await storage.getUserByEmail(identifier);
           } else {
+            user = await storage.getUserByUsername(identifier);
+          }
+          
+          // Handle authentication failure
+          if (!user || !(await comparePasswords(password, user.password))) {
+            return done(null, false, { message: "Invalid credentials" });
+          } 
+          // Check if user account is approved
+          else if (!user.isAdmin && !user.isApproved) {
+            return done(null, false, { message: "Your account is pending approval" });
+          } 
+          // Authentication success
+          else {
             // Don't send back password with the user object
             const { password: _, ...safeUser } = user;
             return done(null, safeUser as Express.User);

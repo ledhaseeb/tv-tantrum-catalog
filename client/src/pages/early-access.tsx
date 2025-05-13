@@ -28,7 +28,7 @@ export default function EarlyAccessPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
   const [token, setToken] = useState("");
   const [isValidToken, setIsValidToken] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
+  const [loginIdentifier, setLoginIdentifier] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerUsername, setRegisterUsername] = useState("");
@@ -124,7 +124,7 @@ export default function EarlyAccessPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: loginEmail,
+          identifier: loginIdentifier, // Can be either email or username
           password: loginPassword,
         }),
         credentials: "include"
@@ -315,13 +315,13 @@ export default function EarlyAccessPage() {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="identifier">Email or Username</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    id="identifier"
+                    type="text"
+                    value={loginIdentifier}
+                    onChange={(e) => setLoginIdentifier(e.target.value)}
+                    placeholder="Email or username"
                     required
                   />
                 </div>
