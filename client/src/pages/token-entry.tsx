@@ -26,6 +26,7 @@ export default function TokenEntryPage() {
   useEffect(() => {
     const storedToken = localStorage.getItem("earlyAccessToken");
     if (storedToken === expectedToken) {
+      // Keep directing to the early access auth page when token is already stored
       setLocation("/early-access");
     }
   }, [setLocation]);
