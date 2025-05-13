@@ -1,6 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./database-storage";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { ZodError } from "zod";
@@ -16,32 +16,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
-  // Initialize the data from GitHub on server start - Limiting to 20 shows for faster startup
+  // Skip GitHub data import on server start to fix database errors
+  console.log("Skipping GitHub data import on startup to prevent database errors");
+  
+  // Only apply custom images and details to existing shows
   try {
-    console.log("Fetching TV shows data from GitHub...");
-    const showsData = await githubService.fetchTvShowsData();
-    console.log(`Fetched ${showsData.length} TV shows from GitHub`);
+    console.log("Applying custom images to existing shows...");
+    await applyCustomImages(
+      storage.getTvShowById.bind(storage), 
+      storage.updateTvShow.bind(storage)
+    );
     
-    // Import all shows to make sure we have the full database available
-    if (showsData.length > 0) {
-      console.log(`Importing all ${showsData.length} TV shows...`);
-      const importedShows = await storage.importShowsFromGitHub(showsData);
-      console.log(`Imported ${importedShows.length} TV shows to storage`);
-      
-      // Apply custom images after importing shows
-      await applyCustomImages(
-        storage.getTvShowById.bind(storage), 
-        storage.updateTvShow.bind(storage)
-      );
-      
-      // Apply custom show details after importing shows
-      await applyCustomShowDetails(
-        storage.getTvShowById.bind(storage),
-        storage.updateTvShow.bind(storage)
-      );
-    }
+    console.log("Applying custom show details to existing shows...");
+    await applyCustomShowDetails(
+      storage.getTvShowById.bind(storage),
+      storage.updateTvShow.bind(storage)
+    );
   } catch (error) {
-    console.error("Failed to fetch and import TV shows data:", error);
+    console.error("Error applying custom data:", error);
   }
 
   // Get all TV shows

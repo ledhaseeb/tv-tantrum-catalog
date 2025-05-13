@@ -710,8 +710,8 @@ export class DatabaseStorage implements IStorage {
 
           importedShows.push(updatedShow);
         } else {
-          // Insert new show
-          const tvShow: InsertTvShow = {
+          // Insert new show with default values for required fields
+          const tvShow: Partial<InsertTvShow> = {
             name: githubShow.title,
             description: 'A children\'s TV show', // Default description
             stimulationScore: typeof githubShow.stimulation_score === 'number' ? Math.round(githubShow.stimulation_score) : 3,
@@ -725,7 +725,9 @@ export class DatabaseStorage implements IStorage {
             endYear: typeof githubShow.end_year === 'number' && !isNaN(githubShow.end_year) ? githubShow.end_year : null,
             episodeLength: githubShow.avg_episode_length && !isNaN(parseInt(githubShow.avg_episode_length)) ? parseInt(githubShow.avg_episode_length) : 15,
             seasons: githubShow.seasons && !isNaN(parseInt(githubShow.seasons)) ? parseInt(githubShow.seasons) : null,
-            imageUrl: githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename)
+            imageUrl: githubShow.imageUrl || getDefaultImageUrl(githubShow.title, githubShow.image_filename),
+            // Add default values for required fields using proper camelCase
+            overallRating: 3
           };
 
           const [newShow] = await db.insert(tvShows).values(tvShow).returning();
