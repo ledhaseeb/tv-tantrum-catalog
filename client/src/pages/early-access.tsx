@@ -47,6 +47,10 @@ export default function EarlyAccessPage() {
     if (urlToken === EARLY_ACCESS_TOKEN) {
       setIsValidToken(true);
       setToken(urlToken);
+    } else if (urlToken === null && localStorage.getItem("earlyAccessShown")) {
+      // If user has previously entered a valid token, allow them to return
+      setIsValidToken(true);
+      setToken(EARLY_ACCESS_TOKEN);
     }
   }, []);
 
@@ -90,6 +94,8 @@ export default function EarlyAccessPage() {
       // Update URL with token
       const newUrl = `${window.location.pathname}?token=${token}`;
       window.history.pushState({}, "", newUrl);
+      // Store in localStorage that user has successfully accessed early access
+      localStorage.setItem("earlyAccessShown", "true");
     } else {
       toast({
         title: "Invalid Token",
