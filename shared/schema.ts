@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   username: text("username").notNull(),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
+  isApproved: boolean("is_approved").default(false),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

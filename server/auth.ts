@@ -26,6 +26,7 @@ declare global {
       username: string | null;
       isAdmin: boolean | null;
       createdAt: string;
+      isApproved: boolean | null;
     }
   }
 }
