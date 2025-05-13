@@ -21,6 +21,7 @@ import RegistrationPendingPage from "@/pages/registration-pending";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
+import { AdminRoute } from "@/lib/protected-route-admin";
 
 function Router() {
   // Access URL to check for development mode
@@ -206,7 +207,7 @@ function Router() {
             </div>
           </Route>
         ) : (
-          <ApprovedRoute 
+          <AdminRoute 
             path="/admin" 
             component={() => (
               <div className="flex-grow flex flex-col">

@@ -68,6 +68,18 @@ export default function AdminPage() {
   const [selectedShow, setSelectedShow] = useState<TvShow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Redirect if user is not an admin
+  useEffect(() => {
+    if (user && !isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You do not have admin privileges to access this page.",
+        variant: "destructive",
+      });
+      setLocation("/home");
+    }
+  }, [user, isAdmin, toast, setLocation]);
   const [isOptimizingImages, setIsOptimizingImages] = useState(false);
   const [users, setUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
