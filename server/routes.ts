@@ -14,7 +14,7 @@ import { applyCustomShowDetails } from "./details-preservator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add health check endpoint
-  app.get('/', (_req, res) => {
+  app.get('/api/health', (_req, res) => {
     res.status(200).send('OK');
   });
 
