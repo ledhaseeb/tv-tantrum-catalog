@@ -7,7 +7,6 @@ import { apiGet } from "@/lib/queryClient";
 import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
-import tvLogo from "../assets/tv-logo.svg";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -80,10 +79,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/home" className="flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <img src={tvLogo} alt="TV Tantrum Logo" className="w-8 h-8" />
-                <h1 className="text-2xl font-heading font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h1>
-              </div>
+              <h1 className="text-2xl font-heading font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h1>
             </Link>
             <nav className="hidden md:ml-10 md:flex space-x-8">
               <Link 
@@ -244,10 +240,7 @@ export default function Navbar() {
                 <div className="fixed inset-y-0 left-0 w-64 bg-white p-4 overflow-y-auto">
                   <div className="flex justify-between items-center mb-4">
                     <Link href="/home" onClick={() => setIsNavOpen(false)}>
-                      <div className="flex items-center gap-2">
-                        <img src={tvLogo} alt="TV Tantrum Logo" className="w-6 h-6" />
-                        <h2 className="text-lg font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
-                      </div>
+                      <h2 className="text-lg font-bold" style={{ color: "#F6CB59" }}>TV Tantrum</h2>
                     </Link>
                     <Button
                       variant="ghost"
