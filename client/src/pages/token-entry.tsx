@@ -22,14 +22,15 @@ export default function TokenEntryPage() {
     }
   }, [user, setLocation]);
 
-  // Check for token in localStorage on page load
-  useEffect(() => {
-    const storedToken = localStorage.getItem("earlyAccessToken");
-    if (storedToken === expectedToken) {
-      // Keep directing to the early access auth page when token is already stored
-      setLocation("/early-access");
-    }
-  }, [setLocation]);
+  // We're disabling automatic redirect if token exists
+  // This ensures users always go through the token verification page first
+  // useEffect(() => {
+  //   const storedToken = localStorage.getItem("earlyAccessToken");
+  //   if (storedToken === expectedToken) {
+  //     // Keep directing to the early access auth page when token is already stored
+  //     setLocation("/early-access");
+  //   }
+  // }, [setLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
