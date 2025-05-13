@@ -326,6 +326,33 @@ export function setupAuth(app: Express) {
     }
   });
   
+  // Check if an email is available
+  app.get("/api/check-email", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ 
+          message: "Email parameter is required", 
+          available: false 
+        });
+      }
+      
+      const existingUser = await storage.getUserByEmail(email);
+      
+      res.json({ 
+        available: !existingUser,
+        message: existingUser ? "Email is already registered" : "Email is available"
+      });
+    } catch (error) {
+      console.error("Error checking email availability:", error);
+      res.status(500).json({ 
+        message: "Failed to check email availability", 
+        available: false 
+      });
+    }
+  });
+  
   // User management endpoints (admin only)
   app.get("/api/users", async (req, res) => {
     if (!req.isAuthenticated() || !req.user.isAdmin) {
