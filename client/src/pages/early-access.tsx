@@ -97,23 +97,29 @@ export default function EarlyAccessPage() {
         console.log('Login successful, redirecting to home');
         queryClient.setQueryData(["/api/user"], data);
         navigate("/home");
+      } else if (res.status === 403 && data.isPendingApproval) {
+        // Special case: Pending approval (status 403 with isPendingApproval flag)
+        console.log('Detected pending approval by status code 403, redirecting...');
+        toast({
+          title: "Account Pending Approval",
+          description: "Your account has been created but requires admin approval.",
+        });
+        navigate("/registration-pending");
+      } else if (data.message && data.message.includes("pending approval")) {
+        // Fallback check for pending approval (message content)
+        console.log('Detected pending approval in message text, redirecting...');
+        toast({
+          title: "Account Pending Approval",
+          description: "Your account has been created but requires admin approval.",
+        });
+        navigate("/registration-pending");
       } else {
-        // Check for pending approval
-        if (data.message && data.message.includes("pending approval")) {
-          console.log('Detected pending approval in early-access, redirecting...');
-          toast({
-            title: "Account Pending Approval",
-            description: "Your account has been created but requires admin approval.",
-          });
-          navigate("/registration-pending");
-        } else {
-          // Handle other error cases
-          toast({
-            title: "Login failed",
-            description: data.message || "Invalid email or password",
-            variant: "destructive",
-          });
-        }
+        // Handle other error cases
+        toast({
+          title: "Login failed",
+          description: data.message || "Invalid email or password",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Login error in early-access:', error);
