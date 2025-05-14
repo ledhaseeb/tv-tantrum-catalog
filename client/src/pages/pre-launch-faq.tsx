@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useEffect } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -8,6 +9,18 @@ import {
 } from "@/components/ui/accordion";
 
 export default function PreLaunchFAQ() {
+  // Clear authentication data whenever FAQ page loads
+  useEffect(() => {
+    // This will ensure no authentication check happens
+    localStorage.removeItem("tvtantrum_auth");
+    
+    // Keep early access token for future use (but not auth data)
+    if (!localStorage.getItem("earlyAccessToken")) {
+      localStorage.removeItem("earlyAccessShown");
+    }
+    
+    console.log("Pre-launch FAQ page loaded, cleared authentication data from localStorage");
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}

@@ -2,12 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import { useEffect } from "react";
 import GhlScriptLoader from "@/components/GhlScriptLoader";
 // Import the preview image to ensure it's properly bundled
 import previewImage from "../assets/tv-tantrum-preview.png";
 
 export default function LandingPage() {
   const { toast } = useToast();
+  
+  // Clear authentication data whenever landing page loads
+  useEffect(() => {
+    // This will ensure no authentication check happens when on the landing page
+    localStorage.removeItem("tvtantrum_auth");
+    
+    // Keep early access token for future use (but not auth data)
+    if (!localStorage.getItem("earlyAccessToken")) {
+      localStorage.removeItem("earlyAccessShown");
+    }
+    
+    console.log("Landing page loaded, cleared authentication data from localStorage");
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
