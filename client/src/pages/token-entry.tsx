@@ -13,7 +13,7 @@ export default function TokenEntryPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  const expectedToken = "tv-tantrum-early-2025";
+  const expectedToken = "2025";
 
   // If user is already logged in, redirect to home
   useEffect(() => {

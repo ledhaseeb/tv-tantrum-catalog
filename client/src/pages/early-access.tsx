@@ -17,7 +17,7 @@ export default function EarlyAccessPage() {
     
     // Check if user has the early access token - redirect to token entry page if not
     const token = localStorage.getItem("earlyAccessToken");
-    const expectedToken = "tv-tantrum-early-2025";
+    const expectedToken = "2025";
     
     if (!token || token !== expectedToken) {
       setLocation("/token-entry");

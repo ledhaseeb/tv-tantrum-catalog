@@ -23,7 +23,7 @@ export default function RegistrationPendingPage() {
     
     try {
       // First, make sure the early access token is set in localStorage
-      localStorage.setItem("earlyAccessToken", "tv-tantrum-early-2025");
+      localStorage.setItem("earlyAccessToken", "2025");
       localStorage.setItem("earlyAccessShown", "true");
       
       // Clean up any user data in localStorage

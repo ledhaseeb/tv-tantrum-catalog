@@ -85,7 +85,7 @@ export default function AuthPage() {
       setEarlyAccessToken(storedToken);
       
       // Switch to register tab when valid token is present
-      if (storedToken === "tv-tantrum-early-2025") {
+      if (storedToken === "2025") {
         setActiveTab("register");
       }
       return;
@@ -101,7 +101,7 @@ export default function AuthPage() {
       localStorage.setItem("earlyAccessToken", urlToken);
       
       // Switch to register tab when token is present
-      if (urlToken === "tv-tantrum-early-2025") {
+      if (urlToken === "2025") {
         setActiveTab("register");
       }
     }
@@ -233,7 +233,7 @@ export default function AuthPage() {
     }
     
     // Make sure we have a valid early access token
-    if (!earlyAccessToken || earlyAccessToken !== "tv-tantrum-early-2025") {
+    if (!earlyAccessToken || earlyAccessToken !== "2025") {
       toast({
         title: "Early access token missing",
         description: "You need a valid early access token to register.",
