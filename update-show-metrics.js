@@ -35,7 +35,12 @@ function normalizeValue(key, value) {
     // Make sure it's a whole number by rounding
     const numericValue = parseFloat(value);
     if (isNaN(numericValue)) return 3; // Default value if parsing fails
-    return Math.round(numericValue);
+    
+    // Always round to nearest whole number
+    // This ensures no decimal points or half-values
+    const roundedValue = Math.round(numericValue);
+    console.log(`Rounded stimulation score: ${numericValue} → ${roundedValue}`);
+    return roundedValue;
   }
   
   // Map values to the expected format for the application
@@ -506,10 +511,21 @@ async function main() {
       const showIdStr = showId.toString();
       
       // Merge with existing details if any
-      customDetailsMap[showIdStr] = {
-        ...(customDetailsMap[showIdStr] || {}),
+      const existingDetails = customDetailsMap[showIdStr] || {};
+      const mergedDetails = {
+        ...existingDetails,
         ...details
       };
+
+      // Final check to ensure stimulation score is a whole number
+      if (mergedDetails.stimulationScore !== undefined) {
+        if (typeof mergedDetails.stimulationScore !== 'number') {
+          mergedDetails.stimulationScore = parseInt(mergedDetails.stimulationScore, 10) || 3;
+        }
+        mergedDetails.stimulationScore = Math.round(mergedDetails.stimulationScore);
+      }
+
+      customDetailsMap[showIdStr] = mergedDetails;
       
       updatedCount++;
     }
