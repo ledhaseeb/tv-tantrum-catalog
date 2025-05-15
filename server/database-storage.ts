@@ -570,7 +570,7 @@ export class DatabaseStorage implements IStorage {
         user_name as "userName", 
         rating, 
         review, 
-        "createdAt"
+        created_at as "createdAt"
       FROM tv_show_reviews 
       WHERE tv_show_id = ${tvShowId}
     `);
