@@ -16,8 +16,42 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-// Set up database pool
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Configure WebSocket for Neon
+import { neonConfig } from '@neondatabase/serverless';
+neonConfig.webSocketConstructor = ws;
+
+// Set up database pool with the same configuration as server/db.ts
+const poolConfig = {
+  connectionString: process.env.DATABASE_URL,
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
+  connectionTimeoutMillis: 5000, // Maximum time to wait for a connection
+};
+
+const pool = new Pool(poolConfig);
+
+// Add error handling for the pool
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+});
+
+// Verify database connection before proceeding
+async function verifyDatabaseConnection() {
+  try {
+    console.log('Verifying database connection...');
+    const result = await pool.query('SELECT NOW()');
+    console.log(`Database connected successfully at: ${result.rows[0].now}`);
+    
+    // Check if we can access the tv_shows table
+    const showCount = await pool.query('SELECT COUNT(*) FROM tv_shows');
+    console.log(`Found ${showCount.rows[0].count} TV shows in database`);
+    
+    return true;
+  } catch (error) {
+    console.error('Database connection verification failed:', error);
+    return false;
+  }
+}
 
 /**
  * Load custom show details mapping from the JSON file
@@ -68,6 +102,36 @@ async function getTvShowById(id) {
 }
 
 /**
+ * Convert camelCase to snake_case
+ */
+function camelToSnakeCase(str) {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+/**
+ * Map custom field names to database column names
+ */
+function mapFieldToColumnName(key) {
+  // Custom mapping for specific fields
+  const fieldMap = {
+    'stimulationScore': 'stimulation_score',
+    'musicTempo': 'music_tempo',
+    'totalMusicLevel': 'total_music_level',
+    'totalSoundEffectTimeLevel': 'total_sound_effect_time_level',
+    'sceneFrequency': 'scene_frequency',
+    'interactivityLevel': 'interactivity_level',
+    'dialogueIntensity': 'dialogue_intensity',
+    'soundEffectsLevel': 'sound_effects_level',
+    'animationStyle': 'animation_style',
+    'ageRange': 'age_range',
+    'themes': 'themes'
+  };
+  
+  // Return mapped field name or convert to snake_case
+  return fieldMap[key] || camelToSnakeCase(key);
+}
+
+/**
  * Update a TV show's details in the database
  */
 async function updateTvShow(id, details) {
@@ -76,12 +140,19 @@ async function updateTvShow(id, details) {
     const keys = Object.keys(details);
     if (keys.length === 0) return null;
     
-    // Create parameterized query
-    const setClauses = keys.map((key, index) => `"${key}" = $${index + 2}`);
+    // Map keys and create parameterized query
+    const mappedKeys = keys.map(key => mapFieldToColumnName(key));
+    const setClauses = mappedKeys.map((mappedKey, index) => `"${mappedKey}" = $${index + 2}`);
+    
     const values = keys.map(key => {
       // Handle arrays (like themes) by converting to JSONB
       if (Array.isArray(details[key])) {
         return JSON.stringify(details[key]);
+      }
+      // Handle stimulation score specifically
+      if (key === 'stimulationScore') {
+        // Ensure it's a whole number (integer)
+        return Math.round(details[key]);
       }
       return details[key];
     });
@@ -229,6 +300,13 @@ async function main() {
   try {
     console.log('Starting custom data processing...');
     console.log('This script will update the database directly with custom show details and images');
+    
+    // Verify database connection before proceeding
+    const isConnected = await verifyDatabaseConnection();
+    if (!isConnected) {
+      console.error('Could not establish database connection. Exiting...');
+      return;
+    }
     
     // Process custom details
     const detailsResult = await processCustomDetails();
