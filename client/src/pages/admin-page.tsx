@@ -396,15 +396,23 @@ export default function AdminPage() {
       return value;
     };
     
+    // Ensure stimulation score is a whole number
+    const wholeStimulatioScore = Math.round(formValues.stimulationScore);
+    
     // Create a new object with converted values
     return {
       ...formValues,
+      // Ensure stimulation score is a whole number
+      stimulationScore: wholeStimulatioScore,
+      // Ensure themes is an array
+      themes: Array.isArray(formValues.themes) ? formValues.themes : [],
       // Convert form field values back to API format
       interactivityLevel: formValues.interactivityLevel === 'Medium' ? 'Moderate' : formValues.interactivityLevel,
       dialogueIntensity: formValues.dialogueIntensity === 'Medium' ? 'Moderate' : formValues.dialogueIntensity,
       sceneFrequency: formValues.sceneFrequency === 'Medium' ? 'Moderate' : formValues.sceneFrequency,
       musicTempo: formValues.musicTempo === 'Medium' ? 'Moderate' : formValues.musicTempo,
       totalMusicLevel: formValues.totalMusicLevel === 'Medium' ? 'Moderate' : formValues.totalMusicLevel,
+      totalSoundEffectTimeLevel: formValues.totalSoundEffectTimeLevel === 'Medium' ? 'Moderate' : formValues.totalSoundEffectTimeLevel,
     };
   };
   
@@ -987,6 +995,26 @@ export default function AdminPage() {
                   <SelectItem value="High">High</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="themes" className="text-right">
+                Themes
+              </Label>
+              <Textarea
+                id="themes"
+                value={Array.isArray(formState.themes) ? formState.themes.join(', ') : ''}
+                onChange={(e) => {
+                  const themesArray = e.target.value
+                    .split(',')
+                    .map(theme => theme.trim())
+                    .filter(theme => theme !== '');
+                  setFormState({...formState, themes: themesArray});
+                }}
+                className="col-span-3"
+                placeholder="Enter themes separated by commas (e.g., 'Education, Adventure, Problem-solving')"
+                rows={2}
+              />
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
