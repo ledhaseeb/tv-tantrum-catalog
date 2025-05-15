@@ -111,22 +111,52 @@ export function preserveCustomShowDetails<T>(showId: number, currentDetails: T, 
 
 /**
  * Apply custom show details to all shows in storage at server startup
+ * Uses batch processing for improved performance
  */
 export async function applyCustomShowDetails(getShowById: (id: number) => Promise<any>, updateShow: (id: number, data: any) => Promise<any>): Promise<void> {
   try {
     const customDetailsMap = loadCustomShowDetailsMap();
     console.log(`Applying custom details for ${Object.keys(customDetailsMap).length} shows from customShowDetailsMap.json`);
     
-    for (const [showIdStr, details] of Object.entries(customDetailsMap)) {
-      const showId = parseInt(showIdStr);
-      if (isNaN(showId)) continue;
-      
-      const show = await getShowById(showId);
-      if (show) {
-        console.log(`Applying custom details to show ID ${showId}: ${show.name}`);
-        await updateShow(showId, details);
-      }
+    // Skip custom details application if in performance mode
+    if (process.env.SKIP_CUSTOM_DETAILS === 'true') {
+      console.log('Skipping custom details application (SKIP_CUSTOM_DETAILS=true)');
+      return;
     }
+    
+    // Process in batches of 20 shows
+    const BATCH_SIZE = 20;
+    const showIds = Object.keys(customDetailsMap).map(id => parseInt(id)).filter(id => !isNaN(id));
+    const totalBatches = Math.ceil(showIds.length / BATCH_SIZE);
+    
+    console.log(`Processing ${showIds.length} shows in ${totalBatches} batches of ${BATCH_SIZE}`);
+    
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      const batchStart = batchIndex * BATCH_SIZE;
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, showIds.length);
+      const currentBatch = showIds.slice(batchStart, batchEnd);
+      
+      console.log(`Processing batch ${batchIndex + 1}/${totalBatches} (shows ${batchStart+1}-${batchEnd})`);
+      
+      // Process each batch in parallel
+      const batchPromises = currentBatch.map(async (showId) => {
+        try {
+          const show = await getShowById(showId);
+          if (show) {
+            // Don't log every show to reduce console output
+            // console.log(`Applying custom details to show ID ${showId}: ${show.name}`);
+            return updateShow(showId, customDetailsMap[showId.toString()]);
+          }
+        } catch (err) {
+          console.error(`Error updating show ${showId}:`, err);
+        }
+      });
+      
+      // Wait for current batch to complete before processing next batch
+      await Promise.all(batchPromises);
+    }
+    
+    console.log('Custom details application completed');
   } catch (error) {
     console.error('Error applying custom show details:', error);
   }

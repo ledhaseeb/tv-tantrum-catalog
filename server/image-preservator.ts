@@ -61,22 +61,52 @@ export function preserveCustomImageUrl(showId: number, currentImageUrl: string |
 
 /**
  * Apply custom images to all shows in storage at server startup
+ * Uses batch processing for improved performance
  */
 export async function applyCustomImages(getShowById: (id: number) => Promise<any>, updateShow: (id: number, data: any) => Promise<any>): Promise<void> {
   try {
     const customImageMap = loadCustomImageMap();
     console.log(`Applying ${Object.keys(customImageMap).length} custom images from customImageMap.json`);
     
-    for (const [showIdStr, imageUrl] of Object.entries(customImageMap)) {
-      const showId = parseInt(showIdStr);
-      if (isNaN(showId)) continue;
-      
-      const show = await getShowById(showId);
-      if (show) {
-        console.log(`Applying custom image to show ID ${showId}: ${show.name}`);
-        await updateShow(showId, { imageUrl });
-      }
+    // Skip custom images application if in performance mode
+    if (process.env.SKIP_CUSTOM_IMAGES === 'true') {
+      console.log('Skipping custom images application (SKIP_CUSTOM_IMAGES=true)');
+      return;
     }
+    
+    // Process in batches of 20 shows
+    const BATCH_SIZE = 20;
+    const showIds = Object.keys(customImageMap).map(id => parseInt(id)).filter(id => !isNaN(id));
+    const totalBatches = Math.ceil(showIds.length / BATCH_SIZE);
+    
+    console.log(`Processing ${showIds.length} images in ${totalBatches} batches of ${BATCH_SIZE}`);
+    
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      const batchStart = batchIndex * BATCH_SIZE;
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, showIds.length);
+      const currentBatch = showIds.slice(batchStart, batchEnd);
+      
+      console.log(`Processing image batch ${batchIndex + 1}/${totalBatches} (shows ${batchStart+1}-${batchEnd})`);
+      
+      // Process each batch in parallel
+      const batchPromises = currentBatch.map(async (showId) => {
+        try {
+          const show = await getShowById(showId);
+          if (show) {
+            // Don't log every show to reduce console output
+            // console.log(`Applying custom image to show ID ${showId}: ${show.name}`);
+            return updateShow(showId, { imageUrl: customImageMap[showId.toString()] });
+          }
+        } catch (err) {
+          console.error(`Error updating image for show ${showId}:`, err);
+        }
+      });
+      
+      // Wait for current batch to complete before processing next batch
+      await Promise.all(batchPromises);
+    }
+    
+    console.log('Custom images application completed');
   } catch (error) {
     console.error('Error applying custom images:', error);
   }

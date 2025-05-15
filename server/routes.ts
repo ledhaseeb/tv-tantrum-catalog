@@ -24,7 +24,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Skip GitHub data import on server start to fix database errors
   console.log("Skipping GitHub data import on startup to prevent database errors");
   
-  // Only apply custom images and details to existing shows
+  // Set environment variables for faster startup (temporary)
+  process.env.SKIP_CUSTOM_DETAILS = 'true';
+  process.env.SKIP_CUSTOM_IMAGES = 'true';
+  
+  // Only apply custom images and details to existing shows if not in fast startup mode
   try {
     console.log("Applying custom images to existing shows...");
     await applyCustomImages(
@@ -37,6 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       storage.getTvShowById.bind(storage),
       storage.updateTvShow.bind(storage)
     );
+    
+    console.log("Startup optimization: Custom data application is skipped for faster startup.");
+    console.log("To enable custom data, use the API endpoints instead.");
   } catch (error) {
     console.error("Error applying custom data:", error);
   }
