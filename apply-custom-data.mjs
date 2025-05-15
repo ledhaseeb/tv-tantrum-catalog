@@ -110,9 +110,10 @@ function camelToSnakeCase(str) {
 
 /**
  * Map custom field names to database column names
+ * Returns null for fields that don't exist in the database
  */
 function mapFieldToColumnName(key) {
-  // Custom mapping for specific fields
+  // Custom mapping for specific fields that exist in the database
   const fieldMap = {
     'stimulationScore': 'stimulation_score',
     'musicTempo': 'music_tempo',
@@ -124,11 +125,27 @@ function mapFieldToColumnName(key) {
     'soundEffectsLevel': 'sound_effects_level',
     'animationStyle': 'animation_style',
     'ageRange': 'age_range',
-    'themes': 'themes'
+    'themes': 'themes',
+    'name': 'name',
+    'description': 'description'
   };
   
+  // Fields that should be ignored (not in database schema)
+  const ignoredFields = [
+    'TV or YouTube',
+    'Seasons',
+    'Avg. Epsiode',
+    'TV',
+    'Avg. Episode'
+  ];
+  
+  // Return null for ignored fields
+  if (ignoredFields.includes(key)) {
+    return null;
+  }
+  
   // Return mapped field name or convert to snake_case
-  return fieldMap[key] || camelToSnakeCase(key);
+  return fieldMap[key] || null; // Return null for unknown fields instead of attempting conversion
 }
 
 /**
@@ -140,14 +157,31 @@ async function updateTvShow(id, details) {
     const keys = Object.keys(details);
     if (keys.length === 0) return null;
     
-    // Map keys and create parameterized query
-    const mappedKeys = keys.map(key => mapFieldToColumnName(key));
-    const setClauses = mappedKeys.map((mappedKey, index) => `"${mappedKey}" = $${index + 2}`);
+    // Filter out keys that don't exist in the database
+    const validEntries = keys
+      .map(key => {
+        const mappedKey = mapFieldToColumnName(key);
+        return { originalKey: key, mappedKey };
+      })
+      .filter(entry => entry.mappedKey !== null);
     
-    const values = keys.map(key => {
-      // Handle arrays (like themes) by converting to JSONB
+    if (validEntries.length === 0) {
+      console.log(`No valid fields to update for show ${id}`);
+      return null;
+    }
+    
+    // Create parameterized query with only valid fields
+    const setClauses = validEntries.map((entry, index) => `"${entry.mappedKey}" = $${index + 2}`);
+    
+    const values = validEntries.map(entry => {
+      const key = entry.originalKey;
+      // Handle arrays (like themes) - format for PostgreSQL text[] type
       if (Array.isArray(details[key])) {
-        return JSON.stringify(details[key]);
+        // Format as PostgreSQL array literal: '{item1,item2,item3}'
+        return '{' + details[key].map(item => {
+          // Escape single quotes and backslashes in array items
+          return item.toString().replace(/'/g, "''").replace(/\\/g, '\\\\');
+        }).join(',') + '}';
       }
       // Handle stimulation score specifically
       if (key === 'stimulationScore') {

@@ -1,68 +1,99 @@
-# TV Tantrum Custom Data Handling
+# Custom Data Handling Documentation
 
-This document explains how custom data is managed in the TV Tantrum application. Custom data includes show details and images that need to be preserved from external data sources.
+## Overview
 
-## Background
+This document explains the system for handling custom show details and images in TV Tantrum. The custom data handling system is designed to solve the following challenges:
 
-The application maintains two important JSON files:
+1. **Performance Bottlenecks**: Loading and applying custom data during server startup caused significant delays
+2. **Database Load**: Processing 300+ shows on every restart placed unnecessary load on the database
+3. **Scaling Issues**: As the catalog grows, startup performance would continue to degrade
 
-1. `customShowDetailsMap.json` - Contains custom show details like stimulation scores, themes, descriptions, etc.
-2. `customImageMap.json` - Contains custom image URLs for shows
+## Solution: Pre-processing Script
 
-These files are updated when:
-- Changes are made through the admin dashboard
-- The `update-show-metrics.js` script is run
+The new approach separates custom data application from server startup by using a pre-processing script:
 
-## Performance Optimization
+- **File**: `apply-custom-data.mjs`
+- **Purpose**: Directly updates the database with custom details and images outside the server startup process
+- **Benefits**: 
+  - Server starts much faster
+  - Database connection is more stable
+  - Better separation of concerns
+  - Improved maintainability
 
-For better SEO and application performance, custom data is no longer loaded during server startup. Instead, the data is applied directly to the database using a separate script.
+## How It Works
 
-## How to Update Custom Data
+### 1. Custom Data Files
 
-### Step 1: Generate/Update Custom Data
+Two JSON files store custom data:
 
-You can generate or update custom data in one of two ways:
+- `customShowDetailsMap.json`: Maps show IDs to their custom details (stimulation metrics, etc.)
+- `customImageMap.json`: Maps show IDs to their custom image URLs
 
-1. **Using the Admin Dashboard**
-   - Log in as an admin
-   - Edit shows through the admin interface
-   - Changes will be saved to the customShowDetailsMap.json and customImageMap.json files
+### 2. Pre-processing Script
 
-2. **Using the update-show-metrics.js script**
-   - Run: `node update-show-metrics.js`
-   - This script processes the data from tvshow_sensory_data.csv and updates customShowDetailsMap.json
+The `apply-custom-data.mjs` script:
 
-### Step 2: Apply Custom Data to Database
+- Connects to the database using the same configuration as the server
+- Loads custom details and images from their respective JSON files
+- Processes updates in batches to reduce database load
+- Maps data keys from camelCase to snake_case to match database schema
+- Converts JavaScript arrays to PostgreSQL array format
+- Properly rounds stimulation scores to whole numbers
+- Handles errors gracefully and provides detailed logs
 
-After generating or updating custom data, apply it to the database:
+### 3. Server Integration
 
-```bash
-node apply-custom-data.js
+Server startup is modified to:
+
+- Skip custom data loading by default (configurable with environment variables)
+- Display a message indicating how to apply custom data manually
+- Process faster with fewer database operations
+
+## Usage
+
+### Running the Script
+
+```
+node apply-custom-data.mjs
 ```
 
-This script:
-- Processes data from customShowDetailsMap.json and customImageMap.json
-- Directly updates the database with this information
-- Uses batch processing for efficiency
-- Provides progress information during the update
+This directly updates the database with all custom data and can be run:
+- After initial database setup
+- After any changes to the custom data files
+- When you want to refresh the database with custom details
 
-## Key Benefits
+### Environment Variables
 
-- **Fast Server Startup**: The server no longer needs to process custom data during startup
-- **Better SEO Performance**: Pages load faster since they don't wait for custom data processing
-- **Scalability**: As the number of shows increases, this approach scales much better
-- **Robustness**: Database updates are more reliable and can handle errors gracefully
+Two optional environment variables can control the behavior:
 
-## Best Practices
+- `SKIP_CUSTOM_DETAILS`: Set to "true" to skip loading custom details during server startup
+- `SKIP_CUSTOM_IMAGES`: Set to "true" to skip loading custom images during server startup
 
-1. Run the `apply-custom-data.js` script after any significant updates to customShowDetailsMap.json or customImageMap.json
-2. For large data updates, run the script during off-peak hours
-3. Check the console output for any errors during the update process
+By default, both are now set to "true" for optimal performance.
 
-## Workflow Summary
+## Data Preservation System
 
-1. Update show details via admin dashboard or `update-show-metrics.js`
-2. Run `apply-custom-data.js` to update the database
-3. Restart the server if needed (though this isn't typically necessary)
+The custom data handling approach preserves these important details:
 
-This approach ensures the database always has the latest custom data without slowing down server startup.
+1. **Stimulation Scores**: Always stored as whole numbers, never decimals
+2. **Image URLs**: Proper portrait-style images are preserved 
+3. **Show Names**: Official branding names are maintained
+4. **Themes**: Array of themes with proper encoding
+5. **Rating Metrics**: All sensory/stimulation metrics from the original source
+
+## Maintenance
+
+When adding new shows or updating existing ones:
+
+1. Update the appropriate JSON file with the custom details/images
+2. Run the pre-processing script to apply changes to the database
+3. The server will use the updated database values on the next startup
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. Check the console output of the pre-processing script for specific errors
+2. Verify database connection settings match between script and server
+3. Ensure the JSON files have valid formats
+4. For schema changes, update the field mapping in the script
