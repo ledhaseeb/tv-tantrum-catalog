@@ -1,14 +1,25 @@
 {
   "1": {
     "stimulationScore": 4,
-    "musicTempo": "Medium",
-    "totalMusicLevel": "Medium",
+    "musicTempo": "Moderate",
+    "totalMusicLevel": "Moderate-High",
     "totalSoundEffectTimeLevel": "Medium",
-    "sceneFrequency": "Medium-Fast",
+    "sceneFrequency": "Moderate-High",
     "interactivityLevel": "High",
-    "dialogueIntensity": "Medium-High",
-    "soundEffectsLevel": "Medium-High",
-    "animationStyle": "Live-Action Family Videos with colorful branding and graphic elements"
+    "dialogueIntensity": "High",
+    "soundEffectsLevel": "Medium",
+    "animationStyle": "Live-Action Family Videos with colorful branding and graphic elements",
+    "ageRange": "3-8",
+    "themes": [
+      "Preschool-Basics",
+      "Creativity & Imagination",
+      "Family Relationships",
+      "Family Values",
+      "Conflict Resolution",
+      "Problem Solving",
+      "Relatable Situations"
+    ],
+    "description": "A children's TV show"
   },
   "2": {
     "stimulationScore": 3,
