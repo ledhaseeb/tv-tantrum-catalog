@@ -3,6 +3,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
 
+// Get directory name in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Process to normalize keys and values
 function normalizeKey(key) {
   // Convert headers from CSV to match our camelCase properties
@@ -53,6 +57,24 @@ function normalizeValue(key, value) {
 function processThemes(themes) {
   if (!themes) return [];
   return themes.split(',').map(theme => theme.trim());
+}
+
+// Function to normalize show names to match between CSV and database
+function normalizeShowName(name) {
+  // Map variations of show names to match the database entries
+  const nameMap = {
+    "Octonauts": "The Octonauts",
+    "The Big Comfy Couch (1992-2006)": "The Big Comfy Couch",
+    "Daniel Tiger": "Daniel Tiger's Neighbourhood",
+    "Numberblocks": "Numberblocks (2017-present)",
+    "Bluey": "Bluey 2018-present",
+    "Sesame Street": "Sesame Street (1969-present)",
+    "Peppa Pig": "Peppa pig (2004-present)",
+    "Paw Patrol": "Paw patrol",
+    // Add more mappings as needed
+  };
+  
+  return nameMap[name] || name;
 }
 
 // TV show ID mapping from the database (based on the SQL query)
@@ -359,40 +381,66 @@ const tvShowIdsMap = {
   "Zoboomafoo (1999-2001)": 300
 };
 
-// Read CSV file
-try {
-  const csvFilePath = path.join(process.cwd(), 'tvshow_sensory_data.csv');
-  const csvData = fs.readFileSync(csvFilePath, 'utf8');
-  
-  // Parse CSV data
-  const records = parse(csvData, {
-    columns: true,
-    skip_empty_lines: true
-  });
-  
-  // Get header row to identify metric columns
-  const headers = Object.keys(records[0]);
-  
-  // Now read the existing customShowDetailsMap.json
-  const customDetailsPath = path.join(process.cwd(), 'customShowDetailsMap.json');
-  let customDetailsMap = {};
-  
-  if (fs.existsSync(customDetailsPath)) {
-    const customDetailsData = fs.readFileSync(customDetailsPath, 'utf8');
-    customDetailsMap = JSON.parse(customDetailsData);
-  }
-  
-  // Count how many shows we update
-  let updatedCount = 0;
-  let matchedCount = 0;
-  
-  // Process each row in the CSV
-  for (const record of records) {
-    const showName = record['Programs'];
-    if (!showName) continue;
+// Main function to run the script
+async function main() {
+  try {
+    const csvFilePath = path.join(__dirname, 'tvshow_sensory_data.csv');
+    const csvData = fs.readFileSync(csvFilePath, 'utf8');
     
-    const showId = tvShowIdsMap[showName];
-    if (showId) {
+    // Parse CSV data
+    const records = parse(csvData, {
+      columns: true,
+      skip_empty_lines: true
+    });
+    
+    // Get header row to identify metric columns
+    const headers = Object.keys(records[0]);
+    
+    // Now read the existing customShowDetailsMap.json
+    const customDetailsPath = path.join(__dirname, 'customShowDetailsMap.json');
+    let customDetailsMap = {};
+    
+    if (fs.existsSync(customDetailsPath)) {
+      const customDetailsData = fs.readFileSync(customDetailsPath, 'utf8');
+      customDetailsMap = JSON.parse(customDetailsData);
+    }
+    
+    // Count how many shows we update
+    let updatedCount = 0;
+    let matchedCount = 0;
+    
+    // Create a reverse lookup to find show IDs from names
+    const showNameToIdMap = {};
+    for (const [name, id] of Object.entries(tvShowIdsMap)) {
+      // Convert to lowercase for case-insensitive matching
+      showNameToIdMap[name.toLowerCase()] = id;
+    }
+    
+    // Keep a list of shows that couldn't be matched for reporting
+    const unmatchedShows = [];
+    
+    // Process each row in the CSV
+    for (const record of records) {
+      const showName = record['Programs'];
+      if (!showName) continue;
+      
+      // Normalize the show name to match our database entries
+      const normalizedShowName = normalizeShowName(showName);
+      let showId = tvShowIdsMap[normalizedShowName];
+      
+      // If direct lookup fails, try to find a similar show name in our database
+      if (!showId) {
+        // Try case insensitive matching
+        const lowerCaseName = normalizedShowName.toLowerCase();
+        showId = showNameToIdMap[lowerCaseName];
+        
+        // If still no match, add to unmatched list
+        if (!showId) {
+          unmatchedShows.push(showName);
+          continue;
+        }
+      }
+      
       matchedCount++;
       
       // Found a match, create the details object
@@ -423,17 +471,26 @@ try {
       
       updatedCount++;
     }
+    
+    // Save the updated customShowDetailsMap.json
+    fs.writeFileSync(
+      customDetailsPath, 
+      JSON.stringify(customDetailsMap, null, 2)
+    );
+    
+    console.log(`Matched ${matchedCount} shows from the CSV with database IDs`);
+    console.log(`Updated ${updatedCount} shows in the customShowDetailsMap.json file`);
+    
+    // Log shows that couldn't be matched
+    if (unmatchedShows.length > 0) {
+      console.log(`\nWarning: ${unmatchedShows.length} shows from the CSV could not be matched to the database:`);
+      unmatchedShows.forEach(name => console.log(`  - ${name}`));
+    }
+    
+  } catch (error) {
+    console.error('Error processing CSV:', error);
   }
-  
-  // Save the updated customShowDetailsMap.json
-  fs.writeFileSync(
-    customDetailsPath, 
-    JSON.stringify(customDetailsMap, null, 2)
-  );
-  
-  console.log(`Matched ${matchedCount} shows from the CSV with database IDs`);
-  console.log(`Updated ${updatedCount} shows in the customShowDetailsMap.json file`);
-  
-} catch (error) {
-  console.error('Error processing CSV:', error);
 }
+
+// Run the main function
+main();
