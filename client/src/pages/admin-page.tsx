@@ -92,7 +92,7 @@ export default function AdminPage() {
     name: '',
     description: '',
     ageRange: '',
-    stimulationScore: 3,
+    stimulationScore: 3, // Default stimulation score - always a whole number
     interactivityLevel: 'Medium',
     dialogueIntensity: 'Medium',
     soundEffectsLevel: 'Medium',
@@ -397,13 +397,14 @@ export default function AdminPage() {
     };
     
     // Ensure stimulation score is a whole number
-    const wholeStimulatioScore = Math.round(formValues.stimulationScore);
+    const wholeStimulationScore = Math.round(formValues.stimulationScore);
+    console.log(`Rounded stimulation score: ${formValues.stimulationScore} → ${wholeStimulationScore}`);
     
     // Create a new object with converted values
     return {
       ...formValues,
       // Ensure stimulation score is a whole number
-      stimulationScore: wholeStimulatioScore,
+      stimulationScore: wholeStimulationScore,
       // Ensure themes is an array
       themes: Array.isArray(formValues.themes) ? formValues.themes : [],
       // Convert form field values back to API format
@@ -834,8 +835,8 @@ export default function AdminPage() {
                 Stimulation Score
               </Label>
               <Select 
-                value={String(formState.stimulationScore)}
-                onValueChange={(value) => setFormState({...formState, stimulationScore: parseInt(value)})}
+                value={String(Math.round(formState.stimulationScore))}
+                onValueChange={(value) => setFormState({...formState, stimulationScore: Math.round(parseInt(value))})}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select stimulation score" />
