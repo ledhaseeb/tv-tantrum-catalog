@@ -277,111 +277,83 @@ export default function Detail({ id }: DetailProps) {
                     IMDb Information
                   </h3>
                   <div className="mt-2 space-y-2">
-                    {/* Only show IMDb rating if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.imdbRating && showDetail.omdb.imdbRating !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.imdbRating && showDetail.externalData.omdb.imdbRating !== 'N/A')) && (
+                    {/* IMDb Rating */}
+                    {showDetail.externalData?.omdb?.imdbRating && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">IMDb Rating:</div>
                         <div className="text-sm flex items-center">
                           <span className="text-yellow-500 mr-1">★</span>
-                          {(showDetail.omdb?.imdbRating !== 'N/A' ? showDetail.omdb?.imdbRating : 
-                            showDetail.externalData?.omdb?.imdbRating !== 'N/A' ? showDetail.externalData?.omdb?.imdbRating : '')}/10
+                          {showDetail.externalData.omdb.imdbRating}/10
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Rated if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.rated && showDetail.omdb.rated !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.rated && showDetail.externalData.omdb.rated !== 'N/A')) && (
+                    {/* Rated */}
+                    {showDetail.externalData?.omdb?.rated && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Rated:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.rated !== 'N/A' ? showDetail.omdb?.rated : 
-                            showDetail.externalData?.omdb?.rated !== 'N/A' ? showDetail.externalData?.omdb?.rated : ''}
+                          {showDetail.externalData.omdb.rated}
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Runtime if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.runtime && showDetail.omdb.runtime !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.runtime && showDetail.externalData.omdb.runtime !== 'N/A')) && (
+                    {/* Runtime */}
+                    {showDetail.externalData?.omdb?.runtime && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Runtime:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.runtime !== 'N/A' ? showDetail.omdb?.runtime : 
-                            showDetail.externalData?.omdb?.runtime !== 'N/A' ? showDetail.externalData?.omdb?.runtime : ''}
+                          {showDetail.externalData.omdb.runtime}
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Seasons if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.totalSeasons && showDetail.omdb.totalSeasons !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.totalSeasons && showDetail.externalData.omdb.totalSeasons !== 'N/A')) && (
+                    {/* Seasons */}
+                    {showDetail.externalData?.omdb?.totalSeasons && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Seasons:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.totalSeasons !== 'N/A' ? showDetail.omdb?.totalSeasons : 
-                            showDetail.externalData?.omdb?.totalSeasons !== 'N/A' ? showDetail.externalData?.omdb?.totalSeasons : ''}
+                          {showDetail.externalData.omdb.totalSeasons}
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Language if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.language && showDetail.omdb.language !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.language && showDetail.externalData.omdb.language !== 'N/A')) && (
+                    {/* Language */}
+                    {showDetail.externalData?.omdb?.language && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Language:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.language !== 'N/A' ? showDetail.omdb?.language : 
-                            showDetail.externalData?.omdb?.language !== 'N/A' ? showDetail.externalData?.omdb?.language : ''}
+                          {showDetail.externalData.omdb.language}
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Country if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.country && showDetail.omdb.country !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.country && showDetail.externalData.omdb.country !== 'N/A')) && (
+                    {/* Country */}
+                    {showDetail.externalData?.omdb?.country && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Country:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.country !== 'N/A' ? showDetail.omdb?.country : 
-                            showDetail.externalData?.omdb?.country !== 'N/A' ? showDetail.externalData?.omdb?.country : ''}
+                          {showDetail.externalData.omdb.country}
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Director if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.director && showDetail.omdb.director !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.director && showDetail.externalData.omdb.director !== 'N/A')) && (
-                      <div>
-                        <div className="text-sm font-medium text-gray-600">Director:</div>
-                        <div className="text-sm">
-                          {showDetail.omdb?.director !== 'N/A' ? showDetail.omdb?.director : 
-                            showDetail.externalData?.omdb?.director !== 'N/A' ? showDetail.externalData?.omdb?.director : ''}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Only show Writer if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.writer && showDetail.omdb.writer !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.writer && showDetail.externalData.omdb.writer !== 'N/A')) && (
+                    {/* Writer */}
+                    {showDetail.externalData?.omdb?.writer && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Writer:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.writer !== 'N/A' ? showDetail.omdb?.writer : 
-                            showDetail.externalData?.omdb?.writer !== 'N/A' ? showDetail.externalData?.omdb?.writer : ''}
+                          {showDetail.externalData.omdb.writer}
                         </div>
                       </div>
                     )}
                     
-                    {/* Only show Awards if it's available and not 'N/A' */}
-                    {((showDetail.omdb?.awards && showDetail.omdb.awards !== 'N/A') || 
-                      (showDetail.externalData?.omdb?.awards && showDetail.externalData.omdb.awards !== 'N/A')) && (
+                    {/* Awards */}
+                    {showDetail.externalData?.omdb?.awards && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Awards:</div>
                         <div className="text-sm">
-                          {showDetail.omdb?.awards !== 'N/A' ? showDetail.omdb?.awards : 
-                            showDetail.externalData?.omdb?.awards !== 'N/A' ? showDetail.externalData?.omdb?.awards : ''}
+                          {showDetail.externalData.omdb.awards}
                         </div>
                       </div>
                     )}
