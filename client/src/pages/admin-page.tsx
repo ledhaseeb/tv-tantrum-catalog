@@ -51,7 +51,10 @@ import {
   Clock,
   Shield,
   Check,
-  X
+  X,
+  PlusCircle,
+  Upload,
+  Image
 } from 'lucide-react';
 import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -68,7 +71,25 @@ export default function AdminPage() {
   const [selectedShow, setSelectedShow] = useState<TvShow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isAddingShow, setIsAddingShow] = useState(false);
+  const [newShowFormState, setNewShowFormState] = useState({
+    name: '',
+    description: '',
+    ageRange: '',
+    stimulationScore: 3,
+    interactivityLevel: 'Medium',
+    dialogueIntensity: 'Medium',
+    soundEffectsLevel: 'Medium',
+    sceneFrequency: 'Medium',
+    musicTempo: 'Medium',
+    totalMusicLevel: 'Medium',
+    totalSoundEffectTimeLevel: 'Medium',
+    animationStyle: '',
+    themes: [] as string[],
+    imageUrl: ''
+  });
+  
   // Redirect if user is not an admin
   useEffect(() => {
     if (user && !isAdmin) {
@@ -289,6 +310,127 @@ export default function AdminPage() {
     return value && value.trim() !== '' ? value : defaultValue;
   };
 
+  // Handler for adding a new show
+  const handleAddNewShow = () => {
+    // Reset the form state to default values
+    setNewShowFormState({
+      name: '',
+      description: '',
+      ageRange: '3-5 years',
+      stimulationScore: 3,
+      interactivityLevel: 'Medium',
+      dialogueIntensity: 'Medium',
+      soundEffectsLevel: 'Medium',
+      sceneFrequency: 'Medium',
+      musicTempo: 'Medium',
+      totalMusicLevel: 'Medium',
+      totalSoundEffectTimeLevel: 'Medium',
+      animationStyle: '',
+      themes: [],
+      imageUrl: ''
+    });
+    
+    // Open the add show dialog
+    setIsAddDialogOpen(true);
+  };
+  
+  // Submit handler for adding a new show
+  const handleSubmitNewShow = async () => {
+    setIsAddingShow(true);
+    
+    try {
+      // Ensure stimulation score is a whole number
+      const formDataWithWholeScore = {
+        ...newShowFormState,
+        stimulationScore: Math.round(newShowFormState.stimulationScore)
+      };
+      
+      // Convert form values to API format
+      const apiFormData = convertFormValuesToApi(formDataWithWholeScore);
+      
+      // Submit to API
+      const response = await apiRequest('POST', '/api/shows', apiFormData);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to add new show');
+      }
+      
+      const newShow = await response.json();
+      
+      // Add the new show to the state
+      setShows(prev => [...prev, newShow]);
+      setFilteredShows(prev => [...prev, newShow]);
+      
+      // Close the dialog
+      setIsAddDialogOpen(false);
+      
+      // Show success message
+      toast({
+        title: "Show Added",
+        description: `Successfully added "${newShow.name}" to the database.`,
+      });
+    } catch (error) {
+      console.error('Error adding new show:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add new show",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAddingShow(false);
+    }
+  };
+  
+  // Handler for uploading image for a show
+  const handleUploadImage = async (showId: number, imageUrl: string) => {
+    try {
+      if (!imageUrl.trim()) {
+        toast({
+          title: "Error",
+          description: "Please provide a valid image URL",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const response = await apiRequest('POST', `/api/shows/${showId}/update-with-local-image`, { imageUrl });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to update image');
+      }
+      
+      const updatedShow = await response.json();
+      
+      // Update the show in state
+      setShows(prev => prev.map(show => 
+        show.id === showId ? { ...show, imageUrl: updatedShow.show.imageUrl } : show
+      ));
+      setFilteredShows(prev => prev.map(show => 
+        show.id === showId ? { ...show, imageUrl: updatedShow.show.imageUrl } : show
+      ));
+      
+      // If the show being edited is the currently selected show, update it
+      if (selectedShow && selectedShow.id === showId) {
+        setSelectedShow({ ...selectedShow, imageUrl: updatedShow.show.imageUrl });
+      }
+      
+      // Show success message
+      toast({
+        title: "Image Updated",
+        description: `Successfully updated image for "${updatedShow.show.name}".`,
+      });
+    } catch (error) {
+      console.error('Error updating image:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update image",
+        variant: "destructive"
+      });
+    }
+  };
+  
   // Open edit dialog
   const handleEditShow = (show: TvShow) => {
     // Log the show object to debug what values we're getting from the API
@@ -548,10 +690,21 @@ export default function AdminPage() {
         <TabsContent value="shows">
           <Card>
             <CardHeader>
-              <CardTitle>TV Shows</CardTitle>
-              <CardDescription>
-                View and manage all TV shows in the database
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>TV Shows</CardTitle>
+                  <CardDescription>
+                    View and manage all TV shows in the database
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => handleAddNewShow()}
+                  className="flex items-center"
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Show
+                </Button>
+              </div>
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input

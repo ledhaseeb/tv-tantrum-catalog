@@ -187,12 +187,12 @@
     "sceneFrequency": "Moderate"
   },
   "8": {
-    "stimulationScore": 1,
+    "stimulationScore": 4,
     "musicTempo": "Low",
     "totalMusicLevel": "Low",
     "sceneFrequency": "High",
     "interactivityLevel": "Low",
-    "dialogueIntensity": "None",
+    "dialogueIntensity": "Moderate",
     "soundEffectsLevel": "High",
     "animationStyle": "Real Props No Animations ",
     "TV or YouTube": "YouTube",
@@ -208,7 +208,8 @@
       "Nature Sounds",
       "ASMR"
     ],
-    "totalSoundEffectTimeLevel": "High"
+    "totalSoundEffectTimeLevel": "High",
+    "description": "A children's TV show"
   },
   "9": {
     "stimulationScore": 3,
