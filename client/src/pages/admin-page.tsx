@@ -73,6 +73,7 @@ export default function AdminPage() {
   const [selectedShow, setSelectedShow] = useState<TvShow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddingShow, setIsAddingShow] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -316,6 +317,35 @@ export default function AdminPage() {
       });
     } finally {
       setIsOptimizingImages(false);
+    }
+  };
+  
+  // Update show metadata (creator, release_year, end_year) with OMDb data
+  const handleUpdateMetadata = async () => {
+    if (isUpdatingMetadata) return;
+    
+    setIsUpdatingMetadata(true);
+    try {
+      const response = await apiRequest('POST', '/api/update-metadata');
+      const result = await response.json();
+      
+      toast({
+        title: "Show Metadata Update Complete",
+        description: `${result.successful.length} shows updated with creator and year information.`,
+      });
+      
+      // Refresh the show list to get updated metadata
+      fetchShows();
+      
+    } catch (error) {
+      console.error('Error updating show metadata:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update show metadata. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingMetadata(false);
     }
   };
 
@@ -763,23 +793,43 @@ export default function AdminPage() {
               <CardTitle>Admin Dashboard</CardTitle>
               <CardDescription>Manage TV shows and settings</CardDescription>
             </div>
-            <Button 
-              onClick={handleRefreshData} 
-              disabled={isRefreshing}
-              variant="outline"
-            >
-              {isRefreshing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh Data
-                </>
-              )}
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                onClick={handleUpdateMetadata} 
+                disabled={isUpdatingMetadata}
+                variant="outline"
+                className="whitespace-nowrap"
+              >
+                {isUpdatingMetadata ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating Metadata...
+                  </>
+                ) : (
+                  <>
+                    <Info className="h-4 w-4 mr-2" />
+                    Update Show Metadata
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={handleRefreshData} 
+                disabled={isRefreshing}
+                variant="outline"
+              >
+                {isRefreshing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Data
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardHeader>
       </Card>

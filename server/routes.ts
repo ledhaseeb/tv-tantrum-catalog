@@ -125,7 +125,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get single TV show by ID
+  // Function to extract year information from OMDb
+const extractYearInfo = (omdbYear: string) => {
+  let releaseYear: number | null = null;
+  let endYear: number | null = null;
+  let isOngoing = false;
+  
+  if (omdbYear && omdbYear !== 'N/A') {
+    // Parse year ranges like "2010-2018" or "2020-" or just "2015"
+    const yearMatch = omdbYear.match(/(\d{4})(?:-(\d{4}|\s*present|\s*$))?/i);
+    
+    if (yearMatch) {
+      releaseYear = parseInt(yearMatch[1]);
+      
+      if (yearMatch[2]) {
+        // If there's an end year specified
+        if (/^\d{4}$/.test(yearMatch[2])) {
+          endYear = parseInt(yearMatch[2]);
+          isOngoing = false;
+        } else if (yearMatch[2].toLowerCase().includes('present') || yearMatch[2].trim() === '') {
+          // If it says "present" or ends with a hyphen only, it's ongoing
+          isOngoing = true;
+        }
+      } else {
+        // Only one year specified, assume it's not ongoing
+        isOngoing = false;
+      }
+    }
+  }
+  
+  return { releaseYear, endYear, isOngoing };
+};
+
+// Function to get creator from OMDb director and writer
+const extractCreator = (director: string, writer: string) => {
+  if (director && director !== 'N/A') {
+    return director;
+  } else if (writer && writer !== 'N/A') {
+    // For TV shows, writers are often the creators
+    // Extract the first writer if there are multiple
+    const firstWriter = writer.split(',')[0].trim();
+    return firstWriter;
+  }
+  return null;
+};
+
+// Get single TV show by ID
   app.get("/api/shows/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
@@ -149,6 +194,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         omdbData = await omdbService.getShowData(show.name);
         console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
+        
+        // If this is the first time we get OMDb data for this show, update the metadata
+        if (omdbData && (!show.creator || !show.releaseYear)) {
+          // Extract year information
+          const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+          
+          // Extract creator information
+          const creator = extractCreator(omdbData.director, omdbData.writer);
+          
+          // Update show with this additional metadata if it's not already set
+          const updateData: any = {};
+          
+          if (!show.creator && creator) {
+            updateData.creator = creator;
+          }
+          
+          if (!show.releaseYear && releaseYear) {
+            updateData.releaseYear = releaseYear;
+          }
+          
+          if (!show.endYear && endYear) {
+            updateData.endYear = endYear;
+          }
+          
+          // Only update isOngoing if we have valid year data
+          if (releaseYear && !show.isOngoing) {
+            updateData.isOngoing = isOngoing;
+          }
+          
+          // Only update if we have new data
+          if (Object.keys(updateData).length > 0) {
+            console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
+            await storage.updateTvShow(id, updateData);
+          }
+        }
       } catch (omdbError) {
         console.error(`Error fetching OMDb data for ${show.name}:`, omdbError);
         // Continue even if OMDb fetch fails
@@ -236,6 +316,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error optimizing images:", error);
       res.status(500).json({ message: "Failed to optimize images" });
+    }
+  });
+  
+  // Endpoint to update show metadata (creator, release_year, end_year, is_ongoing) from OMDb
+  app.post("/api/update-metadata", async (req: Request, res: Response) => {
+    try {
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized. Admin privileges required." });
+      }
+      
+      console.log("Starting metadata update process...");
+      
+      // Get all shows from the database
+      const shows = await storage.getAllTvShows();
+      
+      // Keep track of results
+      const results = {
+        total: shows.length,
+        successful: [] as any[],
+        failed: [] as any[],
+        skipped: [] as any[]
+      };
+      
+      // Process each show
+      for (const show of shows) {
+        try {
+          // Skip YouTube shows as they won't have OMDb data
+          const isYouTubeShow = show.availableOn?.includes('YouTube');
+          if (isYouTubeShow) {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'YouTube show'
+            });
+            continue;
+          }
+          
+          // Skip shows that already have creator and release/end year info
+          if (show.creator && show.releaseYear && (show.endYear || show.isOngoing)) {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'Already has complete metadata'
+            });
+            continue;
+          }
+          
+          // Fetch OMDb data
+          const omdbData = await omdbService.getShowData(show.name);
+          if (!omdbData) {
+            results.failed.push({
+              id: show.id,
+              name: show.name,
+              reason: 'No OMDb data found'
+            });
+            continue;
+          }
+          
+          // Extract year information
+          const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+          
+          // Extract creator information
+          const creator = extractCreator(omdbData.director, omdbData.writer);
+          
+          // Update show with this additional metadata if not already set
+          const updateData: any = {};
+          
+          if (!show.creator && creator) {
+            updateData.creator = creator;
+          }
+          
+          if (!show.releaseYear && releaseYear) {
+            updateData.releaseYear = releaseYear;
+          }
+          
+          if (!show.endYear && endYear) {
+            updateData.endYear = endYear;
+          }
+          
+          // Only update isOngoing if we have valid year data
+          if (releaseYear && typeof show.isOngoing !== 'boolean') {
+            updateData.isOngoing = isOngoing;
+          }
+          
+          // Only update if we have new data
+          if (Object.keys(updateData).length > 0) {
+            console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
+            const updatedShow = await storage.updateTvShow(show.id, updateData);
+            
+            if (updatedShow) {
+              results.successful.push({
+                id: show.id,
+                name: show.name,
+                updates: updateData
+              });
+            } else {
+              results.failed.push({
+                id: show.id,
+                name: show.name,
+                reason: 'Failed to update in storage'
+              });
+            }
+          } else {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'No new metadata to update'
+            });
+          }
+          
+          // Add a small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 250));
+          
+        } catch (error) {
+          console.error(`Error updating metadata for show "${show.name}":`, error);
+          results.failed.push({
+            id: show.id,
+            name: show.name,
+            reason: 'Error during processing'
+          });
+        }
+      }
+      
+      res.json({
+        message: `Processed ${results.total} shows. Updated ${results.successful.length} successfully.`,
+        successful: results.successful.length,
+        failed: results.failed.length,
+        skipped: results.skipped.length,
+        results
+      });
+    } catch (error) {
+      console.error("Error updating metadata:", error);
+      res.status(500).json({ message: "Failed to update metadata" });
     }
   });
 
