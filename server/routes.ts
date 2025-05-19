@@ -248,8 +248,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Store the OMDb data for response
-          externalData.omdb = omdbData;
+          // Only include OMDb data in the response if it has valid values (not empty or 'N/A')
+          if (omdbData) {
+            // Filter out any empty values or "N/A" values
+            const filteredOmdbData: any = {};
+            let hasValidData = false;
+            
+            for (const [key, value] of Object.entries(omdbData)) {
+              if (value && value !== 'N/A' && value !== '') {
+                filteredOmdbData[key] = value;
+                hasValidData = true;
+              }
+            }
+            
+            // Only include the data if there's at least one valid field
+            if (hasValidData) {
+              externalData.omdb = filteredOmdbData;
+            }
+          }
         }
         
         // If this is a YouTube show, also get YouTube data
@@ -309,8 +325,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Store the YouTube data for response
-          externalData.youtube = youtubeData;
+          // Only include YouTube data in the response if it has valid values
+          if (youtubeData) {
+            // Filter out any empty or null values
+            const filteredYouTubeData: any = {};
+            let hasValidData = false;
+            
+            for (const [key, value] of Object.entries(youtubeData)) {
+              if (value && value !== '') {
+                filteredYouTubeData[key] = value;
+                hasValidData = true;
+              }
+            }
+            
+            // Only include the data if there's at least one valid field
+            if (hasValidData) {
+              externalData.youtube = filteredYouTubeData;
+            }
+          }
         }
       } catch (error) {
         console.error(`Error fetching external data for ${show.name}:`, error);

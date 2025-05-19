@@ -81,21 +81,21 @@ export class OmdbService {
         return null;
       }
       
-      // Extract only the fields we need
+      // Extract only the fields we need, filtering out "N/A" values
       const showData: OmdbShowData = {
-        runtime: data.Runtime || 'N/A',
-        rated: data.Rated || 'N/A',
-        totalSeasons: data.totalSeasons || 'N/A',
-        language: data.Language || 'N/A',
-        country: data.Country || 'N/A',
-        director: data.Director || 'N/A',
-        writer: data.Writer || 'N/A',
-        imdbRating: data.imdbRating || 'N/A',
-        awards: data.Awards || 'N/A',
-        poster: data.Poster || 'N/A',
+        runtime: data.Runtime && data.Runtime !== 'N/A' ? data.Runtime : '',
+        rated: data.Rated && data.Rated !== 'N/A' ? data.Rated : '',
+        totalSeasons: data.totalSeasons && data.totalSeasons !== 'N/A' ? data.totalSeasons : '',
+        language: data.Language && data.Language !== 'N/A' ? data.Language : '',
+        country: data.Country && data.Country !== 'N/A' ? data.Country : '',
+        director: data.Director && data.Director !== 'N/A' ? data.Director : '',
+        writer: data.Writer && data.Writer !== 'N/A' ? data.Writer : '',
+        imdbRating: data.imdbRating && data.imdbRating !== 'N/A' ? data.imdbRating : '',
+        awards: data.Awards && data.Awards !== 'N/A' ? data.Awards : '',
+        poster: data.Poster && data.Poster !== 'N/A' ? data.Poster : '',
         imdbId: data.imdbID || '',
-        year: data.Year || 'N/A',
-        plot: data.Plot || ''
+        year: data.Year && data.Year !== 'N/A' ? data.Year : '',
+        plot: data.Plot && data.Plot !== 'N/A' ? data.Plot : ''
       };
       
       // Store in cache
