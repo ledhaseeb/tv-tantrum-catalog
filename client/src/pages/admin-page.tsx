@@ -346,8 +346,8 @@ export default function AdminPage() {
       endYear: null,
       isOngoing: true,
       creator: '',
-      availableOn: [],
-      overallRating: 3
+      availableOn: []
+      // Note: we now use stimulationScore for overallRating in the backend
     });
     
     // Open the add show dialog
@@ -372,11 +372,26 @@ export default function AdminPage() {
       const response = await apiRequest('POST', '/api/shows', apiFormData);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to add new show');
+        // Handle error response properly - some responses might not have text() method
+        let errorMessage = 'Failed to add new show';
+        try {
+          // Try to get error text if available
+          const errorText = typeof response.text === 'function' ? await response.text() : '';
+          if (errorText) errorMessage = errorText;
+        } catch (e) {
+          console.error('Error reading response text:', e);
+        }
+        throw new Error(errorMessage);
       }
       
-      const newShow = await response.json();
+      // Parse the JSON response safely
+      let newShow;
+      try {
+        newShow = await response.json();
+      } catch (e) {
+        console.error('Error parsing response JSON:', e);
+        throw new Error('Invalid response format from server');
+      }
       
       // Add the new show to the state
       setShows(prev => [...prev, newShow]);
