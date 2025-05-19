@@ -304,7 +304,7 @@ const extractCreator = (director: string, writer: string) => {
       res.json({
         ...show,
         reviews,
-        omdb: omdbData
+        externalData
       });
     } catch (error) {
       console.error("Error fetching TV show:", error);

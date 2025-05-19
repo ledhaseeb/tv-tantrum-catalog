@@ -83,22 +83,22 @@ export class YouTubeService {
       // First search for the channel
       const searchUrl = `${this.baseUrl}/search?part=snippet&q=${encodeURIComponent(channelName)}&type=channel&maxResults=1&key=${this.apiKey}`;
       const searchResponse = await fetch(searchUrl);
-      const searchData = await searchResponse.json();
+      const searchData = await searchResponse.json() as any;
 
-      if (!searchData.items || searchData.items.length === 0) {
+      if (!searchData?.items || !Array.isArray(searchData.items) || searchData.items.length === 0) {
         console.warn(`YouTube API: No channel found for "${channelName}"`);
         return null;
       }
 
       // Get the channel ID from search results
-      const channelId = searchData.items[0].id.channelId;
+      const channelId = searchData.items[0]?.id?.channelId;
 
       // Now get detailed channel information
       const channelUrl = `${this.baseUrl}/channels?part=snippet,statistics&id=${channelId}&key=${this.apiKey}`;
       const channelResponse = await fetch(channelUrl);
-      const channelData = await channelResponse.json() as YouTubeChannelResponse;
+      const channelData = await channelResponse.json() as any;
 
-      if (!channelData.items || channelData.items.length === 0) {
+      if (!channelData?.items || !Array.isArray(channelData.items) || channelData.items.length === 0) {
         console.warn(`YouTube API: Failed to get details for channel "${channelName}"`);
         return null;
       }
