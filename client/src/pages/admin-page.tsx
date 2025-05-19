@@ -1184,6 +1184,111 @@ export default function AdminPage() {
                 rows={3}
               />
             </div>
+            
+            {/* Image Management Section */}
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-lg font-medium mb-2">Image Management</h3>
+              
+              {/* Current Image Display */}
+              <div className="flex flex-col md:flex-row gap-6 mb-4">
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium mb-2">Current Image</h4>
+                  <div className="border rounded-md p-2 h-48 flex items-center justify-center overflow-hidden bg-gray-50">
+                    {formState.imageUrl ? (
+                      <img 
+                        src={formState.imageUrl} 
+                        alt={formState.name} 
+                        className="max-h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://via.placeholder.com/200x300?text=Image+Not+Found';
+                        }}
+                      />
+                    ) : (
+                      <div className="text-center text-gray-400">
+                        <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                        <p>No image available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium mb-2">Image Options</h4>
+                  
+                  {/* OMDB Image Lookup */}
+                  <div className="mb-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center"
+                      onClick={() => {
+                        if (selectedShow) {
+                          // Call the API to fetch and update the image from OMDB
+                          apiRequest('POST', `/api/shows/${selectedShow.id}/update-image`)
+                            .then(resp => resp.json())
+                            .then(data => {
+                              if (data.success) {
+                                setFormState(prev => ({...prev, imageUrl: data.show.imageUrl}));
+                                toast({
+                                  title: "Success",
+                                  description: data.message,
+                                });
+                              } else {
+                                throw new Error(data.message || "Failed to find OMDB image");
+                              }
+                            })
+                            .catch(err => {
+                              toast({
+                                title: "Error",
+                                description: err.message || "Failed to update image from OMDB",
+                                variant: "destructive"
+                              });
+                            });
+                        }
+                      }}
+                    >
+                      <Image className="h-4 w-4 mr-2" />
+                      Find OMDB Image
+                    </Button>
+                  </div>
+                  
+                  {/* Custom Image URL Input */}
+                  <div className="space-y-2">
+                    <Label htmlFor="customImageUrl">Custom Image URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="customImageUrl"
+                        placeholder="Enter image URL"
+                        value={formState.imageUrl || ''}
+                        onChange={(e) => setFormState({...formState, imageUrl: e.target.value})}
+                        className="flex-1"
+                      />
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        className="shrink-0"
+                        onClick={() => {
+                          if (selectedShow && formState.imageUrl) {
+                            handleUploadImage(selectedShow.id, formState.imageUrl);
+                          } else {
+                            toast({
+                              title: "Error",
+                              description: "Please provide a valid image URL",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter a URL to an image for this show (portrait orientation recommended)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <DialogFooter className="sticky bottom-0 bg-white pb-2 pt-2">
@@ -1197,6 +1302,289 @@ export default function AdminPage() {
                   Saving...
                 </>
               ) : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Show Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New TV Show</DialogTitle>
+            <DialogDescription>
+              Create a new TV show entry in the database.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Show Name
+              </Label>
+              <Input
+                id="name"
+                value={newShowFormState.name}
+                onChange={(e) => setNewShowFormState({...newShowFormState, name: e.target.value})}
+                className="col-span-3"
+                placeholder="Official TV show name"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={newShowFormState.description}
+                onChange={(e) => setNewShowFormState({...newShowFormState, description: e.target.value})}
+                className="col-span-3"
+                placeholder="Brief description of the show"
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="ageRange" className="text-right">
+                Age Range
+              </Label>
+              <Input
+                id="ageRange"
+                value={newShowFormState.ageRange}
+                onChange={(e) => setNewShowFormState({...newShowFormState, ageRange: e.target.value})}
+                className="col-span-3"
+                placeholder="e.g., '3-5 years' or '8-12 years'"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="stimulationScore" className="text-right">
+                Stimulation Score (1-5)
+              </Label>
+              <Input
+                id="stimulationScore"
+                type="number"
+                min={1}
+                max={5}
+                step={1}
+                value={newShowFormState.stimulationScore}
+                onChange={(e) => setNewShowFormState({
+                  ...newShowFormState, 
+                  stimulationScore: Math.round(Number(e.target.value))
+                })}
+                className="col-span-3"
+                placeholder="Enter a whole number from 1-5"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="interactivityLevel" className="text-right">
+                Interactivity Level
+              </Label>
+              <Select 
+                value={newShowFormState.interactivityLevel}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, interactivityLevel: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select interactivity level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="dialogueIntensity" className="text-right">
+                Dialogue Intensity
+              </Label>
+              <Select 
+                value={newShowFormState.dialogueIntensity}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, dialogueIntensity: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select dialogue intensity" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="soundEffectsLevel" className="text-right">
+                Sound Effects Level
+              </Label>
+              <Select 
+                value={newShowFormState.soundEffectsLevel}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, soundEffectsLevel: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select sound effects level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sceneFrequency" className="text-right">
+                Scene Frequency
+              </Label>
+              <Select 
+                value={newShowFormState.sceneFrequency}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, sceneFrequency: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select scene frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="musicTempo" className="text-right">
+                Music Tempo
+              </Label>
+              <Select 
+                value={newShowFormState.musicTempo}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, musicTempo: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select music tempo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="totalMusicLevel" className="text-right">
+                Total Music Level
+              </Label>
+              <Select 
+                value={newShowFormState.totalMusicLevel}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, totalMusicLevel: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select total music level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="totalSoundEffectTimeLevel" className="text-right">
+                Total Sound Effect Time
+              </Label>
+              <Select 
+                value={newShowFormState.totalSoundEffectTimeLevel}
+                onValueChange={(value) => setNewShowFormState({...newShowFormState, totalSoundEffectTimeLevel: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select total sound effect time level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Low-Moderate">Low-Moderate</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Moderate-High">Moderate-High</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="themes" className="text-right">
+                Themes
+              </Label>
+              <Textarea
+                id="themes"
+                value={Array.isArray(newShowFormState.themes) ? newShowFormState.themes.join(', ') : ''}
+                onChange={(e) => {
+                  const themesArray = e.target.value
+                    .split(',')
+                    .map(theme => theme.trim())
+                    .filter(theme => theme !== '');
+                  setNewShowFormState({...newShowFormState, themes: themesArray});
+                }}
+                className="col-span-3"
+                placeholder="Enter themes separated by commas (e.g., 'Education, Adventure, Problem-solving')"
+                rows={2}
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="animationStyle" className="text-right">
+                Animation Style
+              </Label>
+              <Textarea
+                id="animationStyle"
+                value={newShowFormState.animationStyle}
+                onChange={(e) => setNewShowFormState({...newShowFormState, animationStyle: e.target.value})}
+                className="col-span-3"
+                placeholder="Describe the animation style (e.g., '3D Animation', 'Stop-motion with hand-crafted models')"
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="imageUrl" className="text-right">
+                Image URL
+              </Label>
+              <Input
+                id="imageUrl"
+                value={newShowFormState.imageUrl}
+                onChange={(e) => setNewShowFormState({...newShowFormState, imageUrl: e.target.value})}
+                className="col-span-3"
+                placeholder="Enter URL for the show image (portrait orientation recommended)"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitNewShow} disabled={isAddingShow}>
+              {isAddingShow ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Adding Show...
+                </>
+              ) : 'Add Show'}
             </Button>
           </DialogFooter>
         </DialogContent>
