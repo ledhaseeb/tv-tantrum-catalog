@@ -268,7 +268,7 @@ export default function Detail({ id }: DetailProps) {
               </div>
               
               {/* IMDb Data Section */}
-              {showDetail.omdb && (
+              {(showDetail.omdb || showDetail.externalData?.omdb) && (
                 <div className="mt-4">
                   <h3 className="text-sm font-semibold text-gray-700 flex items-center">
                     <img src="https://m.media-amazon.com/images/G/01/imdb/images/desktop-favicon-2165806970._CB485933742_.ico" 
@@ -277,76 +277,103 @@ export default function Detail({ id }: DetailProps) {
                     IMDb Information
                   </h3>
                   <div className="mt-2 space-y-2">
-                    {showDetail.omdb.imdbRating !== 'N/A' && (
+                    {/* Use either direct omdb property or from externalData */}
+                    {(showDetail.omdb?.imdbRating !== 'N/A' || showDetail.externalData?.omdb?.imdbRating !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">IMDb Rating:</div>
                         <div className="text-sm flex items-center">
                           <span className="text-yellow-500 mr-1">★</span>
-                          {showDetail.omdb.imdbRating}/10
+                          {(showDetail.omdb?.imdbRating !== 'N/A' ? showDetail.omdb?.imdbRating : 
+                            showDetail.externalData?.omdb?.imdbRating) || 'N/A'}/10
                         </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.rated !== 'N/A' && (
+                    {(showDetail.omdb?.rated !== 'N/A' || showDetail.externalData?.omdb?.rated !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Rated:</div>
-                        <div className="text-sm">{showDetail.omdb.rated}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.rated !== 'N/A' ? showDetail.omdb?.rated : 
+                            showDetail.externalData?.omdb?.rated) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.runtime !== 'N/A' && (
+                    {(showDetail.omdb?.runtime !== 'N/A' || showDetail.externalData?.omdb?.runtime !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Runtime:</div>
-                        <div className="text-sm">{showDetail.omdb.runtime}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.runtime !== 'N/A' ? showDetail.omdb?.runtime : 
+                            showDetail.externalData?.omdb?.runtime) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.totalSeasons !== 'N/A' && (
+                    {(showDetail.omdb?.totalSeasons !== 'N/A' || showDetail.externalData?.omdb?.totalSeasons !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Seasons:</div>
-                        <div className="text-sm">{showDetail.omdb.totalSeasons}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.totalSeasons !== 'N/A' ? showDetail.omdb?.totalSeasons : 
+                            showDetail.externalData?.omdb?.totalSeasons) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.language !== 'N/A' && (
+                    {(showDetail.omdb?.language !== 'N/A' || showDetail.externalData?.omdb?.language !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Language:</div>
-                        <div className="text-sm">{showDetail.omdb.language}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.language !== 'N/A' ? showDetail.omdb?.language : 
+                            showDetail.externalData?.omdb?.language) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.country !== 'N/A' && (
+                    {(showDetail.omdb?.country !== 'N/A' || showDetail.externalData?.omdb?.country !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Country:</div>
-                        <div className="text-sm">{showDetail.omdb.country}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.country !== 'N/A' ? showDetail.omdb?.country : 
+                            showDetail.externalData?.omdb?.country) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.director !== 'N/A' && (
+                    {(showDetail.omdb?.director !== 'N/A' || showDetail.externalData?.omdb?.director !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Director:</div>
-                        <div className="text-sm">{showDetail.omdb.director}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.director !== 'N/A' ? showDetail.omdb?.director : 
+                            showDetail.externalData?.omdb?.director) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.writer !== 'N/A' && (
+                    {(showDetail.omdb?.writer !== 'N/A' || showDetail.externalData?.omdb?.writer !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Writer:</div>
-                        <div className="text-sm">{showDetail.omdb.writer}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.writer !== 'N/A' ? showDetail.omdb?.writer : 
+                            showDetail.externalData?.omdb?.writer) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.awards !== 'N/A' && (
+                    {(showDetail.omdb?.awards !== 'N/A' || showDetail.externalData?.omdb?.awards !== 'N/A') && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Awards:</div>
-                        <div className="text-sm">{showDetail.omdb.awards}</div>
+                        <div className="text-sm">
+                          {(showDetail.omdb?.awards !== 'N/A' ? showDetail.omdb?.awards : 
+                            showDetail.externalData?.omdb?.awards) || 'N/A'}
+                        </div>
                       </div>
                     )}
                     
-                    {showDetail.omdb.imdbId && (
+                    {/* Show IMDb link if ID is available from either source */}
+                    {(showDetail.omdb?.imdbId || showDetail.externalData?.omdb?.imdbId) && (
                       <div className="mt-2">
                         <a 
-                          href={`https://www.imdb.com/title/${showDetail.omdb.imdbId}`} 
+                          href={`https://www.imdb.com/title/${showDetail.omdb?.imdbId || showDetail.externalData?.omdb?.imdbId}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-xs text-blue-600 hover:text-blue-800 flex items-center"
@@ -369,6 +396,7 @@ export default function Detail({ id }: DetailProps) {
                     YouTube Channel Information
                   </h3>
                   <div className="mt-2 space-y-2">
+                    {/* Subscriber count - from either source */}
                     {(showDetail.subscriberCount || showDetail.externalData?.youtube?.subscriberCount) && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Subscribers:</div>
@@ -379,6 +407,7 @@ export default function Detail({ id }: DetailProps) {
                       </div>
                     )}
                     
+                    {/* Video count - from either source */}
                     {(showDetail.videoCount || showDetail.externalData?.youtube?.videoCount) && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Videos:</div>
@@ -389,6 +418,7 @@ export default function Detail({ id }: DetailProps) {
                       </div>
                     )}
                     
+                    {/* Channel creation date - from either source */}
                     {(showDetail.publishedAt || showDetail.externalData?.youtube?.publishedAt) && (
                       <div>
                         <div className="text-sm font-medium text-gray-600">Channel Since:</div>
@@ -399,7 +429,7 @@ export default function Detail({ id }: DetailProps) {
                       </div>
                     )}
                     
-                    {/* Show YouTube link if either direct channelId or one from externalData is available */}
+                    {/* Show YouTube link if channel ID is available from either source */}
                     {(showDetail.channelId || showDetail.externalData?.youtube?.channelId) && (
                       <div className="mt-2">
                         <a 
