@@ -310,7 +310,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllTvShows(): Promise<TvShow[]> {
-    return await db.select().from(tvShows);
+    try {
+      // Use direct query instead of ORM to avoid connection issues
+      const result = await pool.query('SELECT * FROM tv_shows ORDER BY name');
+      
+      console.log(`Fetched ${result.rowCount} TV shows from database`);
+      
+      // Map the PostgreSQL fields to our TvShow model
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        imageUrl: row.image_url,
+        ageRange: row.age_range,
+        tantrumFactor: row.tantrum_factor,
+        themes: row.themes,
+        network: row.network,
+        year: row.year,
+        productionCompany: row.production_company,
+        stimulationScore: row.stimulation_score,
+        interactionLevel: row.interaction_level,
+        dialogueIntensity: row.dialogue_intensity,
+        soundFrequency: row.sound_frequency,
+        totalMusicLevel: row.total_music_level,
+        musicTempo: row.music_tempo,
+        soundEffectsLevel: row.sound_effects_level,
+        animationStyle: row.animation_style,
+        sceneFrequency: row.scene_frequency,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        totalSoundEffectTimeLevel: row.total_sound_effect_time_level
+      }));
+    } catch (error) {
+      console.error('Error fetching TV shows:', error);
+      return [];
+    }
   }
 
   async getTvShowById(id: number): Promise<TvShow | undefined> {

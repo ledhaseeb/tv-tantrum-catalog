@@ -16,8 +16,7 @@ export const sessionStore = new PostgresSessionStore({
   createTableIfMissing: true,
   tableName: 'session', // Use a standard table name for the session store
   // Add session store optimization for Replit
-  pruneSessionInterval: 60, // Prune expired sessions every minute
-  errorLogging: false // Reduce excessive error logs
+  pruneSessionInterval: 60 // Prune expired sessions every minute
 });
 
 // No need to import User here as types are explicitly defined
