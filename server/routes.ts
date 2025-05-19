@@ -311,11 +311,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Continue even if data fetch fails
       }
       
-      res.json({
+      // Create a complete response that includes both stored and external data
+      const response = {
         ...show,
         reviews,
         externalData
-      });
+      };
+      
+      // If a show has YouTube data in the database, ensure it's exposed directly
+      if (show.isYouTubeChannel) {
+        console.log(`Show ${show.name} has YouTube data in database, ensuring it's included in response`);
+        // Use values from the database if they exist
+        response.youtube = {
+          title: show.name,
+          description: show.description,
+          subscriberCount: show.subscriberCount || '',
+          videoCount: show.videoCount || '',
+          channelId: show.channelId || '',
+          publishedAt: show.publishedAt || '',
+          thumbnailUrl: show.imageUrl || ''
+        };
+      }
+      
+      res.json(response);
     } catch (error) {
       console.error("Error fetching TV show:", error);
       res.status(500).json({ message: "Failed to fetch TV show" });
