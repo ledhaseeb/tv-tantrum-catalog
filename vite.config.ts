@@ -7,8 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+    ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
       ? [
           await import("@replit/vite-plugin-cartographer").then((m) =>
             m.cartographer(),
@@ -16,14 +15,19 @@ export default defineConfig({
         ]
       : []),
   ],
+
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
+    // 👇 ensures only a single copy of React is bundled
+    dedupe: ["react", "react-dom"],
   },
+
   root: path.resolve(import.meta.dirname, "client"),
+
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,

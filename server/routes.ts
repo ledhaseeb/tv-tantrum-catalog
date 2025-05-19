@@ -1,6 +1,9 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./database-storage";
+// Switch to memory storage for development
+import { MemStorage } from "./storage";
+// Create and initialize memory storage
+const storage = new MemStorage();
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { ZodError } from "zod";
