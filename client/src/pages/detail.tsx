@@ -413,7 +413,7 @@ export default function Detail({ id }: DetailProps) {
                 {showDetail.name}
                 {(showDetail.releaseYear || showDetail.endYear) && 
                   <span className="text-gray-600 font-normal text-xl ml-2">
-                    ({showDetail.releaseYear || "1999"}-{showDetail.endYear || "2002"})
+                    ({showDetail.releaseYear || "Unknown"}-{showDetail.isOngoing ? "present" : (showDetail.endYear || "Unknown")})
                   </span>
                 }
               </h1>
