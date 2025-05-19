@@ -55,7 +55,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   
   // Fetch shows for autocomplete and theme analysis
   const { data: shows } = useQuery<TvShow[]>({
-    queryKey: ['/api/shows'],
+    queryKey: ['/api/tv-shows'],
     staleTime: 300000, // 5 minutes
   });
   
