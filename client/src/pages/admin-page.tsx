@@ -985,14 +985,14 @@ export default function AdminPage() {
                           <TableCell>{show.ageRange || 'N/A'}</TableCell>
                           <TableCell>{show.stimulationScore}/5</TableCell>
                           <TableCell>
-                            {show.imdbId ? (
+                            {(show.imdbId || (show.creator && show.releaseYear && !show.isYouTubeChannel)) ? (
                               <span className="text-green-600 font-medium">Y</span>
                             ) : (
                               <span className="text-red-500">N</span>
                             )}
                           </TableCell>
                           <TableCell>
-                            {show.channelId ? (
+                            {(show.channelId || (show.isYouTubeChannel && show.creator && show.subscriberCount)) ? (
                               <span className="text-green-600 font-medium">Y</span>
                             ) : (
                               <span className="text-red-500">N</span>
