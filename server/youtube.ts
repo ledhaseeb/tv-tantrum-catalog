@@ -70,7 +70,7 @@ class YouTubeService {
   }
   
   /**
-   * Search for a YouTube channel by name
+   * Search for a YouTube channel by name with flexible matching
    */
   async searchChannel(channelName: string): Promise<{id: string, title: string} | null> {
     try {
@@ -80,34 +80,83 @@ class YouTubeService {
         return null;
       }
       
-      // Construct the search URL
-      const searchUrl = `${this.API_BASE_URL}/search?part=snippet&q=${encodeURIComponent(channelName)}&type=channel&maxResults=1&key=${this.API_KEY}`;
+      // Try different search queries for better matching chances
+      const searchQueries = [
+        channelName,                                   // Original show name
+        `${channelName} official`,                     // Try official channel
+        `${channelName} kids show`,                    // Specify kids content
+        channelName.replace(/\s*\(\d{4}(-\d{4})?\)$/, '') // Remove year information
+      ];
       
-      // Make the request
-      const response = await fetch(searchUrl);
-      const data: any = await response.json();
-      
-      // Check for errors
-      if (data.error) {
-        console.error('YouTube API Error:', data.error.message);
-        return null;
+      // For kid shows, try some specific patterns
+      if (channelName.toLowerCase().includes('&')) {
+        // Try replacing & with 'and'
+        searchQueries.push(channelName.replace(/&/g, 'and'));
       }
       
-      // Check if we got any results
-      if (!data.items || data.items.length === 0) {
-        console.log(`No channel found for "${channelName}"`);
-        return null;
+      // Try each search query until we find a match
+      for (const query of searchQueries) {
+        console.log(`Trying YouTube search query: "${query}"`);
+        
+        // Construct the search URL with more results to find better matches
+        const searchUrl = `${this.API_BASE_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=channel&maxResults=3&key=${this.API_KEY}`;
+        
+        // Make the request
+        const response = await fetch(searchUrl);
+        const data: any = await response.json();
+        
+        // Check for errors
+        if (data.error) {
+          console.error('YouTube API Error:', data.error.message);
+          continue; // Try next query
+        }
+        
+        // Check if we got any results
+        if (data.items && data.items.length > 0) {
+          // Look for the best match among results
+          for (const item of data.items) {
+            const titleLower = item.snippet.title.toLowerCase();
+            const channelLower = channelName.toLowerCase();
+            
+            // Simple fuzzy matching - check if the result contains major parts of our query
+            // or if our query contains major parts of the result
+            if (titleLower.includes(channelLower) || 
+                channelLower.includes(titleLower) ||
+                this.calculateSimilarity(titleLower, channelLower) > 0.5) {
+              
+              console.log(`Found YouTube channel match: ${item.snippet.title} for show "${channelName}"`);
+              return {
+                id: item.id.channelId,
+                title: item.snippet.title
+              };
+            }
+          }
+        }
       }
       
-      // Return channel ID and title
-      return {
-        id: data.items[0].id.channelId,
-        title: data.items[0].snippet.title
-      };
+      console.log(`No channel found for "${channelName}" after trying all search queries`);
+      return null;
     } catch (error) {
       console.error(`Error searching YouTube for "${channelName}":`, error);
       return null;
     }
+  }
+  
+  /**
+   * Calculate text similarity between two strings
+   * Simple implementation of Jaccard similarity using word sets
+   */
+  private calculateSimilarity(text1: string, text2: string): number {
+    // Tokenize and create sets
+    const words1 = new Set(text1.toLowerCase().split(/\W+/).filter(w => w.length > 2));
+    const words2 = new Set(text2.toLowerCase().split(/\W+/).filter(w => w.length > 2));
+    
+    // Calculate intersection and union
+    const intersection = new Set([...words1].filter(x => words2.has(x)));
+    const union = new Set([...words1, ...words2]);
+    
+    // Jaccard similarity coefficient
+    return union.size === 0 ? 0 : intersection.size / union.size;
   }
   
   /**

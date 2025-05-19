@@ -45,7 +45,8 @@
       "Teamwork",
       "Perseverance",
       "Science"
-    ]
+    ],
+    "description": "Ada Twist, Scientist follows the adventures of eight-year-old Ada Twist, a pint-sized scientist with a giant-sized curiosity, who aspires to discover the truth about absolutely everything. With the help of her two best friends, Rosie Revere and Iggy Peck, Ada unravels and solves mysteries for her friends and family. But solving the mystery is only the beginning, because science isn't just about learning how and why and what it's about putting that knowledge into action to make the world a better place."
   },
   "3": {
     "stimulationScore": 4,
@@ -507,7 +508,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Hey kids! Pick your feet up off the floor; it's time to dance with the dinosaur - Barney, that is, in this high-energy song and dance revue. You can't help but twist and shout to these infectious grooves, a compliation of funky favorites and danceable debuts. When you're ready to get down to some serious singing and swinging, Barney's got the dino dancin' tunes you'll want to see again and again!"
   },
   "21": {
     "stimulationScore": 5,
