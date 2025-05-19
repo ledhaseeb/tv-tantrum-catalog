@@ -475,7 +475,7 @@ export default function Detail({ id }: DetailProps) {
                   <div>
                     <div className="flex justify-between mb-1">
                       <div className="text-gray-600">Scene Frequency:</div>
-                      <div className="font-medium">{showDetail.sceneFrequency || 'High'}</div>
+                      <div className="font-medium">{showDetail.sceneFrequency || 'Moderate'}</div>
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
@@ -499,6 +499,10 @@ export default function Detail({ id }: DetailProps) {
                             level = 3;
                           } else if (showDetail.sceneFrequency === 'High') {
                             level = 5;
+                          } else if (showDetail.sceneFrequency === 'Limited') {
+                            level = 1;
+                          } else if (showDetail.sceneFrequency === 'Minimal') {
+                            level = 1;
                           }
                         }
                           
@@ -607,6 +611,10 @@ export default function Detail({ id }: DetailProps) {
                               level = 3;
                             } else if (showDetail.musicTempo === 'High') {
                               level = 5;
+                            } else if (showDetail.musicTempo === 'Limited') {
+                              level = 1;
+                            } else if (showDetail.musicTempo === 'Minimal') {
+                              level = 1;
                             }
                           }
                             
@@ -632,7 +640,7 @@ export default function Detail({ id }: DetailProps) {
                   <div>
                     <div className="flex justify-between mb-1">
                       <div className="text-gray-600">Total Music Level:</div>
-                      <div className="font-medium">{showDetail.totalMusicLevel || 'High'}</div>
+                      <div className="font-medium">{showDetail.totalMusicLevel || 'Moderate'}</div>
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
@@ -656,6 +664,10 @@ export default function Detail({ id }: DetailProps) {
                             level = 3;
                           } else if (showDetail.totalMusicLevel === 'High') {
                             level = 5;
+                          } else if (showDetail.totalMusicLevel === 'Limited') {
+                            level = 1;
+                          } else if (showDetail.totalMusicLevel === 'Minimal') {
+                            level = 1;
                           }
                         }
                           
