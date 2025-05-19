@@ -65,16 +65,8 @@ export const tvShows = pgTable("tv_shows", {
   totalSoundEffectTimeLevel: text("total_sound_effect_time_level"),
   sceneFrequency: text("scene_frequency"),
   
-  // Additional categorized ratings for specific aspects (1-5 scale)
-  friendshipRating: integer("friendship_rating"),
-  problemSolvingRating: integer("problem_solving_rating"),
-  relatableSituationsRating: integer("relatable_situations_rating"),
-  emotionalIntelligenceRating: integer("emotional_intelligence_rating"),
+  // We're keeping creativity_rating but removing the other specialized ratings
   creativityRating: integer("creativity_rating"),
-  educationalValueRating: integer("educational_value_rating"),
-  
-  // Overall rating is still in the database and marked as NOT NULL
-  overallRating: integer("overall_rating").notNull().default(3),
   
   // Platform and themes
   availableOn: text("available_on").array(),
