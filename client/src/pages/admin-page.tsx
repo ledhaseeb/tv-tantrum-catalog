@@ -122,7 +122,8 @@ export default function AdminPage() {
     totalMusicLevel: 'Medium',
     totalSoundEffectTimeLevel: 'Medium',
     animationStyle: '',
-    themes: [] as string[]
+    themes: [] as string[],
+    imageUrl: ''
   });
 
   // Check if user is admin
