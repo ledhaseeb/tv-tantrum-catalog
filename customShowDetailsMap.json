@@ -7311,5 +7311,21 @@
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "Moderate",
     "sceneFrequency": "Moderate-High"
+  },
+  "322": {
+    "stimulationScore": 5,
+    "musicTempo": "High",
+    "totalMusicLevel": "High",
+    "totalSoundEffectTimeLevel": "High",
+    "sceneFrequency": "Moderate-High",
+    "interactivityLevel": "Moderate",
+    "dialogueIntensity": "Moderate-High",
+    "soundEffectsLevel": "High",
+    "animationStyle": "3D animation with bright and high contrasting colours",
+    "ageRange": "3-6 years",
+    "themes": [
+      "STEM"
+    ],
+    "description": "Welcome to the official Blaze and the Monster Machines YouTube channel! Join Blaze, the world’s most amazing monster truck, and his driver, AJ, on their Axel City adventures! Whenever there’s trouble, Blaze is the truck everyone turns to for help because he can do things no other truck can! He’s the fastest truck in town, using his Blazing Speed to zoom into action, win the race, or save the day. With his knowledge of science and engineering, Blaze can overcome any challenge by transforming into anything. All he needs to become a helicopter, snow blower, backhoe, or even a giant monster truck toaster is the right parts! Not only can you watch fun filled adventures with Blaze and AJ, but the official Blaze and the Monster Machine channel will feature all of their friends (And rivals) including Gabby, Watts, Stripes, Starla, Darington, Zeg, Crusher & Pickle. 📺 You can find more Blaze and the Monster Machines weekday mornings on Nickelodeon and everywhere you find Nick Jr"
   }
 }

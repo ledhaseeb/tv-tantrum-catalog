@@ -196,15 +196,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if this is a YouTube show
       const isYouTubeShow = show.availableOn?.includes('YouTube');
       
-      let externalData = null;
+      let externalData = {
+        omdb: null,
+        youtube: null
+      };
       
       try {
+        // For all shows, try to get OMDb data
+        const omdbData = await omdbService.getShowData(show.name);
+        console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
+        
+        if (omdbData) {
+          // If this is the first time we get OMDb data for this show, update the metadata
+          if (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show') {
+            // Extract year information
+            const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+            
+            // Extract creator information
+            const creator = extractCreator(omdbData.director, omdbData.writer);
+            
+            // Update show with this additional metadata if it's not already set
+            const updateData: any = {};
+            
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            if (!show.endYear && endYear) {
+              updateData.endYear = endYear;
+            }
+            
+            // Only update isOngoing if we have valid year data
+            if (releaseYear && !show.isOngoing) {
+              updateData.isOngoing = isOngoing;
+            }
+            
+            // If we have a plot and the current description is generic, update it
+            if (omdbData.plot && omdbData.plot !== 'N/A' && 
+                (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = omdbData.plot;
+            }
+            
+            // Only update if we have new data
+            if (Object.keys(updateData).length > 0) {
+              console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
+              await storage.updateTvShow(id, updateData);
+            }
+          }
+          
+          // Store the OMDb data for response
+          externalData.omdb = omdbData;
+        }
+        
+        // If this is a YouTube show, also get YouTube data
         if (isYouTubeShow) {
           // For YouTube shows, use YouTube API
           const youtubeData = await youtubeService.getChannelData(show.name);
           console.log(`YouTube data for ${show.name}:`, youtubeData ? 'Found' : 'Not found');
           
-          if (youtubeData && (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show')) {
+          if (youtubeData) {
             // Extract release year from publishedAt date
             const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
             
@@ -256,55 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Store the YouTube data for response
-          externalData = { youtube: youtubeData };
-        } else {
-          // For regular TV shows, use OMDb
-          const omdbData = await omdbService.getShowData(show.name);
-          console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
-          
-          // If this is the first time we get OMDb data for this show, update the metadata
-          if (omdbData && (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show')) {
-            // Extract year information
-            const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
-            
-            // Extract creator information
-            const creator = extractCreator(omdbData.director, omdbData.writer);
-            
-            // Update show with this additional metadata if it's not already set
-            const updateData: any = {};
-            
-            if (!show.creator && creator) {
-              updateData.creator = creator;
-            }
-            
-            if (!show.releaseYear && releaseYear) {
-              updateData.releaseYear = releaseYear;
-            }
-            
-            if (!show.endYear && endYear) {
-              updateData.endYear = endYear;
-            }
-            
-            // Only update isOngoing if we have valid year data
-            if (releaseYear && !show.isOngoing) {
-              updateData.isOngoing = isOngoing;
-            }
-            
-            // If we have a plot and the current description is generic, update it
-            if (omdbData.plot && omdbData.plot !== 'N/A' && 
-                (show.description === 'A children\'s TV show' || !show.description)) {
-              updateData.description = omdbData.plot;
-            }
-            
-            // Only update if we have new data
-            if (Object.keys(updateData).length > 0) {
-              console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
-              await storage.updateTvShow(id, updateData);
-            }
-          }
-          
-          // Store the OMDb data for response
-          externalData = { omdb: omdbData };
+          externalData.youtube = youtubeData;
         }
       } catch (error) {
         console.error(`Error fetching external data for ${show.name}:`, error);
