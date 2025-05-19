@@ -3,10 +3,9 @@
  * It focuses on updating fields like animation_style, dialogue_intensity, etc. from the Google Sheet.
  */
 
-// Use CommonJS require since this is a standalone script
-const pg = require('pg');
-const fs = require('fs');
-const { parse } = require('csv-parse/sync');
+import pg from 'pg';
+import fs from 'fs';
+import { parse } from 'csv-parse/sync';
 
 const { Pool } = pg;
 
@@ -172,7 +171,7 @@ async function updateSensoryDetails() {
         }
         
         if (csvDetails.targetAgeGroup) {
-          updateFields.push(`target_audience = $${paramIndex++}`);
+          updateFields.push(`age_range = $${paramIndex++}`);
           updateValues.push(csvDetails.targetAgeGroup);
         }
         
@@ -195,7 +194,7 @@ async function updateSensoryDetails() {
         if (updateFields.length > 0) {
           const updateQuery = `
             UPDATE tv_shows 
-            SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP 
+            SET ${updateFields.join(', ')}
             WHERE id = $${paramIndex}
           `;
           
