@@ -1,11 +1,26 @@
 /**
  * This script updates the TV shows in the database with sensory details from the CSV file.
- * It focuses on updating fields like animation_style, dialogue_intensity, etc. that may be missing.
+ * It focuses on updating fields like animation_style, dialogue_intensity, etc. from the Google Sheet.
  */
 
-import { pool } from './server/db.js';
-import fs from 'fs';
-import { parse } from 'csv-parse/sync';
+// Use CommonJS require since this is a standalone script
+const pg = require('pg');
+const fs = require('fs');
+const { parse } = require('csv-parse/sync');
+
+const { Pool } = pg;
+
+// Create pool configuration
+const poolConfig = {
+  connectionString: process.env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+  ssl: { rejectUnauthorized: false },
+  application_name: 'tv-tantrum-updater'
+};
+
+const pool = new Pool(poolConfig);
 
 // Path to the CSV file
 const CSV_FILE_PATH = 'tvshow_sensory_data.csv';
@@ -28,16 +43,21 @@ async function updateSensoryDetails() {
     // Use program name as key, storing the sensory details
     const programName = record['Programs'];
     if (programName) {
+      // Process ratings - convert 'Very High' to 'High'
+      const processRating = (rating) => {
+        if (!rating) return null;
+        return rating.replace(/Very High/i, 'High');
+      };
+      
       showDetailsMap.set(programName.toLowerCase(), {
-        animationStyle: record['Animation Styles'] || null,
-        dialogueIntensity: record['Dialougue Intensity'] || null,
-        soundFrequency: record['Sound Effects'] || null,
-        totalMusicLevel: record['Total Music'] || null,
-        musicTempo: record['Music Tempo'] || null,
-        soundEffectsLevel: record['Sound Effects'] || null,
-        sceneFrequency: record['Scene Frequency'] || null,
-        totalSoundEffectTimeLevel: record['Total Sound Effect Time'] || null,
-        interactionLevel: record['Interactivity Level'] || null,
+        interactivityLevel: processRating(record['Interactivity Level'] || null), // Column I
+        animationStyle: record['Animation Styles'] || null, // Column J
+        dialogueIntensity: processRating(record['Dialougue Intensity'] || null), // Column K
+        soundEffectsLevel: processRating(record['Sound Effects'] || null), // Column L
+        totalSoundEffectTimeLevel: processRating(record['Total Sound Effect Time'] || null), // Column M
+        sceneFrequency: processRating(record['Scene Frequency'] || null), // Column N
+        musicTempo: processRating(record['Music Tempo'] || null), // Column O
+        totalMusicLevel: processRating(record['Total Music'] || null), // Column P
         themes: record['Themes, Teachings, Guidance'] 
           ? record['Themes, Teachings, Guidance'].split(',').map(t => t.trim()) 
           : [],
@@ -109,10 +129,7 @@ async function updateSensoryDetails() {
           updateValues.push(csvDetails.dialogueIntensity);
         }
         
-        if (csvDetails.soundFrequency) {
-          updateFields.push(`sound_frequency = $${paramIndex++}`);
-          updateValues.push(csvDetails.soundFrequency);
-        }
+        // We've removed the soundFrequency field as it's redundant with soundEffectsLevel
         
         if (csvDetails.totalMusicLevel) {
           updateFields.push(`total_music_level = $${paramIndex++}`);
@@ -139,9 +156,9 @@ async function updateSensoryDetails() {
           updateValues.push(csvDetails.totalSoundEffectTimeLevel);
         }
         
-        if (csvDetails.interactionLevel) {
-          updateFields.push(`interaction_level = $${paramIndex++}`);
-          updateValues.push(csvDetails.interactionLevel);
+        if (csvDetails.interactivityLevel) {
+          updateFields.push(`interactivity_level = $${paramIndex++}`);
+          updateValues.push(csvDetails.interactivityLevel);
         }
         
         if (csvDetails.themes && csvDetails.themes.length > 0) {
@@ -220,9 +237,8 @@ async function updateSensoryDetails() {
 // Run the update function
 updateSensoryDetails().then(() => {
   console.log('Sensory details update script completed.');
-  // In ES modules, we use process.exitCode instead of process.exit
-  process.exitCode = 0;
+  process.exit(0);
 }).catch(err => {
   console.error('Script failed:', err);
-  process.exitCode = 1;
+  process.exit(1);
 });
