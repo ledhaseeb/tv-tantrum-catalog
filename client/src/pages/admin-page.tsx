@@ -57,7 +57,8 @@ import {
   Image,
   Trash2,
   FileText,
-  Info
+  Info,
+  Video
 } from 'lucide-react';
 import { ImageUpload } from '@/components/image-upload';
 import { TvShow, User as UserType } from '@shared/schema';
@@ -76,6 +77,7 @@ export default function AdminPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
+  const [isUpdatingYouTubeMetadata, setIsUpdatingYouTubeMetadata] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddingShow, setIsAddingShow] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -830,6 +832,24 @@ export default function AdminPage() {
                   <>
                     <FileText className="h-4 w-4 mr-2" />
                     Update Show Metadata
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={handleUpdateYouTubeMetadata} 
+                disabled={isUpdatingYouTubeMetadata}
+                variant="outline"
+                className="whitespace-nowrap"
+              >
+                {isUpdatingYouTubeMetadata ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating YouTube Data...
+                  </>
+                ) : (
+                  <>
+                    <Video className="h-4 w-4 mr-2" />
+                    Update YouTube Data
                   </>
                 )}
               </Button>
