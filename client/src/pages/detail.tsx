@@ -8,7 +8,6 @@ import { TvShow, TvShowReview } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Helmet } from "react-helmet-async";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -174,11 +173,6 @@ export default function Detail({ id }: DetailProps) {
   if (error || !showDetail) {
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Helmet>
-          <title>Show Not Found | TV Tantrum</title>
-          <meta name="description" content="We couldn't find the TV show you're looking for. Browse our catalog for children's TV shows with detailed stimulation scores and age suitability ratings." />
-        </Helmet>
-        
         <div className="mb-6 flex items-center">
           <Button variant="ghost" className="mr-4 text-primary" onClick={handleBackClick}>
             <i className="fas fa-arrow-left mr-2"></i> Back to Shows
@@ -198,39 +192,6 @@ export default function Detail({ id }: DetailProps) {
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50">
-      {/* Dynamic SEO meta tags for each TV show page */}
-      <Helmet>
-        <title>{showDetail.name} - TV Show Guide | TV Tantrum</title>
-        <meta name="description" content={`${showDetail.name} - ${showDetail.stimulationScore || 0}/10 stimulation score. ${showDetail.description || 'Learn about this show\'s sensory impact and whether it\'s suitable for your child.'}${showDetail.ageRange ? ` Ideal for ages ${showDetail.ageRange}.` : ''}`} />
-        
-        {/* Open Graph tags for social media sharing */}
-        <meta property="og:title" content={`${showDetail.name} - Children's TV Show Guide`} />
-        <meta property="og:description" content={`Stimulation Score: ${showDetail.stimulationScore || 0}/10. ${showDetail.themes?.length ? `Themes: ${showDetail.themes.join(', ')}.` : ''} ${showDetail.ageRange ? `Suitable for ages ${showDetail.ageRange}.` : ''}`} />
-        <meta property="og:image" content={showDetail.imageUrl || (showDetail.omdb?.poster && showDetail.omdb.poster !== 'N/A' ? showDetail.omdb.poster : '/logo.png')} />
-        <meta property="og:type" content="website" />
-        
-        {/* Structured data for rich search results */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "TVSeries",
-            "name": showDetail.name,
-            "description": showDetail.description || `${showDetail.name} - Parent guide and stimulation score on TV Tantrum`,
-            "image": showDetail.imageUrl || (showDetail.omdb?.poster && showDetail.omdb.poster !== 'N/A' ? showDetail.omdb.poster : '/logo.png'),
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": showDetail.stimulationScore || 0,
-              "bestRating": "10",
-              "worstRating": "1",
-              "ratingCount": showDetail.reviews?.length || 1
-            },
-            "datePublished": showDetail.releaseYear ? `${showDetail.releaseYear}-01-01` : undefined,
-            "actor": [],
-            "genre": showDetail.themes
-          })}
-        </script>
-      </Helmet>
-      
       <div className="mb-4 flex items-center">
         <Button variant="ghost" className="text-primary hover:text-primary-700" onClick={handleBackClick}>
           <i className="fas fa-arrow-left mr-2"></i> Back to Catalog

@@ -9,17 +9,12 @@ import { users } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
-// Use memory store for sessions to avoid database connection issues
-import createMemoryStore from "memorystore";
-const MemoryStore = createMemoryStore(session);
-
-// Use in-memory session store for resilience
-const sessionStore = new MemoryStore({
-  checkPeriod: 86400000 // prune expired entries every 24h
+// Database session store
+const PostgresSessionStore = connectPg(session);
+export const sessionStore = new PostgresSessionStore({ 
+  pool, 
+  createTableIfMissing: true 
 });
-console.log("Using in-memory session storage for better reliability");
-
-export { sessionStore };
 
 // No need to import User here as types are explicitly defined
 declare global {
@@ -104,41 +99,19 @@ export function setupAuth(app: Express) {
       },
       async (identifier, password, done) => {
         try {
-          // Special fallback admin login when database isn't available
-          if (identifier === 'admin' && password === 'admin123') {
-            console.log('Using fallback admin login when database is unavailable');
-            const fallbackAdmin = {
-              id: 9999,
-              email: 'admin@tvtantrum.com',
-              username: 'admin',
-              isAdmin: true,
-              createdAt: new Date().toISOString(),
-              isApproved: true
-            };
-            return done(null, fallbackAdmin);
-          }
+          // Check if the identifier is an email (contains @) or a username
+          const isEmail = identifier.includes('@');
+          console.log('Login attempt with identifier:', { identifier, isEmail });
           
           // Try to find the user by email or username
           let user;
-          try {
-            const isEmail = identifier.includes('@');
-            console.log('Login attempt with identifier:', { identifier, isEmail });
-            
-            if (isEmail) {
-              user = await storage.getUserByEmail(identifier);
-            } else {
-              user = await storage.getUserByUsername(identifier);
-            }
-            
-            console.log('User found:', user ? { id: user.id, email: user.email, exists: true } : 'No user found');
-          } catch (dbError) {
-            console.error('Database error during authentication:', dbError);
-            return done(null, false, { 
-              message: "Database connection issue. Try using admin/admin123 to log in.", 
-              isPendingApproval: false,
-              isDatabaseError: true 
-            });
+          if (isEmail) {
+            user = await storage.getUserByEmail(identifier);
+          } else {
+            user = await storage.getUserByUsername(identifier);
           }
+          
+          console.log('User found:', user ? { id: user.id, email: user.email, exists: true } : 'No user found');
           
           // Handle authentication failure
           if (!user) {
@@ -162,7 +135,6 @@ export function setupAuth(app: Express) {
             return done(null, safeUser as Express.User);
           }
         } catch (error) {
-          console.error('Unexpected error during authentication:', error);
           return done(error);
         }
       }
