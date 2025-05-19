@@ -39,9 +39,25 @@ interface OmdbData {
   imdbId: string;
 }
 
+interface YouTubeData {
+  title: string;
+  description: string;
+  subscriberCount: string;
+  videoCount: string;
+  viewCount: string;
+  publishedAt: string;
+  thumbnailUrl: string;
+  channelId: string;
+}
+
 type ShowDetailResponse = TvShow & { 
   reviews: TvShowReview[];
-  omdb?: OmdbData | null; 
+  omdb?: OmdbData | null;
+  youtube?: YouTubeData | null;
+  externalData?: {
+    omdb?: OmdbData | null;
+    youtube?: YouTubeData | null;
+  }
 };
 
 type DetailProps = {
@@ -336,6 +352,62 @@ export default function Detail({ id }: DetailProps) {
                           className="text-xs text-blue-600 hover:text-blue-800 flex items-center"
                         >
                           View on IMDb 
+                          <i className="fas fa-external-link-alt ml-1"></i>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* YouTube Data Section */}
+              {(showDetail.isYouTubeChannel || showDetail.subscriberCount || 
+                showDetail.videoCount || showDetail.externalData?.youtube) && (
+                <div className="mt-4 border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+                    <i className="fab fa-youtube text-red-600 mr-1"></i>
+                    YouTube Channel Information
+                  </h3>
+                  <div className="mt-2 space-y-2">
+                    {(showDetail.subscriberCount || showDetail.externalData?.youtube?.subscriberCount) && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Subscribers:</div>
+                        <div className="text-sm">
+                          {parseInt(showDetail.subscriberCount || 
+                            showDetail.externalData?.youtube?.subscriberCount || '0').toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {(showDetail.videoCount || showDetail.externalData?.youtube?.videoCount) && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Videos:</div>
+                        <div className="text-sm">
+                          {parseInt(showDetail.videoCount || 
+                            showDetail.externalData?.youtube?.videoCount || '0').toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {(showDetail.publishedAt || showDetail.externalData?.youtube?.publishedAt) && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-600">Channel Since:</div>
+                        <div className="text-sm">
+                          {new Date(showDetail.publishedAt || 
+                            showDetail.externalData?.youtube?.publishedAt || '').toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {showDetail.channelId && (
+                      <div className="mt-2">
+                        <a 
+                          href={`https://www.youtube.com/channel/${showDetail.channelId}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-red-600 hover:text-red-800 flex items-center"
+                        >
+                          View on YouTube 
                           <i className="fas fa-external-link-alt ml-1"></i>
                         </a>
                       </div>

@@ -5,7 +5,7 @@
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
     "sceneFrequency": "Moderate-High",
-    "interactivityLevel": "High",
+    "interactivityLevel": "Moderate",
     "dialogueIntensity": "Moderate-High",
     "soundEffectsLevel": "Moderate-High",
     "animationStyle": "Live-Action Family Videos",
@@ -19,7 +19,7 @@
       "Problem Solving",
       "Relatable Situations"
     ],
-    "description": "A children's TV show",
+    "description": "mini professional fun haver :) i make my videos and dad does my emails -- Adley@Spacestation.com",
     "TV or YouTube": "YouTube"
   },
   "2": {
@@ -2630,7 +2630,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Moderate-High"
+    "sceneFrequency": "Moderate-High",
+    "description": "Hudson's Playground follows the adventures of Hudson and his sister Holly on their IRL family farm. Experience all the fun of farm life - tractors, trucks, and tools galore - in the all new series, pocket.watch Hudson's Playground..."
   },
   "109": {
     "stimulationScore": 3,
