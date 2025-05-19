@@ -96,7 +96,8 @@ export default function AdminPage() {
     endYear: null, // Null is acceptable for endYear
     isOngoing: true, // Default to ongoing
     creator: '', // Empty string for creator
-    availableOn: [] as string[] // Empty array for available platforms
+    availableOn: [] as string[], // Empty array for available platforms
+    overallRating: 3 // Default overall rating (required by database)
   });
   
   // Redirect if user is not an admin
@@ -345,7 +346,8 @@ export default function AdminPage() {
       endYear: null,
       isOngoing: true,
       creator: '',
-      availableOn: []
+      availableOn: [],
+      overallRating: 3
     });
     
     // Open the add show dialog
@@ -1342,6 +1344,27 @@ export default function AdminPage() {
                 })}
                 className="col-span-3"
                 placeholder="Enter a whole number from 1-5"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="overallRating" className="text-right">
+                Overall Rating (1-5)
+              </Label>
+              <Input
+                id="overallRating"
+                type="number"
+                min={1}
+                max={5}
+                step={1}
+                value={newShowFormState.overallRating}
+                onChange={(e) => setNewShowFormState({
+                  ...newShowFormState, 
+                  overallRating: Math.round(Number(e.target.value))
+                })}
+                className="col-span-3"
+                placeholder="Enter a whole number from 1-5"
+                required
               />
             </div>
             

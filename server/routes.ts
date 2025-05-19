@@ -675,7 +675,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endYear: req.body.endYear || null,
         isOngoing: req.body.isOngoing !== undefined ? req.body.isOngoing : true,
         creator: req.body.creator || '',
-        availableOn: Array.isArray(req.body.availableOn) ? req.body.availableOn : []
+        availableOn: Array.isArray(req.body.availableOn) ? req.body.availableOn : [],
+        overallRating: req.body.overallRating || 3 // Default overall rating if not provided
       };
       
       console.log("Adding show with data:", JSON.stringify({
