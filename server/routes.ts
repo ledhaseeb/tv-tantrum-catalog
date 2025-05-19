@@ -318,23 +318,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         externalData
       };
       
-      // If a show has YouTube data in the database, ensure it's exposed directly
-      if (show.isYouTubeChannel) {
-        console.log(`Show ${show.name} has YouTube data in database`);
-        console.log(`isYouTubeChannel: ${show.isYouTubeChannel}, subscriberCount: ${show.subscriberCount}, videoCount: ${show.videoCount}`);
+      // Make sure the YouTube data from the database is directly accessible
+      // by exposing it at the top level of the response
+      if (show.isYouTubeChannel || show.subscriberCount || show.videoCount) {
+        console.log(`Show ${show.name} has YouTube channel data`);
         
-        // Use values from the database if they exist
-        response.youtube = {
-          title: show.name,
-          description: show.description,
-          subscriberCount: show.subscriberCount || '',
-          videoCount: show.videoCount || '',
-          channelId: show.channelId || '',
-          publishedAt: show.publishedAt || '',
-          thumbnailUrl: show.imageUrl || ''
-        };
-        
-        console.log('Added YouTube data to response:', response.youtube);
+        // Make sure the YouTube specific fields are directly available in the response
+        response.isYouTubeChannel = true;
+        response.subscriberCount = show.subscriberCount;
+        response.videoCount = show.videoCount;
+        response.publishedAt = show.publishedAt;
+        response.channelId = show.channelId;
       }
       
       res.json(response);
