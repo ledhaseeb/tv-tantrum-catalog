@@ -206,9 +206,9 @@ export default function AdminPage() {
 
   // Load all shows
   useEffect(() => {
-    const fetchShows = async () => {
+    const loadInitialShows = async () => {
       try {
-        const data = await fetch('/api/shows').then(res => res.json());
+        const data = await fetch('/api/tv-shows').then(res => res.json());
         setShows(data);
         setFilteredShows(data);
         setIsLoading(false);
@@ -223,7 +223,7 @@ export default function AdminPage() {
       }
     };
 
-    fetchShows();
+    loadInitialShows();
   }, [toast]);
 
   // Handle search
