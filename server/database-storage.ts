@@ -311,38 +311,57 @@ export class DatabaseStorage implements IStorage {
 
   async getAllTvShows(): Promise<TvShow[]> {
     try {
-      // Use direct query instead of ORM to avoid connection issues
-      const result = await pool.query('SELECT * FROM tv_shows ORDER BY name');
+      console.log('Attempting to fetch all TV shows...');
       
-      console.log(`Fetched ${result.rowCount} TV shows from database`);
-      
-      // Map the PostgreSQL fields to our TvShow model
-      return result.rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        description: row.description,
-        imageUrl: row.image_url,
-        ageRange: row.age_range,
-        tantrumFactor: row.tantrum_factor,
-        themes: row.themes,
-        network: row.network,
-        year: row.year,
-        productionCompany: row.production_company,
-        stimulationScore: row.stimulation_score,
-        interactionLevel: row.interaction_level,
-        dialogueIntensity: row.dialogue_intensity,
-        soundFrequency: row.sound_frequency,
-        totalMusicLevel: row.total_music_level,
-        musicTempo: row.music_tempo,
-        soundEffectsLevel: row.sound_effects_level,
-        animationStyle: row.animation_style,
-        sceneFrequency: row.scene_frequency,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        totalSoundEffectTimeLevel: row.total_sound_effect_time_level
-      }));
+      // Try using a direct SQL query with proper connection management
+      const client = await pool.connect();
+      try {
+        const result = await client.query('SELECT * FROM tv_shows ORDER BY name');
+        console.log(`Successfully fetched ${result.rowCount} TV shows from database`);
+        
+        // Return the TV shows with all required fields
+        return result.rows.map(row => ({
+          id: row.id,
+          name: row.name,
+          description: row.description || '',
+          imageUrl: row.image_url,
+          ageRange: row.age_range || '',
+          episodeLength: 0,
+          tantrumFactor: row.tantrum_factor || '',
+          themes: row.themes || [],
+          creator: null,
+          releaseYear: null,
+          endYear: null,
+          isOngoing: null,
+          seasons: null,
+          totalEpisodes: null,
+          network: row.network || null,
+          productionCountry: null,
+          language: null,
+          genre: null,
+          targetAudience: null,
+          viewerRating: null,
+          stimulationScore: row.stimulation_score || 0,
+          year: row.year || '',
+          productionCompany: row.production_company || '',
+          interactionLevel: row.interaction_level || null,
+          dialogueIntensity: row.dialogue_intensity || null,
+          soundFrequency: row.sound_frequency || null,
+          totalMusicLevel: row.total_music_level || null,
+          musicTempo: row.music_tempo || null,
+          soundEffectsLevel: row.sound_effects_level || null,
+          animationStyle: row.animation_style || null,
+          sceneFrequency: row.scene_frequency || null,
+          createdAt: row.created_at || new Date().toISOString(),
+          updatedAt: row.updated_at || new Date().toISOString(),
+          totalSoundEffectTimeLevel: row.total_sound_effect_time_level || null
+        }));
+      } finally {
+        client.release();
+      }
     } catch (error) {
       console.error('Error fetching TV shows:', error);
+      // Return empty array on error
       return [];
     }
   }
