@@ -676,7 +676,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isOngoing: req.body.isOngoing !== undefined ? req.body.isOngoing : true,
         creator: req.body.creator || '',
         availableOn: Array.isArray(req.body.availableOn) ? req.body.availableOn : [],
-        overallRating: req.body.overallRating || 3 // Default overall rating if not provided
+        // Use stimulation score as the overall rating since they're the same
+        overallRating: req.body.stimulationScore || 3 // Using stimulation score for overall rating
       };
       
       console.log("Adding show with data:", JSON.stringify({
