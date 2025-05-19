@@ -1796,6 +1796,141 @@ export default function AdminPage() {
               </div>
             </div>
             
+            {/* Display lookup results when available */}
+            {showLookupOptions && (lookupResults.omdb || lookupResults.youtube) && (
+              <div className="grid grid-cols-4 gap-4 mt-4">
+                <div className="col-start-2 col-span-3">
+                  <Alert className={lookupResults.omdb ? "border-green-500" : lookupResults.youtube ? "border-red-500" : ""}>
+                    <AlertTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      API Data Found Successfully!
+                    </AlertTitle>
+                    <AlertDescription className="mt-3">
+                      {lookupResults.omdb && (
+                        <div className="mb-4 p-3 border rounded bg-muted/30">
+                          <h4 className="font-medium mb-2 flex items-center">
+                            <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                            <span className="text-blue-500 font-semibold">OMDb Data Found:</span>
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            <strong>Title:</strong> {lookupResults.omdb.title}<br />
+                            <strong>Year:</strong> {lookupResults.omdb.year}<br />
+                            <strong>Director:</strong> {lookupResults.omdb.director || "Not available"}<br />
+                            <strong>Plot:</strong> {lookupResults.omdb.plot?.substring(0, 100)}...
+                          </p>
+                          <Button 
+                            type="button"
+                            size="sm"
+                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                            onClick={() => {
+                              // Extract year information
+                              const releaseYear = lookupResults.omdb.year ? 
+                                parseInt(lookupResults.omdb.year.split('–')[0]) : null;
+                              const endYear = lookupResults.omdb.year && lookupResults.omdb.year.includes('–') ?
+                                parseInt(lookupResults.omdb.year.split('–')[1]) || null : null;
+                              
+                              setNewShowFormState({
+                                ...newShowFormState,
+                                description: lookupResults.omdb.plot || newShowFormState.description,
+                                creator: lookupResults.omdb.director || newShowFormState.creator,
+                                releaseYear: releaseYear || newShowFormState.releaseYear,
+                                endYear: endYear || newShowFormState.endYear,
+                                episodeLength: newShowFormState.episodeLength || 30,
+                                isOngoing: !endYear,
+                                imageUrl: lookupResults.omdb.poster || newShowFormState.imageUrl
+                              });
+                              setShowLookupOptions(false);
+                              toast({
+                                title: "OMDb Data Added",
+                                description: "Official TV show data has been applied to the form"
+                              });
+                            }}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Add API Data
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {lookupResults.youtube && (
+                        <div className="p-3 border rounded bg-muted/30">
+                          <h4 className="font-medium mb-2 flex items-center">
+                            <Video className="h-4 w-4 mr-2 text-red-500" />
+                            <span className="text-red-500 font-semibold">YouTube Data Found:</span>
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            <strong>Channel:</strong> {lookupResults.youtube.title}<br />
+                            <strong>Subscribers:</strong> {parseInt(lookupResults.youtube.subscriberCount).toLocaleString()}<br />
+                            <strong>Videos:</strong> {parseInt(lookupResults.youtube.videoCount).toLocaleString()}<br />
+                            <strong>Created:</strong> {new Date(lookupResults.youtube.publishedAt).toLocaleDateString()}
+                          </p>
+                          <Button 
+                            type="button"
+                            size="sm" 
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                            onClick={() => {
+                              const releaseYear = lookupResults.youtube.publishedAt ?
+                                new Date(lookupResults.youtube.publishedAt).getFullYear() : null;
+                              
+                              // Properly handle the availableOn field as an array
+                              let updatedAvailableOn;
+                              if (Array.isArray(newShowFormState.availableOn)) {
+                                // If it's already an array, add YouTube if not present
+                                updatedAvailableOn = newShowFormState.availableOn.includes('YouTube') 
+                                  ? newShowFormState.availableOn 
+                                  : [...newShowFormState.availableOn, 'YouTube'];
+                              } else if (typeof newShowFormState.availableOn === 'string') {
+                                // If it's a string, split by comma and add YouTube if not present
+                                const platforms = newShowFormState.availableOn.split(',').map(p => p.trim());
+                                updatedAvailableOn = platforms.includes('YouTube') 
+                                  ? platforms 
+                                  : [...platforms, 'YouTube'];
+                              } else {
+                                // Default to an array with just YouTube
+                                updatedAvailableOn = ['YouTube'];
+                              }
+                              
+                              setNewShowFormState({
+                                ...newShowFormState,
+                                description: lookupResults.youtube.description || newShowFormState.description,
+                                releaseYear: releaseYear || newShowFormState.releaseYear,
+                                isOngoing: true,
+                                subscriberCount: lookupResults.youtube.subscriberCount || newShowFormState.subscriberCount,
+                                videoCount: lookupResults.youtube.videoCount || newShowFormState.videoCount,
+                                isYouTubeChannel: true,
+                                publishedAt: lookupResults.youtube.publishedAt || newShowFormState.publishedAt,
+                                channelId: lookupResults.youtube.channelId || newShowFormState.channelId,
+                                availableOn: updatedAvailableOn
+                              });
+                              setShowLookupOptions(false);
+                              toast({
+                                title: "YouTube Data Added",
+                                description: "Official YouTube channel data has been applied to the form"
+                              });
+                            }}
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            Add API Data
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <Button 
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="mt-3"
+                        onClick={() => setShowLookupOptions(false)}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">
                 Description
