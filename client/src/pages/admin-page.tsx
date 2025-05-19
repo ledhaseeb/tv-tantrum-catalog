@@ -1767,7 +1767,7 @@ export default function AdminPage() {
                     setLookupResults({omdb: null, youtube: null});
                     
                     // Call the lookup API
-                    apiRequest('GET', `/api/lookup?q=${encodeURIComponent(newShowFormState.name)}`)
+                    apiRequest('GET', `/api/lookup?name=${encodeURIComponent(newShowFormState.name)}`)
                       .then(resp => resp.json())
                       .then(data => {
                         setLookupResults(data);
