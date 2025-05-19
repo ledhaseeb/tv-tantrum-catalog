@@ -196,7 +196,7 @@ const extractCreator = (director: string, writer: string) => {
         console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
         
         // If this is the first time we get OMDb data for this show, update the metadata
-        if (omdbData && (!show.creator || !show.releaseYear)) {
+        if (omdbData && (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show')) {
           // Extract year information
           const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
           
@@ -221,6 +221,12 @@ const extractCreator = (director: string, writer: string) => {
           // Only update isOngoing if we have valid year data
           if (releaseYear && !show.isOngoing) {
             updateData.isOngoing = isOngoing;
+          }
+          
+          // If we have a plot and the current description is generic, update it
+          if (omdbData.plot && omdbData.plot !== 'N/A' && 
+              (show.description === 'A children\'s TV show' || !show.description)) {
+            updateData.description = omdbData.plot;
           }
           
           // Only update if we have new data
@@ -399,6 +405,12 @@ const extractCreator = (director: string, writer: string) => {
           // Only update isOngoing if we have valid year data
           if (releaseYear && typeof show.isOngoing !== 'boolean') {
             updateData.isOngoing = isOngoing;
+          }
+          
+          // If we have a plot and the current description is generic, update it
+          if (omdbData.plot && omdbData.plot !== 'N/A' && 
+              (show.description === 'A children\'s TV show' || !show.description)) {
+            updateData.description = omdbData.plot;
           }
           
           // Only update if we have new data

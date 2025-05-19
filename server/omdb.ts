@@ -44,6 +44,7 @@ export interface OmdbShowData {
   poster: string;
   imdbId: string;
   year: string; // Used for release_year and end_year
+  plot: string; // Adding plot for descriptions
 }
 
 export class OmdbService {
@@ -70,7 +71,7 @@ export class OmdbService {
       }
 
       console.log(`Fetching OMDb data for "${title}"`);
-      const url = `${this.baseUrl}?t=${encodeURIComponent(title)}&type=series&apikey=${this.apiKey}`;
+      const url = `${this.baseUrl}?t=${encodeURIComponent(title)}&type=series&apikey=${this.apiKey}&plot=full`;
       
       const response = await fetch(url);
       const data = await response.json() as OmdbResponse;
@@ -93,7 +94,8 @@ export class OmdbService {
         awards: data.Awards || 'N/A',
         poster: data.Poster || 'N/A',
         imdbId: data.imdbID || '',
-        year: data.Year || 'N/A'
+        year: data.Year || 'N/A',
+        plot: data.Plot || ''
       };
       
       // Store in cache

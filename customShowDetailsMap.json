@@ -141,7 +141,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Akili is a four-year-old who lives in the Savannah highlands in Kilimanjaro. Every time she goes to sleep, she finds herself in a magic world called Lala Land. With the help of her new best friends in Lala Land, Akili goes on adventures where she learns English words, how to draw, count, and so much more."
   },
   "6": {
     "stimulationScore": 2,
@@ -184,7 +185,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Learning ABCs and spelling with 26 personifications of the letters of the alphabet, each with their own quirks."
   },
   "8": {
     "stimulationScore": 4,
@@ -232,7 +234,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Whilst working in a museum Andy finds a portal to the age of the dinosaurs."
   },
   "10": {
     "stimulationScore": 3,
@@ -304,7 +307,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low-Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Bespectacled aardvark Arthur Read demonstrates to kids how to deal with such childhood traumas and challenges as homework, teachers and bullies. He also has to contend with his sisters, but loves playing with his friends: tomboy Francine, foodie and best pal Buster, super smart Brain, rich girl Muffy and geography expert Sue Ellen."
   },
   "13": {
     "stimulationScore": 5,
@@ -384,7 +388,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "The adventures of the King of the elephants, his family, and friends."
   },
   "16": {
     "stimulationScore": 1,
@@ -432,7 +437,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Badanamu Stories explore themes central to the lives of preschool children but in ways that inject whimsy, imagination, and wonder into the everyday."
   },
   "18": {
     "stimulationScore": 1,
@@ -698,7 +704,8 @@
     "musicTempo": "High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Blippi is an American character on YouTube. Blippi videos are aimed at young children, and are educational. Blippi is a likable character and children love him. His special forté is his silly dancing. He has videos about everything from farms, tractors and bin lorries, to museums and theme parks. He introduces all sorts of concepts to children in a really fun, happy way. He even has a music album with his songs from his videos, such as 'Im an excavator'."
   },
   "29": {
     "stimulationScore": 1,
