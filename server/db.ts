@@ -5,15 +5,17 @@ import * as schema from "@shared/schema";
 
 const { Pool } = pg;
 
-// Use direct connection string for best compatibility with Replit's PostgreSQL
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
+}
+
+// Configure the pool with simplified settings for local development
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // Allow self-signed certificates for development
-  },
-  max: 10, // Reduce maximum connections for Replit environment
+  max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 3000, // Lower timeout for faster failure detection
+  connectionTimeoutMillis: 5000,
+  ssl: { rejectUnauthorized: false },
   application_name: 'tv-tantrum'
 };
 
