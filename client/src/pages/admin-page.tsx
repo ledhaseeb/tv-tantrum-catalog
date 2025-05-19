@@ -124,6 +124,7 @@ export default function AdminPage() {
     }
   }, [user, isAdmin, toast, setLocation]);
   const [isOptimizingImages, setIsOptimizingImages] = useState(false);
+  const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
   const [users, setUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
@@ -1181,6 +1182,55 @@ export default function AdminPage() {
                 </Button>
               </div>
               
+              <div className="pt-6 border-t">
+                <h3 className="text-lg font-medium mb-2">API Data Update</h3>
+                <p className="text-muted-foreground mb-4">
+                  Update all TV shows with the latest metadata from OMDb and YouTube APIs.
+                  This will enhance show details with descriptions, release years, creators, and other metadata.
+                </p>
+                <Button 
+                  onClick={() => {
+                    const isUpdating = window.confirm("This will update all TV shows with data from OMDb and YouTube APIs. Continue?");
+                    
+                    if (isUpdating) {
+                      toast({
+                        title: "Update Started",
+                        description: "Updating metadata for all TV shows. This may take a few minutes.",
+                      });
+                      
+                      fetch('/api/update-metadata', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        }
+                      })
+                      .then(response => response.json())
+                      .then(data => {
+                        toast({
+                          title: "Update Complete",
+                          description: `Processed ${data.total} shows. Updated ${data.successful} successfully!`,
+                        });
+                        // Refresh the shows data
+                        fetchShows();
+                      })
+                      .catch(err => {
+                        console.error('Error updating metadata:', err);
+                        toast({
+                          title: "Update Failed",
+                          description: "There was an error updating the TV show metadata.",
+                          variant: "destructive"
+                        });
+                      });
+                    }
+                  }}
+                  className="flex items-center"
+                  variant="secondary"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Update All Shows API Data
+                </Button>
+              </div>
+
               <div className="pt-4 border-t">
                 <p className="text-muted-foreground">More settings options will be available in future updates.</p>
               </div>
