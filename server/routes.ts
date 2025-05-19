@@ -748,6 +748,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a TV show (admin only)
+  app.delete("/api/shows/:id", async (req: Request, res: Response) => {
+    try {
+      // Parse ID once
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to delete shows" });
+      }
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      // Validate the show exists
+      const existingShow = await storage.getTvShowById(id);
+      if (!existingShow) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+
+      console.log(`Attempting to delete TV show: ${existingShow.name} (ID: ${id})`);
+      
+      // Delete the show from the database
+      const deleteResult = await storage.deleteTvShow(id);
+      
+      if (!deleteResult) {
+        console.error(`Failed to delete show with ID ${id}`);
+        return res.status(500).json({ message: "Failed to delete TV show" });
+      }
+      
+      console.log(`Successfully deleted TV show: ${existingShow.name} (ID: ${id})`);
+      res.status(200).json({ message: "TV show deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting TV show:", error);
+      res.status(500).json({ message: "Failed to delete TV show" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

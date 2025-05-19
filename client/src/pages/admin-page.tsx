@@ -75,6 +75,8 @@ export default function AdminPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddingShow, setIsAddingShow] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newShowFormState, setNewShowFormState] = useState({
     name: '',
     description: '',
@@ -634,50 +636,7 @@ export default function AdminPage() {
     }
   };
   
-  // Delete show handler
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  
-  const handleDeleteShow = async () => {
-    if (!selectedShow) return;
-    
-    setIsDeleting(true);
-    try {
-      // Make DELETE request to the API
-      const response = await fetch(`/api/shows/${selectedShow.id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Failed to delete show: ${response.statusText}`);
-      }
-      
-      // Remove the deleted show from state
-      setShows(prev => prev.filter(show => show.id !== selectedShow.id));
-      setFilteredShows(prev => prev.filter(show => show.id !== selectedShow.id));
-      
-      // Close the edit dialog
-      setIsDialogOpen(false);
-      
-      // Show success message
-      toast({
-        title: "Show Deleted",
-        description: `Successfully deleted "${selectedShow.name}" from the database.`,
-      });
-    } catch (error) {
-      console.error('Error deleting show:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete show",
-        variant: "destructive"
-      });
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
-    }
-  };
+  // Delete show handler - defined below
 
   // Update show
   const handleUpdateShow = async () => {
@@ -721,6 +680,41 @@ export default function AdminPage() {
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+  
+  const handleDeleteShow = async () => {
+    if (!selectedShow) return;
+    
+    setIsDeleting(true);
+    try {
+      // Make DELETE request to the API using apiRequest
+      await apiRequest('DELETE', `/api/shows/${selectedShow.id}`);
+      
+      // Update shows in state to remove the deleted show
+      setShows(prev => prev.filter(show => show.id !== selectedShow.id));
+      setFilteredShows(prev => prev.filter(show => show.id !== selectedShow.id));
+      
+      // Invalidate queries to ensure data consistency
+      queryClient.invalidateQueries({ queryKey: ['/api/shows'] });
+      
+      toast({
+        title: "Show Deleted",
+        description: `Successfully deleted ${selectedShow.name}.`,
+      });
+      
+      // Close dialogs
+      setShowDeleteConfirm(false);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error deleting show:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete show",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
