@@ -603,6 +603,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Add a new TV show (admin only)
+  app.post("/api/shows", async (req: Request, res: Response) => {
+    // Check if user is authenticated and has admin privileges
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized: Admin access required" });
+    }
+    
+    try {
+      // Validate that required fields are present
+      const { name, description } = req.body;
+      
+      if (!name || !name.trim()) {
+        return res.status(400).json({ message: "Show name is required" });
+      }
+      
+      // Process themes if they're provided as an array
+      if (req.body.themes && Array.isArray(req.body.themes)) {
+        // Filter out any empty themes
+        req.body.themes = req.body.themes.filter((theme: string) => theme.trim() !== '');
+      }
+      
+      // Ensure stimulation score is a whole number if provided
+      if (req.body.stimulationScore !== undefined) {
+        req.body.stimulationScore = Math.round(Number(req.body.stimulationScore));
+      }
+      
+      // Add the show to the database
+      const newShow = await storage.addTvShow(req.body);
+      
+      // If an image URL was provided, add it to our custom image map
+      if (req.body.imageUrl) {
+        updateCustomImageMap(newShow.id, req.body.imageUrl);
+      }
+      
+      console.log(`Created new TV show: ${name} (ID: ${newShow.id})`);
+      
+      res.status(201).json(newShow);
+    } catch (error) {
+      console.error("Error adding new TV show:", error);
+      res.status(500).json({ 
+        message: "Failed to add new TV show", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+  
   // Update a TV show (admin only)
   app.patch("/api/shows/:id", async (req: Request, res: Response) => {
     try {

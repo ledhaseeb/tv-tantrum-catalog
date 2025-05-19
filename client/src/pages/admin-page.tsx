@@ -482,7 +482,8 @@ export default function AdminPage() {
           totalMusicLevel: mappedTotalMusicLevel,
           totalSoundEffectTimeLevel: mappedTotalSoundEffectTimeLevel,
           animationStyle: ensureValue(currentShowData.animationStyle, ''),
-          themes: currentShowData.themes || []
+          themes: currentShowData.themes || [],
+          imageUrl: ensureValue(currentShowData.imageUrl, '')
         });
         
         setIsDialogOpen(true);
@@ -513,7 +514,8 @@ export default function AdminPage() {
           totalMusicLevel: mappedTotalMusicLevel,
           totalSoundEffectTimeLevel: mappedTotalSoundEffectTimeLevel,
           animationStyle: ensureValue(show.animationStyle, ''),
-          themes: show.themes || []
+          themes: show.themes || [],
+          imageUrl: ensureValue(show.imageUrl, '')
         });
         
         setIsDialogOpen(true);
