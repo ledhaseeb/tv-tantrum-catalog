@@ -54,7 +54,8 @@ import {
   X,
   PlusCircle,
   Upload,
-  Image
+  Image,
+  Trash2
 } from 'lucide-react';
 import { ImageUpload } from '@/components/image-upload';
 import { TvShow, User as UserType } from '@shared/schema';
