@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./database-storage";
 import { githubService } from "./github";
@@ -11,6 +11,8 @@ import { setupAuth } from "./auth";
 import { updateShowImagesFromOmdb } from "./image-optimizer";
 import { updateCustomImageMap, applyCustomImages } from "./image-preservator";
 import { applyCustomShowDetails } from "./details-preservator";
+import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add health check endpoint
@@ -20,6 +22,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Set up authentication
   setupAuth(app);
+  
+  // Serve static files from the public directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
   
   // Skip GitHub data import on server start to fix database errors
   console.log("Skipping GitHub data import on startup to prevent database errors");
@@ -600,6 +605,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking email:", error);
       res.status(500).json({ available: false, message: "Server error" });
+    }
+  });
+  
+  // Image upload endpoint for TV shows - used by both add and edit forms
+  app.post("/api/shows/upload-image", upload.single('image'), uploadErrorHandler, async (req: Request, res: Response) => {
+    // Check if user is authenticated and has admin privileges
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized: Admin access required" });
+    }
+    
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+      
+      // Optimize the uploaded image
+      const optimizedImagePath = await optimizeImage(req.file.path);
+      
+      // Return the path to the optimized image
+      res.json({
+        originalPath: `/uploads/${path.basename(req.file.path)}`,
+        optimizedPath: optimizedImagePath,
+        message: "Image uploaded and optimized successfully"
+      });
+    } catch (error) {
+      console.error("Error processing image upload:", error);
+      res.status(500).json({ 
+        message: "Failed to process image upload", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
   
