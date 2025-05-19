@@ -8,12 +8,15 @@ interface CacheEntry {
   expiresAt: number;
 }
 
+/**
+ * API Cache service for improving response times and reducing database load
+ */
 class ApiCache {
   private cache: Map<string, CacheEntry>;
   private defaultTTL: number; // Time to live in milliseconds
 
   constructor(defaultTTLSeconds: number = 60) {
-    this.cache = new Map();
+    this.cache = new Map<string, CacheEntry>();
     this.defaultTTL = defaultTTLSeconds * 1000;
   }
 
@@ -23,12 +26,12 @@ class ApiCache {
   get(key: string): any | null {
     const entry = this.cache.get(key);
     
-    // If no entry exists or it's expired
-    if (!entry || entry.expiresAt < Date.now()) {
-      if (entry) {
-        // Clean up expired entry
-        this.cache.delete(key);
-      }
+    // Return null if not found
+    if (!entry) return null;
+    
+    // Check if expired
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
       return null;
     }
     
@@ -39,12 +42,11 @@ class ApiCache {
    * Set data in the cache with optional custom TTL
    */
   set(key: string, data: any, ttlSeconds?: number): void {
-    const ttl = ttlSeconds ? ttlSeconds * 1000 : this.defaultTTL;
-    const expiresAt = Date.now() + ttl;
+    const ttl = (ttlSeconds || this.defaultTTL / 1000) * 1000;
     
     this.cache.set(key, {
       data,
-      expiresAt
+      expiresAt: Date.now() + ttl
     });
   }
 
@@ -66,50 +68,42 @@ class ApiCache {
    * Clear cache entries that match a prefix
    */
   clearByPrefix(prefix: string): void {
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(prefix)) {
-        this.cache.delete(key);
-      }
-    }
+    const keysToDelete = Array.from(this.cache.keys())
+      .filter(key => key.startsWith(prefix));
+    
+    keysToDelete.forEach(key => this.cache.delete(key));
   }
 
   /**
    * Get statistics about cache usage
    */
   getStats(): { totalEntries: number, memoryUsageEstimate: string } {
-    const totalEntries = this.cache.size;
+    // Estimate memory usage - rough approximation
+    let totalSize = 0;
     
-    // Rough memory usage estimate
-    let memoryUsage = 0;
-    for (const [key, value] of this.cache.entries()) {
+    Array.from(this.cache.entries()).forEach(([key, entry]) => {
       // Key size
-      memoryUsage += key.length * 2; // UTF-16 characters
+      totalSize += key.length * 2; // 2 bytes per character (UTF-16)
       
       // Value size (rough estimate)
-      try {
-        const jsonStr = JSON.stringify(value.data);
-        memoryUsage += jsonStr.length;
-      } catch (e) {
-        // If not serializable, use a conservative estimate
-        memoryUsage += 1000;
-      }
-      
-      // Entry overhead (approx)
-      memoryUsage += 50;
-    }
+      const jsonSize = JSON.stringify(entry.data).length * 2;
+      totalSize += jsonSize + 16; // Add 16 bytes for expiresAt timestamp
+    });
     
     // Convert to human-readable format
-    const memoryUsageEstimate = memoryUsage < 1024 
-      ? `${memoryUsage} bytes` 
-      : memoryUsage < 1024 * 1024 
-        ? `${(memoryUsage / 1024).toFixed(2)} KB` 
-        : `${(memoryUsage / (1024 * 1024)).toFixed(2)} MB`;
+    const sizeInKB = totalSize / 1024;
+    const sizeFormatted = sizeInKB < 1024 
+      ? `${sizeInKB.toFixed(2)} KB` 
+      : `${(sizeInKB / 1024).toFixed(2)} MB`;
     
-    return { totalEntries, memoryUsageEstimate };
+    return {
+      totalEntries: this.cache.size,
+      memoryUsageEstimate: sizeFormatted
+    };
   }
 }
 
-// Create a singleton instance
+// Export singleton instance
 export const apiCache = new ApiCache();
 
 /**
@@ -118,30 +112,31 @@ export const apiCache = new ApiCache();
  * @param ttlSeconds Time to live in seconds
  */
 export function withCache(
-  cacheKey: string | ((req: any) => string), 
+  cacheKey: string | ((req: any) => string),
   ttlSeconds?: number
 ) {
   return function(
-    target: any, 
-    propertyKey: string, 
+    target: any,
+    propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;
     
     descriptor.value = async function(...args: any[]) {
-      // First argument is expected to be the request
-      const req = args[0];
-      const key = typeof cacheKey === 'function' ? cacheKey(req) : cacheKey;
+      const req = args[0]; // First argument is typically the request
       
-      // Check cache first
+      // Generate cache key
+      const key = typeof cacheKey === 'function' 
+        ? cacheKey(req) 
+        : cacheKey;
+      
+      // Try to get from cache
       const cachedData = apiCache.get(key);
-      if (cachedData !== null) {
-        console.log(`Cache hit for ${key}`);
+      if (cachedData) {
         return cachedData;
       }
       
-      // Not in cache, call original method
-      console.log(`Cache miss for ${key}`);
+      // Cache miss, run original method
       const result = await originalMethod.apply(this, args);
       
       // Store in cache

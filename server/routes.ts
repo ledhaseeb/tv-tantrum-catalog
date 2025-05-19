@@ -14,6 +14,9 @@ import { applyCustomShowDetails } from "./details-preservator";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import path from "path";
 
+// Import caching middleware
+import { cacheMiddleware, invalidateCache } from './middleware/cache-middleware';
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add health check endpoint
   app.get('/api/health', (_req, res) => {
@@ -35,7 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log("To apply custom data to the database, run: node apply-custom-data.js");
 
   // Get all TV shows
-  app.get("/api/shows", async (req: Request, res: Response) => {
+  app.get("/api/shows", cacheMiddleware(5 * 60 * 1000), async (req: Request, res: Response) => {
     try {
       
       const { 
@@ -111,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get popular TV shows
-  app.get("/api/shows/popular", async (req: Request, res: Response) => {
+  app.get("/api/shows/popular", cacheMiddleware(10 * 60 * 1000), async (req: Request, res: Response) => {
     try {
       const limitStr = req.query.limit;
       const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
@@ -125,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get single TV show by ID
-  app.get("/api/shows/:id", async (req: Request, res: Response) => {
+  app.get("/api/shows/:id", cacheMiddleware(5 * 60 * 1000, 'id'), async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
