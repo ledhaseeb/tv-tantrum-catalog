@@ -664,12 +664,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.stimulationScore = Math.round(Number(req.body.stimulationScore));
       }
       
+      // Ensure all required fields have default values to avoid database constraint errors
+      const currentYear = new Date().getFullYear();
+      const showData = {
+        ...req.body,
+        // Set default values for any missing required fields
+        episodeLength: req.body.episodeLength || 15,
+        seasons: req.body.seasons || 1,
+        releaseYear: req.body.releaseYear || currentYear,
+        endYear: req.body.endYear || null,
+        isOngoing: req.body.isOngoing !== undefined ? req.body.isOngoing : true,
+        creator: req.body.creator || '',
+        availableOn: Array.isArray(req.body.availableOn) ? req.body.availableOn : []
+      };
+      
+      console.log("Adding show with data:", JSON.stringify({
+        name: showData.name,
+        episodeLength: showData.episodeLength,
+        seasons: showData.seasons
+      }, null, 2));
+      
       // Add the show to the database
-      const newShow = await storage.addTvShow(req.body);
+      const newShow = await storage.addTvShow(showData);
       
       // If an image URL was provided, add it to our custom image map
-      if (req.body.imageUrl) {
-        updateCustomImageMap(newShow.id, req.body.imageUrl);
+      if (showData.imageUrl) {
+        updateCustomImageMap(newShow.id, showData.imageUrl);
       }
       
       console.log(`Created new TV show: ${name} (ID: ${newShow.id})`);

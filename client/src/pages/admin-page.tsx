@@ -88,7 +88,15 @@ export default function AdminPage() {
     totalSoundEffectTimeLevel: 'Medium',
     animationStyle: '',
     themes: [] as string[],
-    imageUrl: ''
+    imageUrl: '',
+    // Adding required database fields with default values to avoid null constraints
+    episodeLength: 15, // Default episode length in minutes
+    seasons: 1, // Default number of seasons
+    releaseYear: new Date().getFullYear(), // Current year
+    endYear: null, // Null is acceptable for endYear
+    isOngoing: true, // Default to ongoing
+    creator: '', // Empty string for creator
+    availableOn: [] as string[] // Empty array for available platforms
   });
   
   // Redirect if user is not an admin
@@ -329,7 +337,15 @@ export default function AdminPage() {
       totalSoundEffectTimeLevel: 'Medium',
       animationStyle: '',
       themes: [],
-      imageUrl: ''
+      imageUrl: '',
+      // Database required fields with default values
+      episodeLength: 15,
+      seasons: 1,
+      releaseYear: new Date().getFullYear(),
+      endYear: null,
+      isOngoing: true,
+      creator: '',
+      availableOn: []
     });
     
     // Open the add show dialog
@@ -1507,6 +1523,89 @@ export default function AdminPage() {
                 className="col-span-3"
                 placeholder="Describe the animation style (e.g., '3D Animation', 'Stop-motion with hand-crafted models')"
                 rows={3}
+              />
+            </div>
+            
+            {/* Additional required fields for database */}
+            <div className="border-t pt-4 mt-4 mb-4">
+              <h3 className="text-md font-medium mb-2">Additional Information</h3>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="episodeLength" className="text-right">
+                Episode Length (min)
+              </Label>
+              <Input
+                id="episodeLength"
+                type="number"
+                value={newShowFormState.episodeLength}
+                onChange={(e) => setNewShowFormState({...newShowFormState, episodeLength: Number(e.target.value)})}
+                className="col-span-3"
+                placeholder="Episode length in minutes"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="seasons" className="text-right">
+                Seasons
+              </Label>
+              <Input
+                id="seasons"
+                type="number"
+                value={newShowFormState.seasons}
+                onChange={(e) => setNewShowFormState({...newShowFormState, seasons: Number(e.target.value)})}
+                className="col-span-3"
+                placeholder="Number of seasons"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="releaseYear" className="text-right">
+                Release Year
+              </Label>
+              <Input
+                id="releaseYear"
+                type="number"
+                value={newShowFormState.releaseYear}
+                onChange={(e) => setNewShowFormState({...newShowFormState, releaseYear: Number(e.target.value)})}
+                className="col-span-3"
+                placeholder="Year the show was released"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="creator" className="text-right">
+                Creator/Studio
+              </Label>
+              <Input
+                id="creator"
+                value={newShowFormState.creator}
+                onChange={(e) => setNewShowFormState({...newShowFormState, creator: e.target.value})}
+                className="col-span-3"
+                placeholder="Creator or studio name"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="availableOn" className="text-right">
+                Available On
+              </Label>
+              <Textarea
+                id="availableOn"
+                value={Array.isArray(newShowFormState.availableOn) ? newShowFormState.availableOn.join(', ') : ''}
+                onChange={(e) => {
+                  const platformsArray = e.target.value
+                    .split(',')
+                    .map(platform => platform.trim())
+                    .filter(platform => platform !== '');
+                  setNewShowFormState({...newShowFormState, availableOn: platformsArray});
+                }}
+                className="col-span-3"
+                placeholder="Enter platforms separated by commas (e.g., 'Netflix, Disney+, YouTube')"
+                rows={2}
               />
             </div>
             
