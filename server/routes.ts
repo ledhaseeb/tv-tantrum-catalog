@@ -541,7 +541,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limitStr = req.query.limit;
       const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 4;
       
-      const similarShows = await storage.getSimilarShowsByShowId(id, limit);
+      // Since we don't have a showId-based similar function, use the user-based one instead
+      // Or get shows with similar themes/properties
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+      
+      // Get all shows and filter them manually by similar properties
+      const allShows = await storage.getAllTvShows();
+      const similarShows = allShows
+        .filter(s => s.id !== id) // Exclude current show
+        .map(s => {
+          // Calculate similarity score
+          let score = 0;
+          
+          // Similar age range
+          if (s.ageRange === show.ageRange) score += 3;
+          
+          // Similar stimulation score (within 10 points)
+          if (Math.abs((s.stimulationScore || 0) - (show.stimulationScore || 0)) <= 10) score += 4;
+          
+          // Similar themes
+          const showThemes = show.themes || [];
+          const otherThemes = s.themes || [];
+          const commonThemes = showThemes.filter(theme => otherThemes.includes(theme));
+          score += commonThemes.length * 2;
+          
+          // Similar dialogue intensity
+          if (s.dialogueIntensity === show.dialogueIntensity) score += 2;
+          
+          // Similar animation style
+          if (s.animationStyle === show.animationStyle) score += 2;
+          
+          return { show: s, score };
+        })
+        .sort((a, b) => b.score - a.score) // Sort by highest score
+        .slice(0, limit) // Get requested number
+        .map(item => item.show); // Return just the shows
+        
       console.log(`Found ${similarShows.length} similar shows for show ID ${id}`);
       
       // Log some sample data
