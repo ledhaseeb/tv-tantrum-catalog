@@ -63,19 +63,26 @@ export function cacheMiddleware(ttl: number = DEFAULT_TTL, paramName?: string) {
 }
 
 /**
- * Utility to clear the cache
+ * Utility to clear the entire cache
  */
 export function clearCache() {
   cache.clear();
 }
 
 /**
- * Clear cache entries that match a prefix
+ * Invalidate specific cache entries
+ * @param pattern Pattern to match against cache keys
  */
-export function clearCacheByPrefix(prefix: string) {
-  Array.from(cache.keys())
-    .filter(key => key.startsWith(prefix))
-    .forEach(key => cache.delete(key));
+export function invalidateCache(pattern: string | RegExp) {
+  const keysToInvalidate = Array.from(cache.keys())
+    .filter(key => {
+      if (pattern instanceof RegExp) {
+        return pattern.test(key);
+      }
+      return key.includes(pattern);
+    });
+    
+  keysToInvalidate.forEach(key => cache.delete(key));
 }
 
 /**
