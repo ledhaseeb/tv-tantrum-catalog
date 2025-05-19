@@ -78,7 +78,7 @@ export default function AdminPage() {
   const [selectedShow, setSelectedShow] = useState<TvShow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isUpdatingAPIData, setIsUpdatingAPIData] = useState(false);
+  const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
   const [isUpdatingYouTubeMetadata, setIsUpdatingYouTubeMetadata] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddingShow, setIsAddingShow] = useState(false);
@@ -125,7 +125,6 @@ export default function AdminPage() {
     }
   }, [user, isAdmin, toast, setLocation]);
   const [isOptimizingImages, setIsOptimizingImages] = useState(false);
-  const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
   const [users, setUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
@@ -329,6 +328,8 @@ export default function AdminPage() {
       setIsOptimizingImages(false);
     }
   };
+  
+  
   
   // Function to fetch TV shows from API
   const fetchShows = async () => {
@@ -1186,48 +1187,27 @@ export default function AdminPage() {
 
 
               <div className="pt-6 border-t">
-                <h3 className="text-lg font-medium mb-2">TV Show API Data Update</h3>
+                <h3 className="text-lg font-medium mb-2">TV Show API Data</h3>
                 <p className="text-muted-foreground mb-4">
-                  Update TV shows with data from OMDb and YouTube APIs. This will enhance shows with descriptions, release years, and other metadata.
+                  Update all TV shows with data from OMDb and YouTube APIs. This will enhance shows with descriptions, release years, and other metadata.
                 </p>
                 <Button 
-                  onClick={() => {
-                    if (window.confirm("This will update all TV shows with metadata from OMDb and YouTube APIs. Continue?")) {
-                      toast({
-                        title: "Update Started",
-                        description: "Updating TV show data from APIs. This may take a few minutes.",
-                      });
-                      
-                      fetch('/api/update-metadata', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json'
-                        }
-                      })
-                      .then(response => response.json())
-                      .then(data => {
-                        toast({
-                          title: "Update Complete",
-                          description: `Processed ${data.total} shows. Updated ${data.successful} successfully!`,
-                        });
-                        // Refresh show data
-                        fetchShows();
-                      })
-                      .catch(error => {
-                        console.error('Error updating metadata:', error);
-                        toast({
-                          title: "Update Failed",
-                          description: "There was an error updating the TV show metadata.",
-                          variant: "destructive"
-                        });
-                      });
-                    }
-                  }}
+                  onClick={handleUpdateMetadata}
+                  disabled={isUpdatingMetadata}
                   className="flex items-center"
                   variant="secondary"
                 >
-                  <Database className="h-4 w-4 mr-2" />
-                  Update TV Show Metadata
+                  {isUpdatingMetadata ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Updating Metadata...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Update API Data
+                    </>
+                  )}
                 </Button>
               </div>
 
