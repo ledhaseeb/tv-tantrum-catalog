@@ -965,13 +965,15 @@ export default function AdminPage() {
                       <TableHead>Name</TableHead>
                       <TableHead>Age Range</TableHead>
                       <TableHead>Stimulation</TableHead>
+                      <TableHead>OMDb</TableHead>
+                      <TableHead>YouTube</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredShows.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                           No shows found
                         </TableCell>
                       </TableRow>
@@ -982,6 +984,20 @@ export default function AdminPage() {
                           <TableCell className="font-medium">{show.name}</TableCell>
                           <TableCell>{show.ageRange || 'N/A'}</TableCell>
                           <TableCell>{show.stimulationScore}/5</TableCell>
+                          <TableCell>
+                            {show.imdbId ? (
+                              <span className="text-green-600 font-medium">Y</span>
+                            ) : (
+                              <span className="text-red-500">N</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {show.channelId ? (
+                              <span className="text-green-600 font-medium">Y</span>
+                            ) : (
+                              <span className="text-red-500">N</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-right">
                             <Button 
                               variant="ghost" 
