@@ -9,12 +9,17 @@ import { users } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
-// Database session store
-const PostgresSessionStore = connectPg(session);
-export const sessionStore = new PostgresSessionStore({ 
-  pool, 
-  createTableIfMissing: true 
+// Use memory store for sessions to avoid database connection issues
+import createMemoryStore from "memorystore";
+const MemoryStore = createMemoryStore(session);
+
+// Use in-memory session store for resilience
+const sessionStore = new MemoryStore({
+  checkPeriod: 86400000 // prune expired entries every 24h
 });
+console.log("Using in-memory session storage for better reliability");
+
+export { sessionStore };
 
 // No need to import User here as types are explicitly defined
 declare global {

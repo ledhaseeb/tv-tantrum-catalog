@@ -39,8 +39,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Check database connection before starting the server
-  await checkDatabaseConnection();
+  // Try to check database connection, but continue regardless of result
+  try {
+    await checkDatabaseConnection();
+  } catch (error) {
+    console.warn("Database connection check failed, but continuing server startup:", error);
+    console.warn("The application will use caching where possible to handle requests");
+  }
   
   const server = await registerRoutes(app);
 

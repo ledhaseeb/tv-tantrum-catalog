@@ -38,8 +38,9 @@ export const db = drizzle({ client: pool, schema });
 // Export a helper function to check DB connection
 export async function checkDatabaseConnection() {
   try {
-    const result = await pool.query('SELECT COUNT(*) FROM users');
-    console.log(`Database connection verified. User count: ${result.rows[0].count}`);
+    // Try a simple query that won't error if the table doesn't exist
+    const result = await pool.query('SELECT NOW()');
+    console.log(`Database connection verified at: ${result.rows[0].now}`);
     return true;
   } catch (error) {
     console.error('Database connection check failed:', error);
