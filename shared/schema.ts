@@ -40,7 +40,7 @@ export type User = typeof users.$inferSelect;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type Favorite = typeof favorites.$inferSelect;
 
-// TV Shows Schema - Updated to match the GitHub data structure
+// TV Shows Schema - Updated to match the GitHub data structure and YouTube data
 export const tvShows = pgTable("tv_shows", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -75,6 +75,13 @@ export const tvShows = pgTable("tv_shows", {
   // Other fields
   animationStyle: text("animation_style"),
   imageUrl: text("image_url"),
+  
+  // YouTube-specific fields
+  subscriberCount: text("subscriber_count"),
+  videoCount: text("video_count"),
+  channelId: text("channel_id"),
+  isYouTubeChannel: boolean("is_youtube_channel").default(false),
+  publishedAt: text("published_at"),
 });
 
 export const tvShowReviews = pgTable("tv_show_reviews", {

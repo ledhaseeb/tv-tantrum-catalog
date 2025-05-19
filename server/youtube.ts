@@ -116,6 +116,13 @@ export class YouTubeService {
         channelId: channelId,
         isYouTubeChannel: true
       };
+      
+      console.log(`Successfully fetched YouTube data for "${channelName}":`, {
+        title: channelInfo.title,
+        subscriberCount: channelInfo.subscriberCount,
+        videoCount: channelInfo.videoCount,
+        channelId: channelInfo.channelId
+      });
 
       // Store in cache
       this.addToCache(channelName, channelInfo);
