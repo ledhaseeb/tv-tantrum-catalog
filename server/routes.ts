@@ -816,13 +816,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Found ${showsToOptimize.length} custom images to optimize`);
       
-      // Import required modules
-      const path = require('path');
-      const fs = require('fs');
-      const fetch = require('node-fetch');
-      const sharp = require('sharp');
-      const { optimizeImage } = require('./image-upload');
-      const { loadCustomImageMap, saveCustomImageMap } = require('./image-preservator');
+      // Import modules are already available at the top of file
+      // We'll use the existing imports instead
       
       // Ensure temp directory exists
       const tempDir = './tmp_images';
