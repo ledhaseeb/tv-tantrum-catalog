@@ -399,16 +399,32 @@ export default function Detail({ id }: DetailProps) {
                       </div>
                     )}
                     
-                    {showDetail.channelId && (
+                    {/* Show YouTube link if either direct channelId or one from externalData is available */}
+                    {(showDetail.channelId || showDetail.externalData?.youtube?.channelId) && (
                       <div className="mt-2">
                         <a 
-                          href={`https://www.youtube.com/channel/${showDetail.channelId}`} 
+                          href={`https://www.youtube.com/channel/${showDetail.channelId || showDetail.externalData?.youtube?.channelId}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-xs text-red-600 hover:text-red-800 flex items-center"
                         >
                           View on YouTube 
                           <i className="fas fa-external-link-alt ml-1"></i>
+                        </a>
+                      </div>
+                    )}
+                    
+                    {/* Add search link when no direct channel ID is available */}
+                    {!showDetail.channelId && !showDetail.externalData?.youtube?.channelId && (
+                      <div className="mt-2">
+                        <a 
+                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(showDetail.name)}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-red-600 hover:text-red-800 flex items-center"
+                        >
+                          Search on YouTube 
+                          <i className="fas fa-search ml-1"></i>
                         </a>
                       </div>
                     )}
