@@ -7,11 +7,10 @@
  * 3. Updating the database with enriched information
  */
 
-require('dotenv').config();
-const { db } = require('./server/db');
-const { desc, eq } = require('drizzle-orm');
-const { tvShows } = require('./shared/schema');
-const fetch = require('node-fetch');
+import { db } from './server/db.ts';
+import { eq } from 'drizzle-orm';
+import { tvShows } from './shared/schema.ts';
+import fetch from 'node-fetch';
 
 // Base URL for YouTube API
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -137,9 +136,10 @@ async function updateYouTubeShows() {
     console.log('Starting YouTube metadata update process...');
     
     // Get all shows that are available on YouTube
-    const youtubeShows = await db.select()
-      .from(tvShows)
-      .where(eq(tvShows.availableOn, 'YouTube'));
+    // Using a more flexible approach that can match shows with "YouTube" in the availableOn field
+    const allShows = await db.select().from(tvShows);
+    const youtubeShows = allShows.filter(show => 
+      show.availableOn && show.availableOn.includes('YouTube'));
     
     console.log(`Found ${youtubeShows.length} YouTube shows in the database`);
     
@@ -241,4 +241,7 @@ async function updateYouTubeShows() {
 }
 
 // Run the main function
-updateYouTubeShows();
+updateYouTubeShows().catch(error => {
+  console.error('Error running script:', error);
+  process.exit(1);
+});
