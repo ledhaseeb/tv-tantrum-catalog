@@ -790,6 +790,216 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete TV show" });
     }
   });
+  
+  // Admin-only API to optimize all custom images for SEO
+  app.post("/api/admin/optimize-custom-images", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to optimize images" });
+      }
+      
+      // Get all shows with non-optimized images
+      const query = `
+        SELECT id, name, image_url 
+        FROM tv_shows 
+        WHERE image_url IS NOT NULL 
+          AND image_url NOT LIKE '%/uploads/optimized/%'
+          AND image_url NOT LIKE '%m.media-amazon.com%'
+          AND image_url NOT LIKE '%omdbapi.com%'
+      `;
+      
+      const result = await pool.query(query);
+      console.log(`Found ${result.rowCount} custom images to optimize`);
+      
+      // Import required modules
+      const path = require('path');
+      const fs = require('fs');
+      const fetch = require('node-fetch');
+      const sharp = require('sharp');
+      const { optimizeImage } = require('./image-upload');
+      const { loadCustomImageMap, saveCustomImageMap } = require('./image-preservator');
+      
+      // Ensure temp directory exists
+      const tempDir = './tmp_images';
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Prepare results
+      const optimizationResults = [];
+      let optimizedCount = 0;
+      let errorCount = 0;
+      let skippedCount = 0;
+      
+      // Process each image
+      for (const show of result.rows) {
+        try {
+          console.log(`Processing image for show ${show.id}: ${show.name}`);
+          
+          // Skip if URL is null or malformed
+          if (!show.image_url) {
+            console.log(`Skipping - null image URL for show ${show.id}`);
+            skippedCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "skipped",
+              reason: "Null image URL"
+            });
+            continue;
+          }
+          
+          // Download image if it's a remote URL
+          let localImagePath = null;
+          
+          if (show.image_url.startsWith('http')) {
+            try {
+              // Download the image
+              const response = await fetch(show.image_url);
+              if (!response.ok) {
+                throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+              }
+              
+              const buffer = await response.buffer();
+              
+              // Save image to temp location
+              const timestamp = Date.now();
+              const uniqueFilename = `show-${show.id}-${timestamp}.jpg`;
+              localImagePath = path.join(tempDir, uniqueFilename);
+              
+              fs.writeFileSync(localImagePath, buffer);
+              console.log(`Downloaded image to: ${localImagePath}`);
+            } catch (error) {
+              console.error(`Error downloading image for show ${show.id}:`, error);
+              errorCount++;
+              optimizationResults.push({
+                id: show.id,
+                name: show.name,
+                status: "error",
+                reason: `Download error: ${error instanceof Error ? error.message : "Unknown error"}`
+              });
+              continue;
+            }
+          } else if (show.image_url.startsWith('/')) {
+            // For local images, check if they exist
+            const possiblePaths = [
+              path.join('public', show.image_url),
+              path.join('public', 'uploads', path.basename(show.image_url)),
+              path.join('public', 'custom-images', path.basename(show.image_url)),
+              path.join('public', 'images', path.basename(show.image_url)),
+              path.join('attached_assets', path.basename(show.image_url)),
+              show.image_url.substring(1) // Try without leading slash
+            ];
+            
+            for (const checkPath of possiblePaths) {
+              if (fs.existsSync(checkPath)) {
+                localImagePath = checkPath;
+                console.log(`Found local image at ${localImagePath}`);
+                break;
+              }
+            }
+            
+            if (!localImagePath) {
+              console.log(`Could not find local image at any expected location: ${show.image_url}`);
+              skippedCount++;
+              optimizationResults.push({
+                id: show.id,
+                name: show.name,
+                status: "skipped",
+                reason: "Local image not found"
+              });
+              continue;
+            }
+          } else {
+            console.log(`Unsupported image URL format: ${show.image_url}`);
+            skippedCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "skipped",
+              reason: "Unsupported image URL format"
+            });
+            continue;
+          }
+          
+          // Now optimize the image
+          try {
+            // Use our existing image optimization function
+            const optimizedUrl = await optimizeImage(localImagePath);
+            
+            // Update the database with the new optimized URL
+            await pool.query(
+              'UPDATE tv_shows SET image_url = $1 WHERE id = $2',
+              [optimizedUrl, show.id]
+            );
+            
+            // Update custom image map too
+            const customImageMap = loadCustomImageMap();
+            customImageMap[show.id] = optimizedUrl;
+            saveCustomImageMap(customImageMap);
+            
+            console.log(`Optimized image for show ${show.id}: ${optimizedUrl}`);
+            optimizedCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "success",
+              oldImageUrl: show.image_url,
+              newImageUrl: optimizedUrl
+            });
+            
+            // Clean up temp file if we downloaded it
+            if (localImagePath.startsWith('./tmp_images')) {
+              try {
+                fs.unlinkSync(localImagePath);
+              } catch (e) {
+                // Ignore cleanup errors
+              }
+            }
+          } catch (error) {
+            console.error(`Error optimizing image for show ${show.id}:`, error);
+            errorCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "error",
+              reason: `Optimization error: ${error instanceof Error ? error.message : "Unknown error"}`
+            });
+          }
+        } catch (error) {
+          console.error(`Error processing show ${show.id}:`, error);
+          errorCount++;
+          optimizationResults.push({
+            id: show.id,
+            name: show.name,
+            status: "error",
+            reason: `Processing error: ${error instanceof Error ? error.message : "Unknown error"}`
+          });
+        }
+      }
+      
+      // Return results
+      return res.json({
+        message: "Custom image optimization complete",
+        total: result.rowCount,
+        optimized: optimizedCount,
+        skipped: skippedCount,
+        errors: errorCount,
+        results: optimizationResults
+      });
+    } catch (error) {
+      console.error('Error in optimize-custom-images:', error);
+      return res.status(500).json({ 
+        message: "Error during custom image optimization", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
 
   const httpServer = createServer(app);
 
