@@ -47,7 +47,8 @@ import {
   RefreshCw, 
   ImageIcon, 
   User, 
-  CheckCircle, 
+  CheckCircle,
+  Database, 
   XCircle, 
   Clock,
   Shield,
@@ -77,7 +78,7 @@ export default function AdminPage() {
   const [selectedShow, setSelectedShow] = useState<TvShow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
+  const [isUpdatingAPIData, setIsUpdatingAPIData] = useState(false);
   const [isUpdatingYouTubeMetadata, setIsUpdatingYouTubeMetadata] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddingShow, setIsAddingShow] = useState(false);
@@ -1182,20 +1183,19 @@ export default function AdminPage() {
                 </Button>
               </div>
               
+
+
               <div className="pt-6 border-t">
-                <h3 className="text-lg font-medium mb-2">API Data Update</h3>
+                <h3 className="text-lg font-medium mb-2">TV Show API Data Update</h3>
                 <p className="text-muted-foreground mb-4">
-                  Update all TV shows with the latest metadata from OMDb and YouTube APIs.
-                  This will enhance show details with descriptions, release years, creators, and other metadata.
+                  Update TV shows with data from OMDb and YouTube APIs. This will enhance shows with descriptions, release years, and other metadata.
                 </p>
                 <Button 
                   onClick={() => {
-                    const isUpdating = window.confirm("This will update all TV shows with data from OMDb and YouTube APIs. Continue?");
-                    
-                    if (isUpdating) {
+                    if (window.confirm("This will update all TV shows with metadata from OMDb and YouTube APIs. Continue?")) {
                       toast({
                         title: "Update Started",
-                        description: "Updating metadata for all TV shows. This may take a few minutes.",
+                        description: "Updating TV show data from APIs. This may take a few minutes.",
                       });
                       
                       fetch('/api/update-metadata', {
@@ -1210,11 +1210,11 @@ export default function AdminPage() {
                           title: "Update Complete",
                           description: `Processed ${data.total} shows. Updated ${data.successful} successfully!`,
                         });
-                        // Refresh the shows data
+                        // Refresh show data
                         fetchShows();
                       })
-                      .catch(err => {
-                        console.error('Error updating metadata:', err);
+                      .catch(error => {
+                        console.error('Error updating metadata:', error);
                         toast({
                           title: "Update Failed",
                           description: "There was an error updating the TV show metadata.",
@@ -1226,8 +1226,8 @@ export default function AdminPage() {
                   className="flex items-center"
                   variant="secondary"
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Update All Shows API Data
+                  <Database className="h-4 w-4 mr-2" />
+                  Update TV Show Metadata
                 </Button>
               </div>
 
