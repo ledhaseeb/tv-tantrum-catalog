@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./database-storage";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
+import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import fs from 'fs';
@@ -189,55 +190,115 @@ const extractCreator = (director: string, writer: string) => {
       // Track this view
       await storage.trackShowView(id);
       
-      // Try to fetch OMDb data for this show
-      let omdbData = null;
+      // Check if this is a YouTube show
+      const isYouTubeShow = show.availableOn?.includes('YouTube');
+      
+      let externalData = null;
+      
       try {
-        omdbData = await omdbService.getShowData(show.name);
-        console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
-        
-        // If this is the first time we get OMDb data for this show, update the metadata
-        if (omdbData && (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show')) {
-          // Extract year information
-          const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+        if (isYouTubeShow) {
+          // For YouTube shows, use YouTube API
+          const youtubeData = await youtubeService.getChannelData(show.name);
+          console.log(`YouTube data for ${show.name}:`, youtubeData ? 'Found' : 'Not found');
           
-          // Extract creator information
-          const creator = extractCreator(omdbData.director, omdbData.writer);
-          
-          // Update show with this additional metadata if it's not already set
-          const updateData: any = {};
-          
-          if (!show.creator && creator) {
-            updateData.creator = creator;
+          if (youtubeData && (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show')) {
+            // Extract release year from publishedAt date
+            const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
+            
+            // Set creator to channel name if no better info
+            const creator = youtubeData.title;
+            
+            // Update data object for database changes
+            const updateData: any = {};
+            
+            // Update metadata if not already set
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            // YouTube shows are typically ongoing
+            if (typeof show.isOngoing !== 'boolean') {
+              updateData.isOngoing = true;
+            }
+            
+            // Get a cleaned description from YouTube
+            const cleanDescription = getCleanDescription(youtubeData.description);
+            
+            // Update description if generic or missing
+            if (cleanDescription && (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = cleanDescription;
+            }
+            
+            // If show has no image, use YouTube thumbnail
+            if (!show.imageUrl && youtubeData.thumbnailUrl) {
+              updateData.imageUrl = youtubeData.thumbnailUrl;
+            }
+            
+            // Only update if we have new data
+            if (Object.keys(updateData).length > 0) {
+              console.log(`Updating metadata for "${show.name}" with YouTube data:`, updateData);
+              await storage.updateTvShow(id, updateData);
+            }
           }
           
-          if (!show.releaseYear && releaseYear) {
-            updateData.releaseYear = releaseYear;
+          // Store the YouTube data for response
+          externalData = { youtube: youtubeData };
+        } else {
+          // For regular TV shows, use OMDb
+          const omdbData = await omdbService.getShowData(show.name);
+          console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
+          
+          // If this is the first time we get OMDb data for this show, update the metadata
+          if (omdbData && (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show')) {
+            // Extract year information
+            const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+            
+            // Extract creator information
+            const creator = extractCreator(omdbData.director, omdbData.writer);
+            
+            // Update show with this additional metadata if it's not already set
+            const updateData: any = {};
+            
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            if (!show.endYear && endYear) {
+              updateData.endYear = endYear;
+            }
+            
+            // Only update isOngoing if we have valid year data
+            if (releaseYear && !show.isOngoing) {
+              updateData.isOngoing = isOngoing;
+            }
+            
+            // If we have a plot and the current description is generic, update it
+            if (omdbData.plot && omdbData.plot !== 'N/A' && 
+                (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = omdbData.plot;
+            }
+            
+            // Only update if we have new data
+            if (Object.keys(updateData).length > 0) {
+              console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
+              await storage.updateTvShow(id, updateData);
+            }
           }
           
-          if (!show.endYear && endYear) {
-            updateData.endYear = endYear;
-          }
-          
-          // Only update isOngoing if we have valid year data
-          if (releaseYear && !show.isOngoing) {
-            updateData.isOngoing = isOngoing;
-          }
-          
-          // If we have a plot and the current description is generic, update it
-          if (omdbData.plot && omdbData.plot !== 'N/A' && 
-              (show.description === 'A children\'s TV show' || !show.description)) {
-            updateData.description = omdbData.plot;
-          }
-          
-          // Only update if we have new data
-          if (Object.keys(updateData).length > 0) {
-            console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
-            await storage.updateTvShow(id, updateData);
-          }
+          // Store the OMDb data for response
+          externalData = { omdb: omdbData };
         }
-      } catch (omdbError) {
-        console.error(`Error fetching OMDb data for ${show.name}:`, omdbError);
-        // Continue even if OMDb fetch fails
+      } catch (error) {
+        console.error(`Error fetching external data for ${show.name}:`, error);
+        // Continue even if data fetch fails
       }
       
       res.json({
@@ -349,19 +410,12 @@ const extractCreator = (director: string, writer: string) => {
       // Process each show
       for (const show of shows) {
         try {
-          // Skip YouTube shows as they won't have OMDb data
+          // Check if this is a YouTube show
           const isYouTubeShow = show.availableOn?.includes('YouTube');
-          if (isYouTubeShow) {
-            results.skipped.push({
-              id: show.id,
-              name: show.name,
-              reason: 'YouTube show'
-            });
-            continue;
-          }
           
-          // Skip shows that already have creator and release/end year info
-          if (show.creator && show.releaseYear && (show.endYear || show.isOngoing)) {
+          // Skip shows that already have complete metadata
+          if (show.creator && show.releaseYear && (show.endYear || show.isOngoing) &&
+              show.description !== 'A children\'s TV show' && show.description) {
             results.skipped.push({
               id: show.id,
               name: show.name,
@@ -370,65 +424,122 @@ const extractCreator = (director: string, writer: string) => {
             continue;
           }
           
-          // Fetch OMDb data
-          const omdbData = await omdbService.getShowData(show.name);
-          if (!omdbData) {
-            results.failed.push({
-              id: show.id,
-              name: show.name,
-              reason: 'No OMDb data found'
-            });
-            continue;
-          }
-          
-          // Extract year information
-          const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
-          
-          // Extract creator information
-          const creator = extractCreator(omdbData.director, omdbData.writer);
-          
-          // Update show with this additional metadata if not already set
+          // Update data object for database changes
           const updateData: any = {};
           
-          if (!show.creator && creator) {
-            updateData.creator = creator;
-          }
-          
-          if (!show.releaseYear && releaseYear) {
-            updateData.releaseYear = releaseYear;
-          }
-          
-          if (!show.endYear && endYear) {
-            updateData.endYear = endYear;
-          }
-          
-          // Only update isOngoing if we have valid year data
-          if (releaseYear && typeof show.isOngoing !== 'boolean') {
-            updateData.isOngoing = isOngoing;
-          }
-          
-          // If we have a plot and the current description is generic, update it
-          if (omdbData.plot && omdbData.plot !== 'N/A' && 
-              (show.description === 'A children\'s TV show' || !show.description)) {
-            updateData.description = omdbData.plot;
+          if (isYouTubeShow) {
+            // For YouTube shows, try to get data from YouTube API
+            console.log(`Processing YouTube show: ${show.name}`);
+            
+            // Extract the channel name - usually it's just the show name
+            const channelName = show.name;
+            
+            // Fetch YouTube data
+            const youtubeData = await youtubeService.getChannelData(channelName);
+            
+            if (!youtubeData) {
+              results.failed.push({
+                id: show.id,
+                name: show.name,
+                reason: 'No YouTube data found'
+              });
+              continue;
+            }
+            
+            // Extract release year from publishedAt date
+            const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
+            
+            // Set creator to channel name if no better info
+            const creator = youtubeData.title;
+            
+            // Update metadata if not already set
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            // YouTube shows are typically ongoing
+            if (typeof show.isOngoing !== 'boolean') {
+              updateData.isOngoing = true;
+            }
+            
+            // Get a cleaned description from YouTube
+            const cleanDescription = getCleanDescription(youtubeData.description);
+            
+            // Update description if generic or missing
+            if (cleanDescription && (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = cleanDescription;
+            }
+            
+            // If show has no image, use YouTube thumbnail
+            if (!show.imageUrl && youtubeData.thumbnailUrl) {
+              updateData.imageUrl = youtubeData.thumbnailUrl;
+            }
+          } else {
+            // For regular TV shows, use OMDb
+            const omdbData = await omdbService.getShowData(show.name);
+            if (!omdbData) {
+              results.failed.push({
+                id: show.id,
+                name: show.name,
+                reason: 'No OMDb data found'
+              });
+              continue;
+            }
+            
+            // Extract year information
+            const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+            
+            // Extract creator information
+            const creator = extractCreator(omdbData.director, omdbData.writer);
+            
+            // Update metadata if not already set
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            if (!show.endYear && endYear) {
+              updateData.endYear = endYear;
+            }
+            
+            // Only update isOngoing if we have valid year data
+            if (releaseYear && typeof show.isOngoing !== 'boolean') {
+              updateData.isOngoing = isOngoing;
+            }
+            
+            // If we have a plot and the current description is generic, update it
+            if (omdbData.plot && omdbData.plot !== 'N/A' && 
+                (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = omdbData.plot;
+            }
           }
           
           // Only update if we have new data
           if (Object.keys(updateData).length > 0) {
-            console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
+            const dataSource = isYouTubeShow ? 'YouTube' : 'OMDb';
+            console.log(`Updating metadata for "${show.name}" with ${dataSource} data:`, updateData);
+            
             const updatedShow = await storage.updateTvShow(show.id, updateData);
             
             if (updatedShow) {
               results.successful.push({
                 id: show.id,
                 name: show.name,
+                source: dataSource,
                 updates: updateData
               });
             } else {
               results.failed.push({
                 id: show.id,
                 name: show.name,
-                reason: 'Failed to update in storage'
+                reason: `Failed to update in storage after ${dataSource} lookup`
               });
             }
           } else {
