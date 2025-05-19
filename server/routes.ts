@@ -803,18 +803,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to optimize images" });
       }
       
-      // Get all shows with non-optimized images
-      const query = `
-        SELECT id, name, image_url 
-        FROM tv_shows 
-        WHERE image_url IS NOT NULL 
-          AND image_url NOT LIKE '%/uploads/optimized/%'
-          AND image_url NOT LIKE '%m.media-amazon.com%'
-          AND image_url NOT LIKE '%omdbapi.com%'
-      `;
+      // Get all shows with non-optimized images that need SEO optimization
+      const shows = await storage.getAllTvShows();
       
-      const result = await pool.query(query);
-      console.log(`Found ${result.rowCount} custom images to optimize`);
+      // Filter shows that need image optimization (non-OMDB images that aren't already optimized)
+      const showsToOptimize = shows.filter(show => 
+        show.imageUrl && 
+        !show.imageUrl.includes('/uploads/optimized/') &&
+        !show.imageUrl.includes('m.media-amazon.com') &&
+        !show.imageUrl.includes('omdbapi.com')
+      );
+      
+      console.log(`Found ${showsToOptimize.length} custom images to optimize`);
       
       // Import required modules
       const path = require('path');
@@ -837,12 +837,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let skippedCount = 0;
       
       // Process each image
-      for (const show of result.rows) {
+      for (const show of showsToOptimize) {
         try {
           console.log(`Processing image for show ${show.id}: ${show.name}`);
           
           // Skip if URL is null or malformed
-          if (!show.image_url) {
+          if (!show.imageUrl) {
             console.log(`Skipping - null image URL for show ${show.id}`);
             skippedCount++;
             optimizationResults.push({
@@ -857,10 +857,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Download image if it's a remote URL
           let localImagePath = null;
           
-          if (show.image_url.startsWith('http')) {
+          if (show.imageUrl.startsWith('http')) {
             try {
               // Download the image
-              const response = await fetch(show.image_url);
+              const response = await fetch(show.imageUrl);
               if (!response.ok) {
                 throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
               }
@@ -885,15 +885,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               });
               continue;
             }
-          } else if (show.image_url.startsWith('/')) {
+          } else if (show.imageUrl.startsWith('/')) {
             // For local images, check if they exist
             const possiblePaths = [
-              path.join('public', show.image_url),
-              path.join('public', 'uploads', path.basename(show.image_url)),
-              path.join('public', 'custom-images', path.basename(show.image_url)),
-              path.join('public', 'images', path.basename(show.image_url)),
-              path.join('attached_assets', path.basename(show.image_url)),
-              show.image_url.substring(1) // Try without leading slash
+              path.join('public', show.imageUrl),
+              path.join('public', 'uploads', path.basename(show.imageUrl)),
+              path.join('public', 'custom-images', path.basename(show.imageUrl)),
+              path.join('public', 'images', path.basename(show.imageUrl)),
+              path.join('attached_assets', path.basename(show.imageUrl)),
+              show.imageUrl.substring(1) // Try without leading slash
             ];
             
             for (const checkPath of possiblePaths) {
@@ -905,7 +905,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             
             if (!localImagePath) {
-              console.log(`Could not find local image at any expected location: ${show.image_url}`);
+              console.log(`Could not find local image at any expected location: ${show.imageUrl}`);
               skippedCount++;
               optimizationResults.push({
                 id: show.id,
@@ -916,7 +916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               continue;
             }
           } else {
-            console.log(`Unsupported image URL format: ${show.image_url}`);
+            console.log(`Unsupported image URL format: ${show.imageUrl}`);
             skippedCount++;
             optimizationResults.push({
               id: show.id,
@@ -932,16 +932,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Use our existing image optimization function
             const optimizedUrl = await optimizeImage(localImagePath);
             
-            // Update the database with the new optimized URL
-            await pool.query(
-              'UPDATE tv_shows SET image_url = $1 WHERE id = $2',
-              [optimizedUrl, show.id]
-            );
+            // Update the show in the database with the new optimized URL
+            await storage.updateTvShow(show.id, {
+              imageUrl: optimizedUrl
+            });
             
             // Update custom image map too
-            const customImageMap = loadCustomImageMap();
-            customImageMap[show.id] = optimizedUrl;
-            saveCustomImageMap(customImageMap);
+            updateCustomImageMap(show.id, optimizedUrl);
             
             console.log(`Optimized image for show ${show.id}: ${optimizedUrl}`);
             optimizedCount++;
@@ -949,7 +946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: show.id,
               name: show.name,
               status: "success",
-              oldImageUrl: show.image_url,
+              oldImageUrl: show.imageUrl,
               newImageUrl: optimizedUrl
             });
             
@@ -986,7 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Return results
       return res.json({
         message: "Custom image optimization complete",
-        total: result.rowCount,
+        total: showsToOptimize.length,
         optimized: optimizedCount,
         skipped: skippedCount,
         errors: errorCount,
