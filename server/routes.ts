@@ -238,6 +238,13 @@ const extractCreator = (director: string, writer: string) => {
               updateData.imageUrl = youtubeData.thumbnailUrl;
             }
             
+            // Add YouTube-specific data
+            updateData.subscriberCount = youtubeData.subscriberCount;
+            updateData.videoCount = youtubeData.videoCount;
+            updateData.channelId = youtubeData.channelId;
+            updateData.isYouTubeChannel = true;
+            updateData.publishedAt = youtubeData.publishedAt;
+            
             // Only update if we have new data
             if (Object.keys(updateData).length > 0) {
               console.log(`Updating metadata for "${show.name}" with YouTube data:`, updateData);
@@ -478,6 +485,13 @@ const extractCreator = (director: string, writer: string) => {
             if (!show.imageUrl && youtubeData.thumbnailUrl) {
               updateData.imageUrl = youtubeData.thumbnailUrl;
             }
+            
+            // Add YouTube-specific data
+            updateData.subscriberCount = youtubeData.subscriberCount;
+            updateData.videoCount = youtubeData.videoCount;
+            updateData.channelId = youtubeData.channelId;
+            updateData.isYouTubeChannel = true;
+            updateData.publishedAt = youtubeData.publishedAt;
           } else {
             // For regular TV shows, use OMDb
             const omdbData = await omdbService.getShowData(show.name);
