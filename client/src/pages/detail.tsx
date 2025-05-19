@@ -574,6 +574,58 @@ export default function Detail({ id }: DetailProps) {
                       })}
                     </div>
                   </div>
+
+                  {/* Total Sound Effect Time Level Bar */}
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <div className="text-gray-600">Total Sound Effect Time:</div>
+                      <div className="font-medium">{showDetail.totalSoundEffectTimeLevel || 'Moderate'}</div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
+                      {[1, 2, 3, 4, 5].map((segment) => {
+                        let level = 3; // Default to moderate
+                        
+                        // Handle all possible rating values from the spreadsheet
+                        if (showDetail.totalSoundEffectTimeLevel) {
+                          if (showDetail.totalSoundEffectTimeLevel.includes('Low-Moderate') || 
+                              showDetail.totalSoundEffectTimeLevel.includes('Low to Moderate')) {
+                            level = 2;
+                          } else if (showDetail.totalSoundEffectTimeLevel.includes('Moderate-Low')) {
+                            level = 2;
+                          } else if (showDetail.totalSoundEffectTimeLevel.includes('Moderate-High') || 
+                                     showDetail.totalSoundEffectTimeLevel.includes('Moderate to High')) {
+                            level = 4;
+                          } else if (showDetail.totalSoundEffectTimeLevel.includes('Mod-High')) {
+                            level = 4;
+                          } else if (showDetail.totalSoundEffectTimeLevel === 'Low') {
+                            level = 1;
+                          } else if (showDetail.totalSoundEffectTimeLevel === 'Moderate') {
+                            level = 3;
+                          } else if (showDetail.totalSoundEffectTimeLevel === 'High') {
+                            level = 5;
+                          } else if (showDetail.totalSoundEffectTimeLevel === 'Limited') {
+                            level = 1;
+                          } else if (showDetail.totalSoundEffectTimeLevel === 'Minimal') {
+                            level = 1;
+                          }
+                        }
+                          
+                        const color = 
+                          segment === 1 ? 'bg-green-500' : 
+                          segment === 2 ? 'bg-yellow-500' : 
+                          segment === 3 ? 'bg-orange-500' : 
+                          segment === 4 ? 'bg-orange-600' : 
+                          'bg-red-500';
+                        
+                        return (
+                          <div
+                            key={segment}
+                            className={`h-full w-1/5 ${segment <= level ? color : 'bg-gray-200'}`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                   
                   {/* Music Tempo Bar */}
                   <div>
