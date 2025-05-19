@@ -495,6 +495,14 @@ export class DatabaseStorage implements IStorage {
           targetAudience: row.target_audience || null,
           viewerRating: row.viewer_rating || null,
           
+          // YouTube-specific fields
+          isYouTubeChannel: row.is_youtube_channel || false,
+          subscriberCount: row.subscriber_count || null,
+          videoCount: row.video_count || null,
+          channelId: row.channel_id || null,
+          publishedAt: row.published_at || null,
+          availableOn: row.available_on || [],
+          
           // Timestamps
           createdAt: row.created_at || new Date().toISOString(),
           updatedAt: row.updated_at || new Date().toISOString()
