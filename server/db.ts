@@ -5,20 +5,16 @@ import * as schema from "@shared/schema";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
-}
-
-// Configure the pool with optimized settings
+// Use direct connection string for best compatibility with Replit's PostgreSQL
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
-  max: 20, // Maximum number of clients
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 5000, // Maximum time to wait for connection
-  maxUses: 7500, // Maximum uses before a connection is destroyed
-  keepAlive: true, // Keep connections alive
-  application_name: 'tv-tantrum', // Helps identify connections in logs
-  statement_timeout: 30000, // Timeout queries after 30 seconds
+  ssl: {
+    rejectUnauthorized: false // Allow self-signed certificates for development
+  },
+  max: 10, // Reduce maximum connections for Replit environment
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 3000, // Lower timeout for faster failure detection
+  application_name: 'tv-tantrum'
 };
 
 export const pool = new Pool(poolConfig);
