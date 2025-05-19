@@ -188,13 +188,13 @@
   },
   "8": {
     "stimulationScore": 4,
-    "musicTempo": "Low",
-    "totalMusicLevel": "Low",
+    "musicTempo": "Moderate",
+    "totalMusicLevel": "Moderate",
     "sceneFrequency": "High",
-    "interactivityLevel": "Low",
-    "dialogueIntensity": "Moderate",
-    "soundEffectsLevel": "High",
-    "animationStyle": "Real Props No Animations ",
+    "interactivityLevel": "High",
+    "dialogueIntensity": "Low",
+    "soundEffectsLevel": "Moderate-High",
+    "animationStyle": "Vibrant 3D animation with cultural African themes and colorful settings",
     "TV or YouTube": "YouTube",
     "ageRange": "Any",
     "themes": [
@@ -5922,13 +5922,14 @@
       "Bedtime Routines"
     ],
     "interactivityLevel": "Low",
-    "animationStyle": "Live action costumed. some digital elements ",
+    "animationStyle": "",
     "dialogueIntensity": "Low",
     "soundEffectsLevel": "Low",
-    "musicTempo": "Low",
-    "totalMusicLevel": "Low-Moderate",
-    "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Low"
+    "musicTempo": "Moderate",
+    "totalMusicLevel": "Moderate",
+    "totalSoundEffectTimeLevel": "Moderate",
+    "sceneFrequency": "Moderate",
+    "description": "A children's TV show"
   },
   "245": {
     "stimulationScore": 1,
