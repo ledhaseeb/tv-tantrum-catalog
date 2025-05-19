@@ -43,6 +43,7 @@ export interface OmdbShowData {
   awards: string;
   poster: string;
   imdbId: string;
+  year: string; // Used for release_year and end_year
 }
 
 export class OmdbService {
@@ -91,7 +92,8 @@ export class OmdbService {
         imdbRating: data.imdbRating || 'N/A',
         awards: data.Awards || 'N/A',
         poster: data.Poster || 'N/A',
-        imdbId: data.imdbID || ''
+        imdbId: data.imdbID || '',
+        year: data.Year || 'N/A'
       };
       
       // Store in cache
