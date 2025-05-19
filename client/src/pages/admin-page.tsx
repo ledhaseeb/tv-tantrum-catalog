@@ -354,14 +354,24 @@ export default function AdminPage() {
   const handleUpdateMetadata = async () => {
     if (isUpdatingMetadata) return;
     
+    // Confirm the update with the user
+    if (!window.confirm("This will update all TV shows with data from OMDb and YouTube APIs. Continue?")) {
+      return;
+    }
+    
     setIsUpdatingMetadata(true);
     try {
+      toast({
+        title: "Update Started",
+        description: "Updating TV show data from APIs. This may take a few minutes.",
+      });
+      
       const response = await apiRequest('POST', '/api/update-metadata');
       const result = await response.json();
       
       toast({
         title: "Show Metadata Update Complete",
-        description: `${result.successful.length} shows updated with creator and year information.`,
+        description: `Processed ${result.total} shows. Updated ${result.successful.length} successfully!`,
       });
       
       // Refresh the show list to get updated metadata
