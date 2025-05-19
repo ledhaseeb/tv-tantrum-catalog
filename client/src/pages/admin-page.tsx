@@ -368,30 +368,29 @@ export default function AdminPage() {
       // Convert form values to API format
       const apiFormData = convertFormValuesToApi(formDataWithWholeScore);
       
-      // Submit to API
-      const response = await apiRequest('POST', '/api/shows', apiFormData);
+      // Submit to API using fetch directly
+      const response = await fetch('/api/shows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiFormData),
+        credentials: 'include'
+      });
       
       if (!response.ok) {
-        // Handle error response properly - some responses might not have text() method
         let errorMessage = 'Failed to add new show';
         try {
-          // Try to get error text if available
-          const errorText = typeof response.text === 'function' ? await response.text() : '';
+          const errorText = await response.text();
           if (errorText) errorMessage = errorText;
         } catch (e) {
-          console.error('Error reading response text:', e);
+          console.error('Error reading error response:', e);
         }
         throw new Error(errorMessage);
       }
       
-      // Parse the JSON response safely
-      let newShow;
-      try {
-        newShow = await response.json();
-      } catch (e) {
-        console.error('Error parsing response JSON:', e);
-        throw new Error('Invalid response format from server');
-      }
+      // Parse the JSON response
+      const newShow = await response.json();
+      
+      console.log('New show added successfully:', newShow);
       
       // Add the new show to the state
       setShows(prev => [...prev, newShow]);
