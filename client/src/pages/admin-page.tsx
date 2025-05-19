@@ -1740,14 +1740,60 @@ export default function AdminPage() {
               <Label htmlFor="name" className="text-right">
                 Show Name
               </Label>
-              <Input
-                id="name"
-                value={newShowFormState.name}
-                onChange={(e) => setNewShowFormState({...newShowFormState, name: e.target.value})}
-                className="col-span-3"
-                placeholder="Official TV show name"
-                required
-              />
+              <div className="col-span-3 flex gap-2">
+                <Input
+                  id="name"
+                  value={newShowFormState.name}
+                  onChange={(e) => setNewShowFormState({...newShowFormState, name: e.target.value})}
+                  className="flex-1"
+                  placeholder="Official TV show name"
+                  required
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-shrink-0"
+                  onClick={() => {
+                    if (!newShowFormState.name) {
+                      toast({
+                        title: "Error",
+                        description: "Please enter a show name before searching",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    
+                    setIsLookingUp(true);
+                    setLookupResults({omdb: null, youtube: null});
+                    
+                    // Call the lookup API
+                    apiRequest('GET', `/api/lookup?q=${encodeURIComponent(newShowFormState.name)}`)
+                      .then(resp => resp.json())
+                      .then(data => {
+                        setLookupResults(data);
+                        setShowLookupOptions(true);
+                        setIsLookingUp(false);
+                      })
+                      .catch(err => {
+                        console.error("Lookup error:", err);
+                        toast({
+                          title: "Error",
+                          description: err.message || "Failed to look up show data",
+                          variant: "destructive"
+                        });
+                        setIsLookingUp(false);
+                      });
+                  }}
+                  disabled={isLookingUp}
+                >
+                  {isLookingUp ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4 mr-2" />
+                  )}
+                  Smart Lookup
+                </Button>
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
