@@ -82,6 +82,9 @@ export default function AdminPage() {
   const [isAddingShow, setIsAddingShow] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [lookupResults, setLookupResults] = useState<{omdb: any | null, youtube: any | null}>({omdb: null, youtube: null});
+  const [showLookupOptions, setShowLookupOptions] = useState(false);
   const [newShowFormState, setNewShowFormState] = useState({
     name: '',
     description: '',
