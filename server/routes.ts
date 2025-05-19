@@ -393,6 +393,138 @@ const extractCreator = (director: string, writer: string) => {
     }
   });
   
+  // Endpoint to update YouTube metadata for shows marked as available on YouTube
+  app.post("/api/update-youtube-metadata", async (req: Request, res: Response) => {
+    try {
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized. Admin privileges required." });
+      }
+      
+      console.log("Starting YouTube metadata update process...");
+      
+      // Get limit parameter with a default of 10 shows
+      const limit = req.body.limit || 10;
+      
+      // Get all shows marked as available on YouTube
+      const youtubeShows = await storage.getTvShowsByPlatform('YouTube', limit);
+      
+      console.log(`Processing ${youtubeShows.length} YouTube shows`);
+      
+      // Track results
+      const results = {
+        total: youtubeShows.length,
+        successful: [] as any[],
+        failed: [] as any[],
+        skipped: [] as any[]
+      };
+      
+      // Process each YouTube show
+      for (const show of youtubeShows) {
+        try {
+          // Skip shows that already have YouTube data
+          if (show.isYouTubeChannel && show.channelId) {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'Already has YouTube metadata'
+            });
+            continue;
+          }
+          
+          console.log(`Processing YouTube show: ${show.name}`);
+          
+          // Fetch YouTube data
+          const youtubeData = await youtubeService.getChannelData(show.name);
+          
+          if (!youtubeData) {
+            results.failed.push({
+              id: show.id,
+              name: show.name,
+              reason: 'No YouTube data found'
+            });
+            continue;
+          }
+          
+          // Build update data
+          const updateData: any = {
+            subscriberCount: youtubeData.subscriberCount,
+            videoCount: youtubeData.videoCount,
+            channelId: youtubeData.channelId,
+            isYouTubeChannel: true,
+            publishedAt: youtubeData.publishedAt
+          };
+          
+          // Extract release year from publishedAt date
+          const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
+          
+          // Add creator if missing
+          if (!show.creator) {
+            updateData.creator = youtubeData.title;
+          }
+          
+          // Add release year if missing
+          if (!show.releaseYear && releaseYear) {
+            updateData.releaseYear = releaseYear;
+          }
+          
+          // YouTube shows are typically ongoing
+          if (typeof show.isOngoing !== 'boolean') {
+            updateData.isOngoing = true;
+          }
+          
+          // Get a cleaned description
+          const cleanDescription = getCleanDescription(youtubeData.description);
+          
+          // Update description if generic or missing
+          if (cleanDescription && (show.description === 'A children\'s TV show' || !show.description)) {
+            updateData.description = cleanDescription;
+          }
+          
+          // If show has no image, use YouTube thumbnail
+          if (!show.imageUrl && youtubeData.thumbnailUrl) {
+            updateData.imageUrl = youtubeData.thumbnailUrl;
+          }
+          
+          // Update the show in the database
+          const updatedShow = await storage.updateTvShow(show.id, updateData);
+          
+          if (updatedShow) {
+            results.successful.push({
+              id: show.id,
+              name: show.name,
+              updates: updateData
+            });
+          } else {
+            results.failed.push({
+              id: show.id,
+              name: show.name,
+              reason: 'Failed to update in database'
+            });
+          }
+          
+          // Add a small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 250));
+        } catch (error) {
+          console.error(`Error processing YouTube show ${show.name}:`, error);
+          results.failed.push({
+            id: show.id,
+            name: show.name,
+            reason: 'Processing error'
+          });
+        }
+      }
+      
+      res.json({
+        message: `Processed ${results.total} YouTube shows. Updated ${results.successful.length} successfully.`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Error updating YouTube metadata:", error);
+      res.status(500).json({ message: "Failed to update YouTube metadata" });
+    }
+  });
+  
   // Endpoint to update show metadata (creator, release_year, end_year, is_ongoing) from OMDb
   app.post("/api/update-metadata", async (req: Request, res: Response) => {
     try {

@@ -26,6 +26,7 @@ export interface IStorage {
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
   getTvShowById(id: number): Promise<TvShow | undefined>;
+  getTvShowsByPlatform(platform: string, limit?: number): Promise<TvShow[]>;
   getTvShowsByFilter(filters: { 
     ageGroup?: string; 
     ageRange?: {min: number, max: number};
@@ -311,6 +312,65 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getTvShowsByPlatform(platform: string, limit: number = 100): Promise<TvShow[]> {
+    try {
+      const client = await pool.connect();
+      try {
+        // Use parameterized query to search for shows by platform
+        const result = await client.query(
+          'SELECT * FROM tv_shows WHERE available_on::text LIKE $1 ORDER BY name LIMIT $2',
+          [`%${platform}%`, limit]
+        );
+        
+        console.log(`Retrieved ${result.rowCount} TV shows for platform "${platform}"`);
+        
+        // Map the database rows to our TvShow model, same mapping as getAllTvShows
+        return result.rows.map(row => ({
+          id: row.id,
+          name: row.name || '',
+          description: row.description || '',
+          imageUrl: row.image_url,
+          ageRange: row.age_range || '',
+          tantrumFactor: row.tantrum_factor || '',
+          themes: row.themes || [],
+          
+          // Stimulation metrics
+          stimulationScore: row.stimulation_score || 0,
+          interactivityLevel: row.interactivity_level || null,
+          dialogueIntensity: row.dialogue_intensity || null,
+          soundEffectsLevel: row.sound_effects_level || null,
+          totalMusicLevel: row.total_music_level || null,
+          musicTempo: row.music_tempo || null,
+          totalSoundEffectTimeLevel: row.total_sound_effect_time_level || null,
+          sceneFrequency: row.scene_frequency || null,
+          animationStyle: row.animation_style || null,
+          
+          // Required schema fields with defaults
+          episodeLength: row.episode_length || 0,
+          creator: row.creator || null,
+          releaseYear: row.release_year || null,
+          endYear: row.end_year || null,
+          isOngoing: row.is_ongoing || null,
+          seasons: row.seasons || null,
+          availableOn: row.available_on || [],
+          creativityRating: row.creativity_rating || null,
+          
+          // YouTube-specific fields
+          subscriberCount: row.subscriber_count || null,
+          videoCount: row.video_count || null,
+          channelId: row.channel_id || null,
+          isYouTubeChannel: row.is_youtube_channel || false,
+          publishedAt: row.published_at || null
+        }));
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error(`Error fetching TV shows for platform "${platform}":`, error);
+      return [];
+    }
+  }
+  
   async getAllTvShows(): Promise<TvShow[]> {
     try {
       // Direct SQL query approach for reliability
