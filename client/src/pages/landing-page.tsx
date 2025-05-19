@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useEffect } from "react";
 import GhlScriptLoader from "@/components/GhlScriptLoader";
+import SeoMetaTags from "@/components/SeoMetaTags";
 // Import the preview image to ensure it's properly bundled
 import previewImage from "../assets/tv-tantrum-preview.png";
 
@@ -25,6 +26,22 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+      <SeoMetaTags 
+        title="TV Tantrum - Children's TV Show Guide for Parents"
+        description="TV Tantrum helps parents make informed decisions about children's media with detailed sensory impact ratings, stimulation scores, and age suitability information."
+        keywords={[
+          'children TV shows', 
+          'kids show rating', 
+          'stimulation score', 
+          'sensory impact', 
+          'parent guide',
+          'screen time guide',
+          'age-appropriate TV',
+          'TV show themes',
+          'dialogue intensity',
+          'media sensory analysis'
+        ]}
+      />
       <GhlScriptLoader />
       {/* Header */}
       <header className="container mx-auto py-6 px-4 sm:px-6 flex justify-between items-center">
