@@ -320,7 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If a show has YouTube data in the database, ensure it's exposed directly
       if (show.isYouTubeChannel) {
-        console.log(`Show ${show.name} has YouTube data in database, ensuring it's included in response`);
+        console.log(`Show ${show.name} has YouTube data in database`);
+        console.log(`isYouTubeChannel: ${show.isYouTubeChannel}, subscriberCount: ${show.subscriberCount}, videoCount: ${show.videoCount}`);
+        
         // Use values from the database if they exist
         response.youtube = {
           title: show.name,
@@ -331,6 +333,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           publishedAt: show.publishedAt || '',
           thumbnailUrl: show.imageUrl || ''
         };
+        
+        console.log('Added YouTube data to response:', response.youtube);
       }
       
       res.json(response);
