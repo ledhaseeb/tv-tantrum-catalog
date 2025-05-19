@@ -14,7 +14,10 @@ const PostgresSessionStore = connectPg(session);
 export const sessionStore = new PostgresSessionStore({ 
   pool, 
   createTableIfMissing: true,
-  tableName: 'session' // Use a standard table name for the session store
+  tableName: 'session', // Use a standard table name for the session store
+  // Add session store optimization for Replit
+  pruneSessionInterval: 60, // Prune expired sessions every minute
+  errorLogging: false // Reduce excessive error logs
 });
 
 // No need to import User here as types are explicitly defined
