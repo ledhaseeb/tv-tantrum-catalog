@@ -84,7 +84,8 @@
     "musicTempo": "Low",
     "totalMusicLevel": "Low",
     "totalSoundEffectTimeLevel": "Moderate-High",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "The Adventure Agents is a Family Friendly show produced by the South Family. Life is an adventure, Love is the Key!"
   },
   "4": {
     "stimulationScore": 5,
