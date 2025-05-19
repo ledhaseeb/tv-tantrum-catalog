@@ -985,15 +985,16 @@ export default function AdminPage() {
                           <TableCell>{show.ageRange || 'N/A'}</TableCell>
                           <TableCell>{show.stimulationScore}/5</TableCell>
                           <TableCell>
-                            {(show.imdbId || (show.creator && show.releaseYear && show.availableOn && Array.isArray(show.availableOn) && !show.availableOn.includes('YouTube'))) ? (
+                            {/* Show Y if has data from OMDb (creator field filled + NOT from YouTube) */}
+                            {(show.creator && !show.isYouTubeChannel) ? (
                               <span className="text-green-600 font-medium">Y</span>
                             ) : (
                               <span className="text-red-500">N</span>
                             )}
                           </TableCell>
                           <TableCell>
-                            {(show.channelId || show.youtubeChannelId || (show.isYouTubeChannel === true) || 
-                              (show.availableOn && Array.isArray(show.availableOn) && show.availableOn.includes('YouTube') && show.subscriberCount)) ? (
+                            {/* Show Y if is a YouTube channel that has been looked up */}
+                            {(show.isYouTubeChannel) ? (
                               <span className="text-green-600 font-medium">Y</span>
                             ) : (
                               <span className="text-red-500">N</span>
