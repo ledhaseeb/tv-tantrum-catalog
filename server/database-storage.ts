@@ -12,14 +12,7 @@ import {
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
 import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
 
-// Import backup TV shows data provider if available
-let backupTvShowsProvider: { getTvShows: () => Promise<any[]> } | null = null;
-try {
-  backupTvShowsProvider = require('../data/backup-tv-shows');
-  console.log('Backup TV shows data provider loaded successfully');
-} catch (error) {
-  console.log('Backup TV shows data provider not available:', error);
-}
+// We'll implement a simpler solution directly in this file
 
 export interface IStorage {
   // User methods
@@ -320,80 +313,147 @@ export class DatabaseStorage implements IStorage {
 
   async getAllTvShows(): Promise<TvShow[]> {
     try {
-      // Try to get TV shows from the database
-      const shows = await db.select().from(tvShows);
-      // Return them if successful
-      if (shows && shows.length > 0) {
-        console.log(`Successfully loaded ${shows.length} TV shows from database`);
-        return shows;
-      }
-      
-      // If no shows were returned, log a message
-      console.log('No TV shows returned from database, using direct connection method');
-      
-      // Fetch shows using a direct database connection as backup
+      // Direct SQL query approach for reliability
       const client = await pool.connect();
       try {
         const result = await client.query('SELECT * FROM tv_shows ORDER BY name');
-        console.log(`Direct query fetched ${result.rowCount} TV shows`);
+        console.log(`Retrieved ${result.rowCount} TV shows from database`);
         
-        if (result.rows && result.rows.length > 0) {
-          return result.rows.map(row => ({
-            id: row.id,
-            name: row.name || '',
-            description: row.description || '',
-            ageRange: row.age_range || '',
-            episodeLength: 0,
-            tantrumFactor: row.tantrum_factor || '',
-            themes: row.themes || [],
-            network: row.network || null,
-            stimulationScore: row.stimulation_score || 0,
-            year: row.year || '',
-            productionCompany: row.production_company || '',
-            // Required fields with defaults
-            creator: null,
-            releaseYear: null,
-            endYear: null,
-            isOngoing: null,
-            seasons: null,
-            totalEpisodes: null,
-            productionCountry: null,
-            language: null,
-            genre: null,
-            targetAudience: null,
-            viewerRating: null,
-            imageUrl: row.image_url,
-            interactionLevel: row.interaction_level || null,
-            dialogueIntensity: row.dialogue_intensity || null,
-            soundFrequency: row.sound_frequency || null,
-            totalMusicLevel: row.total_music_level || null,
-            musicTempo: row.music_tempo || null,
-            soundEffectsLevel: row.sound_effects_level || null,
-            animationStyle: row.animation_style || null,
-            sceneFrequency: row.scene_frequency || null,
-            createdAt: row.created_at || new Date().toISOString(),
-            updatedAt: row.updated_at || new Date().toISOString(),
-            totalSoundEffectTimeLevel: row.total_sound_effect_time_level || null
-          }));
-        }
-      } catch (directError) {
-        console.error('Error in direct database query:', directError);
+        // Map the database rows to our TvShow model
+        return result.rows.map(row => ({
+          id: row.id,
+          name: row.name || '',
+          description: row.description || '',
+          imageUrl: row.image_url,
+          ageRange: row.age_range || '',
+          tantrumFactor: row.tantrum_factor || '',
+          themes: row.themes || [],
+          
+          // Stimulation metrics
+          stimulationScore: row.stimulation_score || 0,
+          interactionLevel: row.interaction_level || null,
+          dialogueIntensity: row.dialogue_intensity || null,
+          soundFrequency: row.sound_frequency || null,
+          totalMusicLevel: row.total_music_level || null,
+          musicTempo: row.music_tempo || null,
+          soundEffectsLevel: row.sound_effects_level || null,
+          animationStyle: row.animation_style || null,
+          sceneFrequency: row.scene_frequency || null,
+          totalSoundEffectTimeLevel: row.total_sound_effect_time_level || null,
+          
+          // Other fields
+          network: row.network || null,
+          year: row.year || '',
+          productionCompany: row.production_company || '',
+          
+          // Required schema fields with defaults
+          episodeLength: row.episode_length || 0,
+          creator: row.creator || null,
+          releaseYear: row.release_year || null,
+          endYear: row.end_year || null,
+          isOngoing: row.is_ongoing || null,
+          seasons: row.seasons || null,
+          totalEpisodes: row.total_episodes || null,
+          productionCountry: row.production_country || null,
+          language: row.language || null,
+          genre: row.genre || null,
+          targetAudience: row.target_audience || null,
+          viewerRating: row.viewer_rating || null,
+          
+          // Timestamps
+          createdAt: row.created_at || new Date().toISOString(),
+          updatedAt: row.updated_at || new Date().toISOString()
+        }));
       } finally {
         client.release();
       }
-
-      // If we get here, we couldn't fetch shows from the database
-      console.log('No shows could be loaded, returning empty array');
-      return [];
     } catch (error) {
-      console.error('Error in getAllTvShows:', error);
-      return [];
+      console.error('Error fetching TV shows from database:', error);
+      
+      // Fall back to ORM if direct query fails
+      try {
+        console.log('Attempting to fetch TV shows using ORM...');
+        const shows = await db.select().from(tvShows);
+        console.log(`Retrieved ${shows.length} TV shows using ORM`);
+        return shows;
+      } catch (ormError) {
+        console.error('ORM fallback also failed:', ormError);
+        return [];
+      }
     }
   }
 
   async getTvShowById(id: number): Promise<TvShow | undefined> {
-    const [show] = await db.select().from(tvShows).where(eq(tvShows.id, id));
-    return show;
+    try {
+      // Use direct SQL query for reliability, similar to getAllTvShows
+      const client = await pool.connect();
+      try {
+        const result = await client.query('SELECT * FROM tv_shows WHERE id = $1', [id]);
+        
+        if (result.rows.length === 0) {
+          return undefined;
+        }
+        
+        const row = result.rows[0];
+        return {
+          id: row.id,
+          name: row.name || '',
+          description: row.description || '',
+          imageUrl: row.image_url,
+          ageRange: row.age_range || '',
+          tantrumFactor: row.tantrum_factor || '',
+          themes: row.themes || [],
+          
+          // Stimulation metrics
+          stimulationScore: row.stimulation_score || 0,
+          interactionLevel: row.interaction_level || null,
+          dialogueIntensity: row.dialogue_intensity || null,
+          soundFrequency: row.sound_frequency || null,
+          totalMusicLevel: row.total_music_level || null,
+          musicTempo: row.music_tempo || null,
+          soundEffectsLevel: row.sound_effects_level || null,
+          animationStyle: row.animation_style || null,
+          sceneFrequency: row.scene_frequency || null,
+          totalSoundEffectTimeLevel: row.total_sound_effect_time_level || null,
+          
+          // Other fields
+          network: row.network || null,
+          year: row.year || '',
+          productionCompany: row.production_company || '',
+          
+          // Required schema fields with defaults
+          episodeLength: row.episode_length || 0,
+          creator: row.creator || null,
+          releaseYear: row.release_year || null,
+          endYear: row.end_year || null,
+          isOngoing: row.is_ongoing || null,
+          seasons: row.seasons || null,
+          totalEpisodes: row.total_episodes || null,
+          productionCountry: row.production_country || null,
+          language: row.language || null,
+          genre: row.genre || null,
+          targetAudience: row.target_audience || null,
+          viewerRating: row.viewer_rating || null,
+          
+          // Timestamps
+          createdAt: row.created_at || new Date().toISOString(),
+          updatedAt: row.updated_at || new Date().toISOString()
+        };
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error(`Error fetching TV show with ID ${id}:`, error);
+      
+      // Fall back to ORM if direct query fails
+      try {
+        const [show] = await db.select().from(tvShows).where(eq(tvShows.id, id));
+        return show;
+      } catch (ormError) {
+        console.error(`ORM fallback for TV show ID ${id} also failed:`, ormError);
+        return undefined;
+      }
+    }
   }
 
   async getTvShowsByFilter(filters: { 

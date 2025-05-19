@@ -1,9 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-// Switch to memory storage for development
-import { MemStorage } from "./storage";
-// Create and initialize memory storage
-const storage = new MemStorage();
+// Use database storage
+import { storage } from "./database-storage";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { ZodError } from "zod";
@@ -38,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log("To apply custom data to the database, run: node apply-custom-data.js");
 
   // Get all TV shows
-  app.get("/api/shows", async (req: Request, res: Response) => {
+  app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
       
       const { 
