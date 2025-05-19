@@ -52,7 +52,7 @@ export default function Home() {
   
   // Fetch all TV shows
   const { data: allShows, isLoading: allShowsLoading } = useQuery<TvShow[]>({
-    queryKey: ['/api/shows'],
+    queryKey: ['/api/tv-shows'],
     staleTime: 60000, // 1 minute
   });
   
