@@ -9,18 +9,14 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
 
-// Use connection pooling URL for better performance
-const poolUrl = process.env.DATABASE_URL.replace('.neon.tech', '-pooler.neon.tech');
-
 // Configure the pool with optimized settings
 const poolConfig = {
-  connectionString: poolUrl,
+  connectionString: process.env.DATABASE_URL,
   max: 20, // Maximum number of clients
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
   connectionTimeoutMillis: 5000, // Maximum time to wait for connection
   maxUses: 7500, // Maximum uses before a connection is destroyed
   keepAlive: true, // Keep connections alive
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   application_name: 'tv-tantrum', // Helps identify connections in logs
   statement_timeout: 30000, // Timeout queries after 30 seconds
 };
