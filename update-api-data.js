@@ -3,20 +3,25 @@
  * 
  * This script will:
  * 1. Get all shows from the database
- * 2. For each show, lookup data from OMDb API and YouTube API
+ * 2. For each show, lookup data from OMDb and YouTube APIs
  * 3. Update the show with any new information found
  * 4. Log the results for review
+ * 
+ * Priority rule: Always prefer OMDb descriptions over YouTube descriptions
  */
 
-import pg from 'pg';
+// CommonJS imports for compatibility with project structure
+const pg = require('pg');
 const { Pool } = pg;
-import { omdbService } from './server/omdb.js';
-import { youtubeService } from './server/youtube.js';
-import dotenv from 'dotenv';
+const { omdbService } = require('./server/omdb');
+const { youtubeService } = require('./server/youtube');
+const dotenv = require('dotenv');
+const fs = require('fs');
+
 dotenv.config();
 
 // Database connection
-const pool = new Pool({
+const pool = createPool({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -44,13 +49,21 @@ function getCleanDescription(description) {
   return cleaned.trim().substring(0, 1000);
 }
 
+// Store processed shows
+let processedShows = {
+  omdb: [],
+  youtube: [],
+  neither: [],
+  both: []
+};
+
 // Main function to process all shows
 async function processAllShows() {
   console.log('Starting to process all TV shows...');
   
   try {
     // Get all shows from database
-    const showsResult = await pool.query('SELECT id, name FROM tv_shows ORDER BY name');
+    const showsResult = await pool.query('SELECT id, name, description FROM tv_shows ORDER BY name');
     const shows = showsResult.rows;
     console.log(`Found ${shows.length} TV shows to process`);
     
@@ -69,12 +82,24 @@ async function processAllShows() {
         console.log(`Processing show [${show.id}]: ${show.name}`);
         let updateData = {};
         let dataFound = false;
+        let hasOmdbData = false;
+        let hasYoutubeData = false;
         
-        // Try OMDb API
+        // Variables to track descriptions from both sources
+        let omdbDescription = null;
+        let youtubeDescription = null;
+        
+        // Try OMDb API first
         const omdbData = await omdbService.getShowData(show.name);
         if (omdbData) {
           console.log(`   ✓ Found OMDb data for "${show.name}"`);
           dataFound = true;
+          hasOmdbData = true;
+          
+          // Save the OMDb description if available
+          if (omdbData.plot && omdbData.plot !== '') {
+            omdbDescription = omdbData.plot;
+          }
           
           // Extract year and convert to numeric if possible
           let releaseYear = null;
@@ -134,17 +159,6 @@ async function processAllShows() {
             updateData.creator = omdbData.director;
           }
           
-          // If we have a plot and the current description is generic or missing, update it
-          if (omdbData.plot && omdbData.plot !== '') {
-            // Check current description in database
-            const descResult = await pool.query('SELECT description FROM tv_shows WHERE id = $1', [show.id]);
-            const currentDesc = descResult.rows[0]?.description;
-            
-            if (!currentDesc || currentDesc === 'A children\'s TV show' || currentDesc.length < 20) {
-              updateData.description = omdbData.plot;
-            }
-          }
-          
           // If show has no image, use OMDb poster
           if (omdbData.poster && omdbData.poster !== '') {
             const imageResult = await pool.query('SELECT imageUrl FROM tv_shows WHERE id = $1', [show.id]);
@@ -154,41 +168,19 @@ async function processAllShows() {
               updateData.imageUrl = omdbData.poster;
             }
           }
-          
-          // If we have update data, apply it
-          if (Object.keys(updateData).length > 0) {
-            console.log(`   ✓ Updating OMDb data for show "${show.name}":`, updateData);
-            
-            // Build the SQL query
-            const updates = [];
-            const values = [show.id];
-            let paramCount = 2;
-            
-            for (const [key, value] of Object.entries(updateData)) {
-              updates.push(`${key} = $${paramCount}`);
-              values.push(value);
-              paramCount++;
-            }
-            
-            const updateQuery = `
-              UPDATE tv_shows 
-              SET ${updates.join(', ')} 
-              WHERE id = $1
-            `;
-            
-            await pool.query(updateQuery, values);
-            stats.omdbUpdates++;
-          }
         }
         
-        // Try YouTube API for all shows (might be available on both platforms)
+        // Try YouTube API (might be available on both platforms)
         const youtubeData = await youtubeService.getChannelData(show.name);
         if (youtubeData) {
           console.log(`   ✓ Found YouTube data for "${show.name}"`);
           dataFound = true;
+          hasYoutubeData = true;
           
-          // Reset update data for YouTube specific fields
-          updateData = {};
+          // Save the YouTube description if available
+          if (youtubeData.description) {
+            youtubeDescription = getCleanDescription(youtubeData.description);
+          }
           
           // Extract release year from publishedAt date
           const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
@@ -218,16 +210,6 @@ async function processAllShows() {
             updateData.isOngoing = true;
           }
           
-          // Get a cleaned description from YouTube
-          const cleanDescription = getCleanDescription(youtubeData.description);
-          
-          // Update description if generic or missing
-          if (cleanDescription && (!currentData.description || 
-              currentData.description === 'A children\'s TV show' || 
-              currentData.description.length < 20)) {
-            updateData.description = cleanDescription;
-          }
-          
           // If show has no image, use YouTube thumbnail
           if (!currentData.imageUrl && youtubeData.thumbnailUrl) {
             updateData.imageUrl = youtubeData.thumbnailUrl;
@@ -255,37 +237,57 @@ async function processAllShows() {
           updateData.channelId = youtubeData.channelId;
           updateData.isYouTubeChannel = true;
           updateData.publishedAt = youtubeData.publishedAt;
-          
-          // If we have update data, apply it
-          if (Object.keys(updateData).length > 0) {
-            console.log(`   ✓ Updating YouTube data for show "${show.name}":`, updateData);
-            
-            // Build the SQL query
-            const updates = [];
-            const values = [show.id];
-            let paramCount = 2;
-            
-            for (const [key, value] of Object.entries(updateData)) {
-              // Handle arrays for availableOn
-              if (key === 'availableOn') {
-                updates.push(`${key} = $${paramCount}`);
-                values.push(value);
-              } else {
-                updates.push(`${key} = $${paramCount}`);
-                values.push(value);
-              }
-              paramCount++;
-            }
-            
-            const updateQuery = `
-              UPDATE tv_shows 
-              SET ${updates.join(', ')} 
-              WHERE id = $1
-            `;
-            
-            await pool.query(updateQuery, values);
-            stats.youtubeUpdates++;
+        }
+        
+        // Decide which description to use (prioritize OMDb over YouTube)
+        const currentDesc = show.description;
+        if (!currentDesc || currentDesc === 'A children\'s TV show' || currentDesc.length < 20) {
+          // If we have an OMDb description, use it
+          if (omdbDescription) {
+            updateData.description = omdbDescription;
           }
+          // Otherwise, if we have a YouTube description, use it
+          else if (youtubeDescription) {
+            updateData.description = youtubeDescription;
+          }
+        }
+        
+        // Track which APIs had data
+        if (hasOmdbData && hasYoutubeData) {
+          processedShows.both.push(show.name);
+        } else if (hasOmdbData) {
+          processedShows.omdb.push(show.name);
+        } else if (hasYoutubeData) {
+          processedShows.youtube.push(show.name);
+        } else {
+          processedShows.neither.push(show.name);
+        }
+        
+        // If we have update data, apply it
+        if (Object.keys(updateData).length > 0) {
+          console.log(`   ✓ Updating data for show "${show.name}":`, updateData);
+          
+          // Build the SQL query
+          const updates = [];
+          const values = [show.id];
+          let paramCount = 2;
+          
+          for (const [key, value] of Object.entries(updateData)) {
+            updates.push(`${key} = $${paramCount}`);
+            values.push(value);
+            paramCount++;
+          }
+          
+          const updateQuery = `
+            UPDATE tv_shows 
+            SET ${updates.join(', ')} 
+            WHERE id = $1
+          `;
+          
+          await pool.query(updateQuery, values);
+          
+          if (hasOmdbData) stats.omdbUpdates++;
+          if (hasYoutubeData) stats.youtubeUpdates++;
         }
         
         if (!dataFound) {
@@ -311,6 +313,15 @@ async function processAllShows() {
     console.log(`Shows updated with YouTube data: ${stats.youtubeUpdates}`);
     console.log(`Shows with no API data found: ${stats.noDataFound}`);
     console.log(`Errors encountered: ${stats.errors}`);
+    
+    // Write processed shows to a report file
+    const report = {
+      stats,
+      shows: processedShows
+    };
+    
+    fs.writeFileSync('api-data-report.json', JSON.stringify(report, null, 2));
+    console.log('\nReport written to api-data-report.json');
     
   } catch (error) {
     console.error('Error in main processing:', error);

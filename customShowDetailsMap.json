@@ -6303,7 +6303,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate-High",
     "totalSoundEffectTimeLevel": "Low-Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "A snobbish fox and a wily mouse find their positions reversed as part of a bet by two callous badgers."
   },
   "260": {
     "stimulationScore": 5,
