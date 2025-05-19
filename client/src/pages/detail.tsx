@@ -523,7 +523,7 @@ export default function Detail({ id }: DetailProps) {
                   <div>
                     <div className="flex justify-between mb-1">
                       <div className="text-gray-600">Sound Effects Level:</div>
-                      <div className="font-medium">{showDetail.soundEffectsLevel || 'High'}</div>
+                      <div className="font-medium">{showDetail.soundEffectsLevel || 'Moderate'}</div>
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
@@ -547,6 +547,10 @@ export default function Detail({ id }: DetailProps) {
                             level = 3;
                           } else if (showDetail.soundEffectsLevel === 'High') {
                             level = 5;
+                          } else if (showDetail.soundEffectsLevel === 'Limited') {
+                            level = 1;
+                          } else if (showDetail.soundEffectsLevel === 'Minimal') {
+                            level = 1;
                           }
                         }
                           
@@ -676,7 +680,7 @@ export default function Detail({ id }: DetailProps) {
                   <div>
                     <div className="flex justify-between mb-1">
                       <div className="text-gray-600">Interaction Level:</div>
-                      <div className="font-medium">{showDetail.interactivityLevel || 'Limited'}</div>
+                      <div className="font-medium">{showDetail.interactivityLevel || 'Moderate'}</div>
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
@@ -701,6 +705,8 @@ export default function Detail({ id }: DetailProps) {
                           } else if (showDetail.interactivityLevel === 'High') {
                             level = 5;
                           } else if (showDetail.interactivityLevel === 'Limited') {
+                            level = 1;
+                          } else if (showDetail.interactivityLevel === 'Minimal') {
                             level = 1;
                           }
                         }
