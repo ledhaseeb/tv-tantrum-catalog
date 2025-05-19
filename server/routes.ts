@@ -55,8 +55,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .trim();
   };
   
-  // Extract year information from OMDb year string (e.g., "2010-2015" or "2020-")
-  const extractYearInfo = (yearStr: string) => {
+  // Extract year information and creator functions
+  function extractYearInfo(yearStr: string) {
     if (!yearStr) return { releaseYear: null, endYear: null, isOngoing: null };
     
     const parts = yearStr.split('–');
@@ -65,14 +65,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const isOngoing = parts.length > 1 && (parts[1].trim() === '' || !parts[1]);
     
     return { releaseYear, endYear, isOngoing };
-  };
+  }
   
   // Extract creator info from director and writer fields
-  const extractCreator = (director: string, writer: string) => {
+  function extractCreator(director: string, writer: string) {
     if (director && director !== 'N/A') return director;
     if (writer && writer !== 'N/A') return writer;
     return null;
-  };
+  }
 
   // Get all TV shows
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
@@ -172,50 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Function to extract year information from OMDb
-const extractYearInfo = (omdbYear: string) => {
-  let releaseYear: number | null = null;
-  let endYear: number | null = null;
-  let isOngoing = false;
-  
-  if (omdbYear && omdbYear !== 'N/A') {
-    // Parse year ranges like "2010-2018" or "2020-" or just "2015"
-    const yearMatch = omdbYear.match(/(\d{4})(?:-(\d{4}|\s*present|\s*$))?/i);
-    
-    if (yearMatch) {
-      releaseYear = parseInt(yearMatch[1]);
-      
-      if (yearMatch[2]) {
-        // If there's an end year specified
-        if (/^\d{4}$/.test(yearMatch[2])) {
-          endYear = parseInt(yearMatch[2]);
-          isOngoing = false;
-        } else if (yearMatch[2].toLowerCase().includes('present') || yearMatch[2].trim() === '') {
-          // If it says "present" or ends with a hyphen only, it's ongoing
-          isOngoing = true;
-        }
-      } else {
-        // Only one year specified, assume it's not ongoing
-        isOngoing = false;
-      }
-    }
-  }
-  
-  return { releaseYear, endYear, isOngoing };
-};
-
-// Function to get creator from OMDb director and writer
-const extractCreator = (director: string, writer: string) => {
-  if (director && director !== 'N/A') {
-    return director;
-  } else if (writer && writer !== 'N/A') {
-    // For TV shows, writers are often the creators
-    // Extract the first writer if there are multiple
-    const firstWriter = writer.split(',')[0].trim();
-    return firstWriter;
-  }
-  return null;
-};
+  // These functions have already been defined above, so we don't need to redefine them.
 
 // Get single TV show by ID
   app.get("/api/shows/:id", async (req: Request, res: Response) => {
