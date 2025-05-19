@@ -70,7 +70,7 @@ lookupRouter.get("/", async (req: Request, res: Response) => {
     
     // Check YouTube API
     try {
-      const youtubeData = await youtubeService.getYouTubeChannelByName(showName);
+      const youtubeData = await youtubeService.getChannelData(showName);
       console.log(`YouTube lookup for "${showName}":`, youtubeData ? 'Found' : 'Not found');
       
       if (youtubeData) {

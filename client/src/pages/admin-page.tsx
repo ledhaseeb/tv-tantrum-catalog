@@ -1257,22 +1257,28 @@ export default function AdminPage() {
             {showLookupOptions && (lookupResults.omdb || lookupResults.youtube) && (
               <div className="grid grid-cols-4 gap-4">
                 <div className="col-start-2 col-span-3">
-                  <Alert>
+                  <Alert className={lookupResults.omdb ? "border-green-500" : lookupResults.youtube ? "border-red-500" : ""}>
                     <AlertTitle className="flex items-center gap-2">
-                      <Info className="h-4 w-4" />
-                      External data found!
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      API Data Found Successfully!
                     </AlertTitle>
-                    <AlertDescription className="mt-2">
+                    <AlertDescription className="mt-3">
                       {lookupResults.omdb && (
-                        <div className="mb-2">
-                          <h4 className="font-medium mb-1">OMDb Data Found:</h4>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Title: {lookupResults.omdb.title}, Year: {lookupResults.omdb.year}, Type: {lookupResults.omdb.type}
+                        <div className="mb-4 p-3 border rounded bg-muted/30">
+                          <h4 className="font-medium mb-2 flex items-center">
+                            <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                            <span className="text-blue-500 font-semibold">OMDb Data Found:</span>
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            <strong>Title:</strong> {lookupResults.omdb.title}<br />
+                            <strong>Year:</strong> {lookupResults.omdb.year}<br />
+                            <strong>Director:</strong> {lookupResults.omdb.director || "Not available"}<br />
+                            <strong>Plot:</strong> {lookupResults.omdb.plot?.substring(0, 100)}...
                           </p>
                           <Button 
                             type="button"
                             size="sm"
-                            variant="outline"
+                            className="bg-blue-500 hover:bg-blue-600 text-white"
                             onClick={() => {
                               // Extract year information
                               const releaseYear = lookupResults.omdb.year ? 
@@ -1292,27 +1298,34 @@ export default function AdminPage() {
                               });
                               setShowLookupOptions(false);
                               toast({
-                                title: "Data applied",
-                                description: "OMDb data has been applied to the form"
+                                title: "OMDb Data Added",
+                                description: "Official TV show data has been applied to the form",
+                                variant: "success"
                               });
                             }}
                           >
                             <FileText className="h-4 w-4 mr-2" />
-                            Apply OMDb Data
+                            Add API Data
                           </Button>
                         </div>
                       )}
                       
                       {lookupResults.youtube && (
-                        <div>
-                          <h4 className="font-medium mb-1">YouTube Data Found:</h4>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Channel: {lookupResults.youtube.title}, Subscribers: {lookupResults.youtube.subscriberCount?.toLocaleString()}
+                        <div className="p-3 border rounded bg-muted/30">
+                          <h4 className="font-medium mb-2 flex items-center">
+                            <Video className="h-4 w-4 mr-2 text-red-500" />
+                            <span className="text-red-500 font-semibold">YouTube Data Found:</span>
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            <strong>Channel:</strong> {lookupResults.youtube.title}<br />
+                            <strong>Subscribers:</strong> {parseInt(lookupResults.youtube.subscriberCount).toLocaleString()}<br />
+                            <strong>Videos:</strong> {parseInt(lookupResults.youtube.videoCount).toLocaleString()}<br />
+                            <strong>Created:</strong> {new Date(lookupResults.youtube.publishedAt).toLocaleDateString()}
                           </p>
                           <Button 
                             type="button"
-                            size="sm"
-                            variant="outline"
+                            size="sm" 
+                            className="bg-red-500 hover:bg-red-600 text-white"
                             onClick={() => {
                               const releaseYear = lookupResults.youtube.publishedAt ?
                                 new Date(lookupResults.youtube.publishedAt).getFullYear() : null;
@@ -1324,7 +1337,6 @@ export default function AdminPage() {
                                 isOngoing: true,
                                 subscriberCount: lookupResults.youtube.subscriberCount || formState.subscriberCount,
                                 videoCount: lookupResults.youtube.videoCount || formState.videoCount,
-                                viewCount: lookupResults.youtube.viewCount || formState.viewCount,
                                 isYouTubeChannel: true,
                                 publishedAt: lookupResults.youtube.publishedAt || formState.publishedAt,
                                 availableOn: formState.availableOn ? 
@@ -1335,13 +1347,14 @@ export default function AdminPage() {
                               });
                               setShowLookupOptions(false);
                               toast({
-                                title: "Data applied",
-                                description: "YouTube data has been applied to the form"
+                                title: "YouTube Data Added",
+                                description: "Official YouTube channel data has been applied to the form",
+                                variant: "success"
                               });
                             }}
                           >
                             <Video className="h-4 w-4 mr-2" />
-                            Apply YouTube Data
+                            Add API Data
                           </Button>
                         </div>
                       )}
