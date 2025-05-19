@@ -719,6 +719,18 @@ export class DatabaseStorage implements IStorage {
       updateCustomImageMap(id, show.imageUrl);
     }
     
+    // Fix the availableOn field if it's a string instead of an array
+    if (show.availableOn && typeof show.availableOn === 'string') {
+      // Convert comma-separated string to array
+      show.availableOn = show.availableOn.split(',').map(item => item.trim());
+      console.log('Converted availableOn to array:', show.availableOn);
+    }
+    
+    // Handle YouTube-specific fields
+    if (show.isYouTubeChannel && !show.availableOn) {
+      show.availableOn = ['YouTube'];
+    }
+    
     // Save stimulation metrics and other important details to our custom details map
     const stimulationMetrics: Record<string, any> = {};
     const importantFields = [

@@ -1330,6 +1330,24 @@ export default function AdminPage() {
                               const releaseYear = lookupResults.youtube.publishedAt ?
                                 new Date(lookupResults.youtube.publishedAt).getFullYear() : null;
                               
+                              // Properly handle the availableOn field as an array
+                              let updatedAvailableOn;
+                              if (Array.isArray(formState.availableOn)) {
+                                // If it's already an array, add YouTube if not present
+                                updatedAvailableOn = formState.availableOn.includes('YouTube') 
+                                  ? formState.availableOn 
+                                  : [...formState.availableOn, 'YouTube'];
+                              } else if (typeof formState.availableOn === 'string') {
+                                // If it's a string, split by comma and add YouTube if not present
+                                const platforms = formState.availableOn.split(',').map(p => p.trim());
+                                updatedAvailableOn = platforms.includes('YouTube') 
+                                  ? platforms 
+                                  : [...platforms, 'YouTube'];
+                              } else {
+                                // Default to an array with just YouTube
+                                updatedAvailableOn = ['YouTube'];
+                              }
+                              
                               setFormState({
                                 ...formState,
                                 description: lookupResults.youtube.description || formState.description,
@@ -1339,11 +1357,8 @@ export default function AdminPage() {
                                 videoCount: lookupResults.youtube.videoCount || formState.videoCount,
                                 isYouTubeChannel: true,
                                 publishedAt: lookupResults.youtube.publishedAt || formState.publishedAt,
-                                availableOn: formState.availableOn ? 
-                                  (formState.availableOn.includes('YouTube') ? 
-                                    formState.availableOn : 
-                                    formState.availableOn + ', YouTube') : 
-                                  'YouTube'
+                                channelId: lookupResults.youtube.channelId || formState.channelId,
+                                availableOn: updatedAvailableOn
                               });
                               setShowLookupOptions(false);
                               toast({
