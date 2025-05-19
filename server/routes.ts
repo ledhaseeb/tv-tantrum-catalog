@@ -14,6 +14,7 @@ import { updateShowImagesFromOmdb } from "./image-optimizer";
 import { updateCustomImageMap, applyCustomImages } from "./image-preservator";
 import { applyCustomShowDetails } from "./details-preservator";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
+import { lookupRouter } from "./lookup-api";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -27,6 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve static files from the public directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
+  
+  // Register the lookup API router
+  app.use('/api/lookup-show', lookupRouter);
   
   // Skip GitHub data import on server start to fix database errors
   console.log("Skipping GitHub data import on startup to prevent database errors");
