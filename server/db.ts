@@ -9,12 +9,12 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
 
-// Configure the pool with simplified settings for local development
+// Configure the pool with optimized settings to prevent timeouts
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  max: 5, // Reduce connection pool size to prevent overwhelming the DB
+  idleTimeoutMillis: 60000, // Increased to 60 seconds to allow for longer idle times
+  connectionTimeoutMillis: 10000, // Increased to 10 seconds to allow more time to establish connections
   ssl: { rejectUnauthorized: false },
   application_name: 'tv-tantrum'
 };
