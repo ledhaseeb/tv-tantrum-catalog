@@ -21,7 +21,7 @@ const fs = require('fs');
 dotenv.config();
 
 // Database connection
-const pool = createPool({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
