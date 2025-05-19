@@ -55,7 +55,9 @@ import {
   PlusCircle,
   Upload,
   Image,
-  Trash2
+  Trash2,
+  FileText,
+  Info
 } from 'lucide-react';
 import { ImageUpload } from '@/components/image-upload';
 import { TvShow, User as UserType } from '@shared/schema';
@@ -320,6 +322,25 @@ export default function AdminPage() {
     }
   };
   
+  // Function to fetch TV shows from API
+  const fetchShows = async () => {
+    try {
+      const response = await fetch('/api/tv-shows');
+      const data = await response.json() as TvShow[];
+      setShows(data);
+      setFilteredShows(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching shows:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load TV shows",
+        variant: "destructive"
+      });
+      return [];
+    }
+  };
+  
   // Update show metadata (creator, release_year, end_year) with OMDb data
   const handleUpdateMetadata = async () => {
     if (isUpdatingMetadata) return;
@@ -335,7 +356,7 @@ export default function AdminPage() {
       });
       
       // Refresh the show list to get updated metadata
-      fetchShows();
+      await fetchShows();
       
     } catch (error) {
       console.error('Error updating show metadata:', error);
@@ -807,7 +828,7 @@ export default function AdminPage() {
                   </>
                 ) : (
                   <>
-                    <Info className="h-4 w-4 mr-2" />
+                    <FileText className="h-4 w-4 mr-2" />
                     Update Show Metadata
                   </>
                 )}
