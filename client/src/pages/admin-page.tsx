@@ -327,7 +327,7 @@ export default function AdminPage() {
   // Function to fetch TV shows from API
   const fetchShows = async () => {
     try {
-      const response = await fetch('/api/shows');
+      const response = await fetch('/api/tv-shows');
       const data = await response.json() as TvShow[];
       setShows(data);
       setFilteredShows(data);
