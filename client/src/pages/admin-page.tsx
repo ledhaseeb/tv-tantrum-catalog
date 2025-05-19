@@ -371,6 +371,35 @@ export default function AdminPage() {
       setIsUpdatingMetadata(false);
     }
   };
+  
+  // Update YouTube-specific metadata (subscriber_count, video_count, etc.)
+  const handleUpdateYouTubeMetadata = async () => {
+    if (isUpdatingYouTubeMetadata) return;
+    
+    setIsUpdatingYouTubeMetadata(true);
+    try {
+      const response = await apiRequest('POST', '/api/update-youtube-metadata');
+      const result = await response.json();
+      
+      toast({
+        title: "YouTube Data Update Complete",
+        description: `${result.updated} YouTube channels updated with subscriber counts and video information.`,
+      });
+      
+      // Refresh the show list to get updated metadata
+      await fetchShows();
+      
+    } catch (error) {
+      console.error('Error updating YouTube metadata:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update YouTube data. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingYouTubeMetadata(false);
+    }
+  };
 
   // Normalize stimulation metrics between different naming conventions
   const normalizeMetrics = (value: string | null | undefined): string => {

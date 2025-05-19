@@ -55,125 +55,137 @@ export interface YouTubeChannelData {
   isYouTubeChannel: boolean; // Flag to identify YouTube channels
 }
 
-export class YouTubeService {
-  private apiKey: string;
-  private baseUrl: string = 'https://www.googleapis.com/youtube/v3';
-  private cache: Map<string, YouTubeChannelData> = new Map();
-  private cacheExpiry: Map<string, number> = new Map();
-  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
+/**
+ * Service to interact with YouTube API
+ */
+class YouTubeService {
+  private API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
+  private API_KEY = process.env.YOUTUBE_API_KEY;
+  
   constructor() {
-    const apiKey = process.env.YOUTUBE_API_KEY;
-    if (!apiKey) {
-      throw new Error('YOUTUBE_API_KEY environment variable is not set');
+    // Validate API key is available
+    if (!this.API_KEY) {
+      console.warn('Warning: YOUTUBE_API_KEY environment variable is not set');
     }
-    this.apiKey = apiKey;
   }
-
-  async getChannelData(channelName: string): Promise<YouTubeChannelData | null> {
+  
+  /**
+   * Search for a YouTube channel by name
+   */
+  async searchChannel(channelName: string): Promise<{id: string, title: string} | null> {
     try {
-      // Check cache first
-      if (this.isInCache(channelName)) {
-        console.log(`Using cached YouTube data for "${channelName}"`);
-        return this.getFromCache(channelName);
-      }
-
-      console.log(`Fetching YouTube data for "${channelName}"`);
-
-      // First search for the channel
-      const searchUrl = `${this.baseUrl}/search?part=snippet&q=${encodeURIComponent(channelName)}&type=channel&maxResults=1&key=${this.apiKey}`;
-      const searchResponse = await fetch(searchUrl);
-      const searchData = await searchResponse.json() as any;
-
-      if (!searchData?.items || !Array.isArray(searchData.items) || searchData.items.length === 0) {
-        console.warn(`YouTube API: No channel found for "${channelName}"`);
+      // Don't attempt if API key is missing
+      if (!this.API_KEY) {
+        console.error('Cannot search YouTube: API key is missing');
         return null;
       }
-
-      // Get the channel ID from search results
-      const channelId = searchData.items[0]?.id?.channelId;
-
-      // Now get detailed channel information
-      const channelUrl = `${this.baseUrl}/channels?part=snippet,statistics&id=${channelId}&key=${this.apiKey}`;
-      const channelResponse = await fetch(channelUrl);
-      const channelData = await channelResponse.json() as any;
-
-      if (!channelData?.items || !Array.isArray(channelData.items) || channelData.items.length === 0) {
-        console.warn(`YouTube API: Failed to get details for channel "${channelName}"`);
-        return null;
-      }
-
-      const channel = channelData.items[0];
       
-      // Extract only the fields we need
-      const channelInfo: YouTubeChannelData = {
-        title: channel.snippet.title,
-        description: channel.snippet.description || '',
-        publishedAt: channel.snippet.publishedAt,
-        thumbnailUrl: channel.snippet.thumbnails.high?.url || '',
-        subscriberCount: channel.statistics?.subscriberCount || '0',
-        videoCount: channel.statistics?.videoCount || '0',
+      // Construct the search URL
+      const searchUrl = `${this.API_BASE_URL}/search?part=snippet&q=${encodeURIComponent(channelName)}&type=channel&maxResults=1&key=${this.API_KEY}`;
+      
+      // Make the request
+      const response = await fetch(searchUrl);
+      const data: any = await response.json();
+      
+      // Check for errors
+      if (data.error) {
+        console.error('YouTube API Error:', data.error.message);
+        return null;
+      }
+      
+      // Check if we got any results
+      if (!data.items || data.items.length === 0) {
+        console.log(`No channel found for "${channelName}"`);
+        return null;
+      }
+      
+      // Return channel ID and title
+      return {
+        id: data.items[0].id.channelId,
+        title: data.items[0].snippet.title
+      };
+    } catch (error) {
+      console.error(`Error searching YouTube for "${channelName}":`, error);
+      return null;
+    }
+  }
+  
+  /**
+   * Get detailed information about a YouTube channel
+   */
+  async getChannelDetails(channelId: string): Promise<YouTubeChannelData | null> {
+    try {
+      // Don't attempt if API key is missing
+      if (!this.API_KEY) {
+        console.error('Cannot get YouTube channel: API key is missing');
+        return null;
+      }
+      
+      // Construct the channel URL
+      const channelUrl = `${this.API_BASE_URL}/channels?part=snippet,statistics&id=${channelId}&key=${this.API_KEY}`;
+      
+      // Make the request
+      const response = await fetch(channelUrl);
+      const data: any = await response.json();
+      
+      // Check for errors
+      if (data.error) {
+        console.error('YouTube API Error:', data.error.message);
+        return null;
+      }
+      
+      // Check if we got any results
+      if (!data.items || data.items.length === 0) {
+        console.log(`No details found for channel ID: ${channelId}`);
+        return null;
+      }
+      
+      // Extract the data we want to store
+      const channelData: YouTubeChannelData = {
+        title: data.items[0].snippet.title,
+        description: data.items[0].snippet.description,
+        publishedAt: data.items[0].snippet.publishedAt,
+        thumbnailUrl: data.items[0].snippet.thumbnails.high?.url || '',
+        subscriberCount: data.items[0].statistics?.subscriberCount || '0',
+        videoCount: data.items[0].statistics?.videoCount || '0',
         channelId: channelId,
         isYouTubeChannel: true
       };
       
-      console.log(`Successfully fetched YouTube data for "${channelName}":`, {
-        title: channelInfo.title,
-        subscriberCount: channelInfo.subscriberCount,
-        videoCount: channelInfo.videoCount,
-        channelId: channelInfo.channelId
-      });
-
-      // Store in cache
-      this.addToCache(channelName, channelInfo);
-      
-      return channelInfo;
+      return channelData;
     } catch (error) {
-      console.error(`Error fetching YouTube data for "${channelName}":`, error);
+      console.error(`Error fetching YouTube channel ${channelId}:`, error);
       return null;
     }
   }
-
-  private isInCache(channelName: string): boolean {
-    const cacheKey = this.getCacheKey(channelName);
-    if (!this.cache.has(cacheKey)) return false;
+  
+  /**
+   * Complete flow to get channel data by name:
+   * 1. Search for channel by name
+   * 2. Get detailed information about the channel
+   */
+  async getChannelData(channelName: string): Promise<YouTubeChannelData | null> {
+    // Search for the channel first
+    const searchResult = await this.searchChannel(channelName);
     
-    const expiry = this.cacheExpiry.get(cacheKey) || 0;
-    if (Date.now() > expiry) {
-      // Cache expired
-      this.cache.delete(cacheKey);
-      this.cacheExpiry.delete(cacheKey);
-      return false;
+    if (!searchResult) {
+      return null;
     }
     
-    return true;
-  }
-
-  private getFromCache(channelName: string): YouTubeChannelData | null {
-    const cacheKey = this.getCacheKey(channelName);
-    return this.cache.get(cacheKey) || null;
-  }
-
-  private addToCache(channelName: string, data: YouTubeChannelData): void {
-    const cacheKey = this.getCacheKey(channelName);
-    this.cache.set(cacheKey, data);
-    this.cacheExpiry.set(cacheKey, Date.now() + this.CACHE_TTL);
-  }
-
-  private getCacheKey(channelName: string): string {
-    return channelName.toLowerCase().trim();
+    // Get detailed information
+    return await this.getChannelDetails(searchResult.id);
   }
 }
 
-// Extract the release year from YouTube publishedAt date
-export function extractYouTubeReleaseYear(publishedAt: string): number | null {
+// Extract release year from publishedAt date
+export function extractYouTubeReleaseYear(publishedAt: string | null): number | null {
   if (!publishedAt) return null;
   
   try {
     const date = new Date(publishedAt);
     return date.getFullYear();
   } catch (error) {
-    console.error('Error parsing YouTube publishedAt date:', error);
+    console.error('Error parsing publishedAt date:', error);
     return null;
   }
 }
