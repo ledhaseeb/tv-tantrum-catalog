@@ -39,6 +39,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
+      // For the admin page, we will directly get all shows without filtering
+      // when no query parameters are provided
+      if (Object.keys(req.query).length === 0) {
+        console.log("Admin dashboard: Getting all TV shows without filters");
+        const allShows = await storage.getAllTvShows();
+        res.json(allShows);
+        return;
+      }
       
       const { 
         ageGroup, 
@@ -92,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stimulationScoreRange: processedStimulationScoreRange
       };
       
-
+      console.log("Getting TV shows with filters:", filters);
       
       const shows = await storage.getTvShowsByFilter(filters);
       
