@@ -290,34 +290,6 @@ export default function AdminPage() {
       setIsOptimizingImages(false);
     }
   };
-  
-  // Optimize all custom images for SEO performance
-  const handleOptimizeCustomImages = async () => {
-    setIsOptimizingImages(true);
-    try {
-      const response = await apiRequest('POST', '/api/admin/optimize-custom-images');
-      const data = await response.json();
-      
-      toast({
-        title: "SEO Image Optimization",
-        description: `Successfully optimized ${data.optimized} custom images for better performance. (${data.skipped} skipped, ${data.errors} errors)`,
-      });
-      
-      // Reload shows to display updated images
-      const updatedShows = await fetch('/api/shows').then(res => res.json());
-      setShows(updatedShows);
-      setFilteredShows(updatedShows);
-    } catch (error) {
-      console.error('Error optimizing custom images:', error);
-      toast({
-        title: "Error",
-        description: "Failed to optimize custom images for SEO. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsOptimizingImages(false);
-    }
-  };
 
   // Normalize stimulation metrics between different naming conventions
   const normalizeMetrics = (value: string | null | undefined): string => {
@@ -1025,33 +997,6 @@ export default function AdminPage() {
                     <>
                       <ImageIcon className="h-4 w-4 mr-2" />
                       Optimize Show Images
-                    </>
-                  )}
-                </Button>
-              </div>
-              
-              <div className="pt-6 border-t">
-                <h3 className="text-lg font-medium mb-2">SEO Image Optimization</h3>
-                <p className="text-muted-foreground mb-4">
-                  Optimize all custom images for better SEO performance. This process resizes images 
-                  to portrait format (3:4 ratio), compresses them for faster loading, and ensures 
-                  consistent quality throughout the site.
-                </p>
-                <Button 
-                  onClick={handleOptimizeCustomImages} 
-                  disabled={isOptimizingImages}
-                  className="flex items-center"
-                  variant="outline"
-                >
-                  {isOptimizingImages ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Optimizing for SEO...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Optimize Custom Images for SEO
                     </>
                   )}
                 </Button>

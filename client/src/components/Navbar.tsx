@@ -114,6 +114,66 @@ export default function Navbar() {
           </div>
           
           <div className="flex items-center gap-4">
+            <div className="hidden md:block">
+              <form onSubmit={handleSearch} className="relative w-[300px]" onClick={(e) => e.stopPropagation()}>
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                <Input 
+                  type="search" 
+                  placeholder="Search shows..." 
+                  className="border border-gray-300 rounded-lg py-2 pl-8 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    // Show results dropdown if there's text to search
+                    if (e.target.value.trim().length > 0) {
+                      setShowResults(true);
+                    } else {
+                      setShowResults(false);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (searchTerm.trim().length > 0) {
+                      setShowResults(true);
+                    }
+                  }}
+                />
+                <button type="submit" className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <i className="fas fa-search text-gray-400"></i>
+                </button>
+                
+                {/* Search Results Dropdown */}
+                {showResults && searchTerm.trim().length > 0 && (
+                  <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-gray-200 z-50">
+                    <div className="py-1">
+                      {filteredShows?.length ? (
+                        filteredShows.map((show: TvShow) => (
+                          <div
+                            key={show.id}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => {
+                              setSearchTerm(show.name);
+                              setShowResults(false);
+                              window.location.href = `/browse?search=${encodeURIComponent(show.name)}`;
+                            }}
+                          >
+                            <div className="font-medium">{show.name}</div>
+                            <div className="text-xs text-gray-500">
+                              Ages: {show.ageRange || 'Unknown'} 
+                              {show.stimulationScore ? ` • Stimulation: ${show.stimulationScore}` : ''}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm text-gray-500">
+                          No shows match your search
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </form>
+            </div>
+            
             {/* Authentication links */}
             <div className="hidden md:flex items-center gap-3">
               {user ? (
@@ -266,7 +326,26 @@ export default function Navbar() {
                     )}
                   </div>
                   
-                  {/* Search has been removed to make interface cleaner */}
+                  <div className="pt-4 mt-4 border-t border-gray-200">
+                    <form 
+                      onSubmit={(e) => {
+                        handleSearch(e);
+                        setIsNavOpen(false);
+                      }} 
+                      className="relative"
+                    >
+                      <Input 
+                        type="search" 
+                        placeholder="Search shows..." 
+                        className="w-full border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                      <button type="submit" className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <i className="fas fa-search text-gray-400"></i>
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </div>
             )}
