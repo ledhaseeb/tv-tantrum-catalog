@@ -56,6 +56,7 @@ import {
   Upload,
   Image
 } from 'lucide-react';
+import { ImageUpload } from '@/components/image-upload';
 import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
@@ -1192,103 +1193,49 @@ export default function AdminPage() {
             <div className="border-t pt-4 mt-4">
               <h3 className="text-lg font-medium mb-2">Image Management</h3>
               
-              {/* Current Image Display */}
-              <div className="flex flex-col md:flex-row gap-6 mb-4">
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium mb-2">Current Image</h4>
-                  <div className="border rounded-md p-2 h-48 flex items-center justify-center overflow-hidden bg-gray-50">
-                    {formState.imageUrl ? (
-                      <img 
-                        src={formState.imageUrl} 
-                        alt={formState.name} 
-                        className="max-h-full object-contain"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://via.placeholder.com/200x300?text=Image+Not+Found';
-                        }}
-                      />
-                    ) : (
-                      <div className="text-center text-gray-400">
-                        <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-                        <p>No image available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <div className="flex flex-col gap-4">
+                {/* Image Upload Component */}
+                <ImageUpload 
+                  imageUrl={formState.imageUrl} 
+                  onImageChange={(imageUrl) => setFormState({...formState, imageUrl})}
+                />
                 
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium mb-2">Image Options</h4>
-                  
-                  {/* OMDB Image Lookup */}
-                  <div className="mb-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="w-full flex items-center justify-center"
-                      onClick={() => {
-                        if (selectedShow) {
-                          // Call the API to fetch and update the image from OMDB
-                          apiRequest('POST', `/api/shows/${selectedShow.id}/update-image`)
-                            .then(resp => resp.json())
-                            .then(data => {
-                              if (data.success) {
-                                setFormState(prev => ({...prev, imageUrl: data.show.imageUrl}));
-                                toast({
-                                  title: "Success",
-                                  description: data.message,
-                                });
-                              } else {
-                                throw new Error(data.message || "Failed to find OMDB image");
-                              }
-                            })
-                            .catch(err => {
+                {/* OMDB Image Lookup Button */}
+                <div>
+                  <p className="text-sm mb-2">Or fetch image from OMDB:</p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                    onClick={() => {
+                      if (selectedShow) {
+                        // Call the API to fetch and update the image from OMDB
+                        apiRequest('POST', `/api/shows/${selectedShow.id}/update-image`)
+                          .then(resp => resp.json())
+                          .then(data => {
+                            if (data.success) {
+                              setFormState(prev => ({...prev, imageUrl: data.show.imageUrl}));
                               toast({
-                                title: "Error",
-                                description: err.message || "Failed to update image from OMDB",
-                                variant: "destructive"
+                                title: "Success",
+                                description: data.message,
                               });
-                            });
-                        }
-                      }}
-                    >
-                      <Image className="h-4 w-4 mr-2" />
-                      Find OMDB Image
-                    </Button>
-                  </div>
-                  
-                  {/* Custom Image URL Input */}
-                  <div className="space-y-2">
-                    <Label htmlFor="customImageUrl">Custom Image URL</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="customImageUrl"
-                        placeholder="Enter image URL"
-                        value={formState.imageUrl || ''}
-                        onChange={(e) => setFormState({...formState, imageUrl: e.target.value})}
-                        className="flex-1"
-                      />
-                      <Button 
-                        type="button"
-                        variant="outline"
-                        className="shrink-0"
-                        onClick={() => {
-                          if (selectedShow && formState.imageUrl) {
-                            handleUploadImage(selectedShow.id, formState.imageUrl);
-                          } else {
+                            } else {
+                              throw new Error(data.message || "Failed to find OMDB image");
+                            }
+                          })
+                          .catch(err => {
                             toast({
                               title: "Error",
-                              description: "Please provide a valid image URL",
+                              description: err.message || "Failed to update image from OMDB",
                               variant: "destructive"
                             });
-                          }
-                        }}
-                      >
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Enter a URL to an image for this show (portrait orientation recommended)
-                    </p>
-                  </div>
+                          });
+                      }
+                    }}
+                  >
+                    <Image className="h-4 w-4 mr-2" />
+                    Find OMDB Image
+                  </Button>
                 </div>
               </div>
             </div>
@@ -1564,16 +1511,15 @@ export default function AdminPage() {
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="imageUrl"
-                value={newShowFormState.imageUrl}
-                onChange={(e) => setNewShowFormState({...newShowFormState, imageUrl: e.target.value})}
-                className="col-span-3"
-                placeholder="Enter URL for the show image (portrait orientation recommended)"
-              />
+              <div className="text-right col-span-1">
+                <Label>Show Image</Label>
+              </div>
+              <div className="col-span-3">
+                <ImageUpload 
+                  imageUrl={newShowFormState.imageUrl} 
+                  onImageChange={(imageUrl) => setNewShowFormState({...newShowFormState, imageUrl})}
+                />
+              </div>
             </div>
           </div>
           
