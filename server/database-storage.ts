@@ -12,6 +12,15 @@ import {
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
 import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
 
+// Import backup TV shows data provider if available
+let backupTvShowsProvider: { getTvShows: () => Promise<any[]> } | null = null;
+try {
+  backupTvShowsProvider = require('../data/backup-tv-shows');
+  console.log('Backup TV shows data provider loaded successfully');
+} catch (error) {
+  console.log('Backup TV shows data provider not available:', error);
+}
+
 export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
