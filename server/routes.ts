@@ -35,6 +35,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Custom data is now applied directly to the database using the apply-custom-data.js script
   console.log("Startup optimization: Custom data loading skipped for faster server startup.");
   console.log("To apply custom data to the database, run: node apply-custom-data.js");
+  
+  // Helper function to clean up YouTube description text
+  const getCleanYouTubeDescription = (description: string): string => {
+    if (!description) return '';
+    
+    // Strip out common YouTube description elements
+    return description
+      .replace(/Follow us on social media:[\s\S]*?(?=\n\n|$)/, '')
+      .replace(/Subscribe to our channel:[\s\S]*?(?=\n\n|$)/, '')
+      .replace(/Visit our website:[\s\S]*?(?=\n\n|$)/, '')
+      .replace(/\bhttps?:\/\/\S+\b/g, '')  // Remove URLs
+      .replace(/\n{3,}/g, '\n\n')          // Normalize line breaks
+      .replace(/\s{2,}/g, ' ')             // Normalize spaces
+      .trim();
+  };
+  
+  // Extract year information from OMDb year string (e.g., "2010-2015" or "2020-")
+  const extractYearInfo = (yearStr: string) => {
+    if (!yearStr) return { releaseYear: null, endYear: null, isOngoing: null };
+    
+    const parts = yearStr.split('–');
+    const releaseYear = parts[0] ? parseInt(parts[0]) : null;
+    const endYear = parts[1] && parts[1].trim() !== '' ? parseInt(parts[1]) : null;
+    const isOngoing = parts.length > 1 && (parts[1].trim() === '' || !parts[1]);
+    
+    return { releaseYear, endYear, isOngoing };
+  };
+  
+  // Extract creator info from director and writer fields
+  const extractCreator = (director: string, writer: string) => {
+    if (director && director !== 'N/A') return director;
+    if (writer && writer !== 'N/A') return writer;
+    return null;
+  };
 
   // Get all TV shows
   app.get("/api/tv-shows", async (req: Request, res: Response) => {

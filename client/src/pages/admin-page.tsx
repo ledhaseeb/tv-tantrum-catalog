@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   Loader2, 
   Search, 
@@ -1203,13 +1204,164 @@ export default function AdminPage() {
               <Label htmlFor="name" className="text-right">
                 Name
               </Label>
-              <Input
-                id="name"
-                value={formState.name}
-                onChange={(e) => setFormState({...formState, name: e.target.value})}
-                className="col-span-3"
-              />
+              <div className="col-span-3 flex gap-2">
+                <Input
+                  id="name"
+                  value={formState.name}
+                  onChange={(e) => setFormState({...formState, name: e.target.value})}
+                  className="flex-1"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={async () => {
+                    if (!formState.name) {
+                      toast({
+                        title: "Show name required",
+                        description: "Please enter a show name to search",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    
+                    setIsLookingUp(true);
+                    try {
+                      const response = await fetch(`/api/lookup-show?name=${encodeURIComponent(formState.name)}`);
+                      const data = await response.json();
+                      setLookupResults(data);
+                      setShowLookupOptions(true);
+                    } catch (error) {
+                      console.error('Error looking up show:', error);
+                      toast({
+                        title: "Lookup failed",
+                        description: "Could not find information for this show",
+                        variant: "destructive"
+                      });
+                    } finally {
+                      setIsLookingUp(false);
+                    }
+                  }}
+                  disabled={isLookingUp}
+                >
+                  {isLookingUp ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">Lookup</span>
+                </Button>
+              </div>
             </div>
+            
+            {showLookupOptions && (lookupResults.omdb || lookupResults.youtube) && (
+              <div className="grid grid-cols-4 gap-4">
+                <div className="col-start-2 col-span-3">
+                  <Alert>
+                    <AlertTitle className="flex items-center gap-2">
+                      <Info className="h-4 w-4" />
+                      External data found!
+                    </AlertTitle>
+                    <AlertDescription className="mt-2">
+                      {lookupResults.omdb && (
+                        <div className="mb-2">
+                          <h4 className="font-medium mb-1">OMDb Data Found:</h4>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Title: {lookupResults.omdb.title}, Year: {lookupResults.omdb.year}, Type: {lookupResults.omdb.type}
+                          </p>
+                          <Button 
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              // Extract year information
+                              const releaseYear = lookupResults.omdb.year ? 
+                                parseInt(lookupResults.omdb.year.split('–')[0]) : null;
+                              const endYear = lookupResults.omdb.year && lookupResults.omdb.year.includes('–') ?
+                                parseInt(lookupResults.omdb.year.split('–')[1]) || null : null;
+                              
+                              setFormState({
+                                ...formState,
+                                description: lookupResults.omdb.plot || formState.description,
+                                creator: lookupResults.omdb.director || formState.creator,
+                                releaseYear: releaseYear || formState.releaseYear,
+                                endYear: endYear || formState.endYear,
+                                episodeLength: formState.episodeLength || 30,
+                                isOngoing: !endYear,
+                                imageUrl: lookupResults.omdb.poster || formState.imageUrl
+                              });
+                              setShowLookupOptions(false);
+                              toast({
+                                title: "Data applied",
+                                description: "OMDb data has been applied to the form"
+                              });
+                            }}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Apply OMDb Data
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {lookupResults.youtube && (
+                        <div>
+                          <h4 className="font-medium mb-1">YouTube Data Found:</h4>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Channel: {lookupResults.youtube.title}, Subscribers: {lookupResults.youtube.subscriberCount?.toLocaleString()}
+                          </p>
+                          <Button 
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const releaseYear = lookupResults.youtube.publishedAt ?
+                                new Date(lookupResults.youtube.publishedAt).getFullYear() : null;
+                              
+                              setFormState({
+                                ...formState,
+                                description: lookupResults.youtube.description || formState.description,
+                                releaseYear: releaseYear || formState.releaseYear,
+                                isOngoing: true,
+                                subscriberCount: lookupResults.youtube.subscriberCount || formState.subscriberCount,
+                                videoCount: lookupResults.youtube.videoCount || formState.videoCount,
+                                viewCount: lookupResults.youtube.viewCount || formState.viewCount,
+                                isYouTubeChannel: true,
+                                publishedAt: lookupResults.youtube.publishedAt || formState.publishedAt,
+                                availableOn: formState.availableOn ? 
+                                  (formState.availableOn.includes('YouTube') ? 
+                                    formState.availableOn : 
+                                    formState.availableOn + ', YouTube') : 
+                                  'YouTube'
+                              });
+                              setShowLookupOptions(false);
+                              toast({
+                                title: "Data applied",
+                                description: "YouTube data has been applied to the form"
+                              });
+                            }}
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            Apply YouTube Data
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <Button 
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="mt-3"
+                        onClick={() => setShowLookupOptions(false)}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              </div>
+            )}
+            
             
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">
