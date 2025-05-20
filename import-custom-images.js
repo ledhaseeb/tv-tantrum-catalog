@@ -13,8 +13,39 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import AdmZip from 'adm-zip';
-import { db } from './server/db.js';
-import { loadCustomImageMap, saveCustomImageMap, updateCustomImageMap } from './server/image-preservator.js';
+import pg from 'pg';
+const { Pool } = pg;
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+// Custom image map handling functions
+function loadCustomImageMap() {
+  try {
+    const filePath = path.join(process.cwd(), 'customImageMap.json');
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading custom image map:', error);
+  }
+  return {};
+}
+
+function saveCustomImageMap(customImageMap) {
+  try {
+    const filePath = path.join(process.cwd(), 'customImageMap.json');
+    fs.writeFileSync(filePath, JSON.stringify(customImageMap, null, 2));
+  } catch (error) {
+    console.error('Error saving custom image map:', error);
+  }
+}
+
+function updateCustomImageMap(showId, imageUrl) {
+  const customImageMap = loadCustomImageMap();
+  customImageMap[showId.toString()] = imageUrl;
+  saveCustomImageMap(customImageMap);
+}
 
 // Get the current file's directory (ES modules don't have __dirname)
 const __filename = fileURLToPath(import.meta.url);
