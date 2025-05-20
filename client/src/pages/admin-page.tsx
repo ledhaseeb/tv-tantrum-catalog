@@ -167,11 +167,21 @@ export default function AdminPage() {
     
     setIsLoadingUsers(true);
     try {
-      // Use apiRequest from lib/queryClient to ensure auth headers are sent correctly
+      // First make sure we're authenticated and have the latest session
+      const userCheckResponse = await apiRequest('GET', '/api/user');
+      if (!userCheckResponse.ok) {
+        console.warn('User authentication required');
+        // Redirect to login if not authenticated
+        setLocation('/auth');
+        return;
+      }
+      
+      // Now fetch users with the authenticated session
       const response = await apiRequest('GET', '/api/users');
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch users: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch users: ${errorText || response.statusText}`);
       }
       
       const data = await response.json();
@@ -192,10 +202,14 @@ export default function AdminPage() {
     
   // Load all users (admin only)
   useEffect(() => {
-    if (isAdmin) {
-      fetchUsers();
+    // Only attempt to fetch users when we know for sure the user is an admin
+    if (isAdmin && user?.id) {
+      console.log("Admin user detected, fetching all users...");
+      setTimeout(() => {
+        fetchUsers();
+      }, 500); // Small delay to ensure session is fully established
     }
-  }, [isAdmin]);
+  }, [isAdmin, user?.id]);
 
   // Filter users based on search term
   useEffect(() => {

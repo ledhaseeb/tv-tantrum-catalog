@@ -67,12 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     select: (data) => data ?? null,
     // Initialize with null (not authenticated)
     initialData: null,
-    // Always fetch if we have stored auth
-    enabled: hasStoredAuth(),
+    // Always fetch on mount to ensure we have latest auth state
+    enabled: true,
     // If auth token is invalid, retry a few times before giving up
-    retry: hasStoredAuth() ? 3 : 0,
-    // Refresh user data every 30 minutes
-    refetchInterval: 30 * 60 * 1000
+    retry: 3,
+    // Refresh user data every 5 minutes
+    refetchInterval: 5 * 60 * 1000,
+    // Use credentials in fetch
+    refetchOnWindowFocus: true
   });
   
   // Effect to manage authentication state

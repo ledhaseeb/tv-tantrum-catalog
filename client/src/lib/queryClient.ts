@@ -22,13 +22,22 @@ export async function apiRequest<T = any>(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Ensure we always send cookies/credentials with every request
+  const headers: HeadersInit = {
+    'Accept': 'application/json'
+  };
+  
+  if (data) {
+    headers['Content-Type'] = 'application/json';
+  }
+  
   // Return the actual Response object instead of parsing JSON
   // This allows the caller to handle the response as needed
   return fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: "include", // Always include credentials (cookies)
   });
 }
 

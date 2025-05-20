@@ -392,8 +392,22 @@ export function setupAuth(app: Express) {
   });
   
   app.patch("/api/users/:userId/approve", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
-      return res.status(403).json({ message: "Unauthorized" });
+    // Enhanced logging to debug authentication issues
+    console.log('User attempting to approve/reject another user:', {
+      isAuthenticated: req.isAuthenticated(),
+      user: req.isAuthenticated() ? { 
+        id: req.user?.id, 
+        isAdmin: req.user?.isAdmin, 
+        username: req.user?.username 
+      } : 'Not authenticated'
+    });
+    
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized - Admin privileges required" });
     }
     
     const userId = parseInt(req.params.userId, 10);
@@ -404,6 +418,7 @@ export function setupAuth(app: Express) {
     }
     
     try {
+      console.log(`Admin user ${req.user.id} is ${isApproved ? 'approving' : 'rejecting'} user ${userId}`);
       const updatedUser = await storage.updateUserApproval(userId, isApproved);
       
       if (!updatedUser) {
@@ -413,8 +428,10 @@ export function setupAuth(app: Express) {
       // Remove password before sending the response
       const { password, ...safeUser } = updatedUser;
       
+      console.log(`User ${userId} approval status updated successfully to ${isApproved}`);
       res.json(safeUser);
     } catch (error) {
+      console.error('Error updating user approval status:', error);
       res.status(500).json({ message: "Error updating user approval status" });
     }
   });
