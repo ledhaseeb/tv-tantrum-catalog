@@ -71,65 +71,76 @@ export default function Home() {
     (show.themes?.includes("Adventure") && show.themes?.includes("Fantasy"))
   ) || allShows?.[0];
   
+  // Helper function to check if property exists with different case formats
+  const getShowProperty = (show: any, propertyNames: string[]) => {
+    for (const prop of propertyNames) {
+      if (show[prop] !== undefined) {
+        return show[prop];
+      }
+    }
+    return null;
+  };
+
   // Filter shows by categories - ensure at least 24 shows per category for better browsing
-  const lowStimulationShows = allShows?.filter(show => show.stimulationScore <= 2).slice(0, 24);
-  // Using stimulation score as a proxy for ratings since overallRating is not in the schema
-  const highlyRatedShows = allShows?.filter(show => 
-    (show.stimulationScore <= 3 && show.themes && show.themes.length >= 3) || 
-    (show.stimulationScore <= 2)
-  ).slice(0, 24);
-  const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24); // Use our tracked popular shows data
-  // Define a separate array for high interaction shows
-  let highInteractionShows: any[] = [];
+  const lowStimulationShows = allShows?.filter(show => {
+    const stimulationScore = getShowProperty(show, ['stimulationScore', 'stimulation_score']);
+    return stimulationScore !== null && stimulationScore <= 2;
+  }).slice(0, 24);
   
-  // We need to loop through and inspect each show's actual fields
-  if (allShows && allShows.length > 0) {
-    highInteractionShows = allShows
-      .filter(show => {
-        // Get the actual property that contains interactivity level
-        const keys = Object.keys(show);
-        let interactivityValue = null;
-        
-        // Check for both camelCase and snake_case versions of the field
-        if (show.interactivityLevel) {
-          interactivityValue = show.interactivityLevel;
-        } else if (show.interactivity_level) {
-          interactivityValue = show.interactivity_level;
-        }
-        
-        // If no value found, this show doesn't qualify
-        if (!interactivityValue) return false;
-        
-        // Check if the value contains "High" in any form
-        return interactivityValue === 'High' || 
-               interactivityValue.includes('High') || 
-               interactivityValue === 'Moderate-High' || 
-               interactivityValue === 'Moderate to High';
-      })
-      .slice(0, 24);
-  }
+  // Using stimulation score as a proxy for ratings since overallRating is not in the schema
+  const highlyRatedShows = allShows?.filter(show => {
+    const stimulationScore = getShowProperty(show, ['stimulationScore', 'stimulation_score']);
+    const themes = getShowProperty(show, ['themes']);
+    
+    return (stimulationScore !== null && stimulationScore <= 3 && themes && themes.length >= 3) || 
+           (stimulationScore !== null && stimulationScore <= 2);
+  }).slice(0, 24);
+  
+  // Use popular shows data if available, otherwise fallback to all shows
+  const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24);
+  
+  // Get high interaction shows
+  const highInteractionShows = allShows?.filter(show => {
+    const interactivityLevel = getShowProperty(show, ['interactivityLevel', 'interactivity_level']);
+    
+    if (!interactivityLevel) return false;
+    
+    return interactivityLevel === 'High' || 
+           interactivityLevel.includes('High') || 
+           interactivityLevel === 'Moderate-High' || 
+           interactivityLevel === 'Moderate to High';
+  }).slice(0, 24);
   
   // Find shows by popular themes - ensure at least 24 shows per category
-  const educationalShows = allShows?.filter(show => 
-    show.themes?.some(theme => theme.toLowerCase().includes('education') || theme.toLowerCase().includes('learning'))
-  ).slice(0, 24);
+  const educationalShows = allShows?.filter(show => {
+    const themes = getShowProperty(show, ['themes']);
+    return themes?.some((theme: string) => 
+      theme.toLowerCase().includes('education') || 
+      theme.toLowerCase().includes('learning')
+    );
+  }).slice(0, 24);
   
-  const adventureShows = allShows?.filter(show => 
-    show.themes?.some(theme => theme.toLowerCase().includes('adventure'))
-  ).slice(0, 24);
+  const adventureShows = allShows?.filter(show => {
+    const themes = getShowProperty(show, ['themes']);
+    return themes?.some((theme: string) => theme.toLowerCase().includes('adventure'));
+  }).slice(0, 24);
   
-  const musicalShows = allShows?.filter(show => 
-    show.themes?.some(theme => theme.toLowerCase().includes('music'))
-  ).slice(0, 24);
+  const musicalShows = allShows?.filter(show => {
+    const themes = getShowProperty(show, ['themes']);
+    return themes?.some((theme: string) => theme.toLowerCase().includes('music'));
+  }).slice(0, 24);
   
-  const fantasyShows = allShows?.filter(show => 
-    show.themes?.some(theme => theme.toLowerCase().includes('fantasy'))
-  ).slice(0, 24);
+  const fantasyShows = allShows?.filter(show => {
+    const themes = getShowProperty(show, ['themes']);
+    return themes?.some((theme: string) => theme.toLowerCase().includes('fantasy'));
+  }).slice(0, 24);
   
-  const preschoolerShows = allShows?.filter(show => 
-    show.ageRange?.toLowerCase().includes('preschool') || 
-    (show.ageRange && parseInt(show.ageRange.split('-')[0]) <= 4)
-  ).slice(0, 24);
+  const preschoolerShows = allShows?.filter(show => {
+    const ageRange = getShowProperty(show, ['ageRange', 'age_range']);
+    
+    return ageRange?.toLowerCase().includes('preschool') || 
+           (ageRange && parseInt(ageRange.split('-')[0]) <= 4);
+  }).slice(0, 24);
   
   // Filter shows based on search term
   const filteredShows = allShows?.filter((show: TvShow) => {
