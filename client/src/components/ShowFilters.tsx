@@ -84,32 +84,31 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       }
     });
     
-    // Convert to array and sort alphabetically
     const sortedThemes = Array.from(allThemes).sort();
-    console.log(`Found ${sortedThemes.length} unique themes in the database`);
-    
     setCommonThemes(sortedThemes);
+    
+    // Initial Filter Setup: If there are pre-selected themes, update relevant themes
+    if (selectedThemes.length > 0 && selectedThemes[0]) {
+      findRelevantSecondaryThemes(selectedThemes[0]);
+      
+      if (selectedThemes.length > 1 && selectedThemes[1]) {
+        // OR mode - all themes except already selected ones
+        // AND mode - only themes that co-exist with both primary and secondary
+        if (themeMatchMode === 'OR') {
+          setRelevantTertiaryThemes(sortedThemes.filter(theme => !selectedThemes.includes(theme)));
+        } else {
+          findRelevantTertiaryThemes(selectedThemes[0], selectedThemes[1]);
+        }
+      }
+    }
   }, [shows]);
   
-  // Update local state when props change
+  // Update relevant secondary themes when primary theme changes
   useEffect(() => {
-    setFilters(activeFilters);
-    setSearchInput(activeFilters.search || "");
-    setSelectedThemes(activeFilters.themes || []);
-  }, [activeFilters]);
-  
-  // Update relevant secondary themes when shows data loads, selected themes change, or theme match mode changes
-  useEffect(() => {
-    if (shows && selectedThemes.length > 0) {
-      // For OR mode, display all available themes
-      // For AND mode, display only co-existing themes
-      if (themeMatchMode === 'OR') {
-        setRelevantSecondaryThemes(commonThemes.filter(theme => !selectedThemes.includes(theme)));
-      } else {
-        findRelevantSecondaryThemes(selectedThemes[0]);
-      }
+    if (selectedThemes.length > 0 && selectedThemes[0]) {
+      findRelevantSecondaryThemes(selectedThemes[0]);
     } else {
-      // Reset if no primary theme is selected
+      // Reset secondary themes if no primary theme is selected
       setRelevantSecondaryThemes([]);
     }
     
@@ -117,102 +116,8 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     setRelevantTertiaryThemes([]);
   }, [shows, selectedThemes[0], themeMatchMode, commonThemes]);
   
-  // Define the findRelevantTertiaryThemes function with useCallback
-  const findRelevantTertiaryThemes = useCallback((primaryTheme: string, secondaryTheme: string) => {
-    if (!shows || !primaryTheme || !secondaryTheme) {
-      setRelevantTertiaryThemes([]);
-      return;
-    }
-
-    try {
-      console.log(`Finding relevant tertiary themes for primary theme ${primaryTheme} and secondary theme ${secondaryTheme}`);
-
-      // Normalize themes for case-insensitive matching
-      const normalizedPrimaryTheme = primaryTheme.trim().toLowerCase();
-      const normalizedSecondaryTheme = secondaryTheme.trim().toLowerCase();
-
-      // Find shows that have BOTH the primary and secondary themes
-      const showsWithBothThemes = shows.filter(show => {
-        if (!show || !show.themes || !Array.isArray(show.themes)) return false;
-        
-        // Normalize the show's themes
-        const normalizedShowThemes = show.themes
-          .filter(theme => theme && typeof theme === 'string')
-          .map(theme => theme.trim().toLowerCase());
-        
-        // Show must have BOTH themes to qualify
-        return normalizedShowThemes.includes(normalizedPrimaryTheme) && 
-               normalizedShowThemes.includes(normalizedSecondaryTheme);
-      });
-      
-      console.log(`Found ${showsWithBothThemes.length} shows with both themes: ${primaryTheme} and ${secondaryTheme}`);
-      
-      if (showsWithBothThemes.length === 0) {
-        setRelevantTertiaryThemes([]);
-        return;
-      }
-
-      // Count occurrences of each tertiary theme across all shows with both themes
-      const themeCounts: Record<string, number> = {};
-      
-      // Process each show that has both themes
-      showsWithBothThemes.forEach(show => {
-        if (!show || !show.themes || !Array.isArray(show.themes)) return;
-        
-        show.themes.forEach(theme => {
-          if (!theme || typeof theme !== 'string' || theme.trim() === "") return;
-          
-          // Skip primary and secondary themes - we only want other co-existing themes
-          const normalizedTheme = theme.trim().toLowerCase();
-          if (
-            normalizedTheme === normalizedPrimaryTheme || 
-            normalizedTheme === normalizedSecondaryTheme
-          ) {
-            return;
-          }
-          
-          const themeKey = theme.trim();
-          themeCounts[themeKey] = (themeCounts[themeKey] || 0) + 1;
-        });
-      });
-
-      // Sort tertiary themes by frequency and filter out primary/secondary themes
-      const relevantThemes = Object.entries(themeCounts)
-        .map(([theme, count]) => ({ theme, count }))
-        .sort((a, b) => b.count - a.count)
-        .map(item => item.theme);
-      
-      console.log(`Found ${relevantThemes.length} relevant tertiary themes that co-exist with ${primaryTheme} and ${secondaryTheme}`);
-      setRelevantTertiaryThemes(relevantThemes);
-    } catch (error) {
-      console.error("Error finding tertiary themes:", error);
-      setRelevantTertiaryThemes([]);
-    }
-  }, [shows]);
-
-  // Update relevant tertiary themes when secondary theme changes
-  useEffect(() => {
-    if (shows && selectedThemes.length > 1) {
-      // For OR mode, display all available themes except the already selected ones
-      // For AND mode, display only themes that co-exist with both primary and secondary themes
-      if (themeMatchMode === 'OR') {
-        setRelevantTertiaryThemes(commonThemes.filter(theme => !selectedThemes.includes(theme)));
-      } else {
-        findRelevantTertiaryThemes(selectedThemes[0], selectedThemes[1]);
-      }
-    } else {
-      // Reset if no secondary theme is selected
-      setRelevantTertiaryThemes([]);
-    }
-  }, [shows, selectedThemes, themeMatchMode, commonThemes, findRelevantTertiaryThemes]);
-  
-  // Log for debugging
-  useEffect(() => {
-    console.log("Current filters in ShowFilters component:", filters);
-  }, [filters]);
-  
   // Find relevant secondary themes based on shows that have the primary theme
-  const findRelevantSecondaryThemes = (primaryTheme: string) => {
+  const findRelevantSecondaryThemes = useCallback((primaryTheme: string) => {
     if (!shows || !primaryTheme || primaryTheme === "any") {
       setRelevantSecondaryThemes([]);
       return;
@@ -285,10 +190,10 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       // Fallback to empty array on error
       setRelevantSecondaryThemes([]);
     }
-  };
+  }, [shows]);
   
   // Find tertiary themes that co-exist with both primary and secondary themes (AND mode)
-  const findRelevantTertiaryThemes = (primaryTheme: string, secondaryTheme: string) => {
+  const findRelevantTertiaryThemes = useCallback((primaryTheme: string, secondaryTheme: string) => {
     if (!shows || !primaryTheme || !secondaryTheme) {
       setRelevantTertiaryThemes([]);
       return;
@@ -358,403 +263,282 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       console.error("Error finding tertiary themes:", error);
       setRelevantTertiaryThemes([]);
     }
-  };
+  }, [shows]);
+  
+  // Update relevant tertiary themes when secondary theme changes
+  useEffect(() => {
+    if (shows && selectedThemes.length > 1) {
+      // For OR mode, display all available themes except the already selected ones
+      // For AND mode, display only themes that co-exist with both primary and secondary themes
+      if (themeMatchMode === 'OR') {
+        setRelevantTertiaryThemes(commonThemes.filter(theme => !selectedThemes.includes(theme)));
+      } else {
+        findRelevantTertiaryThemes(selectedThemes[0], selectedThemes[1]);
+      }
+    } else {
+      // Reset if no secondary theme is selected
+      setRelevantTertiaryThemes([]);
+    }
+  }, [shows, selectedThemes, themeMatchMode, commonThemes, findRelevantTertiaryThemes]);
+  
+  // Log for debugging
+  useEffect(() => {
+    console.log("Current filters in ShowFilters component:", filters);
+  }, [filters]);
   
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
     const updatedFilters = { ...filters, [key]: value };
     setFilters(updatedFilters);
-  };
-  
-  const handleThemeToggle = (theme: string) => {
-    let newThemes: string[];
     
-    if (selectedThemes.includes(theme)) {
-      newThemes = selectedThemes.filter(t => t !== theme);
-    } else {
-      newThemes = [...selectedThemes, theme];
-    }
-    
-    setSelectedThemes(newThemes);
-    handleFilterChange('themes', newThemes.length ? newThemes : undefined);
-  };
-  
-  const handleApplyFilters = () => {
-    // Include search term from input
-    onFilterChange({ 
-      ...filters, 
-      search: searchInput,
-      themes: selectedThemes.length ? selectedThemes : undefined
-    });
-  };
-  
-  const removeFilter = (key: keyof FiltersType) => {
-    const updatedFilters = { ...filters };
-    delete updatedFilters[key];
-    
-    // Also clear search input if removing search filter
-    if (key === 'search') {
-      setSearchInput("");
-    }
-    
-    // Clear selected themes if removing themes filter
-    if (key === 'themes') {
-      setSelectedThemes([]);
-    }
-    
-    onFilterChange(updatedFilters);
-  };
-  
-  // Get human-readable filter labels
-  const getFilterLabel = (key: keyof FiltersType, value: any) => {
-    switch (key) {
-      case 'ageGroup':
-        return `Age: ${value}`;
-      case 'ageRange':
-        const ageRange = value as {min: number, max: number};
-        if (ageRange.min === 0 && ageRange.max === 13) {
-          return 'Age: Any';
-        } else if (ageRange.max === 13) {
-          return `Age: ${ageRange.min}+`;
+    // Special handling for theme match mode changes
+    if (key === 'themeMatchMode') {
+      const newMode = value as 'AND' | 'OR';
+      setThemeMatchMode(newMode);
+      
+      // If we have multiple themes and switch mode, update tertiary themes list
+      if (selectedThemes.length > 1) {
+        // For OR mode - show all themes except selected ones
+        // For AND mode - show only co-occurring themes
+        if (newMode === 'OR') {
+          setRelevantTertiaryThemes(commonThemes.filter(t => !selectedThemes.includes(t)));
         } else {
-          return `Age: ${ageRange.min}-${ageRange.max}`;
+          findRelevantTertiaryThemes(selectedThemes[0], selectedThemes[1]);
         }
-      case 'tantrumFactor':
-        switch (value) {
-          case 'low': return 'Low Stimulation (1)';
-          case 'low-medium': return 'Low-Medium Stimulation (2)';
-          case 'medium': return 'Medium Stimulation (3)';
-          case 'medium-high': return 'Medium-High Stimulation (4)';
-          case 'high': return 'High Stimulation (5)';
-          default: return value;
-        }
-      case 'interactionLevel':
-        return `Interaction Level: ${value}`;
-      case 'stimulationScoreRange':
-        const range = value as {min: number, max: number};
-        if (range.min === range.max) {
-          return `Stimulation Score: ${range.min}`;
-        } else {
-          return `Stimulation Score: ${range.min}-${range.max}`;
-        }
-      case 'sortBy':
-        switch (value) {
-          case 'name': return 'Sorted by Name';
-          case 'stimulation-score': return 'Sorted by Stimulation Score';
-          case 'interactivity-level': return 'Sorted by Interactivity Level';
-          case 'overall-rating': return 'Sorted by Rating';
-          case 'popular': return 'Sorted by Popularity';
-          default: return value;
-        }
-      case 'search':
-        return `Search: "${value}"`;
-      case 'themes':
-        if (Array.isArray(value) && value.length === 1) {
-          return `Theme: ${value[0]}`;
-        } else if (Array.isArray(value) && value.length === 2) {
-          return `Themes: ${value[0]}, ${value[1]}`;
-        } else if (Array.isArray(value) && value.length === 3) {
-          return `Themes: ${value[0]}, ${value[1]}, ${value[2]}`;
-        }
-        return 'Themes';
-      default:
-        return value;
+      }
     }
+    
+    // Handle theme selection separately to maintain the selectedThemes array
+    if (key !== 'themes') {
+      onFilterChange(updatedFilters);
+    }
+  };
+  
+  const handleClearFilters = () => {
+    setFilters({});
+    setSearchInput("");
+    setSelectedThemes([]);
+    setRelevantSecondaryThemes([]);
+    setRelevantTertiaryThemes([]);
+    onClearFilters();
+  };
+  
+  const handleSubmitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleFilterChange('search', searchInput);
   };
   
   return (
-    <Card className="mb-8 bg-white rounded-lg shadow">
-      <CardContent className="p-6">
-        <h2 className="text-xl font-heading font-bold mb-6">Filters</h2>
-        
-        <div className="space-y-6">
-          {/* Search by show name with autocomplete */}
-          <div>
-            <Label htmlFor="show-name" className="block text-sm font-medium text-gray-700 mb-2">
-              Show Name
-            </Label>
-            
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                console.log('Search form submitted with term:', searchInput);
-                handleFilterChange('search', searchInput);
-                const updatedFilters = {
-                  ...filters,
-                  search: searchInput
-                };
-                console.log('Applying filters:', updatedFilters);
-                onFilterChange(updatedFilters);
-              }}
-              className="flex"
+    <Card className="w-full overflow-visible">
+      <CardContent className="pt-6 pb-6 px-6">
+        <div className="flex flex-col space-y-5">
+          {/* Filter Header */}
+          <div className="flex justify-between items-center mb-1">
+            <h2 className="text-xl font-semibold">Filters</h2>
+            <Button 
+              variant="outline" 
+              onClick={handleClearFilters}
+              className="text-sm"
             >
-              <div className="relative flex-grow">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  id="show-name"
-                  placeholder="Enter show title..."
-                  value={searchInput}
-                  onChange={(e) => {
-                    setSearchInput(e.target.value);
-                  }}
-                  className="w-full pl-8 rounded-r-none"
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="rounded-l-none"
-              >
-                Search
+              Clear Filters
+            </Button>
+          </div>
+          
+          {/* Search Input */}
+          <div>
+            <form onSubmit={handleSubmitSearch} className="relative">
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search shows..." 
+                className="pl-9"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Button type="submit" className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 rounded-sm">
+                <Search className="h-4 w-4" />
               </Button>
             </form>
-              
-            {/* Show matching results based on searchInput */}
-            {searchInput.trim().length > 0 && (
-              <div className="relative mt-1">
-                <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-gray-200">
-                  <div className="py-1">
-                    {shows
-                      ?.filter(show => {
-                        // Skip if no search input
-                        if (!searchInput.trim()) return false;
-                        
-                        const searchLower = searchInput.toLowerCase().trim();
-                        const nameLower = show.name.toLowerCase();
-                        
-                        // Direct match in name
-                        if (nameLower.includes(searchLower)) return true;
-                        
-                        // Handle shows with year ranges (e.g., "Show Name 2018-present")
-                        const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
-                        if (nameWithoutYears.includes(searchLower)) return true;
-                        
-                        // Match any part of a word (for show names like "Blue's Clues")
-                        const words = nameLower.split(/\s+/);
-                        if (words.some(word => word.includes(searchLower))) return true;
-                        
-                        // Handle apostrophes and special characters
-                        const simplifiedName = nameLower.replace(/[''\.]/g, '');
-                        if (simplifiedName.includes(searchLower)) return true;
-                        
-                        return false;
-                      })
-                      .slice(0, 8)
-                      .map(show => (
-                        <div
-                          key={show.id}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => {
-                            console.log('Selecting show from dropdown:', show.name);
-                            setSearchInput(show.name);
-                            handleFilterChange('search', show.name);
-                            const updatedFilters = {
-                              ...filters,
-                              search: show.name
-                            };
-                            console.log('Applying updated filters from dropdown selection:', updatedFilters);
-                            onFilterChange(updatedFilters);
-                          }}
-                        >
-                          <div className="font-medium">{show.name}</div>
-                          <div className="text-xs text-gray-500">
-                            Ages: {show.ageRange || 'Unknown'} 
-                            {show.releaseYear ? ` • (${show.releaseYear})` : ''}
-                          </div>
-                        </div>
-                      ))
-                    }
-                    
-                    {shows?.filter(show => {
-                      const searchLower = searchInput.toLowerCase().trim();
-                      const nameLower = show.name.toLowerCase();
-                      
-                      // Direct match
-                      if (nameLower.includes(searchLower)) return true;
-                      
-                      // Without years
-                      const nameWithoutYears = nameLower.replace(/\s+\d{4}(-\d{4}|-present)?/g, '');
-                      if (nameWithoutYears.includes(searchLower)) return true;
-                      
-                      // Within words
-                      const words = nameLower.split(/\s+/);
-                      if (words.some(word => word.includes(searchLower))) return true;
-                      
-                      // Simplified name
-                      const simplifiedName = nameLower.replace(/[''\.]/g, '');
-                      if (simplifiedName.includes(searchLower)) return true;
-                      
-                      return false;
-                    }).length === 0 && (
-                      <div className="px-4 py-2 text-sm text-gray-500">
-                        No shows match your search
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
           
-          {/* Age Range - using separate min/max sliders */}
-          <div>
-            <Label className="block text-sm font-medium text-gray-700 mb-1">
-              Age Range
-            </Label>
-            <div className="flex flex-col space-y-4">
-              {/* Min slider */}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs font-medium">Minimum: {filters.ageRange?.min || 0} years</span>
-                </div>
-                <div className="relative pt-1">
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="13" 
-                    step="1" 
-                    value={filters.ageRange?.min || 0}
-                    onChange={(e) => {
-                      const newMin = parseInt(e.target.value);
-                      const currentMax = filters.ageRange?.max || 13;
-                      handleFilterChange('ageRange', {
-                        min: newMin,
-                        max: Math.max(newMin, currentMax) // Ensure max is at least equal to min
-                      });
-                    }}
-                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
+          {/* Active Filter Chips */}
+          {Object.keys(filters).length > 0 && (
+            <div className="flex flex-wrap gap-2 pb-2">
+              {filters.ageGroup && (
+                <Badge variant="outline" className="py-1 px-2 flex items-center space-x-1">
+                  <span>Age: {filters.ageGroup}</span>
+                  <X 
+                    className="h-3 w-3 ml-1 cursor-pointer" 
+                    onClick={() => handleFilterChange('ageGroup', undefined)}
                   />
-                </div>
-                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
-                  <span>0</span>
-                  <span>2</span>
-                  <span>4</span>
-                  <span>6</span>
-                  <span>8</span>
-                  <span>10</span>
-                  <span>13</span>
-                </div>
-              </div>
+                </Badge>
+              )}
               
-              {/* Max slider */}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs font-medium">Maximum: {filters.ageRange?.max === 13 ? '13+' : filters.ageRange?.max || 13} years</span>
-                </div>
-                <div className="relative pt-1">
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="13" 
-                    step="1" 
-                    value={filters.ageRange?.max || 13}
-                    onChange={(e) => {
-                      const newMax = parseInt(e.target.value);
-                      const currentMin = filters.ageRange?.min || 0;
-                      handleFilterChange('ageRange', {
-                        min: Math.min(currentMin, newMax), // Ensure min is at most equal to max
-                        max: newMax
-                      });
-                    }}
-                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
+              {filters.tantrumFactor && (
+                <Badge variant="outline" className="py-1 px-2 flex items-center space-x-1">
+                  <span>Stimulation: {filters.tantrumFactor}</span>
+                  <X 
+                    className="h-3 w-3 ml-1 cursor-pointer" 
+                    onClick={() => handleFilterChange('tantrumFactor', undefined)}
                   />
-                </div>
-                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
-                  <span>0</span>
-                  <span>2</span>
-                  <span>4</span>
-                  <span>6</span>
-                  <span>8</span>
-                  <span>10</span>
-                  <span>13+</span>
-                </div>
-              </div>
+                </Badge>
+              )}
+              
+              {filters.interactionLevel && (
+                <Badge variant="outline" className="py-1 px-2 flex items-center space-x-1">
+                  <span>Interaction: {filters.interactionLevel}</span>
+                  <X 
+                    className="h-3 w-3 ml-1 cursor-pointer" 
+                    onClick={() => handleFilterChange('interactionLevel', undefined)}
+                  />
+                </Badge>
+              )}
+              
+              {selectedThemes.length > 0 && (
+                <Badge variant="outline" className="py-1 px-2 flex items-center space-x-1">
+                  <span>
+                    Themes: {selectedThemes.join(` ${themeMatchMode} `)}
+                  </span>
+                  <X 
+                    className="h-3 w-3 ml-1 cursor-pointer" 
+                    onClick={() => {
+                      setSelectedThemes([]);
+                      handleFilterChange('themes', []);
+                    }}
+                  />
+                </Badge>
+              )}
+              
+              {filters.sortBy && (
+                <Badge variant="outline" className="py-1 px-2 flex items-center space-x-1">
+                  <span>Sort: {filters.sortBy}</span>
+                  <X 
+                    className="h-3 w-3 ml-1 cursor-pointer" 
+                    onClick={() => handleFilterChange('sortBy', undefined)}
+                  />
+                </Badge>
+              )}
             </div>
-          </div>
+          )}
           
-          {/* Themes dropdown */}
+          {/* Age Group Filter */}
           <div>
             <Label className="block text-sm font-medium text-gray-700 mb-2">
-              Primary Theme
+              Age Group
             </Label>
             <Select
-              value={selectedThemes.length ? selectedThemes[0] : "any"}
-              onValueChange={(value) => {
-                // Clear previous selections and set this as the only theme
-                if (value && value !== "any") {
-                  setSelectedThemes([value]);
-                  handleFilterChange('themes', [value]);
-                  // Immediately update relevant secondary themes
-                  findRelevantSecondaryThemes(value);
-                } else {
-                  setSelectedThemes([]);
-                  handleFilterChange('themes', undefined);
-                  setRelevantSecondaryThemes([]);
-                }
-              }}
+              value={filters.ageGroup || "any"}
+              onValueChange={(value) => handleFilterChange('ageGroup', value === "any" ? undefined : value)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a theme" />
+                <SelectValue placeholder="Select an age group" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="any">Any Theme</SelectItem>
-                {commonThemes.map((theme) => (
-                  <SelectItem key={theme} value={theme}>
-                    {theme}
-                  </SelectItem>
-                ))}
+                <SelectItem value="any">Any Age</SelectItem>
+                <SelectItem value="0-2">0-2 Years</SelectItem>
+                <SelectItem value="3-5">3-5 Years</SelectItem>
+                <SelectItem value="6-9">6-9 Years</SelectItem>
+                <SelectItem value="10-12">10-12 Years</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          {/* Stimulation Score Filter (Previously Tantrum Factor) */}
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-2">
+              Stimulation Level
+            </Label>
+            <Select
+              value={filters.tantrumFactor || "any"}
+              onValueChange={(value) => handleFilterChange('tantrumFactor', value === "any" ? undefined : value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select stimulation level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Level</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Interaction Level Filter */}
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-2">
+              Interaction Level
+            </Label>
+            <Select
+              value={filters.interactionLevel || "any"}
+              onValueChange={(value) => handleFilterChange('interactionLevel', value === "any" ? undefined : value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select interaction level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Level</SelectItem>
+                <SelectItem value="Low">Low Interaction</SelectItem>
+                <SelectItem value="Moderate">Moderate Interaction</SelectItem>
+                <SelectItem value="Moderate-High">Moderate-High Interaction</SelectItem>
+                <SelectItem value="High">High Interaction</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Theme Filter */}
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-2">
+              Themes
+            </Label>
             
-            {/* Theme matching mode toggle - only appears when a primary theme is selected */}
-            {selectedThemes.length > 0 && (
-              <div className="mt-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm text-gray-600">Theme match mode:</Label>
-                  <div className="flex space-x-2">
-                    <Button 
-                      size="sm" 
-                      variant={themeMatchMode === 'AND' ? "default" : "outline"}
-                      onClick={() => {
-                        setThemeMatchMode('AND');
-                        // Re-apply current filters with new matching mode
-                        if (selectedThemes.length > 0) {
-                          const updatedFilters = {
-                            ...filters,
-                            themes: selectedThemes,
-                            themeMatchMode: 'AND' as const
-                          };
-                          onFilterChange(updatedFilters);
-                        }
-                      }}
-                    >
-                      AND
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant={themeMatchMode === 'OR' ? "default" : "outline"}
-                      onClick={() => {
-                        setThemeMatchMode('OR');
-                        // Re-apply current filters with new matching mode
-                        if (selectedThemes.length > 0) {
-                          const updatedFilters = {
-                            ...filters,
-                            themes: selectedThemes,
-                            themeMatchMode: 'OR' as const
-                          };
-                          onFilterChange(updatedFilters);
-                        }
-                      }}
-                    >
-                      OR
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {themeMatchMode === 'AND' 
-                    ? 'Shows must contain ALL selected themes' 
-                    : 'Shows can contain ANY of the selected themes'}
-                </p>
+            {/* Theme Match Mode */}
+            <RadioGroup 
+              value={themeMatchMode} 
+              onValueChange={(value: 'AND' | 'OR') => handleFilterChange('themeMatchMode', value)}
+              className="flex space-x-4 mb-3"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="AND" id="r1" />
+                <Label htmlFor="r1" className="cursor-pointer">All themes (AND)</Label>
               </div>
-            )}
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="OR" id="r2" />
+                <Label htmlFor="r2" className="cursor-pointer">Any theme (OR)</Label>
+              </div>
+            </RadioGroup>
+            
+            {/* Primary Theme Dropdown */}
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                Primary Theme
+              </Label>
+              <Select
+                value={selectedThemes.length > 0 ? selectedThemes[0] : "none"}
+                onValueChange={(value) => {
+                  if (value && value !== "none") {
+                    // If selecting a new primary theme
+                    const newThemes = [value];
+                    setSelectedThemes(newThemes);
+                    handleFilterChange('themes', newThemes);
+                  } else {
+                    // Clearing the primary theme clears all themes
+                    setSelectedThemes([]);
+                    handleFilterChange('themes', []);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a primary theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Theme</SelectItem>
+                  {commonThemes.map((theme) => (
+                    <SelectItem key={theme} value={theme}>
+                      {theme}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             
             {/* Secondary theme dropdown (only appears when primary theme is selected) */}
             {selectedThemes.length > 0 && (
@@ -771,7 +555,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                       setSelectedThemes(newThemes);
                       handleFilterChange('themes', newThemes);
                     } else {
-                      // Remove secondary theme and tertiary theme if they exist
+                      // Remove secondary and tertiary themes if cleared
                       const newThemes = [selectedThemes[0]];
                       setSelectedThemes(newThemes);
                       handleFilterChange('themes', newThemes);
@@ -783,16 +567,18 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Secondary Theme</SelectItem>
-                    {relevantSecondaryThemes.map((theme) => (
-                        <SelectItem key={theme} value={theme}>
-                          {theme}
-                        </SelectItem>
-                      ))
-                    }
+                    {(themeMatchMode === 'OR' 
+                      ? commonThemes.filter(theme => theme !== selectedThemes[0])
+                      : relevantSecondaryThemes
+                    ).map((theme) => (
+                      <SelectItem key={theme} value={theme}>
+                        {theme}
+                      </SelectItem>
+                    ))}
                     <div className="px-3 py-2 text-xs text-gray-500 border-t mt-1">
                       {themeMatchMode === 'OR' 
-                        ? 'Showing all available themes' 
-                        : 'Showing themes that co-exist with primary theme'}
+                        ? 'Shows will match either primary or secondary theme' 
+                        : 'Shows must contain both primary and secondary themes'}
                     </div>
                   </SelectContent>
                 </Select>
@@ -826,6 +612,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Tertiary Theme</SelectItem>
+                    {/* Always show all available themes except those already selected */}
                     {commonThemes
                       .filter(theme => !selectedThemes.includes(theme))
                       .map((theme) => (
@@ -847,168 +634,27 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
           
           {/* Interaction Level */}
           <div>
-            <Label htmlFor="interaction-level" className="block text-sm font-medium text-gray-700 mb-1">
-              Interaction Level
+            <Label className="block text-sm font-medium text-gray-700 mb-2">
+              Sort Results By
             </Label>
-            <Select 
-              value={filters.interactionLevel} 
-              onValueChange={(value) => handleFilterChange('interactionLevel', value)}
-            >
-              <SelectTrigger id="interaction-level">
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any">Any</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Moderate-Low">Moderate-Low</SelectItem>
-                <SelectItem value="Moderate">Moderate</SelectItem>
-                <SelectItem value="Moderate-High">Moderate-High</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Sort By */}
-          <div>
-            <Label htmlFor="sort-by" className="block text-sm font-medium text-gray-700 mb-1">
-              Sort By
-            </Label>
-            <Select 
-              value={filters.sortBy} 
+            <Select
+              value={filters.sortBy || "name"}
               onValueChange={(value) => handleFilterChange('sortBy', value)}
             >
-              <SelectTrigger id="sort-by">
-                <SelectValue placeholder="Name (A-Z)" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="name">Name (A-Z)</SelectItem>
-                <SelectItem value="stimulation-score">Stimulation Score (Low to High)</SelectItem>
-                <SelectItem value="interactivity-level">Interactivity Level (Low to High)</SelectItem>
-                <SelectItem value="overall-rating">Rating (High to Low)</SelectItem>
-                <SelectItem value="popular">Popular</SelectItem>
+                <SelectItem value="nameDesc">Name (Z-A)</SelectItem>
+                <SelectItem value="stimulationScore">Stimulation: Low to High</SelectItem>
+                <SelectItem value="stimulationScoreDesc">Stimulation: High to Low</SelectItem>
+                <SelectItem value="ageRangeAsc">Age Range: Youngest First</SelectItem>
+                <SelectItem value="ageRangeDesc">Age Range: Oldest First</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
-          {/* Stimulation Score Range - always visible */}
-          <div>
-            <Label className="block text-sm font-medium text-gray-700 mb-1">
-              Stimulation Score Range
-            </Label>
-            <div className="flex flex-col space-y-4">
-              {/* Min slider */}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs font-medium">Minimum: {filters.stimulationScoreRange?.min || 1}</span>
-                </div>
-                <div className="relative pt-1">
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="5" 
-                    step="1" 
-                    value={filters.stimulationScoreRange?.min || 1}
-                    onChange={(e) => {
-                      const newMin = parseInt(e.target.value);
-                      const currentMax = filters.stimulationScoreRange?.max || 5;
-                      handleFilterChange('stimulationScoreRange', {
-                        min: newMin,
-                        max: Math.max(newMin, currentMax) // Ensure max is at least equal to min
-                      });
-                    }}
-                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
-                  <span>1</span>
-                  <span>2</span>
-                  <span>3</span>
-                  <span>4</span>
-                  <span>5</span>
-                </div>
-              </div>
-              
-              {/* Max slider */}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs font-medium">Maximum: {filters.stimulationScoreRange?.max || 5}</span>
-                </div>
-                <div className="relative pt-1">
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="5" 
-                    step="1" 
-                    value={filters.stimulationScoreRange?.max || 5}
-                    onChange={(e) => {
-                      const newMax = parseInt(e.target.value);
-                      const currentMin = filters.stimulationScoreRange?.min || 1;
-                      handleFilterChange('stimulationScoreRange', {
-                        min: Math.min(currentMin, newMax), // Ensure min is at most equal to max
-                        max: newMax
-                      });
-                    }}
-                    className="w-full appearance-none rounded-full h-2 bg-gray-200 outline-none accent-green-600" 
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
-                  <span>1</span>
-                  <span>2</span>
-                  <span>3</span>
-                  <span>4</span>
-                  <span>5</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Apply Filters and Reset */}
-          <div className="space-y-2">
-            <Button
-              type="button"
-              onClick={handleApplyFilters}
-              className="w-full bg-secondary hover:bg-secondary/90"
-              style={{fontWeight: 'bold'}}
-            >
-              Apply Filters
-            </Button>
-            {Object.keys(filters).length > 0 && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onClearFilters} 
-                className="w-full"
-              >
-                Reset All Filters
-              </Button>
-            )}
-          </div>
         </div>
-        
-        {/* Active Filters Display */}
-        {Object.keys(activeFilters).length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2 items-center">
-            {Object.entries(activeFilters).map(([key, value]) => {
-              if (!value || (Array.isArray(value) && value.length === 0)) return null;
-              return (
-                <Badge 
-                  key={key} 
-                  variant="secondary" 
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800"
-                >
-                  {getFilterLabel(key as keyof FiltersType, value)}
-                  <button 
-                    type="button" 
-                    className="ml-1 focus:outline-none"
-                    onClick={() => removeFilter(key as keyof FiltersType)}
-                  >
-                    <X className="h-3.5 w-3.5 text-gray-500" />
-                  </button>
-                </Badge>
-              );
-            })}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
