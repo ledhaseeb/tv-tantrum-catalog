@@ -436,7 +436,7 @@ export default function Home() {
           
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer bg-purple-50" 
-            onClick={() => setLocation("/browse?interactivity_level=High")}
+            onClick={() => setLocation("/browse?interactionLevel=High")}
           >
             <CardContent className="p-6 text-center">
               <div className="inline-flex p-3 rounded-full bg-purple-100 text-purple-600 mb-3">
@@ -491,7 +491,7 @@ export default function Home() {
         "Higher Interaction",
         "Shows that encourage audience participation and engagement", 
         highInteractionShows, 
-        "/browse?interactivityLevel=High"
+        "/browse?interactionLevel=High"
       )}
       
       {/* Educational Shows */}
