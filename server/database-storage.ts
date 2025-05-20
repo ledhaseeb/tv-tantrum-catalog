@@ -675,10 +675,28 @@ export class DatabaseStorage implements IStorage {
     
     // Filter by themes
     if (filters.themes && filters.themes.length > 0) {
-      // We need a way to check if all themes are present in the array
-      // For multiple themes, we'll need a post-query filter since PostgreSQL array operations 
-      // don't easily support checking if an array contains all values from another array
-      console.log(`Filtering by themes: ${filters.themes.join(', ')}`);
+      console.log(`Filtering by themes: ${filters.themes.join(', ')}, match mode: ${filters.themeMatchMode || 'OR'}`);
+      
+      // For a single theme, we can use a simple array contains check
+      if (filters.themes.length === 1) {
+        const theme = filters.themes[0];
+        conditions.push(sql`${tvShows.themes} @> ARRAY[${theme}]::text[]`);
+      } 
+      // For multiple themes, the SQL depends on the match mode
+      else if (filters.themes.length > 1) {
+        if (filters.themeMatchMode === 'AND') {
+          // In AND mode, all selected themes must be present
+          // This is difficult to express in SQL alone, so we'll do a basic filter
+          // and then filter more precisely in post-processing
+          // We use a simple check that at least one theme exists to reduce initial result set
+          const firstTheme = filters.themes[0];
+          conditions.push(sql`${tvShows.themes} @> ARRAY[${firstTheme}]::text[]`);
+        } else {
+          // In OR mode (default), any of the selected themes must be present
+          // We can use the "overlap" operator to check if any array element matches
+          conditions.push(sql`${tvShows.themes} && ARRAY[${filters.themes}]::text[]`);
+        }
+      }
     }
     
     // Apply all conditions

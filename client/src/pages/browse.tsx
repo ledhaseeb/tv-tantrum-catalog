@@ -207,7 +207,11 @@ export default function Browse() {
       searchParams.set('ageGroup', filters.ageGroup);
     }
     
-    if (filters.themes && filters.themes.length > 0) searchParams.set('themes', filters.themes.join(','));
+    if (filters.themes && filters.themes.length > 0) {
+      searchParams.set('themes', filters.themes.join(','));
+      // Also pass the theme match mode (AND/OR) if provided
+      if (filters.themeMatchMode) searchParams.set('themeMatchMode', filters.themeMatchMode);
+    }
     if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
     if (filters.tantrumFactor) searchParams.set('tantrumFactor', filters.tantrumFactor);
     if (filters.interactionLevel) searchParams.set('interactionLevel', filters.interactionLevel);
