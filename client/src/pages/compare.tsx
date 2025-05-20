@@ -20,16 +20,18 @@ export default function Compare() {
   const [selectedShowIds, setSelectedShowIds] = useState<number[]>([]);
   const [showToAdd, setShowToAdd] = useState<string>("");
 
-  // Fetch all TV shows for the selector
+  // Fetch all TV shows for the selector directly from tv_shows database
   const { data: allShows, isLoading: loadingShows } = useQuery<TvShow[]>({
-    queryKey: ['/api/shows'],
+    queryKey: ['/api/tv-shows'],
+    staleTime: 300000, // 5 minutes cache
   });
 
   // Fetch details for selected shows
   const { data: selectedShows, isLoading: loadingSelected } = useQuery<TvShow[]>({
-    queryKey: ['/api/shows', { ids: selectedShowIds }],
+    queryKey: ['/api/tv-shows'],
     enabled: selectedShowIds.length > 0,
     select: (data) => {
+      if (!data) return [];
       return data.filter(show => selectedShowIds.includes(show.id));
     }
   });
