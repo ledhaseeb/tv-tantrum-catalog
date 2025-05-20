@@ -299,7 +299,7 @@ export default function Compare() {
                   </div>
                 ))}
                 
-                {selectedShows.length < 3 && (
+                {selectedShows && selectedShows.length < 3 && (
                   Array(3 - selectedShows.length).fill(0).map((_, i) => (
                     <div key={`empty-${i}`} className="flex flex-col">
                       <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>
@@ -324,7 +324,7 @@ export default function Compare() {
                     </div>
                   ))}
                   
-                  {selectedShows.length < 3 && (
+                  {selectedShows && selectedShows.length < 3 && (
                     Array(3 - selectedShows.length).fill(0).map((_, i) => (
                       <div key={`empty-stim-${i}`} className="flex flex-col">
                         <div className="font-medium text-center py-1 border-b border-gray-200 text-gray-400">-</div>
@@ -399,7 +399,7 @@ export default function Compare() {
                     </div>
                   ))}
                   
-                  {selectedShows.length < 3 && (
+                  {selectedShows && selectedShows.length < 3 && (
                     Array(3 - selectedShows.length).fill(0).map((_, i) => (
                       <div key={`empty-sensory-${i}`} className="flex flex-col">
                         <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>

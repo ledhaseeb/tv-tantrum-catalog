@@ -299,7 +299,7 @@ export default function Compare() {
                   </div>
                 ))}
                 
-                {selectedShows.length < 3 && (
+                {selectedShows && selectedShows.length < 3 && (
                   Array(3 - selectedShows.length).fill(0).map((_, i) => (
                     <div key={`empty-${i}`} className="flex flex-col">
                       <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>
@@ -313,7 +313,7 @@ export default function Compare() {
                 <h3 className="text-lg font-bold mb-4">Stimulation Score Comparison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedShows.map(show => (
-                    <div key={`stim-${show.id}`} className="flex flex-col">
+                    <div key={show.id} className="flex flex-col">
                       <div className="font-medium text-center py-1 border-b border-gray-200">Stimulation Score</div>
                       <div className="flex flex-col items-center py-2">
                         {getStimulationScoreDots(show.stimulationScore)}
@@ -324,7 +324,7 @@ export default function Compare() {
                     </div>
                   ))}
                   
-                  {selectedShows.length < 3 && (
+                  {selectedShows && selectedShows.length < 3 && (
                     Array(3 - selectedShows.length).fill(0).map((_, i) => (
                       <div key={`empty-stim-${i}`} className="flex flex-col">
                         <div className="font-medium text-center py-1 border-b border-gray-200 text-gray-400">-</div>
@@ -342,80 +342,140 @@ export default function Compare() {
                   {selectedShows.map(show => (
                     <div key={`sensory-${show.id}`} className="flex flex-col">
                       <div className="font-medium text-center text-lg mb-4">{show.name}</div>
-                      
-                      {/* Interactivity Level */}
-                      <div className="mb-6">
-                        <div className="font-medium text-center py-1 border-b border-gray-200">Interaction Level</div>
-                        <div className="text-center py-1">
+                
+                {/* Interactivity Level */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Interaction Level:</div>
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.interactivityLevel)}
                       </div>
-                      
-                      {/* Dialogue Intensity */}
-                      <div className="mb-6">
-                        <div className="font-medium text-center py-1 border-b border-gray-200">Dialogue Intensity</div>
-                        <div className="text-center py-1">
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Dialogue Intensity */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Dialogue Intensity:</div>
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.dialogueIntensity)}
                       </div>
-                      
-                      {/* Sound Effects Level */}
-                      <div className="mb-6">
-                        <div className="font-medium text-center py-1 border-b border-gray-200">Sound Effects Level</div>
-                        <div className="text-center py-1">
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Sound Effects Level */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Sound Effects Level:</div>
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.soundEffectsLevel)}
                       </div>
-                      
-                      {/* Scene Frequency */}
-                      <div className="mb-6">
-                        <div className="font-medium text-center py-1 border-b border-gray-200">Scene Frequency</div>
-                        <div className="text-center py-1">
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Scene Frequency */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Scene Frequency:</div>
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.sceneFrequency || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.sceneFrequency)}
                       </div>
-                      
-                      {/* Music Tempo */}
-                      <div className="mb-6">
-                        <div className="font-medium text-center py-1 border-b border-gray-200">Music Tempo</div>
-                        <div className="text-center py-1">
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Music Tempo */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Music Tempo:</div>
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.musicTempo || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.musicTempo)}
                       </div>
-                      
-                      {/* Total Music Level */}
-                      <div className="mb-6">
-                        <div className="font-medium text-center py-1 border-b border-gray-200">Total Music Level</div>
-                        <div className="text-center py-1">
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Total Music Level */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
+                    <div className="font-medium">Total Music Level:</div>
+                    {selectedShows.map(show => (
+                      <div key={show.id} className="flex flex-col">
+                        <div className="flex justify-end mb-1">
                           <span className="text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</span>
                         </div>
                         {renderSegmentedBar(show.totalMusicLevel)}
                       </div>
-                    </div>
-                  ))}
-                  
-                  {selectedShows.length < 3 && (
-                    Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                      <div key={`empty-sensory-${i}`} className="flex flex-col">
-                        <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>
+                    ))}
+                    {selectedShows.length < 3 && (
+                      <div className="flex items-center justify-center">
+                        <div className="text-gray-400">-</div>
                       </div>
-                    ))
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           ) : (
             <div className="p-8 text-center bg-white rounded-xl shadow-md">
               <div className="mb-4 text-gray-400">
-                <i className="fas fa-tv text-6xl"></i>
+                <i className="fas fa-search text-5xl"></i>
               </div>
-              <h3 className="text-lg font-medium mb-2">No Shows Selected</h3>
-              <p className="text-gray-500 mb-4">Select shows from the dropdown menus above to compare them.</p>
+              <h3 className="text-xl font-heading font-bold mb-2">No Shows Selected for Comparison</h3>
+              <p className="text-gray-600 mb-4">
+                Add shows to compare their features side by side.
+              </p>
+              <Button onClick={handleBackClick}>
+                Browse Shows
+              </Button>
             </div>
           )}
         </div>
