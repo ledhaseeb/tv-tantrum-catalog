@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkDatabaseConnection } from "./db";
@@ -7,6 +8,9 @@ import { checkDatabaseConnection } from "./db";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Serve custom images from client/public/custom-images directory
+app.use('/custom-images', express.static(path.join(process.cwd(), 'client/public/custom-images')));
 
 app.use((req, res, next) => {
   const start = Date.now();
