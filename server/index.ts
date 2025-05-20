@@ -9,8 +9,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve custom images from client/public/custom-images directory
+// Serve TV show images from the primary media directory
+app.use('/media/tv-shows', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
+
+// Keep serving from the old locations for backward compatibility
 app.use('/custom-images', express.static(path.join(process.cwd(), 'client/public/custom-images')));
+app.use('/custom-images', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
 
 app.use((req, res, next) => {
   const start = Date.now();

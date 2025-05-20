@@ -4,17 +4,17 @@ import fs from 'fs';
 import sharp from 'sharp';
 import { Request, Response, NextFunction } from 'express';
 
-// Create upload directories if they don't exist
+// Create all required image directories
 const imageDir = './public/uploads';
 const optimizedImageDir = './public/uploads/optimized';
+const primaryImageDir = './public/media/tv-shows'; // Primary directory for TV show images
 
-if (!fs.existsSync(imageDir)) {
-  fs.mkdirSync(imageDir, { recursive: true });
-}
-
-if (!fs.existsSync(optimizedImageDir)) {
-  fs.mkdirSync(optimizedImageDir, { recursive: true });
-}
+// Create directories if they don't exist
+[imageDir, optimizedImageDir, primaryImageDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Configure storage for multer
 const storage = multer.diskStorage({

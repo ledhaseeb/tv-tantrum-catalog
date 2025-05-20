@@ -4016,14 +4016,15 @@
       "Literacy",
       "Numeracy"
     ],
-    "interactivityLevel": "High",
+    "interactivityLevel": "Moderate",
     "animationStyle": "2D digital animation with a hand-drawn look. Bright and cheerful colors with simple backgrounds",
     "dialogueIntensity": "Moderate-High",
-    "soundEffectsLevel": "Moderate",
+    "soundEffectsLevel": "Medium",
     "musicTempo": "Moderate",
-    "totalMusicLevel": "Very-High",
+    "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "A children's TV show"
   },
   "166": {
     "stimulationScore": 5,
@@ -5503,7 +5504,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low-Moderate",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "A children's TV show"
   },
   "227": {
     "stimulationScore": 3,
