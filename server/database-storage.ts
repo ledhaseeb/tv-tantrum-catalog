@@ -750,26 +750,49 @@ export class DatabaseStorage implements IStorage {
           return false;
         }
         
+        // Log the matching for this specific show for debugging
+        if (filters.themes.includes('Arabic Language Learning')) {
+          console.log(`Checking show "${show.name}" with themes: ${JSON.stringify(normalizedShowThemes)}`);
+        }
+        
         if (themeMatchMode === 'AND') {
-          // In AND mode, ALL filter themes must match at least one show theme
-          return normalizedFilterThemes.every(filterTheme => 
-            normalizedShowThemes.some(showTheme => 
-              // Exact match or partial match (one contains the other)
-              showTheme === filterTheme || 
-              showTheme.includes(filterTheme) || 
-              filterTheme.includes(showTheme)
-            )
-          );
+          // In AND mode, ALL filter themes must be present in the show
+          return normalizedFilterThemes.every(filterTheme => {
+            // See if any show theme exactly matches this filter theme
+            const exactMatch = normalizedShowThemes.some(showTheme => showTheme === filterTheme);
+            if (exactMatch) return true;
+            
+            // Otherwise, look for word-by-word match (for multi-word themes like "Arabic Language Learning")
+            const filterWords = filterTheme.split(' ');
+            if (filterWords.length > 1) {
+              // For multi-word themes, require all words to be present in a show theme
+              return normalizedShowThemes.some(showTheme => {
+                return filterWords.every(word => showTheme.includes(word));
+              });
+            }
+            
+            // For single-word themes, allow substring match
+            return normalizedShowThemes.some(showTheme => showTheme.includes(filterTheme));
+          });
         } else {
-          // In OR mode, ANY filter theme must match at least one show theme
-          return normalizedFilterThemes.some(filterTheme => 
-            normalizedShowThemes.some(showTheme => 
-              // Exact match or partial match (one contains the other)
-              showTheme === filterTheme || 
-              showTheme.includes(filterTheme) || 
-              filterTheme.includes(showTheme)
-            )
-          );
+          // In OR mode, ANY filter theme must be present in the show
+          return normalizedFilterThemes.some(filterTheme => {
+            // See if any show theme exactly matches this filter theme
+            const exactMatch = normalizedShowThemes.some(showTheme => showTheme === filterTheme);
+            if (exactMatch) return true;
+            
+            // Otherwise, look for word-by-word match (for multi-word themes like "Arabic Language Learning")
+            const filterWords = filterTheme.split(' ');
+            if (filterWords.length > 1) {
+              // For multi-word themes, require all words to be present in a show theme
+              return normalizedShowThemes.some(showTheme => {
+                return filterWords.every(word => showTheme.includes(word));
+              });
+            }
+            
+            // For single-word themes, allow substring match
+            return normalizedShowThemes.some(showTheme => showTheme.includes(filterTheme));
+          });
         }
       });
       
