@@ -1356,12 +1356,16 @@ export default function AdminPage() {
                             type="button"
                             size="sm"
                             className="bg-blue-500 hover:bg-blue-600 text-white"
-                            onClick={() => {
+                            onClick={async () => {
                               // Extract year information
                               const releaseYear = lookupResults.omdb.year ? 
                                 parseInt(lookupResults.omdb.year.split('–')[0]) : null;
                               const endYear = lookupResults.omdb.year && lookupResults.omdb.year.includes('–') ?
                                 parseInt(lookupResults.omdb.year.split('–')[1]) || null : null;
+                              
+                              // Set a reference to the current button using event target
+                              const button = document.activeElement as HTMLButtonElement;
+                              const originalText = button.innerText;
                               
                               setFormState({
                                 ...formState,
@@ -1371,8 +1375,18 @@ export default function AdminPage() {
                                 endYear: endYear || formState.endYear,
                                 episodeLength: formState.episodeLength || 30,
                                 isOngoing: !endYear,
-                                imageUrl: lookupResults.omdb.poster || formState.imageUrl
+                                imageUrl: lookupResults.omdb.poster || formState.imageUrl,
+                                hasOmdbData: true // Set the flag that OMDb data was used
                               });
+                              
+                              // Change button text
+                              if (button) {
+                                button.innerText = "Added Successfully";
+                                
+                                // Optional: Disable the button to prevent multiple clicks
+                                button.disabled = true;
+                              }
+                              
                               // Keep the lookup options panel open
                               toast({
                                 title: "OMDb Data Added",
@@ -1407,6 +1421,9 @@ export default function AdminPage() {
                               const releaseYear = lookupResults.youtube.publishedAt ?
                                 new Date(lookupResults.youtube.publishedAt).getFullYear() : null;
                               
+                              // Set a reference to the current button using event target
+                              const button = document.activeElement as HTMLButtonElement;
+                              
                               // Properly handle the availableOn field as an array
                               let updatedAvailableOn;
                               if (Array.isArray(formState.availableOn)) {
@@ -1435,8 +1452,18 @@ export default function AdminPage() {
                                 isYouTubeChannel: true,
                                 publishedAt: lookupResults.youtube.publishedAt || formState.publishedAt,
                                 channelId: lookupResults.youtube.channelId || formState.channelId,
-                                availableOn: updatedAvailableOn
+                                availableOn: updatedAvailableOn,
+                                hasYoutubeData: true // Set the flag that YouTube data was used
                               });
+                              
+                              // Change button text
+                              if (button) {
+                                button.innerText = "Added Successfully";
+                                
+                                // Optional: Disable the button to prevent multiple clicks
+                                button.disabled = true;
+                              }
+                              
                               // Keep the lookup options panel open
                               toast({
                                 title: "YouTube Data Added",
@@ -1906,6 +1933,9 @@ export default function AdminPage() {
                               const endYear = lookupResults.omdb.year && lookupResults.omdb.year.includes('–') ?
                                 parseInt(lookupResults.omdb.year.split('–')[1]) || null : null;
                               
+                              // Set a reference to the current button using event target
+                              const button = document.activeElement as HTMLButtonElement;
+                              
                               setNewShowFormState({
                                 ...newShowFormState,
                                 description: lookupResults.omdb.plot || newShowFormState.description,
@@ -1914,8 +1944,18 @@ export default function AdminPage() {
                                 endYear: endYear || newShowFormState.endYear,
                                 episodeLength: newShowFormState.episodeLength || 30,
                                 isOngoing: !endYear,
-                                imageUrl: lookupResults.omdb.poster || newShowFormState.imageUrl
+                                imageUrl: lookupResults.omdb.poster || newShowFormState.imageUrl,
+                                hasOmdbData: true // Set the flag that OMDb data was used
                               });
+                              
+                              // Change button text
+                              if (button) {
+                                button.innerText = "Added Successfully";
+                                
+                                // Optional: Disable the button to prevent multiple clicks
+                                button.disabled = true;
+                              }
+                              
                               // Keep the lookup options panel open
                               toast({
                                 title: "OMDb Data Added",
@@ -1949,6 +1989,9 @@ export default function AdminPage() {
                               const releaseYear = lookupResults.youtube.publishedAt ?
                                 new Date(lookupResults.youtube.publishedAt).getFullYear() : null;
                               
+                              // Set a reference to the current button using event target
+                              const button = document.activeElement as HTMLButtonElement;
+                              
                               // Properly handle the availableOn field as an array
                               let updatedAvailableOn;
                               if (Array.isArray(newShowFormState.availableOn)) {
@@ -1977,8 +2020,18 @@ export default function AdminPage() {
                                 isYouTubeChannel: true,
                                 publishedAt: lookupResults.youtube.publishedAt || newShowFormState.publishedAt,
                                 channelId: lookupResults.youtube.channelId || newShowFormState.channelId,
-                                availableOn: updatedAvailableOn
+                                availableOn: updatedAvailableOn,
+                                hasYoutubeData: true // Set the flag that YouTube data was used
                               });
+                              
+                              // Change button text
+                              if (button) {
+                                button.innerText = "Added Successfully";
+                                
+                                // Optional: Disable the button to prevent multiple clicks
+                                button.disabled = true;
+                              }
+                              
                               // Keep the lookup options panel open
                               toast({
                                 title: "YouTube Data Added",

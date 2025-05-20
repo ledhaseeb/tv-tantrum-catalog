@@ -82,6 +82,10 @@ export const tvShows = pgTable("tv_shows", {
   channelId: text("channel_id"),
   isYouTubeChannel: boolean("is_youtube_channel").default(false),
   publishedAt: text("published_at"),
+  
+  // API data tracking
+  hasOmdbData: boolean("has_omdb_data").default(false),
+  hasYoutubeData: boolean("has_youtube_data").default(false),
 });
 
 export const tvShowReviews = pgTable("tv_show_reviews", {
