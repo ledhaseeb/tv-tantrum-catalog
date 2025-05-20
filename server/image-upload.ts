@@ -56,7 +56,9 @@ export const upload = multer({
 export async function optimizeImage(filePath: string): Promise<string> {
   const ext = path.extname(filePath);
   const filename = path.basename(filePath, ext);
-  const optimizedPath = path.join(optimizedImageDir, `${filename}-optimized.jpg`);
+  const optimizedFileName = `${filename}-optimized.jpg`;
+  const optimizedPath = path.join(optimizedImageDir, optimizedFileName);
+  const primaryMediaPath = path.join(primaryImageDir, optimizedFileName);
   
   try {
     // Get image dimensions first to determine appropriate sizing
@@ -92,21 +94,41 @@ export async function optimizeImage(filePath: string): Promise<string> {
       targetWidth = Math.min(originalWidth, Math.round(targetHeight * 0.75)); // Ensure width is about 75% of height
     }
 
-    // Process the image with sharp
-    await sharp(filePath)
+    // Generate optimized image buffer
+    const imageBuffer = await sharp(filePath)
       .resize(targetWidth, targetHeight, {
         fit: 'contain',
         background: { r: 255, g: 255, b: 255, alpha: 1 } // White background
       })
       .jpeg({ quality: 85, progressive: true }) // Good balance of quality and file size
-      .toFile(optimizedPath);
+      .toBuffer();
+    
+    // Save to both locations
+    await Promise.all([
+      fs.promises.writeFile(optimizedPath, imageBuffer),
+      fs.promises.writeFile(primaryMediaPath, imageBuffer)
+    ]);
     
     console.log(`Image optimized: ${optimizedPath} (${targetWidth}x${targetHeight})`);
+    console.log(`Also saved to primary media directory: ${primaryMediaPath}`);
     
-    return `/uploads/optimized/${path.basename(optimizedPath)}`;
+    // The URL path is now media/tv-shows for consistent image access
+    return `/media/tv-shows/${optimizedFileName}`;
   } catch (error) {
     console.error('Error optimizing image:', error);
-    throw error;
+    // Fallback to traditional path if there's an error
+    try {
+      // Still try to save to the old location as a fallback
+      await sharp(filePath)
+        .resize(600, 800, { fit: 'inside' })
+        .jpeg({ quality: 85 })
+        .toFile(optimizedPath);
+      
+      return `/uploads/optimized/${path.basename(optimizedPath)}`;
+    } catch {
+      // If that also fails, just return the original
+      return `/uploads/${path.basename(filePath)}`;
+    }
   }
 }
 
