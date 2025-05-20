@@ -382,6 +382,10 @@ export default function AdminPage() {
     try {
       const response = await fetch('/api/tv-shows');
       const data = await response.json() as TvShow[];
+      
+      // Log the API data for debugging
+      console.log('TV Shows API data:', data.slice(0, 3));
+      
       setShows(data);
       setFilteredShows(data);
       return data;
