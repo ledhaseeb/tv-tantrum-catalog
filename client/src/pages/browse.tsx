@@ -87,6 +87,12 @@ export default function Browse() {
       initialFilters.themes = themes.split(',');
     }
     
+    // Get theme match mode from URL (AND or OR)
+    const themeMatchMode = searchParams.get('themeMatchMode');
+    if (themeMatchMode && (themeMatchMode === 'AND' || themeMatchMode === 'OR')) {
+      initialFilters.themeMatchMode = themeMatchMode;
+    }
+    
     // Get sort option from URL
     const sortBy = searchParams.get('sortBy');
     if (sortBy) {

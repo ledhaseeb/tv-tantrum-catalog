@@ -52,7 +52,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const [filters, setFilters] = useState<FiltersType>(activeFilters);
   const [searchInput, setSearchInput] = useState(activeFilters.search || "");
   const [selectedThemes, setSelectedThemes] = useState<string[]>(activeFilters.themes || []);
-  const [themeMatchMode, setThemeMatchMode] = useState<'AND' | 'OR'>('AND');
+  const [themeMatchMode, setThemeMatchMode] = useState<'AND' | 'OR'>(activeFilters.themeMatchMode || 'AND');
   const [openAutoComplete, setOpenAutoComplete] = useState(false);
   
   // Fetch shows for autocomplete and theme analysis
@@ -559,7 +559,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                           const updatedFilters = {
                             ...filters,
                             themes: selectedThemes,
-                            themeMatchMode: 'AND'
+                            themeMatchMode: 'AND' as const
                           };
                           onFilterChange(updatedFilters);
                         }
@@ -577,7 +577,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                           const updatedFilters = {
                             ...filters,
                             themes: selectedThemes,
-                            themeMatchMode: 'OR'
+                            themeMatchMode: 'OR' as const
                           };
                           onFilterChange(updatedFilters);
                         }
