@@ -635,7 +635,19 @@ export class DatabaseStorage implements IStorage {
     if (filters.interactionLevel) {
       // Map frontend 'interactionLevel' to database 'interactivityLevel' field
       console.log("Filtering by interaction level:", filters.interactionLevel);
-      conditions.push(eq(tvShows.interactivityLevel, filters.interactionLevel));
+      
+      // Handle different values for High interactivity
+      if (filters.interactionLevel === 'High') {
+        conditions.push(
+          or(
+            eq(tvShows.interactivityLevel, 'High'),
+            like(tvShows.interactivityLevel, '%High%'), // Catches "Moderate-High" or "Very High"
+            like(tvShows.interactivityLevel, '%to High%') // Catches "Moderate to High"
+          )
+        );
+      } else {
+        conditions.push(eq(tvShows.interactivityLevel, filters.interactionLevel));
+      }
     }
     
     if (filters.dialogueIntensity) {

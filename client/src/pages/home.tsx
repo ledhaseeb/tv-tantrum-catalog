@@ -101,14 +101,16 @@ export default function Home() {
   
   // Get high interaction shows
   const highInteractionShows = allShows?.filter(show => {
-    const interactivityLevel = getShowProperty(show, ['interactivityLevel', 'interactivity_level']);
+    const interactivityLevel = getShowProperty(show, ['interactivityLevel', 'interactivity_level', 'interactionLevel']);
     
     if (!interactivityLevel) return false;
     
+    // Check for any variation of "High" interactivity
     return interactivityLevel === 'High' || 
            interactivityLevel.includes('High') || 
            interactivityLevel === 'Moderate-High' || 
-           interactivityLevel === 'Moderate to High';
+           interactivityLevel === 'Moderate to High' ||
+           interactivityLevel === 'Mod-High';
   }).slice(0, 24);
   
   // Find shows by popular themes - ensure at least 24 shows per category
@@ -517,7 +519,7 @@ export default function Home() {
         "Higher Interaction",
         "Shows that encourage audience participation and engagement", 
         highInteractionShows, 
-        "/browse?interactivityLevel=High"
+        "/browse?interactionLevel=High"
       )}
       
       {/* Educational Shows */}
