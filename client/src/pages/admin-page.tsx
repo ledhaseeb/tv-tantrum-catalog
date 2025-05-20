@@ -1392,17 +1392,17 @@ export default function AdminPage() {
                               const button = document.activeElement as HTMLButtonElement;
                               const originalText = button.innerText;
                               
-                              setFormState({
-                                ...formState,
-                                description: lookupResults.omdb.plot || formState.description,
-                                creator: lookupResults.omdb.director || formState.creator,
-                                releaseYear: releaseYear || formState.releaseYear,
-                                endYear: endYear || formState.endYear,
-                                episodeLength: formState.episodeLength || 30,
+                              setFormState(prev => ({
+                                ...prev,
+                                description: lookupResults.omdb.plot || prev.description,
+                                creator: lookupResults.omdb.director || prev.creator,
+                                releaseYear: releaseYear || prev.releaseYear,
+                                endYear: endYear || prev.endYear,
+                                episodeLength: prev.episodeLength || 30,
                                 isOngoing: !endYear,
-                                imageUrl: lookupResults.omdb.poster || formState.imageUrl,
+                                imageUrl: lookupResults.omdb.poster || prev.imageUrl,
                                 hasOmdbData: true // Set the flag that OMDb data was used
-                              });
+                              }));
                               
                               // Change button text
                               if (button) {
@@ -1466,19 +1466,19 @@ export default function AdminPage() {
                                 updatedAvailableOn = ['YouTube'];
                               }
                               
-                              setFormState({
-                                ...formState,
-                                description: lookupResults.youtube.description || formState.description,
-                                releaseYear: releaseYear || formState.releaseYear,
+                              setFormState(prev => ({
+                                ...prev,
+                                description: lookupResults.youtube.description || prev.description,
+                                releaseYear: releaseYear || prev.releaseYear,
                                 isOngoing: true,
-                                subscriberCount: lookupResults.youtube.subscriberCount || formState.subscriberCount,
-                                videoCount: lookupResults.youtube.videoCount || formState.videoCount,
+                                subscriberCount: lookupResults.youtube.subscriberCount || (prev as any).subscriberCount || '',
+                                videoCount: lookupResults.youtube.videoCount || (prev as any).videoCount || '',
                                 isYouTubeChannel: true,
-                                publishedAt: lookupResults.youtube.publishedAt || formState.publishedAt,
-                                channelId: lookupResults.youtube.channelId || formState.channelId,
+                                publishedAt: lookupResults.youtube.publishedAt || (prev as any).publishedAt || '',
+                                channelId: lookupResults.youtube.channelId || (prev as any).channelId || '',
                                 availableOn: updatedAvailableOn,
                                 hasYoutubeData: true // Set the flag that YouTube data was used
-                              });
+                              }));
                               
                               // Change button text
                               if (button) {
@@ -1959,17 +1959,17 @@ export default function AdminPage() {
                               // Set a reference to the current button using event target
                               const button = document.activeElement as HTMLButtonElement;
                               
-                              setNewShowFormState({
-                                ...newShowFormState,
-                                description: lookupResults.omdb.plot || newShowFormState.description,
-                                creator: lookupResults.omdb.director || newShowFormState.creator,
-                                releaseYear: releaseYear || newShowFormState.releaseYear,
-                                endYear: endYear || newShowFormState.endYear,
-                                episodeLength: newShowFormState.episodeLength || 30,
+                              setNewShowFormState(prev => ({
+                                ...prev,
+                                description: lookupResults.omdb.plot || prev.description,
+                                creator: lookupResults.omdb.director || prev.creator,
+                                releaseYear: releaseYear || prev.releaseYear,
+                                endYear: endYear || prev.endYear,
+                                episodeLength: prev.episodeLength || 30,
                                 isOngoing: !endYear,
-                                imageUrl: lookupResults.omdb.poster || newShowFormState.imageUrl,
+                                imageUrl: lookupResults.omdb.poster || prev.imageUrl,
                                 hasOmdbData: true // Set the flag that OMDb data was used
-                              });
+                              }));
                               
                               // Change button text
                               if (button) {
@@ -2033,19 +2033,19 @@ export default function AdminPage() {
                                 updatedAvailableOn = ['YouTube'];
                               }
                               
-                              setNewShowFormState({
-                                ...newShowFormState,
-                                description: lookupResults.youtube.description || newShowFormState.description,
-                                releaseYear: releaseYear || newShowFormState.releaseYear,
+                              setNewShowFormState(prev => ({
+                                ...prev,
+                                description: lookupResults.youtube.description || prev.description,
+                                releaseYear: releaseYear || prev.releaseYear,
                                 isOngoing: true,
-                                subscriberCount: lookupResults.youtube.subscriberCount || newShowFormState.subscriberCount,
-                                videoCount: lookupResults.youtube.videoCount || newShowFormState.videoCount,
+                                subscriberCount: lookupResults.youtube.subscriberCount || prev.subscriberCount,
+                                videoCount: lookupResults.youtube.videoCount || prev.videoCount,
                                 isYouTubeChannel: true,
-                                publishedAt: lookupResults.youtube.publishedAt || newShowFormState.publishedAt,
-                                channelId: lookupResults.youtube.channelId || newShowFormState.channelId,
+                                publishedAt: lookupResults.youtube.publishedAt || prev.publishedAt,
+                                channelId: lookupResults.youtube.channelId || prev.channelId,
                                 availableOn: updatedAvailableOn,
                                 hasYoutubeData: true // Set the flag that YouTube data was used
-                              });
+                              }));
                               
                               // Change button text
                               if (button) {
