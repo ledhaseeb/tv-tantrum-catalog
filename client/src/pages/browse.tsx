@@ -92,6 +92,18 @@ export default function Browse() {
       initialFilters.interactionLevel = interactionLevel;
     }
     
+    // Get dialogue intensity from URL
+    const dialogueIntensity = searchParams.get('dialogueIntensity');
+    if (dialogueIntensity) {
+      initialFilters.dialogueIntensity = dialogueIntensity;
+    }
+    
+    // Get sound frequency from URL
+    const soundFrequency = searchParams.get('soundFrequency');
+    if (soundFrequency) {
+      initialFilters.soundFrequency = soundFrequency;
+    }
+    
     // Get stimulation score range from URL
     const stimulationScoreRange = searchParams.get('stimulationScoreRange');
     if (stimulationScoreRange) {
@@ -178,6 +190,8 @@ export default function Browse() {
     if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
     if (filters.tantrumFactor) searchParams.set('tantrumFactor', filters.tantrumFactor);
     if (filters.interactionLevel) searchParams.set('interactionLevel', filters.interactionLevel);
+    if (filters.dialogueIntensity) searchParams.set('dialogueIntensity', filters.dialogueIntensity);
+    if (filters.soundFrequency) searchParams.set('soundFrequency', filters.soundFrequency);
     if (filters.stimulationScoreRange) searchParams.set('stimulationScoreRange', 
         encodeURIComponent(JSON.stringify(filters.stimulationScoreRange)));
     
