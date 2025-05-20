@@ -97,15 +97,21 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     setSelectedThemes(activeFilters.themes || []);
   }, [activeFilters]);
   
-  // Update relevant secondary themes when shows data loads or selected themes change
+  // Update relevant secondary themes when shows data loads, selected themes change, or theme match mode changes
   useEffect(() => {
     if (shows && selectedThemes.length > 0) {
-      findRelevantSecondaryThemes(selectedThemes[0]);
+      // For OR mode, display all available themes
+      // For AND mode, display only co-existing themes
+      if (themeMatchMode === 'OR') {
+        setRelevantSecondaryThemes(commonThemes.filter(theme => !selectedThemes.includes(theme)));
+      } else {
+        findRelevantSecondaryThemes(selectedThemes[0]);
+      }
     } else {
       // Reset if no primary theme is selected
       setRelevantSecondaryThemes([]);
     }
-  }, [shows, selectedThemes[0]]);
+  }, [shows, selectedThemes[0], themeMatchMode, commonThemes]);
   
   // Log for debugging
   useEffect(() => {
@@ -628,6 +634,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                         </SelectItem>
                       ))
                     }
+                    <div className="px-3 py-2 text-xs text-gray-500 border-t mt-1">
+                      {themeMatchMode === 'OR' 
+                        ? 'Showing all available themes' 
+                        : 'Showing themes that co-exist with primary theme'}
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
