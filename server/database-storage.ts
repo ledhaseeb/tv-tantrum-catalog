@@ -782,81 +782,48 @@ export class DatabaseStorage implements IStorage {
         // In OR mode, shows must contain ANY of the selected themes
         console.log('Using OR mode: Shows must contain ANY selected theme');
         
-        // Start by checking all shows with a direct theme match
-        const exactMatches = new Set();
-        
-        // First pass - collect all shows that have EXACT theme matches
-        searchThemes.forEach(searchTheme => {
-          // Get all shows with this exact theme
-          const matchingShows = shows.filter(show => 
-            show.themes && 
-            Array.isArray(show.themes) && 
-            show.themes.some(showTheme => 
+        // Filter shows that have any of the selected themes
+        filteredShows = shows.filter(show => {
+          // Skip shows with no themes
+          if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
+            return false;
+          }
+          
+          // Check if the show has ANY of the search themes
+          return searchThemes.some(searchTheme => {
+            // Check for exact theme match
+            const hasExactTheme = show.themes.some(showTheme => 
               showTheme && 
               showTheme.toLowerCase() === searchTheme.toLowerCase()
-            )
-          );
-          
-          console.log(`Found ${matchingShows.length} shows that exactly match theme: "${searchTheme}"`);
-          
-          // Add these shows to our results
-          matchingShows.forEach(show => exactMatches.add(show.id));
-        });
-        
-        // Second pass - for shows without exact matches, look for word-by-word matches
-        searchThemes.forEach(searchTheme => {
-          const searchWords = searchTheme.toLowerCase().split(' ');
-          
-          if (searchWords.length > 1) {
-            // Get all shows where all the search words appear in any theme
-            const wordMatches = shows.filter(show => 
-              !exactMatches.has(show.id) && // Don't include shows we already matched
-              show.themes && 
-              Array.isArray(show.themes) && 
-              show.themes.some(showTheme => {
+            );
+            
+            if (hasExactTheme) {
+              return true;
+            }
+            
+            // For compound themes like "Arabic Language Learning"
+            // Check if the show has a theme containing all these words
+            const searchWords = searchTheme.toLowerCase().split(' ');
+            if (searchWords.length > 1) {
+              const hasCompoundTheme = show.themes.some(showTheme => {
                 if (!showTheme) return false;
                 const showThemeLower = showTheme.toLowerCase();
                 return searchWords.every(word => showThemeLower.includes(word));
-              })
+              });
+              
+              if (hasCompoundTheme) {
+                return true;
+              }
+            }
+            
+            // For single-word themes, check for partial matches as a last resort
+            return show.themes.some(showTheme => 
+              showTheme && showTheme.toLowerCase().includes(searchTheme.toLowerCase())
             );
-            
-            console.log(`Found ${wordMatches.length} shows that match all words in theme: "${searchTheme}"`);
-            
-            // Add these shows to our results
-            wordMatches.forEach(show => exactMatches.add(show.id));
-          }
+          });
         });
         
-        // Get all the shows we've identified
-        filteredShows = shows.filter(show => exactMatches.has(show.id));
-        
         console.log(`Found ${filteredShows.length} total shows matching ANY of the themes in OR mode`);
-        
-        // If we still have no matches, try looser partial matching
-        if (filteredShows.length === 0 && searchThemes.length > 0) {
-          console.log('No exact matches found, trying partial word matching');
-          
-          // Look for any show that has a theme containing any word from our search themes
-          const allSearchWords = new Set(
-            searchThemes.flatMap(theme => 
-              theme.toLowerCase().split(' ').filter(word => word.length > 3)
-            )
-          );
-          
-          console.log(`Searching for words: ${JSON.stringify(Array.from(allSearchWords))}`);
-          
-          filteredShows = shows.filter(show => 
-            show.themes && 
-            Array.isArray(show.themes) && 
-            show.themes.some(showTheme => {
-              if (!showTheme) return false;
-              const showThemeLower = showTheme.toLowerCase();
-              return Array.from(allSearchWords).some(word => showThemeLower.includes(word));
-            })
-          );
-          
-          console.log(`Found ${filteredShows.length} shows with partial word matches`);
-        }
       }
       
       console.log(`Found ${filteredShows.length} shows after theme filtering (${themeMatchMode} mode)`);
