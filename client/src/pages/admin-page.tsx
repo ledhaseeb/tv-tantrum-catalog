@@ -1979,7 +1979,7 @@ export default function AdminPage() {
                                 channelId: lookupResults.youtube.channelId || newShowFormState.channelId,
                                 availableOn: updatedAvailableOn
                               });
-                              setShowLookupOptions(false);
+                              // Keep the lookup options panel open
                               toast({
                                 title: "YouTube Data Added",
                                 description: "Official YouTube channel data has been applied to the form"
