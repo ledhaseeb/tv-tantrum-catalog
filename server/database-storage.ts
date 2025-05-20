@@ -635,14 +635,20 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (filters.interactionLevel) {
+      // Map frontend 'interactionLevel' to database 'interactivityLevel' field
+      console.log("Filtering by interaction level:", filters.interactionLevel);
       conditions.push(eq(tvShows.interactivityLevel, filters.interactionLevel));
     }
     
     if (filters.dialogueIntensity) {
+      // Log for debugging purposes
+      console.log("Filtering by dialogue intensity:", filters.dialogueIntensity);
       conditions.push(eq(tvShows.dialogueIntensity, filters.dialogueIntensity));
     }
     
     if (filters.soundFrequency) {
+      // Map frontend 'soundFrequency' to database 'soundEffectsLevel' field
+      console.log("Filtering by sound frequency level:", filters.soundFrequency);
       conditions.push(eq(tvShows.soundEffectsLevel, filters.soundFrequency));
     }
     
