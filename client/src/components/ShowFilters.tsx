@@ -214,6 +214,79 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     }
   };
   
+  // Find tertiary themes that co-exist with both primary and secondary themes (AND mode)
+  const findRelevantTertiaryThemes = (primaryTheme: string, secondaryTheme: string) => {
+    if (!shows || !primaryTheme || !secondaryTheme) {
+      setRelevantTertiaryThemes([]);
+      return;
+    }
+
+    try {
+      console.log(`Finding relevant tertiary themes for primary theme ${primaryTheme} and secondary theme ${secondaryTheme}`);
+
+      // Normalize themes for case-insensitive matching
+      const normalizedPrimaryTheme = primaryTheme.trim().toLowerCase();
+      const normalizedSecondaryTheme = secondaryTheme.trim().toLowerCase();
+
+      // Find shows that have BOTH the primary and secondary themes
+      const showsWithBothThemes = shows.filter(show => {
+        if (!show || !show.themes || !Array.isArray(show.themes)) return false;
+        
+        // Normalize the show's themes
+        const normalizedShowThemes = show.themes
+          .filter(theme => theme && typeof theme === 'string')
+          .map(theme => theme.trim().toLowerCase());
+        
+        // Show must have BOTH themes to qualify
+        return normalizedShowThemes.includes(normalizedPrimaryTheme) && 
+               normalizedShowThemes.includes(normalizedSecondaryTheme);
+      });
+      
+      console.log(`Found ${showsWithBothThemes.length} shows with both themes: ${primaryTheme} and ${secondaryTheme}`);
+      
+      if (showsWithBothThemes.length === 0) {
+        setRelevantTertiaryThemes([]);
+        return;
+      }
+
+      // Count occurrences of each tertiary theme across all shows with both themes
+      const themeCounts: Record<string, number> = {};
+      
+      // Process each show that has both themes
+      showsWithBothThemes.forEach(show => {
+        if (!show || !show.themes || !Array.isArray(show.themes)) return;
+        
+        show.themes.forEach(theme => {
+          if (!theme || typeof theme !== 'string' || theme.trim() === "") return;
+          
+          // Skip primary and secondary themes - we only want other co-existing themes
+          const normalizedTheme = theme.trim().toLowerCase();
+          if (
+            normalizedTheme === normalizedPrimaryTheme || 
+            normalizedTheme === normalizedSecondaryTheme
+          ) {
+            return;
+          }
+          
+          const themeKey = theme.trim();
+          themeCounts[themeKey] = (themeCounts[themeKey] || 0) + 1;
+        });
+      });
+
+      // Sort tertiary themes by frequency and filter out primary/secondary themes
+      const relevantThemes = Object.entries(themeCounts)
+        .map(([theme, count]) => ({ theme, count }))
+        .sort((a, b) => b.count - a.count)
+        .map(item => item.theme);
+      
+      console.log(`Found ${relevantThemes.length} relevant tertiary themes that co-exist with ${primaryTheme} and ${secondaryTheme}`);
+      setRelevantTertiaryThemes(relevantThemes);
+    } catch (error) {
+      console.error("Error finding tertiary themes:", error);
+      setRelevantTertiaryThemes([]);
+    }
+  };
+  
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
     const updatedFilters = { ...filters, [key]: value };
     setFilters(updatedFilters);
