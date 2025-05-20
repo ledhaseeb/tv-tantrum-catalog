@@ -1373,7 +1373,7 @@ export default function AdminPage() {
                                 isOngoing: !endYear,
                                 imageUrl: lookupResults.omdb.poster || formState.imageUrl
                               });
-                              setShowLookupOptions(false);
+                              // Keep the lookup options panel open
                               toast({
                                 title: "OMDb Data Added",
                                 description: "Official TV show data has been applied to the form",
@@ -1437,7 +1437,7 @@ export default function AdminPage() {
                                 channelId: lookupResults.youtube.channelId || formState.channelId,
                                 availableOn: updatedAvailableOn
                               });
-                              setShowLookupOptions(false);
+                              // Keep the lookup options panel open
                               toast({
                                 title: "YouTube Data Added",
                                 description: "Official YouTube channel data has been applied to the form",
@@ -1916,7 +1916,7 @@ export default function AdminPage() {
                                 isOngoing: !endYear,
                                 imageUrl: lookupResults.omdb.poster || newShowFormState.imageUrl
                               });
-                              setShowLookupOptions(false);
+                              // Keep the lookup options panel open
                               toast({
                                 title: "OMDb Data Added",
                                 description: "Official TV show data has been applied to the form"
