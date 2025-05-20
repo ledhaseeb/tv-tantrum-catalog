@@ -557,57 +557,51 @@ export class DatabaseStorage implements IStorage {
     if (filters.ageRange) {
       const { min, max } = filters.ageRange;
       
+      // Log the age range filter for debugging
+      console.log(`Filtering by age range: min=${min}, max=${max}`);
+
       // Extract the min and max from the show's ageRange string
       // Patterns we handle: "0-2", "3-5", "6-8", "9-12", "13+", "Any Age"
       conditions.push(
         or(
-          // Special case for "Any Age"
+          // Special case for "Any Age" - always include these
           eq(tvShows.ageRange, "Any Age"),
           
-          // Match exact ranges
+          // Special case for other non-standard formats
           and(
-            or(
-              // Handle standard age ranges like "3-5"
-              and(
-                not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
-                sql`
-                  CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) >= ${min} AND
-                  CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) <= ${max}
-                `
-              ),
-              
-              // Handle ranges with + like "13+"
-              and(
-                like(tvShows.ageRange, "%+%"),
-                sql`CAST(SUBSTRING(${tvShows.ageRange} FROM 1 FOR POSITION('+' IN ${tvShows.ageRange})-1) AS INTEGER) BETWEEN ${min} AND ${max}`
-              )
-            )
+            not(like(tvShows.ageRange, "%-%")), // Not a standard range with hyphen
+            not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+            not(eq(tvShows.ageRange, "Any Age")), // Not "Any Age"
+            // Include these non-standard formats only for ages 3+ to avoid excessive filtering
+            sql`${min} >= 3`
           ),
           
-          // Include shows where the lower end of the range overlaps with our filter range
+          // Handle standard age ranges like "3-5" - we only process if it has a hyphen
           and(
+            like(tvShows.ageRange, "%-%"), // Contains a hyphen for ranges
+            not(like(tvShows.ageRange, "%years%")), // Exclude ranges with "years" text
             not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+            // Safe conversion with regex check
             sql`
-              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) >= ${min} AND
-              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) <= ${max}
+              REGEXP_REPLACE(SPLIT_PART(${tvShows.ageRange}, '-', 1), '[^0-9]', '', 'g')::INTEGER >= ${min} AND
+              REGEXP_REPLACE(SPLIT_PART(${tvShows.ageRange}, '-', 2), '[^0-9]', '', 'g')::INTEGER <= ${max}
             `
           ),
           
-          // Include shows where the upper end of the range overlaps with our filter range
+          // Handle ranges with + like "13+"
           and(
-            not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
-            sql`
-              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) >= ${min} AND
-              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) <= ${max}
-            `
+            like(tvShows.ageRange, "%+%"),
+            // Safe conversion with regex to extract just the number
+            sql`REGEXP_REPLACE(${tvShows.ageRange}, '[^0-9]', '', 'g')::INTEGER BETWEEN ${min} AND ${max}`
           ),
           
-          // Include shows that completely span our filter range
+          // Include shows where the age range contains our filter range
+          // For example, "2-8 years" would match filter range 3-6
           and(
-            not(like(tvShows.ageRange, "%+%")), // Not a range ending with +
+            like(tvShows.ageRange, "%-%"), // Contains a hyphen for ranges
             sql`
-              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 1) AS INTEGER) <= ${min} AND
-              CAST(SPLIT_PART(${tvShows.ageRange}, '-', 2) AS INTEGER) >= ${max}
+              REGEXP_REPLACE(SPLIT_PART(${tvShows.ageRange}, '-', 1), '[^0-9]', '', 'g')::INTEGER <= ${min} AND
+              REGEXP_REPLACE(SPLIT_PART(${tvShows.ageRange}, '-', 2), '[^0-9]', '', 'g')::INTEGER >= ${max}
             `
           )
         )
