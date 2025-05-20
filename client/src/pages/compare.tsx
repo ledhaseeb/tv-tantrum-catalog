@@ -385,7 +385,7 @@ export default function Compare() {
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Stimulation Score</td>
+                        <td className="py-2 px-2 text-center font-medium">Stimulation Score</td>
                         {selectedShows.map(show => (
                           <td key={`score-${show.id}`} className="py-2 px-2">
                             <div className="flex flex-col items-center">
@@ -415,7 +415,7 @@ export default function Compare() {
                   <table className="w-full min-w-[640px] table-fixed border-collapse">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="w-1/4 py-2 px-2 text-left font-medium">Sensory Feature</th>
+                        <th className="w-1/4 py-2 px-2 text-center font-medium">Sensory Feature</th>
                         {selectedShows.map(show => (
                           <th key={`sensory-header-${show.id}`} className="w-1/4 py-2 px-2 text-center font-medium">{show.name}</th>
                         ))}
@@ -429,7 +429,7 @@ export default function Compare() {
                     <tbody>
                       {/* Interactivity Level */}
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Interaction Level</td>
+                        <td className="py-2 px-2 text-center font-medium">Interaction Level</td>
                         {selectedShows.map(show => (
                           <td key={`interact-${show.id}`} className="py-2 px-2">
                             <div className="mb-1 text-center text-sm font-medium">{show.interactivityLevel || 'Moderate'}</div>
@@ -445,7 +445,7 @@ export default function Compare() {
                       
                       {/* Dialogue Intensity */}
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Dialogue Intensity</td>
+                        <td className="py-2 px-2 text-center font-medium">Dialogue Intensity</td>
                         {selectedShows.map(show => (
                           <td key={`dialogue-${show.id}`} className="py-2 px-2">
                             <div className="mb-1 text-center text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</div>
@@ -461,7 +461,7 @@ export default function Compare() {
                       
                       {/* Sound Effects Level */}
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Sound Effects Level</td>
+                        <td className="py-2 px-2 text-center font-medium">Sound Effects Level</td>
                         {selectedShows.map(show => (
                           <td key={`sound-${show.id}`} className="py-2 px-2">
                             <div className="mb-1 text-center text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</div>
@@ -477,7 +477,7 @@ export default function Compare() {
                       
                       {/* Scene Frequency */}
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Scene Frequency</td>
+                        <td className="py-2 px-2 text-center font-medium">Scene Frequency</td>
                         {selectedShows.map(show => (
                           <td key={`scene-${show.id}`} className="py-2 px-2">
                             <div className="mb-1 text-center text-sm font-medium">{show.sceneFrequency || 'Moderate'}</div>
@@ -493,7 +493,7 @@ export default function Compare() {
                       
                       {/* Music Tempo */}
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Music Tempo</td>
+                        <td className="py-2 px-2 text-center font-medium">Music Tempo</td>
                         {selectedShows.map(show => (
                           <td key={`tempo-${show.id}`} className="py-2 px-2">
                             <div className="mb-1 text-center text-sm font-medium">{show.musicTempo || 'Moderate'}</div>
@@ -509,7 +509,7 @@ export default function Compare() {
                       
                       {/* Total Music Level */}
                       <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 font-medium">Total Music Level</td>
+                        <td className="py-2 px-2 text-center font-medium">Total Music Level</td>
                         {selectedShows.map(show => (
                           <td key={`music-${show.id}`} className="py-2 px-2">
                             <div className="mb-1 text-center text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</div>
