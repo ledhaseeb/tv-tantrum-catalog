@@ -79,12 +79,22 @@ export default function Home() {
     (show.stimulationScore <= 2)
   ).slice(0, 24);
   const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24); // Use our tracked popular shows data
-  const highInteractionShows = allShows?.filter(
-    show => show.interactivityLevel === 'High' || 
-           show.interactivityLevel === 'Moderate-High' || 
-           show.interactivityLevel === 'Moderate to High' ||
-           (show.interactivityLevel && show.interactivityLevel.includes('High'))
-  ).slice(0, 24);
+  // Debug high interaction shows
+  const highInteractionShowsDebug = allShows?.filter(show => {
+    const isHigh = show.interactivityLevel === 'High' || 
+                  show.interactivityLevel === 'Moderate-High' || 
+                  show.interactivityLevel === 'Moderate to High' ||
+                  (show.interactivityLevel && show.interactivityLevel.includes('High'));
+    
+    if (isHigh) {
+      console.log(`High interaction show found: ${show.name} with level: ${show.interactivityLevel}`);
+    }
+    return isHigh;
+  });
+  
+  console.log(`Number of high interaction shows found: ${highInteractionShowsDebug?.length || 0}`);
+  
+  const highInteractionShows = highInteractionShowsDebug?.slice(0, 24);
   
   // Find shows by popular themes - ensure at least 24 shows per category
   const educationalShows = allShows?.filter(show => 
