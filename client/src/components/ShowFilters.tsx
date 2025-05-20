@@ -62,58 +62,31 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   // Computed state for relevant secondary themes based on the primary theme
   const [relevantSecondaryThemes, setRelevantSecondaryThemes] = useState<string[]>([]);
   
-  // Common themes from the database
-  const commonThemes = [
-    "Adventure",
-    "African Kids tales",
-    "Animals",
-    "American Sign Language",
-    "Animal Behavior",
-    "Cause and Effect",
-    "Conflict Resolution",
-    "Creativity & Imagination",
-    "Critical Thinking",
-    "Cultural & Social",
-    "Curiosity",
-    "Dance",
-    "Discovery",
-    "Early Childhood experiences",
-    "Educational",
-    "Emotional Intelligence",
-    "Engineering Concepts",
-    "Entertainment",
-    "Environmental Awareness",
-    "Exercise",
-    "Exploration",
-    "Family Relationships",
-    "Family Values",
-    "Fantasy Elements",
-    "Farm Life",
-    "Friendship",
-    "Global Thinking",
-    "Healthy Eating",
-    "Humor",
-    "Language Learning",
-    "Life Lessons",
-    "Literacy",
-    "Mechanics",
-    "Motor Skills",
-    "Music",
-    "Nature",
-    "Numeracy",
-    "Outdoor Exploration",
-    "Perseverance",
-    "Positive Role Models",
-    "Preschool-Basics",
-    "Problem Solving",
-    "Relatable Situations",
-    "Repetitive Learning",
-    "Safety",
-    "Science",
-    "Social-Emotional",
-    "STEM",
-    "Teamwork"
-  ];
+  // Common themes extracted dynamically from the database
+  const [commonThemes, setCommonThemes] = useState<string[]>([]);
+  
+  // Extract all themes from the database when shows data is loaded
+  useEffect(() => {
+    if (!shows || !Array.isArray(shows)) return;
+    
+    const allThemes = new Set<string>();
+    
+    shows.forEach(show => {
+      if (show.themes && Array.isArray(show.themes)) {
+        show.themes.forEach(theme => {
+          if (theme && theme.trim() !== '') {
+            allThemes.add(theme.trim());
+          }
+        });
+      }
+    });
+    
+    // Convert to array and sort alphabetically
+    const sortedThemes = Array.from(allThemes).sort();
+    console.log(`Found ${sortedThemes.length} unique themes in the database`);
+    
+    setCommonThemes(sortedThemes);
+  }, [shows]);
   
   // Update local state when props change
   useEffect(() => {
