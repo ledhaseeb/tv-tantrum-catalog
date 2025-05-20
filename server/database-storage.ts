@@ -741,30 +741,48 @@ export class DatabaseStorage implements IStorage {
           return false;
         }
         
+        // Normalize the search theme for consistent matching
+        const normalizedSearchTheme = searchTheme.toLowerCase().trim();
+        
         // 1. Check for exact theme match (case insensitive)
         const hasExactTheme = show.themes.some(showTheme => 
-          showTheme && showTheme.toLowerCase() === searchTheme.toLowerCase()
+          showTheme && showTheme.toLowerCase().trim() === normalizedSearchTheme
         );
-        if (hasExactTheme) return true;
         
-        // 2. For compound themes like "Arabic Language Learning"
-        // Check if any show theme contains all the words
-        const searchWords = searchTheme.toLowerCase().split(' ');
-        if (searchWords.length > 1) {
-          const hasCompoundMatch = show.themes.some(showTheme => {
-            if (!showTheme) return false;
-            const showThemeLower = showTheme.toLowerCase();
-            // Every word in the search theme must be in the show theme
-            return searchWords.every(word => showThemeLower.includes(word));
-          });
-          if (hasCompoundMatch) return true;
+        // For OR mode or exact matches, prioritize exact matches only
+        if (hasExactTheme) {
+          console.log(`Found exact theme match for "${searchTheme}" in show: ${show.name}`);
+          return true;
         }
         
-        // 3. For single-word themes, check for partial matches
-        const hasPartialMatch = show.themes.some(showTheme => 
-          showTheme && showTheme.toLowerCase().includes(searchTheme.toLowerCase())
-        );
-        return hasPartialMatch;
+        // 2. For compound themes like "Arabic Language Learning"
+        // Only if we have more than one word in the search theme
+        if (normalizedSearchTheme.includes(' ')) {
+          const searchWords = normalizedSearchTheme.split(' ');
+          
+          // Check if any show theme contains all the words in the search theme
+          const hasCompoundMatch = show.themes.some(showTheme => {
+            if (!showTheme) return false;
+            
+            const showThemeLower = showTheme.toLowerCase().trim();
+            
+            // If the show theme is the exact same length as the search theme
+            // and contains all the words, it's likely a match with different word order
+            if (Math.abs(showThemeLower.length - normalizedSearchTheme.length) < 5) {
+              return searchWords.every(word => showThemeLower.includes(word));
+            }
+            
+            return false;
+          });
+          
+          if (hasCompoundMatch) {
+            console.log(`Found compound theme match for "${searchTheme}" in show: ${show.name}`);
+            return true;
+          }
+        }
+        
+        // No more partial/fuzzy matching to avoid unexpected results
+        return false;
       };
       
       // Apply filtering based on theme match mode
