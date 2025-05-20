@@ -794,6 +794,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "TV show not found" });
       }
       
+      // Check if this show has a custom image from the preservator route
+      const customImageUrl = getCustomImageUrl(id);
+      // If the show already has a custom image in our map, don't overwrite it
+      if (customImageUrl && customImageUrl.includes('/custom-images/')) {
+        return res.json({
+          success: true,
+          message: `Kept existing custom image for "${show.name}"`,
+          show: show
+        });
+      }
+      
       console.log(`Looking up OMDB poster for "${show.name}"`);
       const omdbData = await omdbService.getShowData(show.name);
       
