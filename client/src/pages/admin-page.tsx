@@ -167,16 +167,11 @@ export default function AdminPage() {
     
     setIsLoadingUsers(true);
     try {
-      // Use apiRequest from queryClient to ensure proper credentials are sent
-      const response = await fetch('/api/users', { 
-        credentials: 'include',  // Include cookies for authentication
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      // Use apiRequest from lib/queryClient to ensure auth headers are sent correctly
+      const response = await apiRequest('GET', '/api/users');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error(`Failed to fetch users: ${response.statusText}`);
       }
       
       const data = await response.json();
