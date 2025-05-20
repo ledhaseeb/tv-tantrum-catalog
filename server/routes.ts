@@ -794,10 +794,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "TV show not found" });
       }
       
-      // Check if this show has a custom image from the preservator route
+      // Check if this show has a custom image from customImageMap.json 
       const customImageUrl = getCustomImageUrl(id);
-      // If the show already has a custom image in our map, don't overwrite it
-      if (customImageUrl && customImageUrl.includes('/custom-images/')) {
+      
+      // If the show already has a custom image or the current image is in the custom-images folder, don't overwrite it
+      if (customImageUrl || 
+          (show.imageUrl && (
+            show.imageUrl.includes('/custom-images/') || 
+            show.imageUrl.includes('client/public/custom-images/')
+          ))
+      ) {
+        console.log(`Preserving custom image for "${show.name}"`);
         return res.json({
           success: true,
           message: `Kept existing custom image for "${show.name}"`,
@@ -809,10 +816,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const omdbData = await omdbService.getShowData(show.name);
       
       if (omdbData && omdbData.poster && omdbData.poster !== 'N/A') {
-        // Save to our custom image map and update the show
-        updateCustomImageMap(id, omdbData.poster);
+        console.log(`Found OMDB poster for "${show.name}": ${omdbData.poster}`);
         
-        // Update the show with the OMDB poster
+        // Since this is not a custom image, we'll use OMDB's poster but won't add it to customImageMap.json
+        // This way it can be easily replaced by a custom image later
         const updatedShow = await storage.updateTvShow(id, {
           imageUrl: omdbData.poster
         });

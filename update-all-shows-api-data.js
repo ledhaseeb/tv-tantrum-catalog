@@ -4,8 +4,10 @@
  * This script will:
  * 1. Get all shows from the database
  * 2. For each show, lookup data from OMDb API and YouTube API
- * 3. Update the show with any new information found
+ * 3. Update the show with any new information found (EXCEPT custom images)
  * 4. Log the results for review
+ * 
+ * IMPORTANT: This script never overwrites custom images!
  */
 
 import pg from 'pg';
