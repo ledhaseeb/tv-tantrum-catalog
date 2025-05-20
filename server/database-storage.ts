@@ -539,6 +539,7 @@ export class DatabaseStorage implements IStorage {
 
   async getTvShowsByFilter(filters: { 
     ageGroup?: string; 
+    ageRange?: {min: number, max: number};
     tantrumFactor?: string; 
     sortBy?: string; 
     search?: string;
@@ -556,8 +557,9 @@ export class DatabaseStorage implements IStorage {
     const conditions = [];
     
     // Handle age range filtering
-    if (filters.ageRange) {
-      const { min, max } = filters.ageRange;
+    if ('ageRange' in filters && filters.ageRange && 'min' in filters.ageRange && 'max' in filters.ageRange) {
+      const min = filters.ageRange.min;
+      const max = filters.ageRange.max;
       
       // Log the age range filter for debugging
       console.log(`Filtering by age range: min=${min}, max=${max}`);
@@ -709,7 +711,7 @@ export class DatabaseStorage implements IStorage {
     // This needs to happen after the SQL query because
     // PostgreSQL array operations don't easily support checking if an array contains all values from another array
     if (filters.themes && filters.themes.length > 0) {
-      const themeMatchMode = filters.themeMatchMode || 'AND';
+      const themeMatchMode = ('themeMatchMode' in filters) ? (filters.themeMatchMode || 'AND') : 'AND';
       console.log(`Post-query filtering for shows with themes: ${filters.themes.join(', ')} using ${themeMatchMode} mode`);
       
       // Filter shows based on the matching mode
