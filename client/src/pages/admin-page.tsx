@@ -649,6 +649,10 @@ export default function AdminPage() {
   const handleEditShow = (show: TvShow) => {
     // Log the show object to debug what values we're getting from the API
     console.log("Show data for editing:", JSON.stringify(show, null, 2));
+    
+    // Reset the lookup results when opening a new show's edit form
+    setLookupResults({omdb: null, youtube: null});
+    setShowLookupOptions(false);
 
     // Force a fresh fetch of the specific show to ensure we have the latest data
     const fetchCurrentShowData = async () => {
