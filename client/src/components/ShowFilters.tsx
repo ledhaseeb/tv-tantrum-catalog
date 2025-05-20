@@ -297,8 +297,10 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       case 'themes':
         if (Array.isArray(value) && value.length === 1) {
           return `Theme: ${value[0]}`;
-        } else if (Array.isArray(value) && value.length > 1) {
-          return `Themes: ${value[0]} +${value.length - 1}`;
+        } else if (Array.isArray(value) && value.length === 2) {
+          return `Themes: ${value[0]}, ${value[1]}`;
+        } else if (Array.isArray(value) && value.length === 3) {
+          return `Themes: ${value[0]}, ${value[1]}, ${value[2]}`;
         }
         return 'Themes';
       default:
@@ -616,7 +618,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                       setSelectedThemes(newThemes);
                       handleFilterChange('themes', newThemes);
                     } else {
-                      // Remove secondary theme
+                      // Remove secondary theme and tertiary theme if they exist
                       const newThemes = [selectedThemes[0]];
                       setSelectedThemes(newThemes);
                       handleFilterChange('themes', newThemes);
@@ -638,6 +640,51 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                       {themeMatchMode === 'OR' 
                         ? 'Showing all available themes' 
                         : 'Showing themes that co-exist with primary theme'}
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {/* Tertiary theme dropdown (only appears when secondary theme is selected) */}
+            {selectedThemes.length > 1 && (
+              <div className="mt-4">
+                <Label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tertiary Theme (Optional)
+                </Label>
+                <Select
+                  value={selectedThemes.length > 2 ? selectedThemes[2] : "none"}
+                  onValueChange={(value) => {
+                    if (value && value !== "none") {
+                      // Add as third theme
+                      const newThemes = [...selectedThemes.slice(0, 2), value];
+                      setSelectedThemes(newThemes);
+                      handleFilterChange('themes', newThemes);
+                    } else {
+                      // Remove tertiary theme
+                      const newThemes = selectedThemes.slice(0, 2);
+                      setSelectedThemes(newThemes);
+                      handleFilterChange('themes', newThemes);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a tertiary theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Tertiary Theme</SelectItem>
+                    {relevantSecondaryThemes
+                      .filter(theme => theme !== selectedThemes[1])
+                      .map((theme) => (
+                        <SelectItem key={theme} value={theme}>
+                          {theme}
+                        </SelectItem>
+                      ))
+                    }
+                    <div className="px-3 py-2 text-xs text-gray-500 border-t mt-1">
+                      {themeMatchMode === 'OR' 
+                        ? 'Shows will match any of the three selected themes' 
+                        : 'Shows must contain all three selected themes'}
                     </div>
                   </SelectContent>
                 </Select>
