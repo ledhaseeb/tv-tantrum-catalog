@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -117,6 +117,79 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     setRelevantTertiaryThemes([]);
   }, [shows, selectedThemes[0], themeMatchMode, commonThemes]);
   
+  // Define the findRelevantTertiaryThemes function with useCallback
+  const findRelevantTertiaryThemes = useCallback((primaryTheme: string, secondaryTheme: string) => {
+    if (!shows || !primaryTheme || !secondaryTheme) {
+      setRelevantTertiaryThemes([]);
+      return;
+    }
+
+    try {
+      console.log(`Finding relevant tertiary themes for primary theme ${primaryTheme} and secondary theme ${secondaryTheme}`);
+
+      // Normalize themes for case-insensitive matching
+      const normalizedPrimaryTheme = primaryTheme.trim().toLowerCase();
+      const normalizedSecondaryTheme = secondaryTheme.trim().toLowerCase();
+
+      // Find shows that have BOTH the primary and secondary themes
+      const showsWithBothThemes = shows.filter(show => {
+        if (!show || !show.themes || !Array.isArray(show.themes)) return false;
+        
+        // Normalize the show's themes
+        const normalizedShowThemes = show.themes
+          .filter(theme => theme && typeof theme === 'string')
+          .map(theme => theme.trim().toLowerCase());
+        
+        // Show must have BOTH themes to qualify
+        return normalizedShowThemes.includes(normalizedPrimaryTheme) && 
+               normalizedShowThemes.includes(normalizedSecondaryTheme);
+      });
+      
+      console.log(`Found ${showsWithBothThemes.length} shows with both themes: ${primaryTheme} and ${secondaryTheme}`);
+      
+      if (showsWithBothThemes.length === 0) {
+        setRelevantTertiaryThemes([]);
+        return;
+      }
+
+      // Count occurrences of each tertiary theme across all shows with both themes
+      const themeCounts: Record<string, number> = {};
+      
+      // Process each show that has both themes
+      showsWithBothThemes.forEach(show => {
+        if (!show || !show.themes || !Array.isArray(show.themes)) return;
+        
+        show.themes.forEach(theme => {
+          if (!theme || typeof theme !== 'string' || theme.trim() === "") return;
+          
+          // Skip primary and secondary themes - we only want other co-existing themes
+          const normalizedTheme = theme.trim().toLowerCase();
+          if (
+            normalizedTheme === normalizedPrimaryTheme || 
+            normalizedTheme === normalizedSecondaryTheme
+          ) {
+            return;
+          }
+          
+          const themeKey = theme.trim();
+          themeCounts[themeKey] = (themeCounts[themeKey] || 0) + 1;
+        });
+      });
+
+      // Sort tertiary themes by frequency and filter out primary/secondary themes
+      const relevantThemes = Object.entries(themeCounts)
+        .map(([theme, count]) => ({ theme, count }))
+        .sort((a, b) => b.count - a.count)
+        .map(item => item.theme);
+      
+      console.log(`Found ${relevantThemes.length} relevant tertiary themes that co-exist with ${primaryTheme} and ${secondaryTheme}`);
+      setRelevantTertiaryThemes(relevantThemes);
+    } catch (error) {
+      console.error("Error finding tertiary themes:", error);
+      setRelevantTertiaryThemes([]);
+    }
+  }, [shows]);
+
   // Update relevant tertiary themes when secondary theme changes
   useEffect(() => {
     if (shows && selectedThemes.length > 1) {
@@ -131,7 +204,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       // Reset if no secondary theme is selected
       setRelevantTertiaryThemes([]);
     }
-  }, [shows, selectedThemes[0], selectedThemes[1], themeMatchMode, commonThemes]);
+  }, [shows, selectedThemes, themeMatchMode, commonThemes, findRelevantTertiaryThemes]);
   
   // Log for debugging
   useEffect(() => {
@@ -753,14 +826,14 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Tertiary Theme</SelectItem>
-                    {(themeMatchMode === 'OR' 
-                      ? commonThemes.filter(theme => !selectedThemes.includes(theme))
-                      : relevantTertiaryThemes
-                    ).map((theme) => (
-                      <SelectItem key={theme} value={theme}>
-                        {theme}
-                      </SelectItem>
-                    ))}
+                    {commonThemes
+                      .filter(theme => !selectedThemes.includes(theme))
+                      .map((theme) => (
+                        <SelectItem key={theme} value={theme}>
+                          {theme}
+                        </SelectItem>
+                      ))
+                    }
                     <div className="px-3 py-2 text-xs text-gray-500 border-t mt-1">
                       {themeMatchMode === 'OR' 
                         ? 'Shows will match any of the three selected themes' 
