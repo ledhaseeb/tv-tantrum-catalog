@@ -723,111 +723,66 @@ export class DatabaseStorage implements IStorage {
     // Execute query
     let shows = await query;
     
-    // Post-process for theme filtering
-    // This needs to happen after the SQL query because
-    // PostgreSQL array operations don't easily support checking if an array contains all values from another array
+    // Handle theme filtering (post-query for better control)
     if (filters.themes && filters.themes.length > 0) {
       const themeMatchMode = ('themeMatchMode' in filters) ? (filters.themeMatchMode || 'AND') : 'AND';
-      console.log(`Post-query filtering for shows with themes: ${filters.themes.join(', ')} using ${themeMatchMode} mode`);
+      console.log(`Post-query filtering for themes: ${filters.themes.join(', ')} using ${themeMatchMode} mode`);
       
-      // Get the actual theme strings for more precise matching
+      // Clean up search themes
       const searchThemes = filters.themes.map(theme => theme.trim());
+      console.log(`Looking for themes: ${JSON.stringify(searchThemes)}`);
+
+      // Debug how many shows we're starting with
+      console.log(`Starting with ${shows.length} shows before theme filtering`);
       
-      // Log which themes we're looking for
-      console.log(`Looking for exact themes: ${JSON.stringify(searchThemes)}`);
+      // Function to check if a show matches a specific theme
+      const showMatchesTheme = (show: any, searchTheme: string): boolean => {
+        if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
+          return false;
+        }
+        
+        // 1. Check for exact theme match (case insensitive)
+        const hasExactTheme = show.themes.some(showTheme => 
+          showTheme && showTheme.toLowerCase() === searchTheme.toLowerCase()
+        );
+        if (hasExactTheme) return true;
+        
+        // 2. For compound themes like "Arabic Language Learning"
+        // Check if any show theme contains all the words
+        const searchWords = searchTheme.toLowerCase().split(' ');
+        if (searchWords.length > 1) {
+          const hasCompoundMatch = show.themes.some(showTheme => {
+            if (!showTheme) return false;
+            const showThemeLower = showTheme.toLowerCase();
+            // Every word in the search theme must be in the show theme
+            return searchWords.every(word => showThemeLower.includes(word));
+          });
+          if (hasCompoundMatch) return true;
+        }
+        
+        // 3. For single-word themes, check for partial matches
+        const hasPartialMatch = show.themes.some(showTheme => 
+          showTheme && showTheme.toLowerCase().includes(searchTheme.toLowerCase())
+        );
+        return hasPartialMatch;
+      };
       
-      // Separate exact theme filter processing based on mode
-      let filteredShows = [];
-      
+      // Apply filtering based on theme match mode
       if (themeMatchMode === 'AND') {
-        // In AND mode, shows must contain ALL of the selected themes
-        console.log('Using AND mode: Shows must contain ALL selected themes');
-        
-        filteredShows = shows.filter(show => {
-          // Skip shows with no themes
-          if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
-            return false;
-          }
-          
-          // Shows must have all search themes
-          return searchThemes.every(searchTheme => {
-            // Does this show have this exact theme?
-            const hasExactTheme = show.themes.some(showTheme => 
-              showTheme && 
-              showTheme.toLowerCase() === searchTheme.toLowerCase()
-            );
-            
-            if (hasExactTheme) {
-              return true;
-            }
-            
-            // For more complex themes like "Arabic Language Learning"
-            // Check if the show has a theme containing all these words
-            const searchWords = searchTheme.toLowerCase().split(' ');
-            if (searchWords.length > 1) {
-              return show.themes.some(showTheme => {
-                if (!showTheme) return false;
-                const showThemeLower = showTheme.toLowerCase();
-                return searchWords.every(word => showThemeLower.includes(word));
-              });
-            }
-            
-            // For single-word themes, allow partial matches
-            return show.themes.some(showTheme => 
-              showTheme && showTheme.toLowerCase().includes(searchTheme.toLowerCase())
-            );
-          });
-        });
+        // AND mode - show must match ALL selected themes
+        console.log('Using AND mode: Shows must match ALL selected themes');
+        shows = shows.filter(show => 
+          searchThemes.every(theme => showMatchesTheme(show, theme))
+        );
       } else {
-        // In OR mode, shows must contain ANY of the selected themes
-        console.log('Using OR mode: Shows must contain ANY selected theme');
-        
-        // Filter shows that have any of the selected themes
-        filteredShows = shows.filter(show => {
-          // Skip shows with no themes
-          if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
-            return false;
-          }
-          
-          // Check if the show has ANY of the search themes
-          return searchThemes.some(searchTheme => {
-            // Check for exact theme match
-            const hasExactTheme = show.themes.some(showTheme => 
-              showTheme && 
-              showTheme.toLowerCase() === searchTheme.toLowerCase()
-            );
-            
-            if (hasExactTheme) {
-              return true;
-            }
-            
-            // For compound themes like "Arabic Language Learning"
-            // Check if the show has a theme containing all these words
-            const searchWords = searchTheme.toLowerCase().split(' ');
-            if (searchWords.length > 1) {
-              const hasCompoundTheme = show.themes.some(showTheme => {
-                if (!showTheme) return false;
-                const showThemeLower = showTheme.toLowerCase();
-                return searchWords.every(word => showThemeLower.includes(word));
-              });
-              
-              if (hasCompoundTheme) {
-                return true;
-              }
-            }
-            
-            // For single-word themes, check for partial matches as a last resort
-            return show.themes.some(showTheme => 
-              showTheme && showTheme.toLowerCase().includes(searchTheme.toLowerCase())
-            );
-          });
-        });
-        
-        console.log(`Found ${filteredShows.length} total shows matching ANY of the themes in OR mode`);
+        // OR mode - show must match ANY selected theme
+        console.log('Using OR mode: Shows must match ANY selected theme');
+        shows = shows.filter(show => 
+          searchThemes.some(theme => showMatchesTheme(show, theme))
+        );
       }
       
-      console.log(`Found ${filteredShows.length} shows after theme filtering (${themeMatchMode} mode)`);
-      shows = filteredShows;
+      console.log(`Found ${shows.length} shows after theme filtering (${themeMatchMode} mode)`);
     }
     
     return shows;
