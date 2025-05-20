@@ -61,8 +61,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     staleTime: 300000, // 5 minutes
   });
   
-  // Computed state for relevant secondary themes based on the primary theme
+  // Computed states for relevant secondary and tertiary themes
   const [relevantSecondaryThemes, setRelevantSecondaryThemes] = useState<string[]>([]);
+  const [relevantTertiaryThemes, setRelevantTertiaryThemes] = useState<string[]>([]);
   
   // Common themes extracted dynamically from the database
   const [commonThemes, setCommonThemes] = useState<string[]>([]);
@@ -111,7 +112,26 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       // Reset if no primary theme is selected
       setRelevantSecondaryThemes([]);
     }
+    
+    // Always reset tertiary themes when primary theme changes
+    setRelevantTertiaryThemes([]);
   }, [shows, selectedThemes[0], themeMatchMode, commonThemes]);
+  
+  // Update relevant tertiary themes when secondary theme changes
+  useEffect(() => {
+    if (shows && selectedThemes.length > 1) {
+      // For OR mode, display all available themes except the already selected ones
+      // For AND mode, display only themes that co-exist with both primary and secondary themes
+      if (themeMatchMode === 'OR') {
+        setRelevantTertiaryThemes(commonThemes.filter(theme => !selectedThemes.includes(theme)));
+      } else {
+        findRelevantTertiaryThemes(selectedThemes[0], selectedThemes[1]);
+      }
+    } else {
+      // Reset if no secondary theme is selected
+      setRelevantTertiaryThemes([]);
+    }
+  }, [shows, selectedThemes[0], selectedThemes[1], themeMatchMode, commonThemes]);
   
   // Log for debugging
   useEffect(() => {
@@ -134,11 +154,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       // Create a safe copy to avoid runtime errors
       let showsWithPrimaryTheme: TvShow[] = [];
 
-      // Ensure we're getting exact matches or close matches for themes
+      // Using only exact matches for themes to ensure accurate filtering
       const exactMatches = shows.filter(show => {
         if (!show || !show.themes || !Array.isArray(show.themes)) return false;
         
-        // Case-insensitive matching for themes
+        // Case-insensitive exact matching for themes
         return show.themes.some(theme => 
           theme && 
           typeof theme === 'string' &&
@@ -149,24 +169,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       showsWithPrimaryTheme = [...exactMatches];
       console.log(`Found ${showsWithPrimaryTheme.length} shows with exact match for theme: ${primaryTheme}`);
       
-      // If no exact matches, try partial matches (contains)
+      // No longer using partial matches - strict exact matching only for better predictability
       if (showsWithPrimaryTheme.length === 0) {
-        const partialMatches = shows.filter(show => {
-          if (!show || !show.themes || !Array.isArray(show.themes)) return false;
-          
-          return show.themes.some(theme => 
-            theme && 
-            typeof theme === 'string' &&
-            theme.trim().toLowerCase().includes(normalizedPrimaryTheme)
-          );
-        });
-        
-        console.log(`Found ${partialMatches.length} shows with partial match for theme: ${primaryTheme}`);
-        
-        // Add partial matches if found
-        if (partialMatches.length > 0) {
-          showsWithPrimaryTheme = [...partialMatches];
-        }
+        console.log(`No exact matches found for theme: ${primaryTheme}`);
+        setRelevantSecondaryThemes([]);
+        return;
       }
 
       // Count occurrences of each secondary theme
@@ -673,14 +680,14 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Tertiary Theme</SelectItem>
-                    {relevantSecondaryThemes
-                      .filter(theme => theme !== selectedThemes[1])
-                      .map((theme) => (
-                        <SelectItem key={theme} value={theme}>
-                          {theme}
-                        </SelectItem>
-                      ))
-                    }
+                    {(themeMatchMode === 'OR' 
+                      ? commonThemes.filter(theme => !selectedThemes.includes(theme))
+                      : relevantTertiaryThemes
+                    ).map((theme) => (
+                      <SelectItem key={theme} value={theme}>
+                        {theme}
+                      </SelectItem>
+                    ))}
                     <div className="px-3 py-2 text-xs text-gray-500 border-t mt-1">
                       {themeMatchMode === 'OR' 
                         ? 'Shows will match any of the three selected themes' 
