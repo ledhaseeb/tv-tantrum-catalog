@@ -707,18 +707,21 @@ export class DatabaseStorage implements IStorage {
     // This needs to happen after the SQL query because
     // PostgreSQL array operations don't easily support checking if an array contains all values from another array
     if (filters.themes && filters.themes.length > 0) {
-      // Filter for shows that have ALL the requested themes
-      console.log(`Post-query filtering for shows with themes: ${filters.themes.join(', ')}`);
+      const themeMatchMode = filters.themeMatchMode || 'AND';
+      console.log(`Post-query filtering for shows with themes: ${filters.themes.join(', ')} using ${themeMatchMode} mode`);
       
-      // First, try exact matching
+      // Filter shows based on the matching mode
       let filteredShows = shows.filter(show => {
         // Make sure show has themes array
         if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
           return false;
         }
         
-        // Using 'every' means ALL filter themes must be present
-        return filters.themes!.every(filterTheme => {
+        // For AND mode, use every() - ALL filter themes must be present
+        // For OR mode, use some() - ANY filter theme must be present
+        const matchingFunction = themeMatchMode === 'AND' ? 'every' : 'some';
+        
+        return filters.themes![matchingFunction as 'every' | 'some'](filterTheme => {
           if (!filterTheme || filterTheme.trim() === '') return true; // Skip empty themes
           
           // Normalize the filter theme
@@ -743,11 +746,11 @@ export class DatabaseStorage implements IStorage {
         });
       });
       
-      console.log(`Found ${filteredShows.length} shows after theme filtering`);
+      console.log(`Found ${filteredShows.length} shows after theme filtering (${themeMatchMode} mode)`);
       
       // If no shows found with exact matches, try fuzzy matching (find shows that have at least one similar theme)
-      if (filteredShows.length === 0 && filters.themes.length > 0) {
-        console.log("No exact theme matches found, trying partial matching");
+      if (filteredShows.length === 0 && filters.themes.length > 0 && themeMatchMode === 'AND') {
+        console.log("No exact theme matches found, trying with OR mode as fallback");
         
         // Try to find shows that match at least one theme
         filteredShows = shows.filter(show => {

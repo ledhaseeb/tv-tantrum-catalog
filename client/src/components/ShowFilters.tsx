@@ -37,6 +37,7 @@ interface FiltersType {
   sortBy?: string;
   search?: string;
   themes?: string[];
+  themeMatchMode?: 'AND' | 'OR';
   interactionLevel?: string;
   stimulationScoreRange?: {min: number, max: number};
 }
@@ -541,6 +542,58 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 ))}
               </SelectContent>
             </Select>
+            
+            {/* Theme matching mode toggle - only appears when a primary theme is selected */}
+            {selectedThemes.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm text-gray-600">Theme match mode:</Label>
+                  <div className="flex space-x-2">
+                    <Button 
+                      size="sm" 
+                      variant={themeMatchMode === 'AND' ? "default" : "outline"}
+                      onClick={() => {
+                        setThemeMatchMode('AND');
+                        // Re-apply current filters with new matching mode
+                        if (selectedThemes.length > 0) {
+                          const updatedFilters = {
+                            ...filters,
+                            themes: selectedThemes,
+                            themeMatchMode: 'AND'
+                          };
+                          onFilterChange(updatedFilters);
+                        }
+                      }}
+                    >
+                      AND
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={themeMatchMode === 'OR' ? "default" : "outline"}
+                      onClick={() => {
+                        setThemeMatchMode('OR');
+                        // Re-apply current filters with new matching mode
+                        if (selectedThemes.length > 0) {
+                          const updatedFilters = {
+                            ...filters,
+                            themes: selectedThemes,
+                            themeMatchMode: 'OR'
+                          };
+                          onFilterChange(updatedFilters);
+                        }
+                      }}
+                    >
+                      OR
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {themeMatchMode === 'AND' 
+                    ? 'Shows must contain ALL selected themes' 
+                    : 'Shows can contain ANY of the selected themes'}
+                </p>
+              </div>
+            )}
             
             {/* Secondary theme dropdown (only appears when primary theme is selected) */}
             {selectedThemes.length > 0 && (
