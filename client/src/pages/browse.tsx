@@ -54,18 +54,31 @@ export default function Browse() {
       initialFilters.ageGroup = ageGroup;
     }
     
-    // Get age range from URL
-    const ageRange = searchParams.get('ageRange');
-    if (ageRange) {
-      try {
-        const parsedRange = JSON.parse(decodeURIComponent(ageRange));
-        if (parsedRange && typeof parsedRange === 'object' && 'min' in parsedRange && 'max' in parsedRange) {
-          initialFilters.ageRange = parsedRange;
-          console.log('Parsed age range:', parsedRange);
+    // Get age range from URL - handle both JSON format and individual min/max params
+    try {
+      // First try to read individual min/max parameters
+      const minAge = searchParams.get('ageRange.min') || searchParams.get('ageRangeMin');
+      const maxAge = searchParams.get('ageRange.max') || searchParams.get('ageRangeMax');
+      
+      if (minAge && maxAge) {
+        initialFilters.ageRange = {
+          min: parseInt(minAge, 10),
+          max: parseInt(maxAge, 10)
+        };
+        console.log('Parsed age range from individual params:', initialFilters.ageRange);
+      } else {
+        // Fall back to JSON format
+        const ageRange = searchParams.get('ageRange');
+        if (ageRange) {
+          const parsedRange = JSON.parse(decodeURIComponent(ageRange));
+          if (parsedRange && typeof parsedRange === 'object' && 'min' in parsedRange && 'max' in parsedRange) {
+            initialFilters.ageRange = parsedRange;
+            console.log('Parsed age range from JSON:', parsedRange);
+          }
         }
-      } catch (e) {
-        console.error('Error parsing age range:', e);
       }
+    } catch (e) {
+      console.error('Error parsing age range:', e);
     }
     
     // Get themes from URL
@@ -178,9 +191,10 @@ export default function Browse() {
     const searchParams = new URLSearchParams();
     if (filters.search) searchParams.set('search', filters.search);
     
-    // Handle age filters
+    // Handle age filters - use individual parameters for better compatibility
     if (filters.ageRange) {
-      searchParams.set('ageRange', encodeURIComponent(JSON.stringify(filters.ageRange)));
+      searchParams.set('ageRangeMin', filters.ageRange.min.toString());
+      searchParams.set('ageRangeMax', filters.ageRange.max.toString());
     } else if (filters.ageGroup) {
       // Legacy support for ageGroup parameter
       searchParams.set('ageGroup', filters.ageGroup);
