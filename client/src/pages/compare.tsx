@@ -199,8 +199,8 @@ export default function Compare() {
         </div>
       ) : (
         <div>
-          {/* Show selector area */}
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Show selector area in portrait format */}
+          <div className="mb-6 grid grid-cols-3 gap-4">
             {[0, 1, 2].map((index) => {
               const show = selectedShows && selectedShows[index];
               return (
@@ -214,11 +214,11 @@ export default function Compare() {
                             <img
                               src={show.imageUrl}
                               alt={show.name}
-                              className="w-24 h-24 object-cover rounded-lg"
+                              className="w-20 h-20 object-cover rounded-lg"
                             />
                           ) : (
-                            <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                              <i className="fas fa-tv text-gray-400 text-2xl"></i>
+                            <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                              <i className="fas fa-tv text-gray-400 text-xl"></i>
                             </div>
                           )}
                           <button
@@ -228,7 +228,7 @@ export default function Compare() {
                             <i className="fas fa-times text-xs"></i>
                           </button>
                         </div>
-                        <p className="font-medium text-center">{show.name}</p>
+                        <p className="font-medium text-center text-sm">{show.name}</p>
                       </>
                     ) : (
                       <div className="w-full">
@@ -236,7 +236,7 @@ export default function Compare() {
                           value={showToAdd}
                           onValueChange={(value) => handleAddShow(value)}
                         >
-                          <SelectTrigger className="bg-white">
+                          <SelectTrigger className="bg-white text-sm">
                             <SelectValue placeholder="Select a show" />
                           </SelectTrigger>
                           <SelectContent>
