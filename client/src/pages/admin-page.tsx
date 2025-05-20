@@ -530,6 +530,10 @@ export default function AdminPage() {
       // Note: we now use stimulationScore for overallRating in the backend
     });
     
+    // Reset lookup results when opening a new form
+    setLookupResults({omdb: null, youtube: null});
+    setShowLookupOptions(false);
+    
     // Open the add show dialog
     setIsAddDialogOpen(true);
   };
