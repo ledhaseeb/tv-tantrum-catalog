@@ -265,265 +265,147 @@ export default function Compare() {
             <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
               <h3 className="text-xl font-bold mb-6">Compare Shows</h3>
               
-              {/* Comparison table with side-by-side layout for both mobile and desktop */}
-              <div className="mb-8 overflow-x-auto">
-                <table className="w-full min-w-[640px] table-fixed border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="w-1/4 py-2 px-2 text-center font-medium">Show Details</th>
-                      {selectedShows.map(show => (
-                        <th key={`header-${show.id}`} className="w-1/4 py-2 px-2 text-center font-medium">{show.name}</th>
-                      ))}
-                      {selectedShows.length < 3 && 
-                        Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                          <th key={`empty-header-${i}`} className="w-1/4 py-2 px-2 text-center font-medium text-gray-400">-</th>
-                        ))
-                      }
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Show Images */}
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 text-center font-medium">Image</td>
-                      {selectedShows.map(show => (
-                        <td key={`img-${show.id}`} className="py-2 px-2 text-center">
-                          {show.imageUrl ? (
-                            <div className="flex justify-center">
-                              <img 
-                                src={show.imageUrl} 
-                                alt={show.name} 
-                                className="w-16 h-16 object-cover rounded-md"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex justify-center">
-                              <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
-                                <i className="fas fa-tv text-gray-400"></i>
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      ))}
-                      {selectedShows.length < 3 && 
-                        Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                          <td key={`empty-img-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                        ))
-                      }
-                    </tr>
+              {/* Comparison table with mobile-friendly layout */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {selectedShows.map(show => (
+                  <div key={show.id} className="flex flex-col">
+                    <div className="font-medium text-center text-lg mb-4">{show.name}</div>
                     
                     {/* Target Age */}
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 text-center font-medium">Target Age</td>
-                      {selectedShows.map(show => (
-                        <td key={`age-${show.id}`} className="py-2 px-2 text-center">
-                          {show.ageRange}
-                        </td>
-                      ))}
-                      {selectedShows.length < 3 && 
-                        Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                          <td key={`empty-age-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                        ))
-                      }
-                    </tr>
+                    <div className="mb-4">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Target Age</div>
+                      <div className="text-center py-2">{show.ageRange}</div>
+                    </div>
                     
                     {/* Animation Style */}
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 text-center font-medium">Animation Style</td>
-                      {selectedShows.map(show => (
-                        <td key={`style-${show.id}`} className="py-2 px-2 text-center">
-                          {show.animationStyle || 'Traditional Animation'}
-                        </td>
-                      ))}
-                      {selectedShows.length < 3 && 
-                        Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                          <td key={`empty-style-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                        ))
-                      }
-                    </tr>
+                    <div className="mb-4">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Animation Style</div>
+                      <div className="text-center py-2">
+                        {show.animationStyle || 'Traditional Animation'}
+                      </div>
+                    </div>
                     
                     {/* Themes */}
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 text-center font-medium">Themes</td>
-                      {selectedShows.map(show => (
-                        <td key={`themes-${show.id}`} className="py-2 px-2 text-center">
-                          <div className="flex flex-wrap justify-center gap-1">
-                            {show.themes && show.themes.map((theme, index) => (
-                              <Badge key={index} className="bg-blue-100 text-blue-800 text-xs font-medium">
-                                {theme}
-                              </Badge>
-                            ))}
-                          </div>
-                        </td>
-                      ))}
-                      {selectedShows.length < 3 && 
-                        Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                          <td key={`empty-themes-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                        ))
-                      }
-                    </tr>
-                  </tbody>
-                </table>
+                    <div className="mb-4">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Themes</div>
+                      <div className="flex flex-wrap justify-center gap-1 py-2">
+                        {show.themes && show.themes.map((theme, index) => (
+                          <Badge key={index} className="bg-blue-100 text-blue-800 text-xs font-medium">
+                            {theme}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {selectedShows.length < 3 && (
+                  Array(3 - selectedShows.length).fill(0).map((_, i) => (
+                    <div key={`empty-${i}`} className="flex flex-col">
+                      <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>
+                    </div>
+                  ))
+                )}
               </div>
               
               {/* Stimulation Score Comparison using dots */}
               <div className="mb-8">
                 <h3 className="text-lg font-bold mb-4">Stimulation Score Comparison</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px] table-fixed border-collapse">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="w-1/4 py-2 px-2 text-center font-medium">Stimulation</th>
-                        {selectedShows.map(show => (
-                          <th key={`stim-header-${show.id}`} className="w-1/4 py-2 px-2 text-center font-medium">{show.name}</th>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <th key={`empty-stim-header-${i}`} className="w-1/4 py-2 px-2 text-center font-medium text-gray-400">-</th>
-                          ))
-                        }
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Stimulation Score</td>
-                        {selectedShows.map(show => (
-                          <td key={`score-${show.id}`} className="py-2 px-2">
-                            <div className="flex flex-col items-center">
-                              {getStimulationScoreDots(show.stimulationScore)}
-                              <div className="text-center text-sm font-medium">
-                                {show.stimulationScore}/5
-                              </div>
-                            </div>
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-score-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
-                    </tbody>
-                  </table>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {selectedShows.map(show => (
+                    <div key={`stim-${show.id}`} className="flex flex-col">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Stimulation Score</div>
+                      <div className="flex flex-col items-center py-2">
+                        {getStimulationScoreDots(show.stimulationScore)}
+                        <div className="text-center text-sm font-medium">
+                          {show.stimulationScore}/5
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {selectedShows.length < 3 && (
+                    Array(3 - selectedShows.length).fill(0).map((_, i) => (
+                      <div key={`empty-stim-${i}`} className="flex flex-col">
+                        <div className="font-medium text-center py-1 border-b border-gray-200 text-gray-400">-</div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
               
-              {/* Sensory Metrics with Bar Charts - Side-by-side table layout */}
+              {/* Sensory Metrics with Bar Charts - Mobile-friendly layout */}
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-4">Sensory Metrics Comparison</h3>
                 
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px] table-fixed border-collapse">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="w-1/4 py-2 px-2 text-center font-medium">Sensory Feature</th>
-                        {selectedShows.map(show => (
-                          <th key={`sensory-header-${show.id}`} className="w-1/4 py-2 px-2 text-center font-medium">{show.name}</th>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <th key={`empty-sensory-header-${i}`} className="w-1/4 py-2 px-2 text-center font-medium text-gray-400">-</th>
-                          ))
-                        }
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {selectedShows.map(show => (
+                    <div key={`sensory-${show.id}`} className="flex flex-col">
+                      <div className="font-medium text-center text-lg mb-4">{show.name}</div>
+                      
                       {/* Interactivity Level */}
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Interaction Level</td>
-                        {selectedShows.map(show => (
-                          <td key={`interact-${show.id}`} className="py-2 px-2">
-                            <div className="mb-1 text-center text-sm font-medium">{show.interactivityLevel || 'Moderate'}</div>
-                            {renderSegmentedBar(show.interactivityLevel)}
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-interact-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
+                      <div className="mb-6">
+                        <div className="font-medium text-center py-1 border-b border-gray-200">Interaction Level</div>
+                        <div className="text-center py-1">
+                          <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
+                        </div>
+                        {renderSegmentedBar(show.interactivityLevel)}
+                      </div>
                       
                       {/* Dialogue Intensity */}
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Dialogue Intensity</td>
-                        {selectedShows.map(show => (
-                          <td key={`dialogue-${show.id}`} className="py-2 px-2">
-                            <div className="mb-1 text-center text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</div>
-                            {renderSegmentedBar(show.dialogueIntensity)}
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-dialogue-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
+                      <div className="mb-6">
+                        <div className="font-medium text-center py-1 border-b border-gray-200">Dialogue Intensity</div>
+                        <div className="text-center py-1">
+                          <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
+                        </div>
+                        {renderSegmentedBar(show.dialogueIntensity)}
+                      </div>
                       
                       {/* Sound Effects Level */}
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Sound Effects Level</td>
-                        {selectedShows.map(show => (
-                          <td key={`sound-${show.id}`} className="py-2 px-2">
-                            <div className="mb-1 text-center text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</div>
-                            {renderSegmentedBar(show.soundEffectsLevel)}
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-sound-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
+                      <div className="mb-6">
+                        <div className="font-medium text-center py-1 border-b border-gray-200">Sound Effects Level</div>
+                        <div className="text-center py-1">
+                          <span className="text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</span>
+                        </div>
+                        {renderSegmentedBar(show.soundEffectsLevel)}
+                      </div>
                       
                       {/* Scene Frequency */}
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Scene Frequency</td>
-                        {selectedShows.map(show => (
-                          <td key={`scene-${show.id}`} className="py-2 px-2">
-                            <div className="mb-1 text-center text-sm font-medium">{show.sceneFrequency || 'Moderate'}</div>
-                            {renderSegmentedBar(show.sceneFrequency)}
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-scene-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
+                      <div className="mb-6">
+                        <div className="font-medium text-center py-1 border-b border-gray-200">Scene Frequency</div>
+                        <div className="text-center py-1">
+                          <span className="text-sm font-medium">{show.sceneFrequency || 'Moderate'}</span>
+                        </div>
+                        {renderSegmentedBar(show.sceneFrequency)}
+                      </div>
                       
                       {/* Music Tempo */}
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Music Tempo</td>
-                        {selectedShows.map(show => (
-                          <td key={`tempo-${show.id}`} className="py-2 px-2">
-                            <div className="mb-1 text-center text-sm font-medium">{show.musicTempo || 'Moderate'}</div>
-                            {renderSegmentedBar(show.musicTempo)}
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-tempo-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
+                      <div className="mb-6">
+                        <div className="font-medium text-center py-1 border-b border-gray-200">Music Tempo</div>
+                        <div className="text-center py-1">
+                          <span className="text-sm font-medium">{show.musicTempo || 'Moderate'}</span>
+                        </div>
+                        {renderSegmentedBar(show.musicTempo)}
+                      </div>
                       
                       {/* Total Music Level */}
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2 px-2 text-center font-medium">Total Music Level</td>
-                        {selectedShows.map(show => (
-                          <td key={`music-${show.id}`} className="py-2 px-2">
-                            <div className="mb-1 text-center text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</div>
-                            {renderSegmentedBar(show.totalMusicLevel)}
-                          </td>
-                        ))}
-                        {selectedShows.length < 3 && 
-                          Array(3 - selectedShows.length).fill(0).map((_, i) => (
-                            <td key={`empty-music-${i}`} className="py-2 px-2 text-center text-gray-400">-</td>
-                          ))
-                        }
-                      </tr>
-                    </tbody>
-                  </table>
+                      <div className="mb-6">
+                        <div className="font-medium text-center py-1 border-b border-gray-200">Total Music Level</div>
+                        <div className="text-center py-1">
+                          <span className="text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</span>
+                        </div>
+                        {renderSegmentedBar(show.totalMusicLevel)}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {selectedShows.length < 3 && (
+                    Array(3 - selectedShows.length).fill(0).map((_, i) => (
+                      <div key={`empty-sensory-${i}`} className="flex flex-col">
+                        <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
