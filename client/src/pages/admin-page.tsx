@@ -106,10 +106,19 @@ export default function AdminPage() {
     episodeLength: 15, // Default episode length in minutes
     seasons: 1, // Default number of seasons
     releaseYear: new Date().getFullYear(), // Current year
-    endYear: null, // Null is acceptable for endYear
+    endYear: null as number | null, // Null is acceptable for endYear
     isOngoing: true, // Default to ongoing
     creator: '', // Empty string for creator
-    availableOn: [] as string[] // Empty array for available platforms
+    availableOn: [] as string[], // Empty array for available platforms
+    // YouTube-specific fields
+    subscriberCount: '',
+    videoCount: '',
+    isYouTubeChannel: false,
+    publishedAt: '',
+    channelId: '',
+    // API data tracking flags
+    hasOmdbData: false,
+    hasYoutubeData: false
     // Note: we use stimulationScore for overallRating in the backend
   });
   
@@ -146,7 +155,23 @@ export default function AdminPage() {
     totalSoundEffectTimeLevel: 'Medium',
     animationStyle: '',
     themes: [] as string[],
-    imageUrl: ''
+    imageUrl: '',
+    // Additional fields for API data
+    creator: '',
+    releaseYear: null as number | null,
+    endYear: null as number | null,
+    episodeLength: 30,
+    isOngoing: true,
+    // YouTube-specific fields
+    subscriberCount: '',
+    videoCount: '',
+    isYouTubeChannel: false,
+    publishedAt: '',
+    channelId: '',
+    availableOn: [] as string[],
+    // API data tracking flags
+    hasOmdbData: false,
+    hasYoutubeData: false
   });
 
   // Check if user is admin
@@ -1390,8 +1415,7 @@ export default function AdminPage() {
                               // Keep the lookup options panel open
                               toast({
                                 title: "OMDb Data Added",
-                                description: "Official TV show data has been applied to the form",
-                                variant: "success"
+                                description: "Official TV show data has been applied to the form"
                               });
                             }}
                           >
@@ -1433,7 +1457,7 @@ export default function AdminPage() {
                                   : [...formState.availableOn, 'YouTube'];
                               } else if (typeof formState.availableOn === 'string') {
                                 // If it's a string, split by comma and add YouTube if not present
-                                const platforms = formState.availableOn.split(',').map(p => p.trim());
+                                const platforms = (formState.availableOn as string).split(',').map((p: string) => p.trim());
                                 updatedAvailableOn = platforms.includes('YouTube') 
                                   ? platforms 
                                   : [...platforms, 'YouTube'];
@@ -1467,8 +1491,7 @@ export default function AdminPage() {
                               // Keep the lookup options panel open
                               toast({
                                 title: "YouTube Data Added",
-                                description: "Official YouTube channel data has been applied to the form",
-                                variant: "success"
+                                description: "Official YouTube channel data has been applied to the form"
                               });
                             }}
                           >
@@ -2001,7 +2024,7 @@ export default function AdminPage() {
                                   : [...newShowFormState.availableOn, 'YouTube'];
                               } else if (typeof newShowFormState.availableOn === 'string') {
                                 // If it's a string, split by comma and add YouTube if not present
-                                const platforms = newShowFormState.availableOn.split(',').map(p => p.trim());
+                                const platforms = (newShowFormState.availableOn as string).split(',').map((p: string) => p.trim());
                                 updatedAvailableOn = platforms.includes('YouTube') 
                                   ? platforms 
                                   : [...platforms, 'YouTube'];
