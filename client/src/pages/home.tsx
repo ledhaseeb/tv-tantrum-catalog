@@ -79,25 +79,35 @@ export default function Home() {
     (show.stimulationScore <= 2)
   ).slice(0, 24);
   const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24); // Use our tracked popular shows data
-  // Get shows with high interaction level
-  const highInteractionShows = allShows?.filter(show => {
-    // Check the show's interactivity level - log every check for debugging
-    console.log(`Checking show ${show.name} with interactivity level:`, show.interactivityLevel);
-    
-    // Check for null or undefined before proceeding
-    if (!show.interactivityLevel) return false;
-    
-    const isHigh = 
-      show.interactivityLevel === 'High' || 
-      show.interactivityLevel === 'Moderate-High' || 
-      show.interactivityLevel === 'Moderate to High' ||
-      show.interactivityLevel.includes('High');
-    
-    if (isHigh) {
-      console.log(`High interaction show found: ${show.name} with level: ${show.interactivityLevel}`);
-    }
-    return isHigh;
-  }).slice(0, 24);
+  // Define a separate array for high interaction shows
+  let highInteractionShows: any[] = [];
+  
+  // We need to loop through and inspect each show's actual fields
+  if (allShows && allShows.length > 0) {
+    highInteractionShows = allShows
+      .filter(show => {
+        // Get the actual property that contains interactivity level
+        const keys = Object.keys(show);
+        let interactivityValue = null;
+        
+        // Check for both camelCase and snake_case versions of the field
+        if (show.interactivityLevel) {
+          interactivityValue = show.interactivityLevel;
+        } else if (show.interactivity_level) {
+          interactivityValue = show.interactivity_level;
+        }
+        
+        // If no value found, this show doesn't qualify
+        if (!interactivityValue) return false;
+        
+        // Check if the value contains "High" in any form
+        return interactivityValue === 'High' || 
+               interactivityValue.includes('High') || 
+               interactivityValue === 'Moderate-High' || 
+               interactivityValue === 'Moderate to High';
+      })
+      .slice(0, 24);
+  }
   
   // Find shows by popular themes - ensure at least 24 shows per category
   const educationalShows = allShows?.filter(show => 
