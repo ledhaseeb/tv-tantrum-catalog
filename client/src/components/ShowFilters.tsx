@@ -117,50 +117,59 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       return;
     }
 
-    console.log(`Finding relevant secondary themes for primary theme: ${primaryTheme}`);
+    try {
+      console.log(`Finding relevant secondary themes for primary theme: ${primaryTheme}`);
 
-    // Normalize the primary theme for consistent matching
-    const normalizedPrimaryTheme = primaryTheme.trim().toLowerCase();
+      // Normalize the primary theme for consistent matching
+      const normalizedPrimaryTheme = primaryTheme.trim().toLowerCase();
 
-    // Ensure we're getting exact matches or close matches for themes
-    const showsWithPrimaryTheme = shows.filter(show => {
-      if (!show.themes || !Array.isArray(show.themes)) return false;
-      
-      // Case-insensitive matching for themes
-      return show.themes.some(theme => 
-        theme && 
-        theme.trim().toLowerCase() === normalizedPrimaryTheme
-      );
-    });
+      // Create a safe copy to avoid runtime errors
+      let showsWithPrimaryTheme: TvShow[] = [];
 
-    console.log(`Found ${showsWithPrimaryTheme.length} shows with primary theme: ${primaryTheme}`);
-    
-    if (showsWithPrimaryTheme.length === 0) {
-      // If no exact matches, try partial matches (contains)
-      const showsWithPartialTheme = shows.filter(show => {
-        if (!show.themes || !Array.isArray(show.themes)) return false;
+      // Ensure we're getting exact matches or close matches for themes
+      const exactMatches = shows.filter(show => {
+        if (!show || !show.themes || !Array.isArray(show.themes)) return false;
         
+        // Case-insensitive matching for themes
         return show.themes.some(theme => 
           theme && 
-          theme.trim().toLowerCase().includes(normalizedPrimaryTheme)
+          typeof theme === 'string' &&
+          theme.trim().toLowerCase() === normalizedPrimaryTheme
         );
       });
       
-      console.log(`Found ${showsWithPartialTheme.length} shows with partial match for theme: ${primaryTheme}`);
+      showsWithPrimaryTheme = [...exactMatches];
+      console.log(`Found ${showsWithPrimaryTheme.length} shows with exact match for theme: ${primaryTheme}`);
       
-      // Use partial matches if no exact matches found
-      if (showsWithPartialTheme.length > 0) {
-        showsWithPrimaryTheme.push(...showsWithPartialTheme);
+      // If no exact matches, try partial matches (contains)
+      if (showsWithPrimaryTheme.length === 0) {
+        const partialMatches = shows.filter(show => {
+          if (!show || !show.themes || !Array.isArray(show.themes)) return false;
+          
+          return show.themes.some(theme => 
+            theme && 
+            typeof theme === 'string' &&
+            theme.trim().toLowerCase().includes(normalizedPrimaryTheme)
+          );
+        });
+        
+        console.log(`Found ${partialMatches.length} shows with partial match for theme: ${primaryTheme}`);
+        
+        // Add partial matches if found
+        if (partialMatches.length > 0) {
+          showsWithPrimaryTheme = [...partialMatches];
+        }
       }
-    }
 
-    // Count occurrences of each secondary theme
-    const themeCounts: Record<string, number> = {};
-    
-    showsWithPrimaryTheme.forEach(show => {
-      if (show.themes && Array.isArray(show.themes)) {
+      // Count occurrences of each secondary theme
+      const themeCounts: Record<string, number> = {};
+      
+      // Safely process the shows
+      showsWithPrimaryTheme.forEach(show => {
+        if (!show || !show.themes || !Array.isArray(show.themes)) return;
+        
         show.themes.forEach(theme => {
-          if (!theme || theme.trim() === "") return;
+          if (!theme || typeof theme !== 'string' || theme.trim() === "") return;
           
           // Skip the primary theme (exact or case-insensitive match)
           const themeNormalized = theme.trim();
@@ -171,19 +180,23 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             themeCounts[themeNormalized] = (themeCounts[themeNormalized] || 0) + 1;
           }
         });
-      }
-    });
+      });
 
-    // Sort themes by frequency (most frequent first)
-    const sortedThemes = Object.entries(themeCounts)
-      .sort((a, b) => b[1] - a[1])  // Sort by count
-      .map(([theme]) => theme);     // Take just the theme name
+      // Sort themes by frequency (most frequent first)
+      const sortedThemes = Object.entries(themeCounts)
+        .sort((a, b) => b[1] - a[1])  // Sort by count
+        .map(([theme]) => theme);     // Take just the theme name
 
-    console.log(`Found ${sortedThemes.length} relevant secondary themes for ${primaryTheme}`);
-    
-    // Only show themes that actually co-exist with the primary theme
-    // If none are found, don't show any secondary theme options
-    setRelevantSecondaryThemes(sortedThemes);
+      console.log(`Found ${sortedThemes.length} relevant secondary themes for ${primaryTheme}`);
+      
+      // Only show themes that actually co-exist with the primary theme
+      // If none are found, don't show any secondary theme options
+      setRelevantSecondaryThemes(sortedThemes);
+    } catch (error) {
+      console.error("Error finding relevant secondary themes:", error);
+      // Fallback to empty array on error
+      setRelevantSecondaryThemes([]);
+    }
   };
   
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
