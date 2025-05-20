@@ -422,7 +422,11 @@ export class DatabaseStorage implements IStorage {
           
           // Timestamps
           createdAt: row.created_at || new Date().toISOString(),
-          updatedAt: row.updated_at || new Date().toISOString()
+          updatedAt: row.updated_at || new Date().toISOString(),
+          
+          // API data flags
+          hasOmdbData: row.has_omdb_data || false,
+          hasYoutubeData: row.has_youtube_data || false
         }));
       } finally {
         client.release();
