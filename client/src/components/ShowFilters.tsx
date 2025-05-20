@@ -132,6 +132,11 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     }
   }, [shows, selectedThemes[0]]);
   
+  // Log for debugging
+  useEffect(() => {
+    console.log("Current filters in ShowFilters component:", filters);
+  }, [filters]);
+  
   // Find relevant secondary themes based on shows that have the primary theme
   const findRelevantSecondaryThemes = (primaryTheme: string) => {
     if (!shows || !primaryTheme || primaryTheme === "any") {
