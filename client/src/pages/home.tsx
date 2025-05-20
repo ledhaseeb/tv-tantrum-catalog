@@ -79,22 +79,20 @@ export default function Home() {
     (show.stimulationScore <= 2)
   ).slice(0, 24);
   const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24); // Use our tracked popular shows data
-  // Debug high interaction shows
-  const highInteractionShowsDebug = allShows?.filter(show => {
-    const isHigh = show.interactivityLevel === 'High' || 
-                  show.interactivityLevel === 'Moderate-High' || 
-                  show.interactivityLevel === 'Moderate to High' ||
-                  (show.interactivityLevel && show.interactivityLevel.includes('High'));
+  // Get shows with high interaction level
+  const highInteractionShows = allShows?.filter(show => {
+    // Access the correct field name in the database schema
+    const interactivityLevel = show.interactivityLevel;
+    const isHigh = interactivityLevel === 'High' || 
+                   interactivityLevel === 'Moderate-High' || 
+                   interactivityLevel === 'Moderate to High' ||
+                   (interactivityLevel && interactivityLevel.includes('High'));
     
     if (isHigh) {
-      console.log(`High interaction show found: ${show.name} with level: ${show.interactivityLevel}`);
+      console.log(`High interaction show found: ${show.name} with level: ${interactivityLevel}`);
     }
     return isHigh;
-  });
-  
-  console.log(`Number of high interaction shows found: ${highInteractionShowsDebug?.length || 0}`);
-  
-  const highInteractionShows = highInteractionShowsDebug?.slice(0, 24);
+  }).slice(0, 24);
   
   // Find shows by popular themes - ensure at least 24 shows per category
   const educationalShows = allShows?.filter(show => 
@@ -438,7 +436,7 @@ export default function Home() {
           
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer bg-purple-50" 
-            onClick={() => setLocation("/browse?interactionLevel=High")}
+            onClick={() => setLocation("/browse?interactivity_level=High")}
           >
             <CardContent className="p-6 text-center">
               <div className="inline-flex p-3 rounded-full bg-purple-100 text-purple-600 mb-3">
@@ -493,7 +491,7 @@ export default function Home() {
         "Higher Interaction",
         "Shows that encourage audience participation and engagement", 
         highInteractionShows, 
-        "/browse?interactionLevel=High"
+        "/browse?interactivityLevel=High"
       )}
       
       {/* Educational Shows */}
