@@ -51,6 +51,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const [filters, setFilters] = useState<FiltersType>(activeFilters);
   const [searchInput, setSearchInput] = useState(activeFilters.search || "");
   const [selectedThemes, setSelectedThemes] = useState<string[]>(activeFilters.themes || []);
+  const [themeMatchMode, setThemeMatchMode] = useState<'AND' | 'OR'>('AND');
   const [openAutoComplete, setOpenAutoComplete] = useState(false);
   
   // Fetch shows for autocomplete and theme analysis
