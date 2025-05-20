@@ -360,7 +360,11 @@ export class DatabaseStorage implements IStorage {
           videoCount: row.video_count || null,
           channelId: row.channel_id || null,
           isYouTubeChannel: row.is_youtube_channel || false,
-          publishedAt: row.published_at || null
+          publishedAt: row.published_at || null,
+          
+          // API data flags
+          hasOmdbData: row.has_omdb_data || false,
+          hasYoutubeData: row.has_youtube_data || false
         }));
       } finally {
         client.release();
@@ -509,7 +513,11 @@ export class DatabaseStorage implements IStorage {
           
           // Timestamps
           createdAt: row.created_at || new Date().toISOString(),
-          updatedAt: row.updated_at || new Date().toISOString()
+          updatedAt: row.updated_at || new Date().toISOString(),
+          
+          // API data flags
+          hasOmdbData: row.has_omdb_data || false,
+          hasYoutubeData: row.has_youtube_data || false
         };
       } finally {
         client.release();
