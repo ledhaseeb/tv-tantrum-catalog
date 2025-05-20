@@ -147,13 +147,39 @@ async function processAllShows() {
             }
           }
           
-          // If show has no image, use OMDb poster
+          // If show has no image, use OMDb poster - but NEVER overwrite custom images
           if (omdbData.poster && omdbData.poster !== '') {
-            const imageResult = await pool.query('SELECT imageUrl FROM tv_shows WHERE id = $1', [show.id]);
+            const imageResult = await pool.query('SELECT "imageUrl" FROM tv_shows WHERE id = $1', [show.id]);
             const currentImage = imageResult.rows[0]?.imageUrl;
             
-            if (!currentImage) {
-              updateData.imageUrl = omdbData.poster;
+            // Check if current image is custom - if it has custom-images in the path or is in the customImageMap, don't touch it
+            try {
+              // Try to load customImageMap.json
+              const fs = await import('fs');
+              const path = await import('path');
+              
+              // Check if we have a custom image in the map
+              let hasCustomImage = false;
+              
+              try {
+                const customImageMapPath = path.join(process.cwd(), 'customImageMap.json');
+                if (fs.existsSync(customImageMapPath)) {
+                  const customImageMap = JSON.parse(fs.readFileSync(customImageMapPath, 'utf-8'));
+                  hasCustomImage = customImageMap.hasOwnProperty(show.id.toString());
+                }
+              } catch (err) {
+                console.error(`Error checking customImageMap.json:`, err);
+              }
+              
+              // Only update if there's no image AND it's not a custom image
+              if (!currentImage && !hasCustomImage) {
+                updateData.imageUrl = omdbData.poster;
+                console.log(`   ✓ Adding missing image for "${show.name}" from OMDB`);
+              } else if (currentImage) {
+                console.log(`   ℹ Keeping existing image for "${show.name}"`);
+              }
+            } catch (err) {
+              console.error(`Error checking for custom image:`, err);
             }
           }
           
