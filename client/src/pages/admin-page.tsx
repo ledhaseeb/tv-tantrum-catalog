@@ -1422,15 +1422,20 @@ export default function AdminPage() {
                                 hasOmdbData: true // Set the flag that OMDb data was used
                               }));
                               
-                              // Change button text
+                              // Change button appearance to show success
                               if (button) {
-                                button.innerText = "Added Successfully";
+                                // Update with checkmark icon and success text
+                                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2"><polyline points="20 6 9 17 4 12"></polyline></svg>Added Successfully';
                                 
-                                // Optional: Disable the button to prevent multiple clicks
+                                // Change to success styling
+                                button.classList.add("bg-green-600");
+                                button.classList.remove("bg-blue-500", "hover:bg-blue-600");
+                                
+                                // Disable the button to prevent multiple clicks
                                 button.disabled = true;
                               }
                               
-                              // Keep the lookup options panel open
+                              // Show notification but keep the lookup panel open
                               toast({
                                 title: "OMDb Data Added",
                                 description: "Official TV show data has been applied to the form"
@@ -1498,15 +1503,20 @@ export default function AdminPage() {
                                 hasYoutubeData: true // Set the flag that YouTube data was used
                               }));
                               
-                              // Change button text
+                              // Change button appearance to show success
                               if (button) {
-                                button.innerText = "Added Successfully";
+                                // Update button with checkmark icon and success text
+                                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2"><polyline points="20 6 9 17 4 12"></polyline></svg>Added Successfully';
                                 
-                                // Optional: Disable the button to prevent multiple clicks
+                                // Change styling to red success state (keeping YouTube branding)
+                                button.classList.add("bg-rose-600");
+                                button.classList.remove("bg-red-500", "hover:bg-red-600");
+                                
+                                // Disable the button to prevent multiple clicks
                                 button.disabled = true;
                               }
                               
-                              // Keep the lookup options panel open
+                              // Show notification but keep the lookup panel open
                               toast({
                                 title: "YouTube Data Added",
                                 description: "Official YouTube channel data has been applied to the form"
