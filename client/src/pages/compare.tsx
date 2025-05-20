@@ -128,8 +128,8 @@ export default function Compare() {
     const percentage = level * 20;
     
     return (
-      <div className="w-full h-6 relative">
-        <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden flex">
+      <div className="w-full h-4 relative">
+        <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden flex">
           {[1, 2, 3, 4, 5].map((segment) => {
             const color = 
               segment === 1 ? 'bg-green-500' : 
@@ -149,9 +149,9 @@ export default function Compare() {
         <div 
           className="absolute h-full flex items-center" 
           style={{ 
-            width: '4px', 
+            width: '2px', 
             backgroundColor: 'black',
-            left: `calc(${percentage}% - 2px)`,
+            left: `calc(${percentage}% - 1px)`,
             top: 0
           }}
         ></div>
@@ -174,7 +174,7 @@ export default function Compare() {
           return (
             <div 
               key={dot} 
-              className={`w-4 h-4 rounded-full ${dot <= score ? bgColor : 'border border-gray-300'}`}
+              className={`w-3 h-3 rounded-full ${dot <= score ? bgColor : 'border border-gray-300'}`}
             />
           );
         })}
