@@ -355,12 +355,29 @@ export function setupAuth(app: Express) {
   
   // User management endpoints (admin only)
   app.get("/api/users", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
-      return res.status(403).json({ message: "Unauthorized" });
+    // Enhanced logging to debug authentication issues
+    console.log('User requesting /api/users:', {
+      isAuthenticated: req.isAuthenticated(),
+      user: req.isAuthenticated() ? { 
+        id: req.user?.id, 
+        isAdmin: req.user?.isAdmin, 
+        username: req.user?.username 
+      } : 'Not authenticated'
+    });
+    
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized - Admin privileges required" });
     }
     
     try {
+      console.log('Fetching all users from database');
       const users = await storage.getAllUsers();
+      console.log(`Fetched ${users.length} users from database`);
+      
       // Remove passwords before sending the response
       const safeUsers = users.map(user => {
         const { password, ...safeUser } = user;
@@ -369,6 +386,7 @@ export function setupAuth(app: Express) {
       
       res.json(safeUsers);
     } catch (error) {
+      console.error('Error fetching users:', error);
       res.status(500).json({ message: "Error fetching users" });
     }
   });
