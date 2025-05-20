@@ -265,92 +265,83 @@ export default function Compare() {
             <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
               <h3 className="text-xl font-bold mb-6">Compare Shows</h3>
               
-              {/* Comparison table with the modern layout */}
-              <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4 mb-8">
-                <div className="font-medium">Feature</div>
+              {/* Comparison table with mobile-friendly layout */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {selectedShows.map(show => (
-                  <div key={show.id} className="font-medium text-center">{show.name}</div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="font-medium text-center text-gray-400">-</div>
-                )}
-                
-                {/* Target Age */}
-                <div className="font-medium py-2">Target Age</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="text-center py-2">{show.ageRange}</div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
-                )}
-                
-                {/* Animation Style */}
-                <div className="font-medium py-2">Animation Style</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="text-center py-2">
-                    {show.animationStyle || 'Traditional Animation'}
+                  <div key={show.id} className="flex flex-col">
+                    <div className="font-medium text-center text-lg mb-4">{show.name}</div>
+                    
+                    {/* Target Age */}
+                    <div className="mb-4">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Target Age</div>
+                      <div className="text-center py-2">{show.ageRange}</div>
+                    </div>
+                    
+                    {/* Animation Style */}
+                    <div className="mb-4">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Animation Style</div>
+                      <div className="text-center py-2">
+                        {show.animationStyle || 'Traditional Animation'}
+                      </div>
+                    </div>
+                    
+                    {/* Themes */}
+                    <div className="mb-4">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Themes</div>
+                      <div className="flex flex-wrap justify-center gap-1 py-2">
+                        {show.themes && show.themes.map((theme, index) => (
+                          <Badge key={index} className="bg-blue-100 text-blue-800 text-xs font-medium">
+                            {theme}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
-                )}
                 
-                {/* Themes */}
-                <div className="font-medium py-2">Themes</div>
-                {selectedShows.map(show => (
-                  <div key={show.id} className="flex flex-wrap justify-center gap-1 py-2">
-                    {show.themes && show.themes.map((theme, index) => (
-                      <Badge key={index} className="bg-blue-100 text-blue-800 text-xs font-medium">
-                        {theme}
-                      </Badge>
-                    ))}
-                  </div>
-                ))}
-                {selectedShows.length < 3 && (
-                  <div className="text-center py-2 text-gray-400">-</div>
+                {selectedShows && selectedShows.length < 3 && (
+                  Array(3 - selectedShows.length).fill(0).map((_, i) => (
+                    <div key={`empty-${i}`} className="flex flex-col">
+                      <div className="font-medium text-center text-lg mb-4 text-gray-400">-</div>
+                    </div>
+                  ))
                 )}
               </div>
               
               {/* Stimulation Score Comparison using dots */}
               <div className="mb-8">
                 <h3 className="text-lg font-bold mb-4">Stimulation Score Comparison</h3>
-                <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4">
-                  <div></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedShows.map(show => (
-                    <div key={show.id} className="font-medium text-center">{show.name}</div>
-                  ))}
-                  {selectedShows.length < 3 && (
-                    <div className="font-medium text-center text-gray-400">-</div>
-                  )}
-                  
-                  <div className="font-medium py-2">Stimulation Score</div>
-                  {selectedShows.map(show => (
-                    <div key={show.id} className="flex flex-col items-center py-2">
-                      {getStimulationScoreDots(show.stimulationScore)}
-                      <div className="text-center text-sm font-medium">
-                        {show.stimulationScore}/5
+                    <div key={show.id} className="flex flex-col">
+                      <div className="font-medium text-center py-1 border-b border-gray-200">Stimulation Score</div>
+                      <div className="flex flex-col items-center py-2">
+                        {getStimulationScoreDots(show.stimulationScore)}
+                        <div className="text-center text-sm font-medium">
+                          {show.stimulationScore}/5
+                        </div>
                       </div>
                     </div>
                   ))}
-                  {selectedShows.length < 3 && (
-                    <div className="text-center py-2 text-gray-400">-</div>
+                  
+                  {selectedShows && selectedShows.length < 3 && (
+                    Array(3 - selectedShows.length).fill(0).map((_, i) => (
+                      <div key={`empty-stim-${i}`} className="flex flex-col">
+                        <div className="font-medium text-center py-1 border-b border-gray-200 text-gray-400">-</div>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
               
-              {/* Sensory Metrics with Bar Charts */}
+              {/* Sensory Metrics with Bar Charts - Mobile-friendly layout */}
               <div className="mb-4">
                 <h3 className="text-lg font-bold mb-4">Sensory Metrics Comparison</h3>
                 
-                <div className="grid grid-cols-[180px_1fr_1fr_1fr] gap-4 mb-3">
-                  <div></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedShows.map(show => (
-                    <div key={show.id} className="font-medium text-center">{show.name}</div>
-                  ))}
-                  {selectedShows.length < 3 && (
-                    <div className="font-medium text-center text-gray-400">-</div>
-                  )}
-                </div>
+                    <div key={show.id} className="flex flex-col">
+                      <div className="font-medium text-center text-lg mb-2">{show.name}</div>
                 
                 {/* Interactivity Level */}
                 <div className="mb-6">
