@@ -144,10 +144,16 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       return;
     }
 
+    console.log(`Finding relevant secondary themes for primary theme: ${primaryTheme}`);
+
     // Find all shows that have the primary theme
     const showsWithPrimaryTheme = shows.filter(show => 
-      show.themes && Array.isArray(show.themes) && show.themes.includes(primaryTheme)
+      show.themes && 
+      Array.isArray(show.themes) && 
+      show.themes.some(theme => theme && theme.trim().toLowerCase() === primaryTheme.trim().toLowerCase())
     );
+
+    console.log(`Found ${showsWithPrimaryTheme.length} shows with primary theme: ${primaryTheme}`);
 
     // Count occurrences of each secondary theme
     const themeCounts: Record<string, number> = {};
@@ -155,9 +161,10 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     showsWithPrimaryTheme.forEach(show => {
       if (show.themes && Array.isArray(show.themes)) {
         show.themes.forEach(theme => {
-          // Skip the primary theme
-          if (theme !== primaryTheme) {
-            themeCounts[theme] = (themeCounts[theme] || 0) + 1;
+          // Skip the primary theme and ensure theme is valid
+          if (theme && theme !== primaryTheme && theme.trim() !== "") {
+            const normalizedTheme = theme.trim();
+            themeCounts[normalizedTheme] = (themeCounts[normalizedTheme] || 0) + 1;
           }
         });
       }
@@ -168,10 +175,15 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       .sort((a, b) => b[1] - a[1])  // Sort by count
       .map(([theme]) => theme);     // Take just the theme name
 
+    console.log(`Found ${sortedThemes.length} relevant secondary themes for ${primaryTheme}`);
+    
     // If we found relevant themes, use them; otherwise fall back to all themes
     const relevantThemes = sortedThemes.length > 0 
       ? sortedThemes 
-      : commonThemes.filter(theme => theme !== primaryTheme);
+      : commonThemes.filter(theme => 
+          theme !== primaryTheme && 
+          theme.trim().toLowerCase() !== primaryTheme.trim().toLowerCase()
+        );
     
     setRelevantSecondaryThemes(relevantThemes);
   };
