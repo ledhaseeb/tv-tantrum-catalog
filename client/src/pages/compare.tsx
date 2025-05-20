@@ -354,12 +354,10 @@ export default function Compare() {
                 
                 {/* Interactivity Level */}
                 <div className="mb-8">
-                  <div className="grid grid-cols-3 gap-4 mb-1">
-                    {[0, 1, 2].map((idx) => (
-                      <div key={`interaction-label-${idx}`} className="font-medium text-center py-1 border-b border-gray-200">
-                        Interaction Level
-                      </div>
-                    ))}
+                  <div className="mb-2">
+                    <div className="font-medium text-center py-1 border-b border-gray-200">
+                      Interaction Level
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
@@ -389,12 +387,10 @@ export default function Compare() {
                 
                 {/* Dialogue Intensity */}
                 <div className="mb-8">
-                  <div className="grid grid-cols-3 gap-4 mb-1">
-                    {[0, 1, 2].map((idx) => (
-                      <div key={`dialogue-label-${idx}`} className="font-medium text-center py-1 border-b border-gray-200">
-                        Dialogue Intensity
-                      </div>
-                    ))}
+                  <div className="mb-2">
+                    <div className="font-medium text-center py-1 border-b border-gray-200">
+                      Dialogue Intensity
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
@@ -424,12 +420,10 @@ export default function Compare() {
                 
                 {/* Sound Effects Level */}
                 <div className="mb-8">
-                  <div className="grid grid-cols-3 gap-4 mb-1">
-                    {[0, 1, 2].map((idx) => (
-                      <div key={`sound-label-${idx}`} className="font-medium text-center py-1 border-b border-gray-200">
-                        Sound Effects Level
-                      </div>
-                    ))}
+                  <div className="mb-2">
+                    <div className="font-medium text-center py-1 border-b border-gray-200">
+                      Sound Effects Level
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
@@ -459,12 +453,10 @@ export default function Compare() {
                 
                 {/* Scene Frequency */}
                 <div className="mb-8">
-                  <div className="grid grid-cols-3 gap-4 mb-1">
-                    {[0, 1, 2].map((idx) => (
-                      <div key={`scene-label-${idx}`} className="font-medium text-center py-1 border-b border-gray-200">
-                        Scene Frequency
-                      </div>
-                    ))}
+                  <div className="mb-2">
+                    <div className="font-medium text-center py-1 border-b border-gray-200">
+                      Scene Frequency
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
@@ -494,12 +486,10 @@ export default function Compare() {
                 
                 {/* Music Tempo */}
                 <div className="mb-8">
-                  <div className="grid grid-cols-3 gap-4 mb-1">
-                    {[0, 1, 2].map((idx) => (
-                      <div key={`tempo-label-${idx}`} className="font-medium text-center py-1 border-b border-gray-200">
-                        Music Tempo
-                      </div>
-                    ))}
+                  <div className="mb-2">
+                    <div className="font-medium text-center py-1 border-b border-gray-200">
+                      Music Tempo
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
@@ -529,12 +519,10 @@ export default function Compare() {
                 
                 {/* Total Music Level */}
                 <div className="mb-8">
-                  <div className="grid grid-cols-3 gap-4 mb-1">
-                    {[0, 1, 2].map((idx) => (
-                      <div key={`music-label-${idx}`} className="font-medium text-center py-1 border-b border-gray-200">
-                        Total Music Level
-                      </div>
-                    ))}
+                  <div className="mb-2">
+                    <div className="font-medium text-center py-1 border-b border-gray-200">
+                      Total Music Level
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
