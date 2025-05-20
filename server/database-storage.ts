@@ -708,21 +708,75 @@ export class DatabaseStorage implements IStorage {
     // PostgreSQL array operations don't easily support checking if an array contains all values from another array
     if (filters.themes && filters.themes.length > 0) {
       // Filter for shows that have ALL the requested themes
-      shows = shows.filter(show => {
+      console.log(`Post-query filtering for shows with themes: ${filters.themes.join(', ')}`);
+      
+      // First, try exact matching
+      let filteredShows = shows.filter(show => {
         // Make sure show has themes array
         if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
           return false;
         }
         
         // Using 'every' means ALL filter themes must be present
-        // Using 'some' inside means each filter theme needs to match at least one of the show's themes
-        return filters.themes!.every(filterTheme => 
-          show.themes!.some(showTheme => 
-            // Case-insensitive comparison
-            showTheme.toLowerCase() === filterTheme.toLowerCase()
-          )
-        );
+        return filters.themes!.every(filterTheme => {
+          if (!filterTheme || filterTheme.trim() === '') return true; // Skip empty themes
+          
+          // Normalize the filter theme
+          const normalizedFilterTheme = filterTheme.trim().toLowerCase();
+          
+          // Check if any show theme matches (exactly or contains)
+          return show.themes!.some(showTheme => {
+            if (!showTheme || showTheme.trim() === '') return false;
+            
+            // Normalize the show theme
+            const normalizedShowTheme = showTheme.trim().toLowerCase();
+            
+            // Exact match first
+            if (normalizedShowTheme === normalizedFilterTheme) return true;
+            
+            // Then try contains match (theme is part of another theme)
+            if (normalizedShowTheme.includes(normalizedFilterTheme) || 
+                normalizedFilterTheme.includes(normalizedShowTheme)) return true;
+                
+            return false;
+          });
+        });
       });
+      
+      console.log(`Found ${filteredShows.length} shows after theme filtering`);
+      
+      // If no shows found with exact matches, try fuzzy matching (find shows that have at least one similar theme)
+      if (filteredShows.length === 0 && filters.themes.length > 0) {
+        console.log("No exact theme matches found, trying partial matching");
+        
+        // Try to find shows that match at least one theme
+        filteredShows = shows.filter(show => {
+          if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
+            return false;
+          }
+          
+          // Check if at least one theme matches
+          return filters.themes!.some(filterTheme => {
+            if (!filterTheme || filterTheme.trim() === '') return false;
+            
+            const normalizedFilterTheme = filterTheme.trim().toLowerCase();
+            
+            return show.themes!.some(showTheme => {
+              if (!showTheme || showTheme.trim() === '') return false;
+              
+              const normalizedShowTheme = showTheme.trim().toLowerCase();
+              
+              // Allow more flexible matching for partial words
+              return normalizedShowTheme.includes(normalizedFilterTheme.split(' ')[0]) || 
+                     normalizedFilterTheme.includes(normalizedShowTheme.split(' ')[0]);
+            });
+          });
+        });
+        
+        console.log(`Found ${filteredShows.length} shows after partial theme matching`);
+      }
+      
+      shows = filteredShows;
     }
     
     return shows;

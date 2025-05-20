@@ -146,14 +146,40 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
 
     console.log(`Finding relevant secondary themes for primary theme: ${primaryTheme}`);
 
-    // Find all shows that have the primary theme
-    const showsWithPrimaryTheme = shows.filter(show => 
-      show.themes && 
-      Array.isArray(show.themes) && 
-      show.themes.some(theme => theme && theme.trim().toLowerCase() === primaryTheme.trim().toLowerCase())
-    );
+    // Normalize the primary theme for consistent matching
+    const normalizedPrimaryTheme = primaryTheme.trim().toLowerCase();
+
+    // Ensure we're getting exact matches or close matches for themes
+    const showsWithPrimaryTheme = shows.filter(show => {
+      if (!show.themes || !Array.isArray(show.themes)) return false;
+      
+      // Case-insensitive matching for themes
+      return show.themes.some(theme => 
+        theme && 
+        theme.trim().toLowerCase() === normalizedPrimaryTheme
+      );
+    });
 
     console.log(`Found ${showsWithPrimaryTheme.length} shows with primary theme: ${primaryTheme}`);
+    
+    if (showsWithPrimaryTheme.length === 0) {
+      // If no exact matches, try partial matches (contains)
+      const showsWithPartialTheme = shows.filter(show => {
+        if (!show.themes || !Array.isArray(show.themes)) return false;
+        
+        return show.themes.some(theme => 
+          theme && 
+          theme.trim().toLowerCase().includes(normalizedPrimaryTheme)
+        );
+      });
+      
+      console.log(`Found ${showsWithPartialTheme.length} shows with partial match for theme: ${primaryTheme}`);
+      
+      // Use partial matches if no exact matches found
+      if (showsWithPartialTheme.length > 0) {
+        showsWithPrimaryTheme.push(...showsWithPartialTheme);
+      }
+    }
 
     // Count occurrences of each secondary theme
     const themeCounts: Record<string, number> = {};
@@ -161,10 +187,15 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     showsWithPrimaryTheme.forEach(show => {
       if (show.themes && Array.isArray(show.themes)) {
         show.themes.forEach(theme => {
-          // Skip the primary theme and ensure theme is valid
-          if (theme && theme !== primaryTheme && theme.trim() !== "") {
-            const normalizedTheme = theme.trim();
-            themeCounts[normalizedTheme] = (themeCounts[normalizedTheme] || 0) + 1;
+          if (!theme || theme.trim() === "") return;
+          
+          // Skip the primary theme (exact or case-insensitive match)
+          const themeNormalized = theme.trim();
+          const themeLower = themeNormalized.toLowerCase();
+          
+          if (themeLower !== normalizedPrimaryTheme && 
+              themeLower !== primaryTheme.toLowerCase()) {
+            themeCounts[themeNormalized] = (themeCounts[themeNormalized] || 0) + 1;
           }
         });
       }
@@ -177,15 +208,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
 
     console.log(`Found ${sortedThemes.length} relevant secondary themes for ${primaryTheme}`);
     
-    // If we found relevant themes, use them; otherwise fall back to all themes
-    const relevantThemes = sortedThemes.length > 0 
-      ? sortedThemes 
-      : commonThemes.filter(theme => 
-          theme !== primaryTheme && 
-          theme.trim().toLowerCase() !== primaryTheme.trim().toLowerCase()
-        );
-    
-    setRelevantSecondaryThemes(relevantThemes);
+    // Only show themes that actually co-exist with the primary theme
+    // If none are found, don't show any secondary theme options
+    setRelevantSecondaryThemes(sortedThemes);
   };
   
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
