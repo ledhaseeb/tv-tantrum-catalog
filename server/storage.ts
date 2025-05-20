@@ -16,6 +16,7 @@ export interface IStorage {
     sortBy?: string; 
     search?: string;
     themes?: string[];
+    themeMatchMode?: 'AND' | 'OR';
     interactionLevel?: string;
     dialogueIntensity?: string;
     soundFrequency?: string;

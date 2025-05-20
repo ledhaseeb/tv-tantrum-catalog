@@ -28,6 +28,7 @@ export default function Browse() {
     sortBy?: string;
     search?: string;
     themes?: string[];
+    themeMatchMode?: 'AND' | 'OR';
     interactionLevel?: string;
     dialogueIntensity?: string;
     soundFrequency?: string;
