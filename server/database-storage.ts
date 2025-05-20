@@ -34,6 +34,7 @@ export interface IStorage {
     sortBy?: string; 
     search?: string;
     themes?: string[];
+    themeMatchMode?: 'AND' | 'OR';
     interactionLevel?: string;
     dialogueIntensity?: string;
     soundFrequency?: string;
@@ -542,6 +543,7 @@ export class DatabaseStorage implements IStorage {
     sortBy?: string; 
     search?: string;
     themes?: string[];
+    themeMatchMode?: 'AND' | 'OR';
     interactionLevel?: string;
     dialogueIntensity?: string;
     soundFrequency?: string;
