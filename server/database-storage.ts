@@ -751,48 +751,131 @@ export class DatabaseStorage implements IStorage {
           return false;
         }
         
-        // For AND mode, use every() - ALL filter themes must be present
-        // For OR mode, use some() - ANY filter theme must be present
-        const matchingFunction = themeMatchMode === 'AND' ? 'every' : 'some';
-        
-        return filters.themes![matchingFunction as 'every' | 'some'](filterTheme => {
-          if (!filterTheme || filterTheme.trim() === '') return true; // Skip empty themes
-          
-          // Normalize the filter theme
-          const normalizedFilterTheme = filterTheme.trim().toLowerCase();
-          
-          // Check if any show theme matches (exactly or contains)
-          return show.themes!.some(showTheme => {
-            if (!showTheme || showTheme.trim() === '') return false;
+        if (themeMatchMode === 'AND') {
+          // In AND mode, ALL filter themes must be present in the show
+          return filters.themes!.every(filterTheme => {
+            if (!filterTheme || filterTheme.trim() === '') return true; // Skip empty themes
             
-            // Normalize the show theme
-            const normalizedShowTheme = showTheme.trim().toLowerCase();
+            // Normalize the filter theme
+            const normalizedFilterTheme = filterTheme.trim().toLowerCase();
             
-            // Exact match first
-            if (normalizedShowTheme === normalizedFilterTheme) return true;
-            
-            // Then try contains match (theme is part of another theme)
-            if (normalizedShowTheme.includes(normalizedFilterTheme) || 
-                normalizedFilterTheme.includes(normalizedShowTheme)) return true;
-                
-            return false;
+            // Check if any show theme matches (exactly or contains)
+            return show.themes!.some(showTheme => {
+              if (!showTheme || showTheme.trim() === '') return false;
+              
+              // Normalize the show theme
+              const normalizedShowTheme = showTheme.trim().toLowerCase();
+              
+              // Exact match first
+              if (normalizedShowTheme === normalizedFilterTheme) return true;
+              
+              // Then try contains match (theme is part of another theme)
+              if (normalizedShowTheme.includes(normalizedFilterTheme) || 
+                  normalizedFilterTheme.includes(normalizedShowTheme)) return true;
+                  
+              return false;
+            });
           });
-        });
+        } else {
+          // In OR mode, ANY filter theme must be present in the show
+          return filters.themes!.some(filterTheme => {
+            if (!filterTheme || filterTheme.trim() === '') return false; // Skip empty themes
+            
+            // Normalize the filter theme
+            const normalizedFilterTheme = filterTheme.trim().toLowerCase();
+            
+            // Check if any show theme matches (exactly or contains)
+            return show.themes!.some(showTheme => {
+              if (!showTheme || showTheme.trim() === '') return false;
+              
+              // Normalize the show theme
+              const normalizedShowTheme = showTheme.trim().toLowerCase();
+              
+              // Exact match first
+              if (normalizedShowTheme === normalizedFilterTheme) return true;
+              
+              // Then try contains match (theme is part of another theme)
+              if (normalizedShowTheme.includes(normalizedFilterTheme) || 
+                  normalizedFilterTheme.includes(normalizedShowTheme)) return true;
+                  
+              return false;
+            });
+          });
+        }
       });
       
       console.log(`Found ${filteredShows.length} shows after theme filtering (${themeMatchMode} mode)`);
       
-      // If no shows found with exact matches, try fuzzy matching (find shows that have at least one similar theme)
-      if (filteredShows.length === 0 && filters.themes.length > 0 && themeMatchMode === 'AND') {
-        console.log("No exact theme matches found, trying with OR mode as fallback");
+      // If no shows found with exact matches, try fuzzy matching
+      if (filteredShows.length === 0 && filters.themes.length > 0) {
+        console.log(`No exact theme matches found for ${themeMatchMode} mode, trying with fuzzy matching`);
         
-        // Try to find shows that match at least one theme
+        // Try to find shows that match themes more flexibly
         filteredShows = shows.filter(show => {
           if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
             return false;
           }
           
-          // Check if at least one theme matches
+          if (themeMatchMode === 'AND') {
+            // In AND mode, try a more flexible match for all themes
+            return filters.themes!.every(filterTheme => {
+              if (!filterTheme || filterTheme.trim() === '') return true;
+              
+              const normalizedFilterTheme = filterTheme.trim().toLowerCase();
+              const filterWords = normalizedFilterTheme.split(' ');
+              
+              return show.themes!.some(showTheme => {
+                if (!showTheme || showTheme.trim() === '') return false;
+                
+                const normalizedShowTheme = showTheme.trim().toLowerCase();
+                const showWords = normalizedShowTheme.split(' ');
+                
+                // Try to match by individual words
+                return filterWords.some(filterWord => 
+                  showWords.some(showWord => 
+                    filterWord.includes(showWord) || showWord.includes(filterWord)
+                  )
+                );
+              });
+            });
+          } else {
+            // In OR mode, any theme partial match is good
+            return filters.themes!.some(filterTheme => {
+              if (!filterTheme || filterTheme.trim() === '') return false;
+              
+              const normalizedFilterTheme = filterTheme.trim().toLowerCase();
+              const filterWords = normalizedFilterTheme.split(' ');
+              
+              return show.themes!.some(showTheme => {
+                if (!showTheme || showTheme.trim() === '') return false;
+                
+                const normalizedShowTheme = showTheme.trim().toLowerCase();
+                const showWords = normalizedShowTheme.split(' ');
+                
+                // Try to match by individual words
+                return filterWords.some(filterWord => 
+                  showWords.some(showWord => 
+                    filterWord.includes(showWord) || showWord.includes(filterWord)
+                  )
+                );
+              });
+            });
+          }
+        });
+        
+        console.log(`Found ${filteredShows.length} shows after fuzzy theme matching`);
+      }
+      
+      // If still no matches in AND mode, fall back to OR mode
+      if (filteredShows.length === 0 && filters.themes.length > 1 && themeMatchMode === 'AND') {
+        console.log("No AND matches found, trying with OR mode as final fallback");
+        
+        // Use OR matching as a last resort
+        filteredShows = shows.filter(show => {
+          if (!show.themes || !Array.isArray(show.themes) || show.themes.length === 0) {
+            return false;
+          }
+          
           return filters.themes!.some(filterTheme => {
             if (!filterTheme || filterTheme.trim() === '') return false;
             
@@ -803,14 +886,14 @@ export class DatabaseStorage implements IStorage {
               
               const normalizedShowTheme = showTheme.trim().toLowerCase();
               
-              // Allow more flexible matching for partial words
-              return normalizedShowTheme.includes(normalizedFilterTheme.split(' ')[0]) || 
-                     normalizedFilterTheme.includes(normalizedShowTheme.split(' ')[0]);
+              return normalizedShowTheme === normalizedFilterTheme || 
+                     normalizedShowTheme.includes(normalizedFilterTheme) || 
+                     normalizedFilterTheme.includes(normalizedShowTheme);
             });
           });
         });
         
-        console.log(`Found ${filteredShows.length} shows after partial theme matching`);
+        console.log(`Found ${filteredShows.length} shows after falling back to OR mode`);
       }
       
       shows = filteredShows;
