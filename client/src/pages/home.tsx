@@ -525,7 +525,7 @@ export default function Home() {
         "Educational Shows",
         "Shows that focus on learning and educational content", 
         educationalShows, 
-        "/browse?themes=Education,Learning"
+        "/browse?themes=Education,Learning&themeMatchMode=OR"
       )}
       
       {/* Adventure Shows */}
@@ -533,7 +533,7 @@ export default function Home() {
         "Adventure Shows",
         "Shows focused on exploration, excitement and adventures", 
         adventureShows, 
-        "/browse?themes=Adventure"
+        "/browse?themes=Adventure&themeMatchMode=OR"
       )}
       
       {/* Musical Shows */}
@@ -541,7 +541,7 @@ export default function Home() {
         "Musical Shows",
         "Shows featuring songs, musical numbers and rhythmic content", 
         musicalShows, 
-        "/browse?themes=Music"
+        "/browse?themes=Music&themeMatchMode=OR"
       )}
       
       {/* Fantasy Shows */}
@@ -549,7 +549,7 @@ export default function Home() {
         "Fantasy Shows",
         "Shows with magical, imaginative and fantasy elements", 
         fantasyShows, 
-        "/browse?themes=Fantasy"
+        "/browse?themes=Fantasy&themeMatchMode=OR"
       )}
       
       {/* Preschooler Shows */}
