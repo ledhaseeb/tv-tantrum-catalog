@@ -81,15 +81,20 @@ export default function Home() {
   const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24); // Use our tracked popular shows data
   // Get shows with high interaction level
   const highInteractionShows = allShows?.filter(show => {
-    // Access the correct field name in the database schema
-    const interactivityLevel = show.interactivityLevel;
-    const isHigh = interactivityLevel === 'High' || 
-                   interactivityLevel === 'Moderate-High' || 
-                   interactivityLevel === 'Moderate to High' ||
-                   (interactivityLevel && interactivityLevel.includes('High'));
+    // Check the show's interactivity level - log every check for debugging
+    console.log(`Checking show ${show.name} with interactivity level:`, show.interactivityLevel);
+    
+    // Check for null or undefined before proceeding
+    if (!show.interactivityLevel) return false;
+    
+    const isHigh = 
+      show.interactivityLevel === 'High' || 
+      show.interactivityLevel === 'Moderate-High' || 
+      show.interactivityLevel === 'Moderate to High' ||
+      show.interactivityLevel.includes('High');
     
     if (isHigh) {
-      console.log(`High interaction show found: ${show.name} with level: ${interactivityLevel}`);
+      console.log(`High interaction show found: ${show.name} with level: ${show.interactivityLevel}`);
     }
     return isHigh;
   }).slice(0, 24);
