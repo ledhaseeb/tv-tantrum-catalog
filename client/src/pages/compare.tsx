@@ -311,10 +311,14 @@ export default function Compare() {
               {/* Stimulation Score Comparison using dots */}
               <div className="mb-8">
                 <h3 className="text-lg font-bold mb-4">Stimulation Score Comparison</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="mb-2">
+                  <div className="font-medium text-center py-1 border-b border-gray-200">
+                    Stimulation Score
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
                   {selectedShows.map(show => (
-                    <div key={`stim-${show.id}`} className="flex flex-col">
-                      <div className="font-medium text-center py-1 border-b border-gray-200">Stimulation Score</div>
+                    <div key={`stim-${show.id}`} className="flex flex-col items-center">
                       <div className="flex flex-col items-center py-2">
                         {getStimulationScoreDots(show.stimulationScore)}
                         <div className="text-center text-sm font-medium">
@@ -327,7 +331,7 @@ export default function Compare() {
                   {selectedShows.length < 3 && (
                     Array(3 - selectedShows.length).fill(0).map((_, i) => (
                       <div key={`empty-stim-${i}`} className="flex flex-col">
-                        <div className="font-medium text-center py-1 border-b border-gray-200 text-gray-400">-</div>
+                        <div className="text-center py-2 text-gray-400">-</div>
                       </div>
                     ))
                   )}
