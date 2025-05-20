@@ -517,7 +517,7 @@ export default function Home() {
         "Higher Interaction",
         "Shows that encourage audience participation and engagement", 
         highInteractionShows, 
-        "/browse?interactionLevel=High"
+        "/browse?interactivityLevel=High"
       )}
       
       {/* Educational Shows */}
@@ -525,7 +525,7 @@ export default function Home() {
         "Educational Shows",
         "Shows that focus on learning and educational content", 
         educationalShows, 
-        "/browse?search=education"
+        "/browse?themes=Education,Learning"
       )}
       
       {/* Adventure Shows */}
@@ -533,7 +533,7 @@ export default function Home() {
         "Adventure Shows",
         "Shows focused on exploration, excitement and adventures", 
         adventureShows, 
-        "/browse?search=adventure"
+        "/browse?themes=Adventure"
       )}
       
       {/* Musical Shows */}
@@ -541,7 +541,7 @@ export default function Home() {
         "Musical Shows",
         "Shows featuring songs, musical numbers and rhythmic content", 
         musicalShows, 
-        "/browse?search=music"
+        "/browse?themes=Music"
       )}
       
       {/* Fantasy Shows */}
@@ -549,7 +549,7 @@ export default function Home() {
         "Fantasy Shows",
         "Shows with magical, imaginative and fantasy elements", 
         fantasyShows, 
-        "/browse?search=fantasy"
+        "/browse?themes=Fantasy"
       )}
       
       {/* Preschooler Shows */}
@@ -557,7 +557,7 @@ export default function Home() {
         "Preschooler Favorites",
         "Shows specifically designed for children ages 2-4", 
         preschoolerShows, 
-        "/browse?ageGroup=Preschool"
+        "/browse?ageRange=2-4"
       )}
     </main>
   );
