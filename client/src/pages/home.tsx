@@ -489,7 +489,7 @@ export default function Home() {
       )}
       
       {/* Higher Interaction */}
-      {renderCategorySection(
+      {highInteractionShows && highInteractionShows.length > 0 && renderCategorySection(
         "Higher Interaction",
         "Shows that encourage audience participation and engagement", 
         highInteractionShows, 
