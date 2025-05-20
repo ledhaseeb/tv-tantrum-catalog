@@ -270,7 +270,7 @@ export default function Compare() {
                 <table className="w-full min-w-[640px] table-fixed border-collapse">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="w-1/4 py-2 px-2 text-left font-medium">Show Details</th>
+                      <th className="w-1/4 py-2 px-2 text-center font-medium">Show Details</th>
                       {selectedShows.map(show => (
                         <th key={`header-${show.id}`} className="w-1/4 py-2 px-2 text-center font-medium">{show.name}</th>
                       ))}
@@ -284,7 +284,7 @@ export default function Compare() {
                   <tbody>
                     {/* Show Images */}
                     <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 font-medium">Image</td>
+                      <td className="py-2 px-2 text-center font-medium">Image</td>
                       {selectedShows.map(show => (
                         <td key={`img-${show.id}`} className="py-2 px-2 text-center">
                           {show.imageUrl ? (
@@ -313,7 +313,7 @@ export default function Compare() {
                     
                     {/* Target Age */}
                     <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 font-medium">Target Age</td>
+                      <td className="py-2 px-2 text-center font-medium">Target Age</td>
                       {selectedShows.map(show => (
                         <td key={`age-${show.id}`} className="py-2 px-2 text-center">
                           {show.ageRange}
@@ -328,7 +328,7 @@ export default function Compare() {
                     
                     {/* Animation Style */}
                     <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 font-medium">Animation Style</td>
+                      <td className="py-2 px-2 text-center font-medium">Animation Style</td>
                       {selectedShows.map(show => (
                         <td key={`style-${show.id}`} className="py-2 px-2 text-center">
                           {show.animationStyle || 'Traditional Animation'}
@@ -343,7 +343,7 @@ export default function Compare() {
                     
                     {/* Themes */}
                     <tr className="border-b border-gray-100">
-                      <td className="py-2 px-2 font-medium">Themes</td>
+                      <td className="py-2 px-2 text-center font-medium">Themes</td>
                       {selectedShows.map(show => (
                         <td key={`themes-${show.id}`} className="py-2 px-2 text-center">
                           <div className="flex flex-wrap justify-center gap-1">
@@ -372,7 +372,7 @@ export default function Compare() {
                   <table className="w-full min-w-[640px] table-fixed border-collapse">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="w-1/4 py-2 px-2 text-left font-medium">Stimulation</th>
+                        <th className="w-1/4 py-2 px-2 text-center font-medium">Stimulation</th>
                         {selectedShows.map(show => (
                           <th key={`stim-header-${show.id}`} className="w-1/4 py-2 px-2 text-center font-medium">{show.name}</th>
                         ))}
