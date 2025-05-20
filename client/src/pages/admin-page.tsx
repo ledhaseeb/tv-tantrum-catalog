@@ -1031,17 +1031,21 @@ export default function AdminPage() {
                           <TableCell>{show.ageRange || 'N/A'}</TableCell>
                           <TableCell>{show.stimulationScore}/5</TableCell>
                           <TableCell>
-                            {show.imdbId ? (
-                              <span className="text-green-600 font-medium">Y</span>
+                            {show.hasOmdbData ? (
+                              <span className="text-green-600 font-medium flex items-center">
+                                <Check className="h-4 w-4 mr-1" /> Yes
+                              </span>
                             ) : (
-                              <span className="text-red-500">N</span>
+                              <span className="text-gray-500">–</span>
                             )}
                           </TableCell>
                           <TableCell>
-                            {show.channelId ? (
-                              <span className="text-green-600 font-medium">Y</span>
+                            {show.hasYoutubeData ? (
+                              <span className="text-red-600 font-medium flex items-center">
+                                <Check className="h-4 w-4 mr-1" /> Yes
+                              </span>
                             ) : (
-                              <span className="text-red-500">N</span>
+                              <span className="text-gray-500">–</span>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
