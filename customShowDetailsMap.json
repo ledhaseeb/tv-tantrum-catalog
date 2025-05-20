@@ -3352,14 +3352,15 @@
       "MineCraft",
       "Interactive Game Elements"
     ],
-    "interactivityLevel": "Low",
+    "interactivityLevel": "Moderate",
     "animationStyle": "Real In Game Video Footage",
     "dialogueIntensity": "High",
     "soundEffectsLevel": "High",
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Thank you very much for watching our videos. Please use this form to get in touch with us.\n►"
   },
   "139": {
     "stimulationScore": 5,
