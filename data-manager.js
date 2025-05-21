@@ -554,21 +554,23 @@ async function updateSensoryDetails() {
   }
 }
 
-// Run the appropriate function based on command line argument
-if (process.argv.includes('--consolidate')) {
-  console.log('Running TV data consolidation process...');
-  consolidateTvData().catch(console.error);
-} else if (process.argv.includes('--sensory')) {
-  console.log('Running sensory details update process...');
-  updateSensoryDetails().catch(console.error);
-} else {
-  console.log('No command specified. Use one of:');
-  console.log('  --consolidate  Consolidate TV show data from multiple sources');
-  console.log('  --sensory      Update sensory details for TV shows');
+// Run the appropriate function based on command line argument when run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv.includes('--consolidate')) {
+    console.log('Running TV data consolidation process...');
+    consolidateTvData().catch(console.error);
+  } else if (process.argv.includes('--sensory')) {
+    console.log('Running sensory details update process...');
+    updateSensoryDetails().catch(console.error);
+  } else {
+    console.log('No command specified. Use one of:');
+    console.log('  --consolidate  Consolidate TV show data from multiple sources');
+    console.log('  --sensory      Update sensory details for TV shows');
+  }
 }
 
-// Export functions for use in other modules
-module.exports = {
+// Export functions for use in other modules - using ES Module exports
+export {
   consolidateTvData,
   updateSensoryDetails,
   loadCustomShowDetails,

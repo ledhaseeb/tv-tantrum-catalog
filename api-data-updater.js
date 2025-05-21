@@ -14,12 +14,17 @@
  * - Maintains semantic integrity of sensory details
  */
 
-const { Pool } = require('pg');
-const { omdbService } = require('./server/omdb');
-const { youtubeService } = require('./server/youtube');
-const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
+import { Pool } from 'pg';
+import { omdbService } from './server/omdb.js';
+import { youtubeService } from './server/youtube.js';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -391,17 +396,19 @@ async function updateYouTubeShows() {
   }
 }
 
-// Run the appropriate function based on command line argument
-if (process.argv.includes('--youtube')) {
-  console.log('Running YouTube-only update...');
-  updateYouTubeShows().catch(console.error);
-} else {
-  console.log('Running full API data update...');
-  updateAllShowsApiData().catch(console.error);
+// Run the appropriate function based on command line argument when run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv.includes('--youtube')) {
+    console.log('Running YouTube-only update...');
+    updateYouTubeShows().catch(console.error);
+  } else {
+    console.log('Running full API data update...');
+    updateAllShowsApiData().catch(console.error);
+  }
 }
 
-// Export functions for use in other modules
-module.exports = {
+// Export functions for use in other modules - using ES Module exports
+export {
   updateShowWithApiData,
   updateAllShowsApiData,
   updateYouTubeShows,
