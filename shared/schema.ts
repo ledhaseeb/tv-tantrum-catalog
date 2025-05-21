@@ -13,6 +13,10 @@ export const users = pgTable("users", {
   country: text("country"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   isApproved: boolean("is_approved").default(false),
+  totalPoints: integer("total_points").default(0),
+  lastLoginDate: timestamp("last_login_date"),
+  profileBio: text("profile_bio"),
+  referralCode: text("referral_code").unique(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -22,6 +26,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   country: true,
   isAdmin: true,
   isApproved: true,
+  profileBio: true,
 });
 
 // --- Favorites table ---
@@ -130,6 +135,61 @@ export const tvShowPlatforms = pgTable("tv_show_platforms", {
   unq: primaryKey({ columns: [t.tvShowId, t.platformId] }),
 }));
 
+// --- Gamification Tables ---
+
+export const userPointsHistory = pgTable("user_points_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  points: integer("points").notNull(),
+  activityType: text("activity_type").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reviewUpvotes = pgTable("review_upvotes", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").notNull().references(() => tvShowReviews.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const researchSummaries = pgTable("research_summaries", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const userReadResearch = pgTable("user_read_research", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  researchId: integer("research_id").notNull().references(() => researchSummaries.id, { onDelete: 'cascade' }),
+  readAt: timestamp("read_at").notNull().defaultNow(),
+});
+
+export const showSubmissions = pgTable("show_submissions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  ageRange: text("age_range").notNull(),
+  episodeLength: integer("episode_length"),
+  platform: text("platform"),
+  additionalNotes: text("additional_notes"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const userReferrals = pgTable("user_referrals", {
+  id: serial("id").primaryKey(),
+  referrerId: integer("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referredId: integer("referred_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Reviews table ---
 
 export const tvShowReviews = pgTable("tv_show_reviews", {
@@ -197,6 +257,41 @@ export const insertTvShowThemeSchema = createInsertSchema(tvShowThemes).omit({
 
 export const insertTvShowPlatformSchema = createInsertSchema(tvShowPlatforms).omit({
   id: true,
+});
+
+// --- Gamification schemas ---
+
+export const insertUserPointsHistorySchema = createInsertSchema(userPointsHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReviewUpvoteSchema = createInsertSchema(reviewUpvotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertResearchSummarySchema = createInsertSchema(researchSummaries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserReadResearchSchema = createInsertSchema(userReadResearch).omit({
+  id: true,
+  readAt: true,
+});
+
+export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  status: true,
+});
+
+export const insertUserReferralSchema = createInsertSchema(userReferrals).omit({
+  id: true,
+  createdAt: true,
 });
 
 // --- TypeScript types for database entities ---
