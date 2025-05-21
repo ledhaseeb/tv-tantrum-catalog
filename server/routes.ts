@@ -153,14 +153,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
-      // Direct search implementation - bypassing the problematic code entirely
+      // Import the new search tracker
+      const searchTracker = require('./searchTracker');
+      
+      // Direct search implementation with reliable tracking
       if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
         // Simple, reliable raw SQL search
         const searchTerm = req.query.search.trim();
         console.log(`Direct SQL search for: "${searchTerm}"`);
         
         // Use the connection pool directly
-        const client = await pool.connect();
+        const client = await require('./db').pool.connect();
         try {
           const result = await client.query(
             `SELECT * FROM tv_shows 
@@ -168,6 +171,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
              ORDER BY name ASC`,
             [`%${searchTerm}%`]
           );
+          
+          // Track the search in the background (if we have results)
+          if (result.rows.length > 0) {
+            const firstShowId = result.rows[0].id;
+            // Don't await this - let it run in the background
+            setTimeout(() => {
+              searchTracker.trackShowSearch(firstShowId)
+                .catch(err => console.error('Background search tracking error:', err));
+            }, 10);
+          }
           
           // Return the results immediately
           return res.json(result.rows);
