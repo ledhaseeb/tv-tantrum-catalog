@@ -22,7 +22,7 @@ import UserDashboard from "@/pages/user-dashboard";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
-// We no longer need AuthProvider since we're using Replit Auth
+import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
 
@@ -316,11 +316,13 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-        <ColorPaletteCustomizer />
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+          <ColorPaletteCustomizer />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

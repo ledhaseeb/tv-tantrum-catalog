@@ -6,20 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
 import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X, BookOpen } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Navbar() {
   const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const { user, isLoading, isAuthenticated } = useAuth();
-  // Check if user is admin via API call
-  const { data: isAdmin = false } = useQuery({
-    queryKey: ['/api/user/is-admin'],
-    enabled: !!user,
-    refetchOnWindowFocus: false,
-  });
+  // Use the original useAuth hook with isAdmin property
+  const { user, isLoading, isAdmin } = useAuth();
 
   // Fetch shows for search dropdown
   const { data: shows } = useQuery({
