@@ -1,7 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-// Use storage from storage.ts
-import { storage } from "./storage";
+// Use database storage
+import { storage } from "./database-storage";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
