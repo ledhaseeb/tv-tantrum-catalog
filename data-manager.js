@@ -13,13 +13,18 @@
  * - Maintains data integrity with custom details
  */
 
-const fs = require('fs');
-const path = require('path');
-const { Pool } = require('pg');
-const { parse } = require('csv-parse/sync');
-const dotenv = require('dotenv');
+import fs from 'fs';
+import path from 'path';
+import { Pool } from 'pg';
+import { parse } from 'csv-parse/sync';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Database connection
 const pool = new Pool({

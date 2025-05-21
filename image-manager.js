@@ -429,25 +429,27 @@ async function consolidateImages() {
   }
 }
 
-// Run the appropriate function based on command line argument
-if (process.argv.includes('--map')) {
-  console.log('Running image mapping process...');
-  mapCustomImages().catch(console.error);
-} else if (process.argv.includes('--restore')) {
-  console.log('Running image restoration process...');
-  restoreCustomImages().catch(console.error);
-} else if (process.argv.includes('--consolidate')) {
-  console.log('Running image consolidation process...');
-  consolidateImages().catch(console.error);
-} else {
-  console.log('No command specified. Use one of:');
-  console.log('  --map        Map custom images to TV shows');
-  console.log('  --restore    Restore custom images from backup');
-  console.log('  --consolidate Consolidate images into a single directory');
+// Run the appropriate function based on command line argument when run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv.includes('--map')) {
+    console.log('Running image mapping process...');
+    mapCustomImages().catch(console.error);
+  } else if (process.argv.includes('--restore')) {
+    console.log('Running image restoration process...');
+    restoreCustomImages().catch(console.error);
+  } else if (process.argv.includes('--consolidate')) {
+    console.log('Running image consolidation process...');
+    consolidateImages().catch(console.error);
+  } else {
+    console.log('No command specified. Use one of:');
+    console.log('  --map        Map custom images to TV shows');
+    console.log('  --restore    Restore custom images from backup');
+    console.log('  --consolidate Consolidate images into a single directory');
+  }
 }
 
-// Export functions for use in other modules
-module.exports = {
+// Export functions for use in other modules - ES Module exports
+export {
   mapCustomImages,
   restoreCustomImages,
   consolidateImages,
