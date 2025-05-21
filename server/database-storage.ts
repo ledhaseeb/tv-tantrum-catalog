@@ -888,18 +888,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]> {
-    // Use sql template to explicitly specify column names
-    return await db.execute(sql`
-      SELECT 
-        id, 
-        tv_show_id as "tvShowId", 
-        user_name as "userName", 
-        rating, 
-        review, 
-        created_at as "createdAt"
-      FROM tv_show_reviews 
-      WHERE tv_show_id = ${tvShowId}
-    `);
+    // Direct SQL query for more reliable results
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT 
+          id, 
+          tv_show_id as "tvShowId", 
+          user_name as "userName", 
+          rating, 
+          review, 
+          created_at as "createdAt"
+        FROM tv_show_reviews 
+        WHERE tv_show_id = $1
+        ORDER BY created_at DESC
+      `, [tvShowId]);
+      
+      return result.rows;
+    } finally {
+      client.release();
+    }
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {

@@ -189,8 +189,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "TV show not found" });
       }
       
-      // Get reviews for this show
+      // Get reviews for this show and log them for debugging
       const reviews = await storage.getReviewsByTvShowId(id);
+      console.log(`Found ${reviews.length} reviews for show ID ${id}:`, 
+        reviews.map(r => ({ userName: r.userName, rating: r.rating, createdAt: r.createdAt })));
       
       // Track this view
       await storage.trackShowView(id);
