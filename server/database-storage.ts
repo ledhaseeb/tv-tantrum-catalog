@@ -1,16 +1,24 @@
 import { db, pool } from "./db";
-import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
+import { eq, and, or, not, sql, desc, inArray, like, count, asc } from "drizzle-orm";
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches,
+  userPoints, researchSummaries, userResearchReads, showSubmissions, reviews, reviewUpvotes,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
   type TvShowSearch, type InsertTvShowSearch,
   type Favorite, type InsertFavorite,
-  type TvShowGitHub
+  type TvShowGitHub,
+  type UserPoints, type InsertUserPoints,
+  type ResearchSummary, type InsertResearchSummary,
+  type UserResearchRead, type InsertUserResearchRead,
+  type ShowSubmission, type InsertShowSubmission,
+  type Review, type InsertReview,
+  type ReviewUpvote, type InsertReviewUpvote
 } from "@shared/schema";
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
 import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
+import crypto from 'crypto';
 
 // We'll implement a simpler solution directly in this file
 
@@ -20,7 +28,9 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getAllUsers(): Promise<User[]>;
+  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
+  getAllUsers(limit?: number, offset?: number): Promise<User[]>;
+  getUserCount(): Promise<number>;
   updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined>;
   
   // TV Shows methods
@@ -81,7 +91,11 @@ export class DatabaseStorage implements IStorage {
         isAdmin: result.rows[0].is_admin,
         country: result.rows[0].country,
         createdAt: result.rows[0].created_at,
-        isApproved: result.rows[0].is_approved
+        isApproved: result.rows[0].is_approved,
+        profileBio: result.rows[0].profile_bio,
+        totalPoints: result.rows[0].total_points,
+        lastLoginDate: result.rows[0].last_login_date,
+        referralCode: result.rows[0].referral_code
       };
     } catch (error) {
       console.error(`Error getting user by ID ${id}:`, error);
