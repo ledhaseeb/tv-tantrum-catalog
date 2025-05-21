@@ -1743,6 +1743,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Gamification API Routes
   // -------------------------------------------------------------------------
   
+  // Get user points
+  app.get("/api/user/points", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your points" });
+      }
+      
+      const points = await storage.getUserPoints(userId);
+      res.json(points);
+    } catch (error) {
+      console.error('Error getting user points:', error);
+      res.status(500).json({ 
+        message: "Error retrieving user points", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Get user points history
+  app.get("/api/user/points/history", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your points history" });
+      }
+      
+      const history = await storage.getUserPointsHistory(userId);
+      res.json(history);
+    } catch (error) {
+      console.error('Error getting user points history:', error);
+      res.status(500).json({ 
+        message: "Error retrieving points history", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const leaderboard = await storage.getTopUsers(limit);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error getting leaderboard:', error);
+      res.status(500).json({ 
+        message: "Error retrieving leaderboard", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Upvote a review (awards points to the review author)
+  app.post("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const { reviewId } = req.params;
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to upvote reviews" });
+      }
+      
+      // Add upvote and award points to the review author
+      const upvote = await storage.addReviewUpvote(parseInt(reviewId), userId);
+      
+      res.json({ success: true, upvote });
+    } catch (error) {
+      console.error('Error upvoting review:', error);
+      res.status(500).json({ 
+        message: "Error upvoting review", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Remove upvote from a review
+  app.delete("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const { reviewId } = req.params;
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to remove upvotes" });
+      }
+      
+      const removed = await storage.removeReviewUpvote(parseInt(reviewId), userId);
+      res.json({ success: removed });
+    } catch (error) {
+      console.error('Error removing upvote:', error);
+      res.status(500).json({ 
+        message: "Error removing upvote", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Get upvotes for a review
+  app.get("/api/reviews/:reviewId/upvotes", async (req: Request, res: Response) => {
+    try {
+      const { reviewId } = req.params;
+      const upvotes = await storage.getReviewUpvotes(parseInt(reviewId));
+      res.json(upvotes);
+    } catch (error) {
+      console.error('Error getting review upvotes:', error);
+      res.status(500).json({ 
+        message: "Error retrieving review upvotes", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
   // User Dashboard
   app.get("/api/user/dashboard", async (req: Request, res: Response) => {
     try {

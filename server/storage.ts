@@ -8,6 +8,25 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: Partial<User>): Promise<User>;
   
+  // User points and gamification methods
+  getUserPoints(userId: string): Promise<{ 
+    total: number; 
+    breakdown: {
+      reviews: number;
+      upvotesGiven: number;
+      upvotesReceived: number;
+      consecutiveLogins: number;
+      shares: number;
+      referrals: number;
+      showSubmissions: number;
+      researchRead: number;
+    }
+  }>;
+  getUserPointsHistory(userId: string): Promise<any[]>;
+  awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<any>;
+  getTopUsers(limit?: number): Promise<any[]>;
+  updateUserLoginStreak(userId: string): Promise<number>;
+  
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
   getTvShowById(id: number): Promise<TvShow | undefined>;
@@ -31,6 +50,9 @@ export interface IStorage {
   // Reviews methods
   getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]>;
   addReview(review: InsertTvShowReview): Promise<TvShowReview>;
+  addReviewUpvote(reviewId: number, userId: string): Promise<any>;
+  removeReviewUpvote(reviewId: number, userId: string): Promise<boolean>;
+  getReviewUpvotes(reviewId: number): Promise<any[]>;
   
   // Search/Popularity tracking methods
   trackShowSearch(tvShowId: number): Promise<void>;
@@ -47,6 +69,20 @@ export interface IStorage {
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
   getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
+  
+  // Research summaries methods
+  getResearchSummaries(): Promise<any[]>;
+  getResearchSummary(id: number): Promise<any>;
+  hasUserReadResearch(userId: string, researchId: number): Promise<boolean>;
+  markResearchAsRead(userId: string, researchId: number): Promise<any>;
+  getUserReadResearch(userId: string): Promise<any[]>;
+  addResearchSummary(research: any): Promise<any>;
+  
+  // Show submissions methods
+  addShowSubmission(submission: any): Promise<any>;
+  getUserShowSubmissions(userId: string): Promise<any[]>;
+  getPendingShowSubmissions(): Promise<any[]>;
+  updateShowSubmissionStatus(id: number, status: string): Promise<any>;
   
   // Gamification methods
   
