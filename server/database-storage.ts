@@ -599,7 +599,6 @@ export class DatabaseStorage implements IStorage {
           productionCompany: row.production_company || '',
           
           // Required schema fields with defaults
-          episodeLength: row.episode_length || 0,
           creator: row.creator || null,
           releaseYear: row.release_year || null,
           endYear: row.end_year || null,
