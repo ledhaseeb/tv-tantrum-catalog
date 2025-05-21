@@ -75,12 +75,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user favorites
       const favorites = await storage.getUserFavorites(userId);
       
-      // Get user points history - simple implementation if method doesn't exist
-      let pointsHistory = [];
-      // Skip attempting to call the function since it's not implemented yet
+      // Get user's gamification data
+      const pointsInfo = await storage.getUserPoints(userId);
+      const pointsHistory = await storage.getUserPointsHistory(userId);
       
-      // Get read research summaries - empty placeholder for now
-      let readResearch = [];
+      // Get similar shows based on user preferences
+      const recommendedShows = await storage.getSimilarShows(userId, 5);
+      
+      // Get user login streak
+      const loginStreak = await storage.getUserLoginStreak(userId);
+
+      // Get leaderboard data (top 10 users)
+      const topUsers = await storage.getTopUsers(10);
+      
+      // Get read research summaries
+      const readResearch = await storage.getUserReadResearch(userId);
       
       // Get show submissions - empty placeholder for now
       let submissions = [];
@@ -88,12 +97,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Compile dashboard data
       const dashboardData = {
         user,
-        points: user.totalPoints || 0,
+        points: pointsInfo.total || 0,
+        pointsBreakdown: pointsInfo.breakdown,
+        rank: user.rank || "TV Watcher",
         reviews,
         favorites,
         pointsHistory,
         readResearch,
-        submissions
+        submissions,
+        recommendedShows,
+        streak: loginStreak?.currentStreak || 0,
+        weeklyStreak: loginStreak?.weeklyStreak || 0,
+        monthlyStreak: loginStreak?.monthlyStreak || 0,
+        leaderboard: topUsers
       };
       
       res.json(dashboardData);
