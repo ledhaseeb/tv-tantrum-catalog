@@ -1442,15 +1442,14 @@ export class DatabaseStorage implements IStorage {
         await db
           .update(tvShowViews)
           .set({
-            viewCount: existingView.viewCount + 1,
+            viewCount: existingView.viewCount + 1
           })
           .where(eq(tvShowViews.id, existingView.id));
       } else {
         // Create new view record
         await db.insert(tvShowViews).values({
           tvShowId,
-          viewCount: 1,
-          lastViewed: now,
+          viewCount: 1
         });
       }
     } catch (error) {
