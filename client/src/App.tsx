@@ -316,13 +316,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-          <ColorPaletteCustomizer />
-        </TooltipProvider>
-      </AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+        <ColorPaletteCustomizer />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

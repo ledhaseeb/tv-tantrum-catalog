@@ -1,8 +1,9 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export function AdminRoute({
   path,
@@ -11,21 +12,20 @@ export function AdminRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const { user, isLoading, isAdmin } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
+  // We'll need to check if user is admin via an API call
+  const { data: isAdmin } = useQuery({
+    queryKey: ["/api/user/is-admin"],
+    enabled: !!user,
+  });
   const { toast } = useToast();
 
   useEffect(() => {
     // If user is logged in but not an admin, show toast
-    if (user && !isAdmin) {
+    if (user && isAdmin === false) {
       toast({
         title: "Access Denied",
         description: "You do not have admin privileges to access this page.",
-        variant: "destructive",
-      });
-    } else if (user && !user.isApproved) {
-      toast({
-        title: "Access Denied",
-        description: "Your account is pending approval by an administrator.",
         variant: "destructive",
       });
     }
@@ -41,26 +41,17 @@ export function AdminRoute({
     );
   }
 
-  // If not logged in, redirect to auth page
+  // If not logged in, redirect to login page
   if (!user) {
     return (
       <Route path={path}>
-        <Redirect to="/auth" />
+        <Redirect to="/api/login" />
       </Route>
     );
   }
 
-  // If logged in but not approved, redirect to pending page
-  if (user.isApproved === false) {
-    return (
-      <Route path={path}>
-        <Redirect to="/registration-pending" />
-      </Route>
-    );
-  }
-
-  // If logged in and approved but not an admin, redirect to home
-  if (!isAdmin) {
+  // If logged in but not an admin, redirect to home
+  if (isAdmin === false) {
     return (
       <Route path={path}>
         <Redirect to="/home" />
