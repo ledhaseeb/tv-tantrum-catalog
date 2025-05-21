@@ -181,57 +181,78 @@ export class DatabaseStorage implements IStorage {
   private standardizeSensoryMetric(value: string | null): string | null {
     if (!value) return null;
     
-    // Convert to lowercase for case-insensitive comparison
-    const lowerValue = value.toLowerCase();
+    // Normalize to lowercase and trim for consistent matching
+    const normalizedValue = value.toLowerCase().trim();
     
-    // Map various terms to our standardized ratings
-    if (lowerValue.includes('very low') || lowerValue.includes('very-low') || 
-        lowerValue === 'minimal' || lowerValue === 'none' || 
-        lowerValue === 'lowest' || lowerValue === 'slight' || 
-        lowerValue === 'quiet' || lowerValue === 'soft' || 
-        lowerValue === 'rare' || lowerValue === 'infrequent') {
-      return 'Low';
+    // Already using the standard terms (case-insensitive)
+    if (/^low$/i.test(normalizedValue)) return "Low";
+    if (/^low-moderate$/i.test(normalizedValue)) return "Low-Moderate";
+    if (/^moderate$/i.test(normalizedValue)) return "Moderate";
+    if (/^moderate-high$/i.test(normalizedValue)) return "Moderate-High";
+    if (/^high$/i.test(normalizedValue)) return "High";
+    
+    // Map various terms to standardized values
+    
+    // LOW mappings
+    if ([
+      'minimal', 'very low', 'very-low', 'verylow', 'none', 'quiet', 'soft',
+      'rare', 'mild', 'limited', 'infrequent', 'sparse', 'little', 'gentle',
+      'very minimal', 'very-minimal', 'very little', 'very-little', 'rarely',
+      'extremely limited', 'negligible', 'slow', 'calm', 'relaxed', 'lowest',
+      'slight', 'trivial', 'minor', 'subtle', 'occasional'
+    ].some(term => normalizedValue.includes(term))) {
+      return "Low";
     }
     
-    if (lowerValue.includes('low to moderate') || lowerValue.includes('low-to-moderate') || 
-        lowerValue.includes('light to moderate') || lowerValue.includes('mild') || 
-        lowerValue.includes('somewhat low') || lowerValue.includes('occasionally')) {
-      return 'Low-Moderate';
+    // LOW-MODERATE mappings
+    if ([
+      'low moderate', 'low to moderate', 'lowmoderate', 'low/moderate',
+      'light', 'light-moderate', 'light moderate', 'somewhat limited',
+      'below average', 'relatively low', 'moderately low', 'light-medium',
+      'somewhat low', 'few', 'gentle-moderate', 'low medium', 'moderate-low',
+      'low to medium', 'occasionally', 'mild to moderate', 'fairly low'
+    ].some(term => normalizedValue.includes(term))) {
+      return "Low-Moderate";
     }
     
-    if (lowerValue.includes('medium') || lowerValue === 'mid' || 
-        lowerValue === 'average' || lowerValue === 'normal' || 
-        lowerValue === 'balanced' || lowerValue === 'standard' || 
-        lowerValue === 'neutral' || lowerValue === 'regular' || 
-        lowerValue === 'common' || lowerValue === 'intermediate') {
-      return 'Moderate';
+    // MODERATE mappings
+    if ([
+      'medium', 'average', 'normal', 'standard', 'balanced', 'regular',
+      'middle', 'neutral', 'intermediate', 'sometimes', 'periodically',
+      'moderately', 'mid-level', 'mid level', 'midlevel', 'medium level',
+      'moderate level', 'reasonable', 'center', 'occasional-frequent',
+      'fair', 'halfway', 'moderate amount', 'common', 'mid', 'standard'
+    ].some(term => normalizedValue.includes(term))) {
+      return "Moderate";
     }
     
-    if (lowerValue.includes('moderate to high') || lowerValue.includes('moderate-to-high') || 
-        lowerValue.includes('somewhat high') || lowerValue.includes('elevated') || 
-        lowerValue.includes('above average') || lowerValue.includes('frequent')) {
-      return 'Moderate-High';
+    // MODERATE-HIGH mappings
+    if ([
+      'moderate high', 'moderate to high', 'moderatehigh', 'moderate/high',
+      'elevated', 'significant', 'substantial', 'fairly high', 'considerable', 
+      'above average', 'pronounced', 'notable', 'noticeable', 'robust',
+      'strong', 'frequent', 'often', 'relatively high', 'higher than average',
+      'heightened', 'medium-high', 'medium high', 'medium to high', 'quite high',
+      'somewhat high', 'moderate-to-high'
+    ].some(term => normalizedValue.includes(term))) {
+      return "Moderate-High";
     }
     
-    if (lowerValue.includes('very high') || lowerValue.includes('very-high') || 
-        lowerValue.includes('intense') || lowerValue.includes('maximum') || 
-        lowerValue.includes('extreme') || lowerValue.includes('highest') || 
-        lowerValue.includes('loud') || lowerValue.includes('strong') || 
-        lowerValue.includes('constant') || lowerValue.includes('heavy')) {
-      return 'High';
+    // HIGH mappings
+    if ([
+      'very high', 'very-high', 'veryhigh', 'intense', 'continuous', 'heavy', 
+      'extreme', 'maximum', 'highest', 'extensive', 'strong', 'significant',
+      'very intense', 'very-intense', 'veryintense', 'constant', 'always',
+      'excessive', 'considerable', 'substantial', 'loud', 'abundant',
+      'numerous', 'fast', 'rapid', 'consistent', 'dominant'
+    ].some(term => normalizedValue.includes(term))) {
+      return "High";
     }
-    
-    // Direct mappings for our standard terms (preserving capitalization)
-    if (lowerValue === 'low') return 'Low';
-    if (lowerValue === 'low-moderate') return 'Low-Moderate';
-    if (lowerValue === 'moderate') return 'Moderate';
-    if (lowerValue === 'moderate-high') return 'Moderate-High';
-    if (lowerValue === 'high') return 'High';
     
     // Default to Moderate for any unrecognized values
     // Using specific log format to make these easy to find
-    console.warn(`[METRIC_STANDARDIZATION] Unrecognized sensory metric value: "${value}", defaulting to Moderate`);
-    return 'Moderate';
+    console.warn(`[METRIC_STANDARDIZATION] Unrecognized sensory metric value: "${value}", defaulting to "Moderate"`);
+    return "Moderate";
   }
   
   // Private helper methods for junction tables
