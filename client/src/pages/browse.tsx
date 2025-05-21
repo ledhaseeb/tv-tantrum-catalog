@@ -144,12 +144,67 @@ export default function Browse() {
     }
   }, [search]);
 
-  // Fetch TV shows with applied filters
-  console.log('Browse page - activeFilters:', activeFilters);
-  const { data: shows, isLoading, error } = useQuery<TvShow[]>({
-    queryKey: ['/api/tv-shows', activeFilters],
-    staleTime: 60000, // 1 minute
-  });
+  // Use direct fetch instead of React Query to avoid timestamp issues
+  const [shows, setShows] = useState<TvShow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  
+  // Direct fetch implementation for maximum reliability
+  useEffect(() => {
+    // Skip fetch if no filters are applied (to prevent unnecessary requests)
+    if (Object.keys(activeFilters).length === 0) {
+      setIsLoading(false);
+      return;
+    }
+    
+    async function fetchShows() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        console.log('BROWSE PAGE: Fetching TV shows with filters:', activeFilters);
+        
+        // Build query string for API request
+        const params = new URLSearchParams();
+        
+        // Add simple string filters
+        if (activeFilters.search) params.append('search', activeFilters.search);
+        if (activeFilters.ageGroup) params.append('ageGroup', activeFilters.ageGroup);
+        if (activeFilters.tantrumFactor) params.append('tantrumFactor', activeFilters.tantrumFactor);
+        if (activeFilters.sortBy) params.append('sortBy', activeFilters.sortBy);
+        if (activeFilters.interactionLevel) params.append('interactionLevel', activeFilters.interactionLevel);
+        if (activeFilters.dialogueIntensity) params.append('dialogueIntensity', activeFilters.dialogueIntensity);
+        if (activeFilters.soundFrequency) params.append('soundFrequency', activeFilters.soundFrequency);
+        
+        // Add arrays as comma-separated strings
+        if (activeFilters.themes && activeFilters.themes.length > 0) {
+          params.append('themes', activeFilters.themes.join(','));
+        }
+        
+        // Add match mode for themes
+        if (activeFilters.themeMatchMode) {
+          params.append('themeMatchMode', activeFilters.themeMatchMode);
+        }
+        
+        // Use fetch directly
+        const response = await fetch(`/api/tv-shows?${params.toString()}`);
+        
+        if (!response.ok) {
+          throw new Error(`API error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('BROWSE PAGE: Received', data.length, 'shows');
+        setShows(data);
+      } catch (err) {
+        console.error('BROWSE PAGE: Error fetching shows:', err);
+        setError(err instanceof Error ? err : new Error('Failed to fetch shows'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchShows();
+  }, [activeFilters]);
   
   // Handler for navigating to show details
   const handleShowClick = (id: number) => {
