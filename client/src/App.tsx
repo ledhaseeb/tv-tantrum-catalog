@@ -109,36 +109,68 @@ function Router() {
           />
         )}
 
+        {/* Handle both /shows/:id and /detail/:id routes */}
         {isDevMode ? (
-          <Route path="/shows/:id">
-            {(params) => (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <Detail id={parseInt(params.id, 10)} />
-                </div>
-                <Footer />
-              </div>
-            )}
-          </Route>
-        ) : (
-          // This is a special case since it has a parameter
-          <Route path="/shows/:id">
-            {(params) => (
-              <ApprovedRoute 
-                path={`/shows/${params.id}`} 
-                component={() => (
-                  <div className="flex-grow flex flex-col">
-                    <Navbar />
-                    <div className="flex-grow">
-                      <Detail id={parseInt(params.id, 10)} />
-                    </div>
-                    <Footer />
+          <>
+            <Route path="/shows/:id">
+              {(params) => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <Detail id={parseInt(params.id, 10)} />
                   </div>
-                )} 
-              />
-            )}
-          </Route>
+                  <Footer />
+                </div>
+              )}
+            </Route>
+            <Route path="/detail/:id">
+              {(params) => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <Detail id={parseInt(params.id, 10)} />
+                  </div>
+                  <Footer />
+                </div>
+              )}
+            </Route>
+          </>
+        ) : (
+          <>
+            {/* This is a special case since it has a parameter */}
+            <Route path="/shows/:id">
+              {(params) => (
+                <ApprovedRoute 
+                  path={`/shows/${params.id}`} 
+                  component={() => (
+                    <div className="flex-grow flex flex-col">
+                      <Navbar />
+                      <div className="flex-grow">
+                        <Detail id={parseInt(params.id, 10)} />
+                      </div>
+                      <Footer />
+                    </div>
+                  )} 
+                />
+              )}
+            </Route>
+            <Route path="/detail/:id">
+              {(params) => (
+                <ApprovedRoute 
+                  path={`/detail/${params.id}`} 
+                  component={() => (
+                    <div className="flex-grow flex flex-col">
+                      <Navbar />
+                      <div className="flex-grow">
+                        <Detail id={parseInt(params.id, 10)} />
+                      </div>
+                      <Footer />
+                    </div>
+                  )} 
+                />
+              )}
+            </Route>
+          </>
         )}
 
         {isDevMode ? (
