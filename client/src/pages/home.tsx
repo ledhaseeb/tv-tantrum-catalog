@@ -562,6 +562,45 @@ export default function Home() {
         preschoolerShows, 
         "/browse?ageRange=2-4&themeMatchMode=OR"
       )}
+
+      {/* Gamification: Community Leaderboard */}
+      <div className="mt-12 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2">
+            <h2 className="text-2xl font-heading font-bold mb-6 text-gray-900">Community Features</h2>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-3">Join Our Community</h3>
+              <p className="text-gray-700 mb-4">
+                Participate in our active community to earn points and rewards! Share your opinions, 
+                write reviews, and help other parents find the perfect shows for their children.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-purple-500 font-bold text-xl mb-1">10 pts</div>
+                  <div className="text-sm text-gray-600">For each review you write</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-blue-500 font-bold text-xl mb-1">5 pts</div>
+                  <div className="text-sm text-gray-600">When your reviews get upvoted</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-green-500 font-bold text-xl mb-1">15 pts</div>
+                  <div className="text-sm text-gray-600">For submitting show suggestions</div>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setLocation("/signup")} 
+                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
+              >
+                Create Account & Start Earning
+              </Button>
+            </div>
+          </div>
+          <div className="md:col-span-1">
+            <Leaderboard />
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
