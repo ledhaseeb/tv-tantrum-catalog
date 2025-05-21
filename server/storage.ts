@@ -46,6 +46,41 @@ export interface IStorage {
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
   getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
+  
+  // Gamification methods
+  
+  // Points and activities
+  awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<UserPointsHistory>;
+  getUserPoints(userId: number): Promise<number>;
+  getUserPointsHistory(userId: number): Promise<UserPointsHistory[]>;
+  updateUserLoginStreak(userId: number): Promise<number>;
+  
+  // Review upvotes
+  addReviewUpvote(userId: number, reviewId: number): Promise<ReviewUpvote>;
+  removeReviewUpvote(userId: number, reviewId: number): Promise<boolean>;
+  getReviewUpvotes(reviewId: number): Promise<ReviewUpvote[]>;
+  hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean>;
+  
+  // Research summaries
+  getResearchSummaries(): Promise<ResearchSummary[]>;
+  getResearchSummary(id: number): Promise<ResearchSummary | undefined>;
+  addResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary>;
+  markResearchAsRead(userId: number, researchId: number): Promise<UserReadResearch>;
+  getUserReadResearch(userId: number): Promise<ResearchSummary[]>;
+  hasUserReadResearch(userId: number, researchId: number): Promise<boolean>;
+  
+  // Show submissions
+  addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission>;
+  getUserShowSubmissions(userId: number): Promise<ShowSubmission[]>;
+  getPendingShowSubmissions(): Promise<ShowSubmission[]>;
+  updateShowSubmissionStatus(id: number, status: string): Promise<ShowSubmission>;
+  
+  // User referrals
+  addUserReferral(referrerId: number, referredId: number): Promise<UserReferral>;
+  getUserReferrals(userId: number): Promise<UserReferral[]>;
+  
+  // User leaderboard
+  getTopUsers(limit?: number): Promise<User[]>;
 }
 
 export class MemStorage implements IStorage {

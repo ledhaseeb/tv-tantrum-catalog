@@ -329,6 +329,25 @@ export type TvShowTheme = typeof tvShowThemes.$inferSelect;
 export type InsertTvShowPlatform = z.infer<typeof insertTvShowPlatformSchema>;
 export type TvShowPlatform = typeof tvShowPlatforms.$inferSelect;
 
+// --- Gamification types ---
+export type InsertUserPointsHistory = z.infer<typeof insertUserPointsHistorySchema>;
+export type UserPointsHistory = typeof userPointsHistory.$inferSelect;
+
+export type InsertReviewUpvote = z.infer<typeof insertReviewUpvoteSchema>;
+export type ReviewUpvote = typeof reviewUpvotes.$inferSelect;
+
+export type InsertResearchSummary = z.infer<typeof insertResearchSummarySchema>;
+export type ResearchSummary = typeof researchSummaries.$inferSelect;
+
+export type InsertUserReadResearch = z.infer<typeof insertUserReadResearchSchema>;
+export type UserReadResearch = typeof userReadResearch.$inferSelect;
+
+export type InsertShowSubmission = z.infer<typeof insertShowSubmissionSchema>;
+export type ShowSubmission = typeof showSubmissions.$inferSelect;
+
+export type InsertUserReferral = z.infer<typeof insertUserReferralSchema>;
+export type UserReferral = typeof userReferrals.$inferSelect;
+
 // --- GitHub show format based on actual data structure ---
 export const tvShowGitHubSchema = z.object({
   title: z.string(),
