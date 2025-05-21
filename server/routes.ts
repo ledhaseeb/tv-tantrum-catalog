@@ -98,26 +98,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Get user's gamification data
-      let pointsInfo = { total: 0, breakdown: defaultPointsBreakdown, rank: 'TV Watcher' };
+      let pointsInfo = { 
+        total: 0, 
+        breakdown: {
+          ...defaultPointsBreakdown
+        }, 
+        rank: 'TV Watcher' 
+      };
+      
       try {
         if (typeof storage.getUserPoints === 'function') {
-          pointsInfo = await storage.getUserPoints(userId) || pointsInfo;
-        } else {
-          // Calculate points based on user activities if getUserPoints function is not available
-          // Each review is worth 5 points
-          const reviewPoints = reviews.length * 5;
-          // Update the breakdown
-          pointsInfo.breakdown.reviews = reviewPoints;
-          pointsInfo.total = reviewPoints + pointsInfo.breakdown.upvotesGiven + 
-                            pointsInfo.breakdown.upvotesReceived + pointsInfo.breakdown.consecutiveLogins +
-                            pointsInfo.breakdown.shares + pointsInfo.breakdown.referrals +
-                            pointsInfo.breakdown.showSubmissions + pointsInfo.breakdown.researchRead;
-          
-          // Determine rank based on total points
-          if (pointsInfo.total >= 100) pointsInfo.rank = 'TV Enthusiast';
-          if (pointsInfo.total >= 500) pointsInfo.rank = 'TV Expert';
-          if (pointsInfo.total >= 1000) pointsInfo.rank = 'TV Master';
+          const dbPoints = await storage.getUserPoints(userId);
+          if (dbPoints) {
+            pointsInfo = dbPoints;
+          }
         }
+        
+        // Always calculate points based on user activities in case db doesn't have updated information
+        // Each review is worth 5 points
+        const reviewPoints = reviews.length * 5;
+        
+        // Update the breakdown
+        pointsInfo.breakdown.reviews = reviewPoints;
+        
+        // Recalculate total points
+        pointsInfo.total = reviewPoints + 
+                          (pointsInfo.breakdown.upvotesGiven || 0) + 
+                          (pointsInfo.breakdown.upvotesReceived || 0) + 
+                          (pointsInfo.breakdown.consecutiveLogins || 0) +
+                          (pointsInfo.breakdown.shares || 0) + 
+                          (pointsInfo.breakdown.referrals || 0) +
+                          (pointsInfo.breakdown.showSubmissions || 0) + 
+                          (pointsInfo.breakdown.researchRead || 0);
+        
+        // Determine rank based on total points
+        if (pointsInfo.total >= 100) pointsInfo.rank = 'TV Enthusiast';
+        if (pointsInfo.total >= 500) pointsInfo.rank = 'TV Expert';
+        if (pointsInfo.total >= 1000) pointsInfo.rank = 'TV Master';
+        
+        console.log(`Calculated points for user ${userId}: Total=${pointsInfo.total}, Reviews=${reviewPoints}`);
       } catch (error) {
         console.error('Error getting user points:', error);
       }
