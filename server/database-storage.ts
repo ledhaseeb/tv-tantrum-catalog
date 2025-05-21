@@ -926,12 +926,13 @@ export class DatabaseStorage implements IStorage {
   async getUserReviews(userId: number): Promise<any[]> {
     const client = await pool.connect();
     try {
-      // Join the tv_show_reviews with tv_shows to get the show names
+      // Now we can use the user_id field directly for faster lookups
       const result = await client.query(`
         SELECT 
           r.id, 
           r.tv_show_id as "tvShowId", 
           r.user_name as "userName", 
+          r.user_id as "userId",
           r.rating, 
           r.review, 
           r.created_at as "createdAt",
@@ -940,11 +941,11 @@ export class DatabaseStorage implements IStorage {
           (SELECT COUNT(*) FROM review_upvotes WHERE review_id = r.id) as "upvotes"
         FROM tv_show_reviews r
         JOIN tv_shows s ON r.tv_show_id = s.id
-        JOIN users u ON u.username = r.user_name
-        WHERE u.id = $1
+        WHERE r.user_id = $1
         ORDER BY r.created_at DESC
       `, [userId]);
       
+      console.log(`Found ${result.rows.length} reviews for user ID ${userId}:`, result.rows);
       return result.rows;
     } finally {
       client.release();
@@ -960,12 +961,12 @@ export class DatabaseStorage implements IStorage {
           r.id, 
           r.tv_show_id as "tvShowId", 
           r.user_name as "userName", 
+          r.user_id as "userId",
           r.rating, 
           r.review, 
           r.created_at as "createdAt"
         FROM tv_show_reviews r
-        JOIN users u ON u.username = r.user_name
-        WHERE u.id = $1 AND r.tv_show_id = $2
+        WHERE r.user_id = $1 AND r.tv_show_id = $2
         LIMIT 1
       `, [userId, tvShowId]);
       
