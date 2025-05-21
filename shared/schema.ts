@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -11,10 +11,6 @@ export const users = pgTable("users", {
   country: text("country"),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
   isApproved: boolean("is_approved").default(false),
-  profileBio: text("profile_bio"),
-  totalPoints: integer("total_points").default(0),
-  lastLoginDate: text("last_login_date").default(new Date().toISOString()),
-  referralCode: text("referral_code"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -24,111 +20,6 @@ export const insertUserSchema = createInsertSchema(users).pick({
   country: true,
   isAdmin: true,
   isApproved: true,
-  profileBio: true,
-  referralCode: true,
-});
-
-// User points transactions for the gamification system
-export const userPoints = pgTable("user_points", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  points: integer("points").notNull(),
-  activityType: text("activity_type").notNull(), // rating, upvote, research, login, referral, etc.
-  activityId: integer("activity_id"), // ID of the related activity (review ID, research ID, etc.)
-  createdAt: text("created_at").notNull().default(new Date().toISOString()),
-  description: text("description"), // Human-readable description of the activity
-});
-
-export const insertUserPointsSchema = createInsertSchema(userPoints).omit({
-  id: true,
-  createdAt: true,
-});
-
-// Research summaries for users to read and earn points
-export const researchSummaries = pgTable("research_summaries", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  category: text("category"), // Category of research (screen time, development, etc.)
-  pointsValue: integer("points_value").default(10),
-  createdAt: text("created_at").notNull().default(new Date().toISOString()),
-});
-
-export const insertResearchSummarySchema = createInsertSchema(researchSummaries).omit({
-  id: true,
-  createdAt: true,
-});
-
-// Track which users have read which research summaries
-export const userResearchReads = pgTable("user_research_reads", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  researchId: integer("research_id").notNull(),
-  readAt: text("read_at").notNull().default(new Date().toISOString()),
-});
-
-export const insertUserResearchReadSchema = createInsertSchema(userResearchReads).omit({
-  id: true,
-  readAt: true,
-});
-
-// Show submission requests from users
-export const showSubmissions = pgTable("show_submissions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  showName: text("show_name").notNull(),
-  description: text("description").notNull(),
-  ageRange: text("age_range"),
-  platform: text("platform"),
-  releaseYear: integer("release_year"),
-  creator: text("creator"),
-  additionalInfo: text("additional_info"),
-  status: text("status").default("pending"), // pending, approved, rejected
-  reviewedBy: integer("reviewed_by"), // Admin user ID who reviewed the submission
-  createdAt: text("created_at").notNull().default(new Date().toISOString()),
-  updatedAt: text("updated_at").notNull().default(new Date().toISOString()),
-  reasonForDecision: text("reason_for_decision"),
-});
-
-export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).omit({
-  id: true,
-  status: true,
-  reviewedBy: true,
-  createdAt: true,
-  updatedAt: true,
-  reasonForDecision: true,
-});
-
-// User reviews that can receive upvotes
-export const reviews = pgTable("reviews", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  tvShowId: integer("tv_show_id").notNull(),
-  rating: integer("rating").notNull(), // 1-5 scale
-  comment: text("comment").notNull(),
-  upvotes: integer("upvotes").default(0),
-  createdAt: text("created_at").notNull().default(new Date().toISOString()),
-  updatedAt: text("updated_at").notNull().default(new Date().toISOString()),
-});
-
-export const insertReviewSchema = createInsertSchema(reviews).omit({
-  id: true,
-  upvotes: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-// Track review upvotes by users
-export const reviewUpvotes = pgTable("review_upvotes", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  reviewId: integer("review_id").notNull(),
-  createdAt: text("created_at").notNull().default(new Date().toISOString()),
-});
-
-export const insertReviewUpvoteSchema = createInsertSchema(reviewUpvotes).omit({
-  id: true,
-  createdAt: true,
 });
 
 // User favorites table to track shows a user has favorited
@@ -146,18 +37,6 @@ export const insertFavoriteSchema = createInsertSchema(favorites).omit({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type InsertUserPoints = z.infer<typeof insertUserPointsSchema>;
-export type UserPoints = typeof userPoints.$inferSelect;
-export type InsertResearchSummary = z.infer<typeof insertResearchSummarySchema>;
-export type ResearchSummary = typeof researchSummaries.$inferSelect;
-export type InsertUserResearchRead = z.infer<typeof insertUserResearchReadSchema>;
-export type UserResearchRead = typeof userResearchReads.$inferSelect;
-export type InsertShowSubmission = z.infer<typeof insertShowSubmissionSchema>;
-export type ShowSubmission = typeof showSubmissions.$inferSelect;
-export type InsertReview = z.infer<typeof insertReviewSchema>;
-export type Review = typeof reviews.$inferSelect;
-export type InsertReviewUpvote = z.infer<typeof insertReviewUpvoteSchema>;
-export type ReviewUpvote = typeof reviewUpvotes.$inferSelect;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type Favorite = typeof favorites.$inferSelect;
 

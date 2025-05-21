@@ -189,10 +189,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "TV show not found" });
       }
       
-      // Get reviews for this show and log them for debugging
+      // Get reviews for this show
       const reviews = await storage.getReviewsByTvShowId(id);
-      console.log(`Found ${reviews.length} reviews for show ID ${id}:`, 
-        reviews.map(r => ({ userName: r.userName, rating: r.rating, createdAt: r.createdAt })));
       
       // Track this view
       await storage.trackShowView(id);
@@ -354,17 +352,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create a complete response that includes both stored and external data
-      // Make sure reviews are properly formatted with their full data
       const response = {
         ...show,
-        reviews: reviews.map(review => ({
-          id: review.id,
-          tvShowId: review.tvShowId,
-          userName: review.userName,
-          rating: review.rating,
-          review: review.review,
-          createdAt: review.createdAt
-        })),
+        reviews,
         externalData
       };
       

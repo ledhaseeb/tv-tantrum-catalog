@@ -1,24 +1,16 @@
 import { db, pool } from "./db";
-import { eq, and, or, not, sql, desc, inArray, like, count, asc } from "drizzle-orm";
+import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches,
-  userPoints, researchSummaries, userResearchReads, showSubmissions, reviews, reviewUpvotes,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
   type TvShowSearch, type InsertTvShowSearch,
   type Favorite, type InsertFavorite,
-  type TvShowGitHub,
-  type UserPoints, type InsertUserPoints,
-  type ResearchSummary, type InsertResearchSummary,
-  type UserResearchRead, type InsertUserResearchRead,
-  type ShowSubmission, type InsertShowSubmission,
-  type Review, type InsertReview,
-  type ReviewUpvote, type InsertReviewUpvote
+  type TvShowGitHub
 } from "@shared/schema";
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
 import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
-import crypto from 'crypto';
 
 // We'll implement a simpler solution directly in this file
 
@@ -28,9 +20,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
-  getAllUsers(limit?: number, offset?: number): Promise<User[]>;
-  getUserCount(): Promise<number>;
+  getAllUsers(): Promise<User[]>;
   updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined>;
   
   // TV Shows methods
@@ -91,11 +81,7 @@ export class DatabaseStorage implements IStorage {
         isAdmin: result.rows[0].is_admin,
         country: result.rows[0].country,
         createdAt: result.rows[0].created_at,
-        isApproved: result.rows[0].is_approved,
-        profileBio: result.rows[0].profile_bio,
-        totalPoints: result.rows[0].total_points,
-        lastLoginDate: result.rows[0].last_login_date,
-        referralCode: result.rows[0].referral_code
+        isApproved: result.rows[0].is_approved
       };
     } catch (error) {
       console.error(`Error getting user by ID ${id}:`, error);
@@ -258,10 +244,6 @@ export class DatabaseStorage implements IStorage {
         id: row.id,
         email: row.email,
         password: row.password,
-        profileBio: row.profile_bio,
-        totalPoints: row.total_points,
-        lastLoginDate: row.last_login_date,
-        referralCode: row.referral_code,
         username: row.username,
         isAdmin: row.is_admin,
         country: row.country,
@@ -888,26 +870,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]> {
-    // Direct SQL query for more reliable results
-    const client = await pool.connect();
-    try {
-      const result = await client.query(`
-        SELECT 
-          id, 
-          tv_show_id as "tvShowId", 
-          user_name as "userName", 
-          rating, 
-          review, 
-          created_at as "createdAt"
-        FROM tv_show_reviews 
-        WHERE tv_show_id = $1
-        ORDER BY created_at DESC
-      `, [tvShowId]);
-      
-      return result.rows;
-    } finally {
-      client.release();
-    }
+    // Use sql template to explicitly specify column names
+    return await db.execute(sql`
+      SELECT 
+        id, 
+        tv_show_id as "tvShowId", 
+        user_name as "userName", 
+        rating, 
+        review, 
+        created_at as "createdAt"
+      FROM tv_show_reviews 
+      WHERE tv_show_id = ${tvShowId}
+    `);
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
@@ -920,60 +894,6 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newReview;
-  }
-  
-  // Get all reviews for a specific user
-  async getUserReviews(userId: number): Promise<any[]> {
-    const client = await pool.connect();
-    try {
-      // Now we can use the user_id field directly for faster lookups
-      const result = await client.query(`
-        SELECT 
-          r.id, 
-          r.tv_show_id as "tvShowId", 
-          r.user_name as "userName", 
-          r.user_id as "userId",
-          r.rating, 
-          r.review, 
-          r.created_at as "createdAt",
-          s.name as "showName",
-          COALESCE(s.image_url, '') as "showImageUrl",
-          (SELECT COUNT(*) FROM review_upvotes WHERE review_id = r.id) as "upvotes"
-        FROM tv_show_reviews r
-        JOIN tv_shows s ON r.tv_show_id = s.id
-        WHERE r.user_id = $1
-        ORDER BY r.created_at DESC
-      `, [userId]);
-      
-      console.log(`Found ${result.rows.length} reviews for user ID ${userId}:`, result.rows);
-      return result.rows;
-    } finally {
-      client.release();
-    }
-  }
-  
-  // Check if a user has already reviewed a specific show
-  async getUserReviewForShow(userId: number, tvShowId: number): Promise<any> {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(`
-        SELECT 
-          r.id, 
-          r.tv_show_id as "tvShowId", 
-          r.user_name as "userName", 
-          r.user_id as "userId",
-          r.rating, 
-          r.review, 
-          r.created_at as "createdAt"
-        FROM tv_show_reviews r
-        WHERE r.user_id = $1 AND r.tv_show_id = $2
-        LIMIT 1
-      `, [userId, tvShowId]);
-      
-      return result.rows.length > 0 ? result.rows[0] : null;
-    } finally {
-      client.release();
-    }
   }
 
   async trackShowSearch(tvShowId: number): Promise<void> {

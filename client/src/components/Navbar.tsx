@@ -137,15 +137,13 @@ export default function Navbar() {
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
                   </Button>
-                  <Link href="/dashboard">
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                    >
-                      <User className="h-4 w-4" />
-                      <span>{user.username}</span>
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{user.username}</span>
+                  </Button>
                 </div>
               ) : (
                 <Link href="/auth">
@@ -251,14 +249,10 @@ export default function Navbar() {
                           <LogOut className="h-5 w-5 mr-2" />
                           Logout
                         </button>
-                        <Link 
-                          href="/dashboard"
-                          onClick={() => setIsNavOpen(false)}
-                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                        >
+                        <div className="flex items-center px-3 py-2 text-base font-medium text-gray-500 rounded-md">
                           <User className="h-5 w-5 mr-2" />
                           {user.username}
-                        </Link>
+                        </div>
                       </>
                     ) : (
                       <Link 

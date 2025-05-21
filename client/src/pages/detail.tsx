@@ -993,45 +993,30 @@ export default function Detail({ id }: DetailProps) {
           )}
           
           {/* Existing reviews section */}
-          {showDetail.reviews && Array.isArray(showDetail.reviews) && showDetail.reviews.length > 0 ? (
+          {showDetail.reviews && showDetail.reviews.length > 0 ? (
             <div className="space-y-4">
-              {showDetail.reviews.map((review, index) => {
-                // Safety check if review object is malformed
-                if (!review) return null;
-                
-                // Get first initial(s) safely
-                const initials = review.userName && typeof review.userName === 'string' 
-                  ? review.userName.split(' ').filter(Boolean).map(name => name[0] || '').join('')
-                  : '?';
-                
-                return (
-                  <div key={index} className="flex p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
-                    <div className="flex-shrink-0 mr-4">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="font-medium text-primary-600">
-                          {initials || '?'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center mb-1">
-                        <h4 className="font-medium">{review.userName || "Anonymous"}</h4>
-                        <div className="ml-2 flex">
-                          {[...Array(5)].map((_, i) => (
-                            <i key={i} className={`${i < (review.rating || 0) ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
-                          ))}
-                        </div>
-                        <span className="ml-2 text-xs text-gray-500">
-                          {review.createdAt && typeof review.createdAt === 'string' 
-                            ? new Date(review.createdAt).toLocaleDateString() 
-                            : ''}
-                        </span>
-                      </div>
-                      <p className="text-gray-700">{review.review || ""}</p>
+              {showDetail.reviews.map((review, index) => (
+                <div key={index} className="flex p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+                  <div className="flex-shrink-0 mr-4">
+                    <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                      <span className="font-medium text-primary-600">
+                        {review.userName.split(' ').map(name => name[0]).join('')}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
+                  <div className="flex-1">
+                    <div className="flex items-center mb-1">
+                      <h4 className="font-medium">{review.userName}</h4>
+                      <div className="ml-2 flex">
+                        {[...Array(5)].map((_, i) => (
+                          <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-700">{review.review}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8 bg-gray-50 rounded-lg">

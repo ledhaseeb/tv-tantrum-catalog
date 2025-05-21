@@ -1,16 +1,4 @@
-import { 
-  users, type User, type InsertUser, 
-  tvShows, type TvShow, type InsertTvShow, 
-  tvShowReviews, type TvShowReview, type InsertTvShowReview, 
-  type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch, 
-  favorites, type Favorite, type InsertFavorite,
-  userPoints, type UserPoints, type InsertUserPoints,
-  researchSummaries, type ResearchSummary, type InsertResearchSummary,
-  userResearchReads, type UserResearchRead, type InsertUserResearchRead,
-  showSubmissions, type ShowSubmission, type InsertShowSubmission,
-  reviews, type Review, type InsertReview,
-  reviewUpvotes, type ReviewUpvote, type InsertReviewUpvote
-} from "@shared/schema";
+import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch, type Favorite } from "@shared/schema";
 
 export interface IStorage {
   // User methods
@@ -18,9 +6,6 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
-  getAllUsers(limit?: number, offset?: number): Promise<User[]>;
-  getUserCount(): Promise<number>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -61,47 +46,6 @@ export interface IStorage {
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
   getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
-  
-  // Gamification - User Points methods
-  addUserPoints(pointsData: InsertUserPoints): Promise<UserPoints>;
-  getUserPointsHistory(userId: number, limit?: number): Promise<UserPoints[]>;
-  getUserTotalPoints(userId: number): Promise<number>;
-  getTopUsers(limit?: number): Promise<User[]>;
-  updateLastLogin(userId: number): Promise<void>;
-  checkDailyLoginPoints(userId: number): Promise<boolean>;
-  
-  // Gamification - Research summaries methods
-  addResearchSummary(research: InsertResearchSummary): Promise<ResearchSummary>;
-  getAllResearchSummaries(limit?: number, offset?: number): Promise<ResearchSummary[]>;
-  getResearchSummaryById(id: number): Promise<ResearchSummary | undefined>;
-  markResearchAsRead(userId: number, researchId: number): Promise<UserResearchRead>;
-  getUserReadResearch(userId: number): Promise<ResearchSummary[]>;
-  hasUserReadResearch(userId: number, researchId: number): Promise<boolean>;
-  
-  // Gamification - Show submissions methods
-  createShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission>;
-  getAllShowSubmissions(status?: string, limit?: number, offset?: number): Promise<ShowSubmission[]>;
-  getUserShowSubmissions(userId: number): Promise<ShowSubmission[]>;
-  getShowSubmissionById(id: number): Promise<ShowSubmission | undefined>;
-  updateShowSubmission(id: number, data: Partial<ShowSubmission>): Promise<ShowSubmission | undefined>;
-  
-  // Gamification - Reviews and upvotes methods
-  createReview(tvShowId: number, userId: number, userName: string, rating: number, review: string): Promise<Review>;
-  getReviewsByUserId(userId: number): Promise<Review[]>;
-  getReviewsByShowId(showId: number, limit?: number): Promise<Review[]>;
-  getReviewById(id: number): Promise<Review | undefined>;
-  getUserReviews(userId: number): Promise<any[]>;
-  getUserReviewForShow(userId: number, tvShowId: number): Promise<any>;
-  upvoteReview(userId: number, reviewId: number): Promise<ReviewUpvote>;
-  removeUpvote(userId: number, reviewId: number): Promise<boolean>;
-  hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean>;
-  checkReviewUpvote(userId: number, reviewId: number): Promise<boolean>;
-  removeReviewUpvote(userId: number, reviewId: number): Promise<boolean>;
-  
-  // Referral system
-  generateReferralCode(userId: number): Promise<string>;
-  getUserByReferralCode(code: string): Promise<User | undefined>;
-  trackReferral(referrerId: number, newUserId: number): Promise<UserPoints>;
 }
 
 export class MemStorage implements IStorage {
