@@ -22,7 +22,7 @@ import UserDashboard from "@/pages/user-dashboard";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
-import { AuthProvider } from "@/hooks/use-auth";
+// We no longer need AuthProvider since we're using Replit Auth
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
 

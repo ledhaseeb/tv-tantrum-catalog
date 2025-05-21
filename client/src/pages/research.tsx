@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { useNavigate } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 
 import {
   Card,
@@ -18,11 +18,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import {
-  Badge,
-  Button,
-  Separator,
-} from "@/components/ui/";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   Award,
   BookOpen,
@@ -46,9 +44,9 @@ interface ResearchSummary {
 }
 
 export default function Research() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const [selectedTab, setSelectedTab] = useState("all");
   const [expandedSummary, setExpandedSummary] = useState<number | null>(null);
 
@@ -68,9 +66,7 @@ export default function Research() {
   // Mark research as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: (researchId: number) => {
-      return apiRequest(`/api/research/${researchId}/mark-read`, {
-        method: "POST",
-      });
+      return apiRequest(`/api/research/${researchId}/mark-read`, "POST");
     },
     onSuccess: () => {
       refetch();
@@ -96,7 +92,7 @@ export default function Research() {
         description: "Please log in to track your research reading",
         variant: "destructive",
       });
-      navigate("/auth");
+      setLocation("/auth");
       return;
     }
 
@@ -152,7 +148,7 @@ export default function Research() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center pb-6">
-            <Button onClick={() => navigate("/auth")}>Login / Register</Button>
+            <Button onClick={() => setLocation("/auth")}>Login / Register</Button>
           </CardContent>
         </Card>
       ) : (
