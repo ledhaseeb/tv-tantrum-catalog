@@ -136,6 +136,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (pointsInfo.total >= 500) pointsInfo.rank = 'TV Expert';
         if (pointsInfo.total >= 1000) pointsInfo.rank = 'TV Master';
         
+        // Ensure we have review points history records for each review
+        try {
+          if (typeof storage.awardPoints === 'function') {
+            // Check if we already have points history records for these reviews
+            const existingEntries = await db.execute(sql`
+              SELECT r.id AS review_id
+              FROM tv_show_reviews r
+              LEFT JOIN user_points_history ph ON 
+                ph.description LIKE CONCAT('%Review of ', r.show_name, '%') AND
+                ph.user_id = ${numericUserId} AND
+                ph.activity_type = 'review'
+              WHERE r.user_id = ${numericUserId} AND ph.id IS NULL
+            `);
+            
+            // For any reviews without points history, add them
+            if (existingEntries.rows.length > 0) {
+              for (const review of reviews) {
+                // Check if we already recorded points for this review
+                const hasRecord = await db.execute(sql`
+                  SELECT COUNT(*) FROM user_points_history 
+                  WHERE user_id = ${numericUserId} 
+                  AND activity_type = 'review'
+                  AND description = ${'Review of ' + review.showName + ' - ' + review.id}
+                `);
+                
+                // If no record exists, award points
+                if (hasRecord.rows[0].count === '0') {
+                  await storage.awardPoints(
+                    userId.toString(), 
+                    5, 
+                    'review', 
+                    `Review of ${review.showName} - ${review.id}`
+                  );
+                  console.log(`Added points history for review ${review.id} of ${review.showName}`);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error recording review points history:', error);
+        }
+        
         console.log(`Calculated points for user ${userId}: Total=${pointsInfo.total}, Reviews=${reviewPoints}`);
       } catch (error) {
         console.error('Error getting user points:', error);
