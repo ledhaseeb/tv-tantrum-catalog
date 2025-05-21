@@ -400,7 +400,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           <div>
             <h3 className="text-sm font-semibold line-clamp-1">{show.name}</h3>
             <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-xs text-gray-500">Ages {show.ageRange}</span>
+              <span className="text-xs text-gray-500">Ages {show.age_range || show.ageRange}</span>
             </div>
           </div>
           
@@ -410,7 +410,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
               {renderStimulationDots()}
             </div>
             <span className="text-xs text-gray-600">
-              {getStimulationText(show.stimulationScore)}
+              {getStimulationText(show.stimulation_score || show.stimulationScore)}
             </span>
           </div>
           
