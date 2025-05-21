@@ -593,15 +593,15 @@ export class DatabaseStorage implements IStorage {
           
           // Stimulation metrics
           stimulationScore: row.stimulation_score || 0,
-          interactionLevel: row.interaction_level || null,
-          dialogueIntensity: row.dialogue_intensity || null,
-          soundFrequency: row.sound_frequency || null,
-          totalMusicLevel: row.total_music_level || null,
-          musicTempo: row.music_tempo || null,
-          soundEffectsLevel: row.sound_effects_level || null,
+          interactionLevel: this.standardizeSensoryMetric(row.interaction_level),
+          dialogueIntensity: this.standardizeSensoryMetric(row.dialogue_intensity),
+          soundFrequency: this.standardizeSensoryMetric(row.sound_frequency),
+          totalMusicLevel: this.standardizeSensoryMetric(row.total_music_level),
+          musicTempo: this.standardizeSensoryMetric(row.music_tempo),
+          soundEffectsLevel: this.standardizeSensoryMetric(row.sound_effects_level),
           animationStyle: row.animation_style || null,
-          sceneFrequency: row.scene_frequency || null,
-          totalSoundEffectTimeLevel: row.total_sound_effect_time_level || null,
+          sceneFrequency: this.standardizeSensoryMetric(row.scene_frequency),
+          totalSoundEffectTimeLevel: this.standardizeSensoryMetric(row.total_sound_effect_time_level),
           
           // Other fields
           network: row.network || null,
