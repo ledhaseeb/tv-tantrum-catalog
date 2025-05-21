@@ -150,21 +150,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return null;
   }
 
-  // Get all TV shows
+  // Get all TV shows - completely rewritten to use only direct SQL queries
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
-      // Import the new search tracker
+      // Import search tracker
       const searchTracker = require('./searchTracker');
+      const { pool } = require('./db');
       
-      // Direct search implementation with reliable tracking
+      // Handle search queries directly with SQL
       if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
-        // Simple, reliable raw SQL search
         const searchTerm = req.query.search.trim();
         console.log(`Direct SQL search for: "${searchTerm}"`);
         
-        // Use the connection pool directly
-        const client = await require('./db').pool.connect();
+        const client = await pool.connect();
         try {
+          // Simple, direct SQL search that doesn't rely on complex ORM features
           const result = await client.query(
             `SELECT * FROM tv_shows 
              WHERE name ILIKE $1 OR description ILIKE $1
@@ -172,17 +172,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             [`%${searchTerm}%`]
           );
           
-          // Track the search in the background (if we have results)
+          // Track search in background if we have results
           if (result.rows.length > 0) {
             const firstShowId = result.rows[0].id;
-            // Don't await this - let it run in the background
-            setTimeout(() => {
-              searchTracker.trackShowSearch(firstShowId)
-                .catch(err => console.error('Background search tracking error:', err));
-            }, 10);
+            // Run in background without blocking
+            setImmediate(() => {
+              try {
+                pool.query(
+                  `INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched)
+                   VALUES ($1, 1, NOW())
+                   ON CONFLICT (tv_show_id) 
+                   DO UPDATE SET 
+                     search_count = tv_show_searches.search_count + 1,
+                     last_searched = NOW()`,
+                  [firstShowId]
+                ).catch(e => console.error("Background search tracking error:", e));
+              } catch (e) {
+                console.error("Failed to track search:", e);
+              }
+            });
           }
           
-          // Return the results immediately
+          // Return results immediately
           return res.json(result.rows);
         } finally {
           client.release();
