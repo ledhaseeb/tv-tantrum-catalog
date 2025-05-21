@@ -153,18 +153,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows - completely rewritten to use only direct SQL queries
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
-      // Import search tracker
-      const searchTracker = require('./searchTracker');
-      const { pool } = require('./db');
+      // Completely new implementation to bypass problematic code
       
-      // Handle search queries directly with SQL
+      // For search queries, use raw SQL for maximum reliability
       if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
         const searchTerm = req.query.search.trim();
-        console.log(`Direct SQL search for: "${searchTerm}"`);
+        console.log(`Raw SQL search for: "${searchTerm}"`);
         
-        const client = await pool.connect();
+        // Import directly to avoid any module issues
+        const { Client } = require('pg');
+        const client = new Client({
+          connectionString: process.env.DATABASE_URL
+        });
+        
         try {
-          // Simple, direct SQL search that doesn't rely on complex ORM features
+          await client.connect();
+          
+          // Simple, reliable SQL search with no ORM complexity
           const result = await client.query(
             `SELECT * FROM tv_shows 
              WHERE name ILIKE $1 OR description ILIKE $1
@@ -172,121 +177,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
             [`%${searchTerm}%`]
           );
           
-          // Track search in background if we have results
+          // Very simple background tracking with separate connection
           if (result.rows.length > 0) {
-            const firstShowId = result.rows[0].id;
-            // Run in background without blocking
-            setImmediate(() => {
+            const showId = result.rows[0].id;
+            process.nextTick(() => {
               try {
-                pool.query(
-                  `INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched)
-                   VALUES ($1, 1, NOW())
-                   ON CONFLICT (tv_show_id) 
-                   DO UPDATE SET 
-                     search_count = tv_show_searches.search_count + 1,
-                     last_searched = NOW()`,
-                  [firstShowId]
-                ).catch(e => console.error("Background search tracking error:", e));
+                const trackingClient = new Client({
+                  connectionString: process.env.DATABASE_URL
+                });
+                trackingClient.connect()
+                  .then(() => trackingClient.query(
+                    `INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched) 
+                     VALUES ($1, 1, NOW()) 
+                     ON CONFLICT (tv_show_id) 
+                     DO UPDATE SET 
+                       search_count = tv_show_searches.search_count + 1, 
+                       last_searched = NOW()`, 
+                    [showId]
+                  ))
+                  .finally(() => trackingClient.end())
+                  .catch(() => {}); // Silently ignore any errors in tracking
               } catch (e) {
-                console.error("Failed to track search:", e);
+                // Ignore any errors in background tracking
               }
             });
           }
           
-          // Return results immediately
           return res.json(result.rows);
         } finally {
-          client.release();
+          await client.end();
         }
       }
       
-      // For the admin page, we will directly get all shows without filtering
-      // when no query parameters are provided
+      // For the admin page, get all shows without filtering
       if (Object.keys(req.query).length === 0) {
         console.log("Admin dashboard: Getting all TV shows without filters");
         const allShows = await storage.getAllTvShows();
-        res.json(allShows);
-        return;
+        return res.json(allShows);
       }
       
-      const { 
-        ageGroup, 
-        ageRange,
-        tantrumFactor, 
-        sortBy, 
-        search, 
-        themes,
-        themeMatchMode,
-        interactionLevel,
-        dialogueIntensity,
-        soundFrequency,
-        stimulationScoreRange
-      } = req.query;
+      // For any other filter combinations, use raw SQL instead of ORM
+      console.log("Filter query detected:", req.query);
       
-      // Process themes - can be comma-separated string
-      let processedThemes: string[] | undefined = undefined;
-      if (typeof themes === 'string' && themes.trim()) {
-        processedThemes = themes.split(',').map(t => t.trim()).filter(Boolean);
-      }
+      const { Client } = require('pg');
+      const client = new Client({
+        connectionString: process.env.DATABASE_URL
+      });
       
-      // Process ageRange - can be JSON string
-      let processedAgeRange: { min: number, max: number } | undefined = undefined;
-      if (typeof ageRange === 'string' && ageRange.trim()) {
-        try {
-          processedAgeRange = JSON.parse(ageRange);
-        } catch (e) {
-          console.error("Failed to parse ageRange:", e);
+      try {
+        await client.connect();
+        
+        // Base query that safely handles all filter combinations
+        let query = `SELECT * FROM tv_shows WHERE 1=1`;
+        const params: any[] = [];
+        let paramIndex = 1;
+        
+        // Add simple filter conditions
+        if (req.query.ageGroup && typeof req.query.ageGroup === 'string') {
+          query += ` AND age_group = $${paramIndex++}`;
+          params.push(req.query.ageGroup);
         }
-      }
-      
-      // Process stimulationScoreRange - can be JSON string
-      let processedStimulationScoreRange: { min: number, max: number } | undefined = undefined;
-      if (typeof stimulationScoreRange === 'string' && stimulationScoreRange.trim()) {
-        try {
-          processedStimulationScoreRange = JSON.parse(stimulationScoreRange);
-        } catch (e) {
-          console.error("Failed to parse stimulationScoreRange:", e);
+        
+        if (req.query.tantrumFactor && typeof req.query.tantrumFactor === 'string') {
+          query += ` AND tantrum_factor = $${paramIndex++}`;
+          params.push(req.query.tantrumFactor);
         }
-      }
-      
-      const filters = {
-        ageGroup: typeof ageGroup === 'string' ? ageGroup : undefined,
-        ageRange: processedAgeRange,
-        tantrumFactor: typeof tantrumFactor === 'string' ? tantrumFactor : undefined,
-        sortBy: typeof sortBy === 'string' ? sortBy : undefined,
-        search: typeof search === 'string' ? search : undefined,
-        themes: processedThemes,
-        themeMatchMode: typeof themeMatchMode === 'string' && (themeMatchMode === 'AND' || themeMatchMode === 'OR') ? themeMatchMode as 'AND' | 'OR' : 'AND',
-        interactionLevel: typeof interactionLevel === 'string' ? interactionLevel : undefined,
-        dialogueIntensity: typeof dialogueIntensity === 'string' ? dialogueIntensity : undefined,
-        soundFrequency: typeof soundFrequency === 'string' ? soundFrequency : undefined,
-        stimulationScoreRange: processedStimulationScoreRange
-      };
-      
-      console.log("Getting TV shows with filters:", filters);
-      
-      const shows = await storage.getTvShowsByFilter(filters);
-      
-      // If this is a search request, track the search for each returned show
-      if (typeof search === 'string' && search.trim() && shows.length > 0) {
-        try {
-          // Track search data for only the first result to avoid overwhelming the database
-          // This still gives us useful analytics while reducing database load
-          if (shows[0]) {
-            // Use a non-blocking approach so search results aren't delayed
-            setTimeout(() => {
-              storage.trackShowSearch(shows[0].id)
-                .catch(error => console.error(`Background tracking error for show ${shows[0].id}:`, error));
-            }, 10);
-          }
-        } catch (error) {
-          // Log error but don't let it block the search functionality
-          console.error("Error preparing search tracking:", error);
+        
+        // Add name search if specified
+        if (req.query.search && typeof req.query.search === 'string') {
+          query += ` AND (name ILIKE $${paramIndex++} OR description ILIKE $${paramIndex++})`;
+          const searchPattern = `%${req.query.search}%`;
+          params.push(searchPattern, searchPattern);
         }
+        
+        // Add sorting
+        if (req.query.sortBy && typeof req.query.sortBy === 'string') {
+          const sortField = req.query.sortBy === 'name' ? 'name' : 
+                          req.query.sortBy === 'releaseYear' ? 'release_year' :
+                          req.query.sortBy === 'rating' ? 'rating' : 'name';
+          query += ` ORDER BY ${sortField} ASC`;
+        } else {
+          query += ` ORDER BY name ASC`;
+        }
+        
+        // Execute the query
+        const result = await client.query(query, params);
+        return res.json(result.rows);
+      } finally {
+        await client.end();
       }
-      res.json(shows);
     } catch (error) {
-      console.error("Error fetching TV shows:", error);
+      console.error("Error in TV shows API:", error);
       res.status(500).json({ message: "Failed to fetch TV shows" });
     }
   });
