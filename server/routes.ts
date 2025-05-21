@@ -153,6 +153,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
+      // Direct search implementation - bypassing the problematic code entirely
+      if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
+        // Simple, reliable raw SQL search
+        const searchTerm = req.query.search.trim();
+        console.log(`Direct SQL search for: "${searchTerm}"`);
+        
+        // Use the connection pool directly
+        const client = await pool.connect();
+        try {
+          const result = await client.query(
+            `SELECT * FROM tv_shows 
+             WHERE name ILIKE $1 OR description ILIKE $1
+             ORDER BY name ASC`,
+            [`%${searchTerm}%`]
+          );
+          
+          // Return the results immediately
+          return res.json(result.rows);
+        } finally {
+          client.release();
+        }
+      }
+      
       // For the admin page, we will directly get all shows without filtering
       // when no query parameters are provided
       if (Object.keys(req.query).length === 0) {
