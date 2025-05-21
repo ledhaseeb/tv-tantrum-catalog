@@ -1823,41 +1823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get user show submissions
-  app.get("/api/user/submissions", ensureAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const userId = (req.user as any).id;
-      const submissions = await storage.getUserShowSubmissions(userId);
-      res.json(submissions);
-    } catch (error) {
-      console.error("Error getting user submissions:", error);
-      res.status(500).json({ message: "Error retrieving user submissions" });
-    }
-  });
-  
-  // Get user favorites
-  app.get("/api/user/favorites", ensureAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const userId = (req.user as any).id;
-      const favorites = await storage.getUserFavorites(userId);
-      res.json(favorites);
-    } catch (error) {
-      console.error("Error getting user favorites:", error);
-      res.status(500).json({ message: "Error retrieving user favorites" });
-    }
-  });
-  
-  // Get user read research
-  app.get("/api/user/research/read", ensureAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const userId = (req.user as any).id;
-      const readResearch = await storage.getUserReadResearch(userId);
-      res.json(readResearch);
-    } catch (error) {
-      console.error("Error getting read research:", error);
-      res.status(500).json({ message: "Error retrieving read research" });
-    }
-  });
+  // We've already defined these endpoints above
   
   // Mark research as read
   app.post("/api/research/:id/mark-read", ensureAuthenticated, async (req: Request, res: Response) => {
@@ -1866,37 +1832,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const researchId = parseInt(req.params.id, 10);
       
       // Check if the research exists
-      const research = await storage.getResearchSummaryById(researchId);
-      if (!research) {
+      const research = await db.select()
+        .from(researchSummaries)
+        .where(eq(researchSummaries.id, researchId))
+        .limit(1);
+        
+      if (!research.length) {
         return res.status(404).json({ message: "Research summary not found" });
       }
       
       // Check if already marked as read
-      const alreadyRead = await storage.hasUserReadResearch(userId, researchId);
-      if (alreadyRead) {
+      const existingRead = await db.select()
+        .from(userResearchReads)
+        .where(and(
+          eq(userResearchReads.userId, userId),
+          eq(userResearchReads.researchId, researchId)
+        ))
+        .limit(1);
+        
+      if (existingRead.length) {
         return res.status(200).json({ message: "Already marked as read", alreadyRead: true });
       }
       
-      // Mark as read and award points
-      const readRecord = await storage.markResearchAsRead(userId, researchId);
-      res.status(201).json(readRecord);
+      // Mark as read
+      const readRecord = await db.insert(userResearchReads)
+        .values({
+          userId,
+          researchId,
+          readAt: new Date().toISOString()
+        })
+        .returning();
+      
+      // Award points to the user
+      const pointsData = {
+        userId,
+        points: 10,
+        type: "research_read",
+        referenceId: researchId.toString(),
+        description: `Read research: ${research[0].title}`
+      };
+      
+      await db.insert(userPoints).values(pointsData);
+      
+      // Also update the user's total points
+      await db.update(users)
+        .set({
+          points: sql`${users.points} + 10`
+        })
+        .where(eq(users.id, userId));
+        
+      res.status(201).json(readRecord[0]);
     } catch (error) {
       console.error("Error marking research as read:", error);
       res.status(500).json({ message: "Error marking research as read" });
     }
   });
   
-  // Get leaderboard
-  app.get("/api/leaderboard", async (req: Request, res: Response) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
-      const leaderboard = await storage.getUserLeaderboard(limit);
-      res.json(leaderboard);
-    } catch (error) {
-      console.error("Error getting leaderboard:", error);
-      res.status(500).json({ message: "Error retrieving leaderboard" });
-    }
-  });
+  // Leaderboard is already defined above
   
   // Add login points for daily login (called by auth system on successful login)
   app.post("/api/user/login-reward", ensureAuthenticated, async (req: Request, res: Response) => {
