@@ -178,7 +178,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
 
   // Mobile portrait style card - clean design as in screenshot
   if (isMobile && viewMode === "grid") {
-    const stimulationLabel = getStimulationText(show.stimulationScore);
+    const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
     
     return (
       <Card 
@@ -191,11 +191,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       >
         {/* Image */}
         <div className="relative">
-          {show.imageUrl && !imageError ? (
+          {normalizedShow.imageUrl && !imageError ? (
             <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden">
               <img 
                 className="w-full h-full object-cover"
-                src={show.imageUrl}
+                src={normalizedShow.imageUrl}
                 alt={show.name}
                 style={{ objectPosition: 'center top' }}
                 onError={() => {
@@ -233,7 +233,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           
           {/* Age Badge */}
           <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
-            Ages {show.ageRange}
+            Ages {normalizedShow.ageRange}
           </Badge>
           
           {/* Stimulation score dots and label */}
