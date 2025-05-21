@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sortBy: typeof sortBy === 'string' ? sortBy : undefined,
         search: typeof search === 'string' ? search : undefined,
         themes: processedThemes,
-        themeMatchMode: typeof themeMatchMode === 'string' ? themeMatchMode : 'AND',
+        themeMatchMode: typeof themeMatchMode === 'string' && (themeMatchMode === 'AND' || themeMatchMode === 'OR') ? themeMatchMode as 'AND' | 'OR' : 'AND',
         interactionLevel: typeof interactionLevel === 'string' ? interactionLevel : undefined,
         dialogueIntensity: typeof dialogueIntensity === 'string' ? dialogueIntensity : undefined,
         soundFrequency: typeof soundFrequency === 'string' ? soundFrequency : undefined,
