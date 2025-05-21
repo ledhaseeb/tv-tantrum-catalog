@@ -2,10 +2,11 @@ import { users, type User, type InsertUser, type TvShow, type TvShowReview, type
 
 export interface IStorage {
   // User methods
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: Partial<User>): Promise<User>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -84,11 +85,10 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
+  private users: Map<string, User>;
   private tvShows: Map<number, TvShow>;
   private tvShowReviews: Map<number, TvShowReview>;
   private tvShowSearches: Map<number, TvShowSearch>;
-  private userCurrentId: number;
   private tvShowCurrentId: number;
   private reviewCurrentId: number;
   private searchCurrentId: number;
@@ -118,8 +118,48 @@ export class MemStorage implements IStorage {
   }
 
   // User methods
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
+  }
+  
+  async upsertUser(userData: Partial<User>): Promise<User> {
+    if (!userData.id) {
+      throw new Error("User ID is required for upsert operation");
+    }
+    
+    const existingUser = await this.getUser(userData.id);
+    
+    if (existingUser) {
+      // Update existing user
+      const updatedUser: User = {
+        ...existingUser,
+        ...userData,
+        updatedAt: new Date()
+      };
+      this.users.set(userData.id, updatedUser);
+      return updatedUser;
+    } else {
+      // Create new user
+      const newUser: User = {
+        id: userData.id,
+        email: userData.email || null,
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        profileImageUrl: userData.profileImageUrl || null,
+        username: userData.username || null,
+        isAdmin: userData.isAdmin || false,
+        country: userData.country || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isApproved: userData.isApproved || false,
+        totalPoints: userData.totalPoints || 0,
+        lastLoginDate: userData.lastLoginDate || null,
+        profileBio: userData.profileBio || null,
+        referralCode: userData.referralCode || null
+      };
+      this.users.set(newUser.id, newUser);
+      return newUser;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {

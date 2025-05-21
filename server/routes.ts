@@ -9,7 +9,7 @@ import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
-import { setupAuth } from "./auth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 // Use the new consolidated utility files
 import * as imageOptimizer from "../image-optimizer.js";
 import * as imageManager from "../image-manager.js";
@@ -28,13 +28,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
-  // Middleware to check if user is authenticated
-  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.session || !req.session.userId) {
-      return res.status(401).json({ message: 'Unauthorized: Please log in' });
+  // Add user authentication endpoints
+  
+  // Get current user
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
-    next();
-  };
+  });
+  
+  // Get user dashboard data
+  app.get('/api/user/dashboard', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user data
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get user reviews
+      const reviews = await storage.getReviewsByUserId(userId);
+      
+      // Get user favorites
+      const favorites = await storage.getUserFavorites(userId);
+      
+      // Get user points history
+      const pointsHistory = await storage.getUserPointsHistory(userId);
+      
+      // Get read research summaries
+      const readResearch = await storage.getUserReadResearch(userId);
+      
+      // Get show submissions
+      const submissions = await storage.getUserShowSubmissions(userId);
+      
+      // Update login streak
+      await storage.updateUserLoginStreak(userId);
+      
+      // Compile dashboard data
+      const dashboardData = {
+        user,
+        points: user.totalPoints || 0,
+        reviews,
+        favorites,
+        pointsHistory,
+        readResearch,
+        submissions
+      };
+      
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Error fetching user dashboard:", error);
+      res.status(500).json({ message: "Failed to fetch user dashboard" });
+    }
+  });
   
   // Serve static files from the public directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
