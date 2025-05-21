@@ -45,42 +45,6 @@ export default function setupUserDashboardRoutes(router: Router, storage: IStora
       if (alreadyRead) {
         return res.json({ success: true, alreadyRead: true });
       }
-      
-      // Get user's read research summaries
-      router.get('/user/research/read', async (req: Request, res: Response) => {
-        try {
-          if (!req.session?.userId) {
-            return res.status(401).json({ error: 'Not authenticated' });
-          }
-          
-          const userId = req.session.userId;
-          
-          // Direct database query for read research summaries
-          const client = await pool.connect();
-          try {
-            const result = await client.query(`
-              SELECT 
-                rr.id, 
-                rr.research_id as "researchId",
-                rr.user_id as "userId",
-                rr.created_at as "createdAt",
-                r.title,
-                r.summary
-              FROM research_reads rr
-              JOIN research_summaries r ON rr.research_id = r.id
-              WHERE rr.user_id = $1
-              ORDER BY rr.created_at DESC
-            `, [userId]);
-            
-            res.json(result.rows);
-          } finally {
-            client.release();
-          }
-        } catch (error) {
-          console.error('Error fetching read research:', error);
-          res.status(500).json({ error: 'Failed to fetch read research' });
-        }
-      });
 
       // Mark as read and award points
       await storage.markResearchAsRead(userId, researchId);
@@ -577,6 +541,42 @@ export default function setupUserDashboardRoutes(router: Router, storage: IStora
     } catch (error) {
       console.error('Error fetching user reviews:', error);
       res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+  });
+
+  // Get user's read research summaries
+  router.get('/user/research/read', async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+      
+      const userId = req.session.userId;
+      
+      // Direct database query for read research summaries
+      const client = await pool.connect();
+      try {
+        const result = await client.query(`
+          SELECT 
+            rr.id, 
+            rr.research_id as "researchId",
+            rr.user_id as "userId",
+            rr.created_at as "createdAt",
+            r.title,
+            r.summary
+          FROM research_reads rr
+          JOIN research_summaries r ON rr.research_id = r.id
+          WHERE rr.user_id = $1
+          ORDER BY rr.created_at DESC
+        `, [userId]);
+        
+        res.json(result.rows);
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error fetching read research:', error);
+      res.status(500).json({ error: 'Failed to fetch read research' });
     }
   });
 
