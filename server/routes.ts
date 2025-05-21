@@ -6,7 +6,9 @@ import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
+import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub, tvShows, users, tvShowReviews, userPoints, reviewUpvotes, userResearchReads, researchSummaries, showSubmissions, favorites } from "@shared/schema";
+import { eq, desc, asc } from "drizzle-orm";
+import { db } from "./db";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
@@ -1668,7 +1670,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/points", ensureAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const points = await storage.getUserPoints(userId);
+      // Use the existing storage interface method or fallback to the points in the user object
+      const user = await storage.getUser(userId);
+      const points = user?.points || 0;
       res.json({ points });
     } catch (error) {
       console.error("Error getting user points:", error);
@@ -1676,12 +1680,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get user points history
+  // Get user points history - Uses the userPoints table
   app.get("/api/user/points/history", ensureAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const history = await storage.getUserPointsHistory(userId);
-      res.json(history);
+      // This will use the userPoints table to get points history
+      // If you've implemented the table but not the method, use a direct SQL query
+      const result = await db.select()
+        .from(userPoints)
+        .where(eq(userPoints.userId, userId))
+        .orderBy(desc(userPoints.createdAt));
+      
+      res.json(result);
     } catch (error) {
       console.error("Error getting points history:", error);
       res.status(500).json({ message: "Error retrieving points history" });
@@ -1692,11 +1702,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/reviews", ensureAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const reviews = await storage.getReviewsByUserId(userId);
+      // Get reviews created by this user
+      const reviews = await db.select()
+        .from(tvShowReviews)
+        .where(eq(tvShowReviews.userId, userId))
+        .orderBy(desc(tvShowReviews.createdAt));
+        
       res.json(reviews);
     } catch (error) {
       console.error("Error getting user reviews:", error);
       res.status(500).json({ message: "Error retrieving user reviews" });
+    }
+  });
+  
+  // Get user's read research summaries
+  app.get("/api/user/research/read", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // First get the research read records
+      const readRecords = await db.select()
+        .from(userResearchReads)
+        .where(eq(userResearchReads.userId, userId))
+        .orderBy(desc(userResearchReads.readAt));
+      
+      // Now get the actual research data for each read record
+      const readResearchWithDetails = await Promise.all(
+        readRecords.map(async (record) => {
+          const research = await db.select()
+            .from(researchSummaries)
+            .where(eq(researchSummaries.id, record.researchId))
+            .limit(1);
+            
+          return {
+            ...record,
+            researchDetails: research.length ? research[0] : null
+          };
+        })
+      );
+      
+      res.json(readResearchWithDetails);
+    } catch (error) {
+      console.error("Error getting user read research:", error);
+      res.status(500).json({ message: "Error retrieving read research" });
+    }
+  });
+  
+  // Get user show submissions
+  app.get("/api/user/submissions", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Get submissions from this user
+      const userSubmissions = await db.select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.userId, userId))
+        .orderBy(desc(showSubmissions.createdAt));
+        
+      res.json(userSubmissions);
+    } catch (error) {
+      console.error("Error getting user submissions:", error);
+      res.status(500).json({ message: "Error retrieving submissions" });
+    }
+  });
+  
+  // Get community leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = Number(req.query.limit) || 10;
+      
+      // Get top users by points
+      const leaderboard = await db.select()
+        .from(users)
+        .orderBy(desc(users.points))
+        .limit(limit);
+      
+      // Return leaderboard without sensitive info
+      const safeLeaderboard = leaderboard.map(user => ({
+        id: user.id,
+        username: user.username,
+        points: user.points,
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt
+      }));
+        
+      res.json(safeLeaderboard);
+    } catch (error) {
+      console.error("Error getting leaderboard:", error);
+      res.status(500).json({ message: "Error retrieving leaderboard" });
+    }
+  });
+  
+  // Get user favorites
+  app.get("/api/user/favorites", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Get user's favorite shows
+      const favorites = await db.select({
+        id: favorites.id,
+        userId: favorites.userId,
+        tvShowId: favorites.tvShowId,
+        createdAt: favorites.createdAt,
+        tvShow: {
+          id: tvShows.id,
+          name: tvShows.name,
+          imageUrl: tvShows.imageUrl,
+          description: tvShows.description
+        }
+      })
+      .from(favorites)
+      .where(eq(favorites.userId, userId))
+      .innerJoin(tvShows, eq(favorites.tvShowId, tvShows.id))
+      .orderBy(desc(favorites.createdAt));
+      
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error getting user favorites:", error);
+      res.status(500).json({ message: "Error retrieving favorites" });
     }
   });
   
