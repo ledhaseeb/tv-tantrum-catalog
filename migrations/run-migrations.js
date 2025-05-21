@@ -84,7 +84,11 @@ async function applyMigration(migrationFile) {
  */
 function getMigrationFiles() {
   const files = fs.readdirSync(__dirname)
-    .filter(file => file.match(/^\d+_.+\.sql$/))
+    .filter(file => {
+      // Only include our custom migrations that start with 3-digit numbers
+      // This excludes Drizzle-generated migrations that start with 4 digits
+      return file.match(/^[0-9]{3}_.+\.sql$/);
+    })
     .sort((a, b) => {
       // Extract migration numbers for sorting
       const numA = parseInt(a.split('_')[0]);
@@ -92,6 +96,7 @@ function getMigrationFiles() {
       return numA - numB;
     });
   
+  console.log("Custom migration files:", files);
   return files;
 }
 

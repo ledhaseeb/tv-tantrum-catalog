@@ -565,7 +565,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Low-Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Low-Moderate"
+    "sceneFrequency": "Low-Moderate",
+    "description": "Bear lives in a Big Blue House with several of his muppet friends: Treelo the lemur, Ojo the bear cub, Tutter the mouse, and Pip and Pop the otters. Every day bear uses his reassuringly shaggy presence to help solve problems and explore a different topic of the day (for instance \"finding\" or \"helping\"). He also frequently talks to his other friends, Shadow, who tells stories and sings nursery rhymes, and Luna the moon, who helps provide 'The Big Picture'."
   },
   "23": {
     "stimulationScore": 1,
@@ -590,7 +591,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low-Moderate",
-    "sceneFrequency": "Low"
+    "sceneFrequency": "Low",
+    "description": "Beep and Mort are two best friends from different worlds learning to solve their daily dilemmas and unexpected challenges through invention, play and adventure."
   },
   "24": {
     "stimulationScore": 3,
@@ -1162,7 +1164,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Chip, a 4-year-old pug puppy, takes her first steps towards independence at kindergarten with secret friend Potato-a teensy tiny mouse-at her side."
   },
   "47": {
     "stimulationScore": 3,
@@ -4226,7 +4229,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Low-Moderate"
+    "sceneFrequency": "Low-Moderate",
+    "description": "A story of a blue octopus and his dog that looks like a hotdog, named Weenie, and their friends like Daisy the daisy, and Henry the penguin. They go on adventures in their town that usually involves a problem that needs to be solved."
   },
   "174": {
     "stimulationScore": 3,
@@ -4482,7 +4486,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Pip and Posy are a mouse and a rabbit whose lives revolve around a wonderful world of play. Packed with warmth and humour, the series is a joyful celebration of their great friendship, its laughter and games, its ups and downs."
   },
   "185": {
     "stimulationScore": 3,
