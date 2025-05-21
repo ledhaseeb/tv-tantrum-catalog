@@ -220,15 +220,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const shows = await storage.getTvShowsByFilter(filters);
       
-      // If this is a search request, track the search for each returned show
-      if (typeof search === 'string' && search.trim() && shows.length > 0) {
-        // Track search data for each of the first 5 results
-        const topResults = shows.slice(0, 5);
-        for (const show of topResults) {
-          await storage.trackShowSearch(show.id);
-        }
-
-      }
+      // Disabled search tracking for now due to date format issues
+      // Will add back once the database schema is updated
       res.json(shows);
     } catch (error) {
       console.error("Error fetching TV shows:", error);
