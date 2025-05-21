@@ -87,14 +87,14 @@ const UserDashboard = () => {
     <div className="container max-w-4xl py-8">
       <div className="flex flex-col md:flex-row gap-6 md:items-center mb-8">
         <Avatar className="w-20 h-20">
-          <AvatarImage src={userData?.profileImageUrl} alt={userData?.username} />
+          <AvatarImage src={user?.profileImageUrl} alt={user?.username} />
           <AvatarFallback className="text-2xl">
-            {userData?.username?.slice(0, 2).toUpperCase() || 'U'}
+            {user?.username?.slice(0, 1).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-3xl font-bold">{userData?.username}'s Dashboard</h1>
-          <p className="text-gray-500">{userData?.email}</p>
+          <h1 className="text-3xl font-bold">{user?.username || "User"}'s Dashboard</h1>
+          <p className="text-gray-500">{user?.email}</p>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant="outline" className="bg-orange-50 text-orange-500 border-orange-200">
               <TrophyIcon className="w-3 h-3 mr-1" /> {userRank}
