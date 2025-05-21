@@ -128,12 +128,19 @@ export class MemStorage implements IStorage {
   private tvShowCurrentId: number;
   private reviewCurrentId: number;
   private searchCurrentId: number;
-  private userPointsHistories: Map<number, UserPointsHistory[]>;
+  private userPointsHistoryId: number;
+  private reviewUpvoteId: number;
+  private researchSummaryId: number;
+  private userReadResearchId: number;
+  private showSubmissionId: number;
+  private userReferralId: number;
+  private userPointsHistories: Map<string, UserPointsHistory[]>;
   private reviewUpvotes: Map<number, ReviewUpvote[]>;
   private researchSummaries: Map<number, ResearchSummary>;
   private userReadResearch: Map<string, number[]>;
   private showSubmissions: Map<number, ShowSubmission>;
   private userReferrals: Map<string, UserReferral[]>;
+  private favorites: Map<string, number[]>;
 
   constructor() {
     this.users = new Map();
@@ -143,12 +150,19 @@ export class MemStorage implements IStorage {
     this.tvShowCurrentId = 1;
     this.reviewCurrentId = 1;
     this.searchCurrentId = 1;
+    this.userPointsHistoryId = 1;
+    this.reviewUpvoteId = 1;
+    this.researchSummaryId = 1;
+    this.userReadResearchId = 1;
+    this.showSubmissionId = 1;
+    this.userReferralId = 1;
     this.userPointsHistories = new Map();
     this.reviewUpvotes = new Map();
     this.researchSummaries = new Map();
     this.userReadResearch = new Map();
     this.showSubmissions = new Map();
     this.userReferrals = new Map();
+    this.favorites = new Map();
     
     // Create an admin test user for development
     // The password hash is generated using the hashPassword function in auth.ts
@@ -161,7 +175,11 @@ export class MemStorage implements IStorage {
       password: adminPasswordHash,
       username: "admin",
       isAdmin: true
-    }).then(user => console.log("Created admin user with ID:", user.id));
+    }).then(user => {
+      console.log("Created admin user with ID:", user.id);
+      // Give admin some initial points to test gamification
+      this.awardPoints(user.id, 100, "account_creation", "Initial points for admin account");
+    });
   }
 
   // User methods
@@ -222,17 +240,29 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userCurrentId++;
-    const now = new Date().toISOString();
+    // Generate a random UUID for the user ID
+    const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    
+    const now = new Date();
     const user: User = { 
       id,
       email: insertUser.email,
       password: insertUser.password,
-      username: insertUser.username,
+      firstName: insertUser.firstName || null,
+      lastName: insertUser.lastName || null,
+      profileImageUrl: insertUser.profileImageUrl || null,
+      username: insertUser.username || null,
+      isAdmin: insertUser.isAdmin ?? false,
       country: insertUser.country || null,
       createdAt: now,
-      isAdmin: insertUser.isAdmin ?? false,
-      isApproved: insertUser.isApproved ?? false
+      updatedAt: now,
+      isApproved: insertUser.isApproved ?? false,
+      totalPoints: 0,
+      lastLoginDate: null,
+      loginStreak: 0,
+      rank: "TV Watcher",
+      profileBio: null,
+      referralCode: id.substring(0, 8)
     };
     this.users.set(id, user);
     return user;
