@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useLocation } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { apiRequest } from '@/lib/queryClient';
+import { queryClient } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,7 @@ type FormValues = z.infer<typeof formSchema>;
 const ShowSubmission = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -81,9 +81,10 @@ const ShowSubmission = () => {
         const formData = new FormData();
         formData.append('image', imageFile);
         
-        const uploadResponse = await apiRequest('/api/shows/upload-image', {
+        const uploadResponse = await fetch('/api/shows/upload-image', {
           method: 'POST',
           body: formData,
+          credentials: 'include'
         });
         
         if (uploadResponse.ok) {
@@ -95,7 +96,7 @@ const ShowSubmission = () => {
       }
 
       // Then submit the show data
-      const submitResponse = await apiRequest('/api/show-submissions', {
+      const submitResponse = await fetch('/api/show-submissions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,6 +105,7 @@ const ShowSubmission = () => {
           ...data,
           imageUrl,
         }),
+        credentials: 'include'
       });
 
       if (submitResponse.ok) {
@@ -113,7 +115,7 @@ const ShowSubmission = () => {
         });
         
         // Navigate back to dashboard or show page
-        setLocation('/user-dashboard');
+        navigate('/user-dashboard');
       } else {
         throw new Error('Failed to submit show');
       }
@@ -345,7 +347,7 @@ const ShowSubmission = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setLocation('/')}
+                    onClick={() => navigate('/')}
                   >
                     Cancel
                   </Button>
