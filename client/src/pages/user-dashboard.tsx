@@ -23,6 +23,7 @@ const UserDashboard = () => {
   const userRank = dashboardData?.rank || "TV Watcher";
   const totalPoints = dashboardData?.points || 0;
   const pointsBreakdown = dashboardData?.pointsBreakdown || {};
+  const pointsHistory = dashboardData?.pointsHistory || [];
   const recommendations = dashboardData?.recommendedShows || [];
   const loginStreak = dashboardData?.streak || 0;
   
