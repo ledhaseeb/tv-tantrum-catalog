@@ -150,63 +150,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return null;
   }
 
-  // Get all TV shows - completely rewritten to use only direct SQL queries
+  // Get all TV shows - using dedicated search service for reliability
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
-      // Completely new implementation to bypass problematic code
+      // Import the search service
+      const { searchService } = require('./services/searchService');
       
-      // For search queries, use raw SQL for maximum reliability
+      // For search queries, use the dedicated search service
       if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
         const searchTerm = req.query.search.trim();
-        console.log(`Raw SQL search for: "${searchTerm}"`);
+        console.log(`Search service search for: "${searchTerm}"`);
         
-        // Import directly to avoid any module issues
-        const { Client } = require('pg');
-        const client = new Client({
-          connectionString: process.env.DATABASE_URL
-        });
+        // Use our dedicated search service
+        const results = await searchService.searchShows(searchTerm);
         
-        try {
-          await client.connect();
-          
-          // Simple, reliable SQL search with no ORM complexity
-          const result = await client.query(
-            `SELECT * FROM tv_shows 
-             WHERE name ILIKE $1 OR description ILIKE $1
-             ORDER BY name ASC`,
-            [`%${searchTerm}%`]
-          );
-          
-          // Very simple background tracking with separate connection
-          if (result.rows.length > 0) {
-            const showId = result.rows[0].id;
-            process.nextTick(() => {
-              try {
-                const trackingClient = new Client({
-                  connectionString: process.env.DATABASE_URL
-                });
-                trackingClient.connect()
-                  .then(() => trackingClient.query(
-                    `INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched) 
-                     VALUES ($1, 1, NOW()) 
-                     ON CONFLICT (tv_show_id) 
-                     DO UPDATE SET 
-                       search_count = tv_show_searches.search_count + 1, 
-                       last_searched = NOW()`, 
-                    [showId]
-                  ))
-                  .finally(() => trackingClient.end())
-                  .catch(() => {}); // Silently ignore any errors in tracking
-              } catch (e) {
-                // Ignore any errors in background tracking
-              }
-            });
-          }
-          
-          return res.json(result.rows);
-        } finally {
-          await client.end();
+        // Track search in the background if we have results
+        if (results.length > 0) {
+          const showId = results[0].id;
+          searchService.trackSearchHit(showId);
         }
+        
+        return res.json(results);
       }
       
       // For the admin page, get all shows without filtering
@@ -219,13 +183,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For any other filter combinations, use raw SQL instead of ORM
       console.log("Filter query detected:", req.query);
       
-      const { Client } = require('pg');
-      const client = new Client({
-        connectionString: process.env.DATABASE_URL
-      });
+      // Use pool directly
+      const { pool } = require('./db');
+      const client = await pool.connect();
       
       try {
-        await client.connect();
+        // Client is already connected
         
         // Base query that safely handles all filter combinations
         let query = `SELECT * FROM tv_shows WHERE 1=1`;
