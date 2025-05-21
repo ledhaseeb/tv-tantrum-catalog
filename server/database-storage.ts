@@ -1421,28 +1421,33 @@ export class DatabaseStorage implements IStorage {
 
   async trackShowSearch(tvShowId: number): Promise<void> {
     try {
-      const now = new Date();
-      const [existingSearch] = await db
-        .select()
-        .from(tvShowSearches)
-        .where(eq(tvShowSearches.tvShowId, tvShowId));
-
-      if (existingSearch) {
-        await db
-          .update(tvShowSearches)
-          .set({
-            searchCount: existingSearch.searchCount + 1,
-            lastSearched: now,
-          })
-          .where(eq(tvShowSearches.id, existingSearch.id));
-      } else {
-        await db.insert(tvShowSearches).values({
-          tvShowId,
-          searchCount: 1,
-          viewCount: 0,
-          lastSearched: now,
-          lastViewed: null,
-        });
+      // The key fix: Execute raw SQL to avoid type compatibility issues with Date objects
+      // This uses PostgreSQL's native date handling
+      const client = await pool.connect();
+      
+      try {
+        // First check if the record exists
+        const checkResult = await client.query(
+          'SELECT id, search_count FROM tv_show_searches WHERE tv_show_id = $1',
+          [tvShowId]
+        );
+        
+        if (checkResult.rows.length > 0) {
+          // Update existing record
+          const existingSearch = checkResult.rows[0];
+          await client.query(
+            'UPDATE tv_show_searches SET search_count = $1, last_searched = NOW() WHERE id = $2',
+            [existingSearch.search_count + 1, existingSearch.id]
+          );
+        } else {
+          // Insert new record
+          await client.query(
+            'INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched) VALUES ($1, $2, NOW())',
+            [tvShowId, 1]
+          );
+        }
+      } finally {
+        client.release();
       }
     } catch (error) {
       // Log error but don't let it block the search functionality
