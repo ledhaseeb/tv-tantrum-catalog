@@ -1,11 +1,12 @@
 import { db, pool } from "./db";
 import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
-  users, favorites, tvShows, tvShowReviews, tvShowSearches,
+  users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
   type TvShowSearch, type InsertTvShowSearch,
+  type TvShowView, type InsertTvShowView,
   type Favorite, type InsertFavorite,
   type TvShowGitHub
 } from "@shared/schema";
@@ -956,18 +957,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPopularShows(limit: number = 10): Promise<TvShow[]> {
-    // Get the top viewed shows and join with the tvShows table
-    const popularShows = await db
-      .select({
-        show: tvShows,
-        totalViews: tvShowSearches.viewCount,
-      })
-      .from(tvShowSearches)
-      .innerJoin(tvShows, eq(tvShowSearches.tvShowId, tvShows.id))
-      .orderBy(desc(tvShowSearches.viewCount))
-      .limit(limit);
+    // Get the top viewed shows using the new dedicated view tracking table
+    try {
+      const popularShows = await db
+        .select({
+          show: tvShows,
+          totalViews: tvShowViews.viewCount,
+        })
+        .from(tvShowViews)
+        .innerJoin(tvShows, eq(tvShowViews.tvShowId, tvShows.id))
+        .orderBy(desc(tvShowViews.viewCount))
+        .limit(limit);
 
-    return popularShows.map((item) => item.show);
+      return popularShows.map((item) => item.show);
+    } catch (error) {
+      console.error("Error getting popular shows:", error);
+      // Fallback to get all shows if the join fails
+      return this.getAllTvShows().then(shows => shows.slice(0, limit));
+    }
   }
 
   async importShowsFromGitHub(githubShows: TvShowGitHub[]): Promise<TvShow[]> {
