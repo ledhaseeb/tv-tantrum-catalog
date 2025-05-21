@@ -116,7 +116,7 @@ export const researchSummaries = pgTable("research_summaries", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  imageUrl: text("image_url").default(null),
+  imageUrl: text("image_url"),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
@@ -136,11 +136,11 @@ export const showSubmissions = pgTable("show_submissions", {
   description: text("description").notNull(),
   ageRange: text("age_range").notNull(),
   platform: text("platform").notNull(),
-  releaseYear: integer("release_year"),
+  releaseYear: integer("release_year"), // Nullable without default
   status: text("status").default("pending").notNull(), // pending, approved, rejected
-  adminNotes: text("admin_notes"),
+  adminNotes: text("admin_notes"), // Nullable without default
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
-  reviewedAt: text("reviewed_at"),
+  reviewedAt: text("reviewed_at"), // Nullable without default
   reviewedBy: integer("reviewed_by"), // admin user ID
 });
 
@@ -238,6 +238,8 @@ export const insertUserPointSchema = createInsertSchema(userPoints).omit({
 export const insertTvShowSearchSchema = createInsertSchema(tvShowSearches).omit({
   id: true,
   lastSearched: true,
+  viewCount: true,
+  lastViewed: true,
 });
 
 export const insertTvShowViewSchema = createInsertSchema(tvShowViews).omit({
