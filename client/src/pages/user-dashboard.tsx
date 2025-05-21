@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { Award, StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar, Send, Share } from 'lucide-react';
+import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const UserDashboard = () => {
@@ -26,6 +26,9 @@ const UserDashboard = () => {
   const pointsHistory = dashboardData?.pointsHistory || [];
   const recommendations = dashboardData?.recommendedShows || [];
   const loginStreak = dashboardData?.streak || 0;
+  const readResearch = dashboardData?.readResearch || [];
+  const topUsers = dashboardData?.topUsers || [];
+  const recentActivity = dashboardData?.recentActivity || [];
   
   // Calculate next milestone and progress
   const nextMilestone = Math.ceil(totalPoints / 100) * 100 + 100;
