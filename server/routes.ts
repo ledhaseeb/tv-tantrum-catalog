@@ -1895,11 +1895,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req.user as any).id;
       
-      // Get user's last login date
-      const user = await storage.getUser(userId);
-      if (!user) {
+      // Get user info
+      const userResult = await db.select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+        
+      if (!userResult.length) {
         return res.status(404).json({ message: "User not found" });
       }
+      
+      const user = userResult[0];
       
       // Check if this is first login of the day
       let shouldAwardPoints = true;
@@ -1916,19 +1922,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Award points if first login of the day
       if (shouldAwardPoints) {
-        const pointsAwarded = await storage.addUserPoints({
+        const pointsData = {
           userId,
-          points: 5, // 5 points for daily login
-          type: 'login',
-          description: 'Daily login reward',
-          referenceId: null
-        });
+          points: 5,
+          type: "login",
+          referenceId: null,
+          description: "Daily login reward",
+          createdAt: new Date().toISOString()
+        };
         
-        // Update user's last login date
-        await storage.updateLoginDate(userId);
+        // Insert points record
+        const pointsRecord = await db.insert(userPoints)
+          .values(pointsData)
+          .returning();
         
-        return res.json({ success: true, pointsAwarded });
+        // Update user's total points and last login date
+        await db.update(users)
+          .set({
+            points: sql`${users.points} + 5`,
+            lastLoginDate: new Date().toISOString()
+          })
+          .where(eq(users.id, userId));
+          
+        return res.json({ success: true, pointsAwarded: pointsRecord[0] });
       } else {
+        // Just update login date with no points
+        await db.update(users)
+          .set({
+            lastLoginDate: new Date().toISOString()
+          })
+          .where(eq(users.id, userId));
+          
         return res.json({ success: true, alreadyRewarded: true });
       }
     } catch (error) {
@@ -1943,19 +1967,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       const reviewId = parseInt(req.params.id, 10);
       
+      // Check if the review exists
+      const reviewResult = await db.select()
+        .from(tvShowReviews)
+        .where(eq(tvShowReviews.id, reviewId))
+        .limit(1);
+        
+      if (!reviewResult.length) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
       // Check if already upvoted
-      const hasUpvoted = await storage.hasUserUpvotedReview(reviewId, userId);
-      if (hasUpvoted) {
+      const existingUpvote = await db.select()
+        .from(reviewUpvotes)
+        .where(and(
+          eq(reviewUpvotes.reviewId, reviewId),
+          eq(reviewUpvotes.userId, userId)
+        ))
+        .limit(1);
+        
+      if (existingUpvote.length) {
         return res.status(400).json({ message: "Already upvoted this review" });
       }
       
-      const success = await storage.upvoteReview(reviewId, userId);
-      if (success) {
-        const upvoteCount = await storage.getReviewUpvotes(reviewId);
-        res.json({ success: true, upvotes: upvoteCount });
-      } else {
-        res.status(404).json({ message: "Review not found" });
+      // Create upvote record
+      await db.insert(reviewUpvotes)
+        .values({
+          reviewId,
+          userId,
+          createdAt: new Date().toISOString()
+        });
+      
+      // Increment upvote count on the review
+      await db.update(tvShowReviews)
+        .set({
+          upvotes: sql`${tvShowReviews.upvotes} + 1`
+        })
+        .where(eq(tvShowReviews.id, reviewId));
+      
+      // Get the review author to award them points
+      const reviewAuthor = reviewResult[0].userId;
+      
+      // Award points to the review author (if not self-upvoting)
+      if (reviewAuthor !== userId) {
+        // Add points record
+        await db.insert(userPoints)
+          .values({
+            userId: reviewAuthor,
+            points: 2,
+            type: "upvote_received",
+            referenceId: reviewId.toString(),
+            description: "Someone upvoted your review",
+            createdAt: new Date().toISOString()
+          });
+        
+        // Update user's total points
+        await db.update(users)
+          .set({
+            points: sql`${users.points} + 2`
+          })
+          .where(eq(users.id, reviewAuthor));
       }
+      
+      // Get updated upvote count
+      const updatedReview = await db.select({
+        upvotes: tvShowReviews.upvotes
+      })
+      .from(tvShowReviews)
+      .where(eq(tvShowReviews.id, reviewId))
+      .limit(1);
+      
+      res.json({ success: true, upvotes: updatedReview[0].upvotes });
     } catch (error) {
       console.error("Error upvoting review:", error);
       res.status(500).json({ message: "Error upvoting review" });
@@ -1967,19 +2049,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       const reviewId = parseInt(req.params.id, 10);
       
-      // Check if upvoted
-      const hasUpvoted = await storage.hasUserUpvotedReview(reviewId, userId);
-      if (!hasUpvoted) {
+      // Check if the review exists
+      const reviewResult = await db.select()
+        .from(tvShowReviews)
+        .where(eq(tvShowReviews.id, reviewId))
+        .limit(1);
+        
+      if (!reviewResult.length) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      // Check if user has upvoted this review
+      const existingUpvote = await db.select()
+        .from(reviewUpvotes)
+        .where(and(
+          eq(reviewUpvotes.reviewId, reviewId),
+          eq(reviewUpvotes.userId, userId)
+        ))
+        .limit(1);
+        
+      if (!existingUpvote.length) {
         return res.status(400).json({ message: "You haven't upvoted this review" });
       }
       
-      const success = await storage.removeUpvoteReview(reviewId, userId);
-      if (success) {
-        const upvoteCount = await storage.getReviewUpvotes(reviewId);
-        res.json({ success: true, upvotes: upvoteCount });
-      } else {
-        res.status(404).json({ message: "Review or upvote not found" });
-      }
+      // Remove the upvote record
+      await db.delete(reviewUpvotes)
+        .where(and(
+          eq(reviewUpvotes.reviewId, reviewId),
+          eq(reviewUpvotes.userId, userId)
+        ));
+      
+      // Decrement upvote count on the review
+      await db.update(tvShowReviews)
+        .set({
+          upvotes: sql`${tvShowReviews.upvotes} - 1`
+        })
+        .where(eq(tvShowReviews.id, reviewId));
+      
+      // Get updated upvote count
+      const updatedReview = await db.select({
+        upvotes: tvShowReviews.upvotes
+      })
+      .from(tvShowReviews)
+      .where(eq(tvShowReviews.id, reviewId))
+      .limit(1);
+      
+      res.json({ success: true, upvotes: updatedReview[0].upvotes });
     } catch (error) {
       console.error("Error removing upvote:", error);
       res.status(500).json({ message: "Error removing upvote" });
