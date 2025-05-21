@@ -153,7 +153,14 @@ export default function Navbar() {
                     className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
                     onClick={() => {
                       if (confirm('Are you sure you want to log out?')) {
-                        window.location.href = '/auth?logout=true';
+                        // Use the logout mutation from useAuth
+                        fetch('/api/logout', {
+                          method: 'POST',
+                          credentials: 'include'
+                        }).then(() => {
+                          // Redirect to home page after logout
+                          window.location.href = '/home';
+                        });
                       }
                     }}
                   >
@@ -275,7 +282,14 @@ export default function Navbar() {
                           onClick={() => {
                             setIsNavOpen(false);
                             if (confirm('Are you sure you want to log out?')) {
-                              window.location.href = '/auth?logout=true';
+                              // Use the custom logout endpoint
+                              fetch('/api/logout', {
+                                method: 'POST',
+                                credentials: 'include'
+                              }).then(() => {
+                                // Redirect to home page after logout
+                                window.location.href = '/home';
+                              });
                             }
                           }}
                           className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
