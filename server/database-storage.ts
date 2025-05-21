@@ -1,13 +1,18 @@
 import { db, pool } from "./db";
 import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
-  users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews,
+  users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews, 
+  themes, platforms, tvShowThemes, tvShowPlatforms,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
   type TvShowSearch, type InsertTvShowSearch,
   type TvShowView, type InsertTvShowView,
   type Favorite, type InsertFavorite,
+  type Theme, type InsertTheme,
+  type Platform, type InsertPlatform,
+  type TvShowTheme, type InsertTvShowTheme,
+  type TvShowPlatform, type InsertTvShowPlatform,
   type TvShowGitHub
 } from "@shared/schema";
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
@@ -66,6 +71,185 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Private helper methods for junction tables
+  
+  /**
+   * Get theme records for a TV show via junction table
+   */
+  private async getThemesForShow(tvShowId: number): Promise<Theme[]> {
+    try {
+      const result = await db
+        .select({
+          theme: themes
+        })
+        .from(tvShowThemes)
+        .innerJoin(themes, eq(tvShowThemes.themeId, themes.id))
+        .where(eq(tvShowThemes.tvShowId, tvShowId));
+      
+      return result.map(r => r.theme);
+    } catch (error) {
+      console.error("Error retrieving themes for show", error);
+      // Fall back to original array column if junction table query fails
+      const result = await db
+        .select({ themes: tvShows.themes })
+        .from(tvShows)
+        .where(eq(tvShows.id, tvShowId));
+      
+      if (result.length === 0 || !result[0].themes) {
+        return [];
+      }
+      
+      // Convert string array to Theme objects
+      return result[0].themes.map(name => ({ id: 0, name }));
+    }
+  }
+  
+  /**
+   * Get platform records for a TV show via junction table
+   */
+  private async getPlatformsForShow(tvShowId: number): Promise<Platform[]> {
+    try {
+      const result = await db
+        .select({
+          platform: platforms
+        })
+        .from(tvShowPlatforms)
+        .innerJoin(platforms, eq(tvShowPlatforms.platformId, platforms.id))
+        .where(eq(tvShowPlatforms.tvShowId, tvShowId));
+      
+      return result.map(r => r.platform);
+    } catch (error) {
+      console.error("Error retrieving platforms for show", error);
+      // Fall back to original array column if junction table query fails
+      const result = await db
+        .select({ platforms: tvShows.availableOn })
+        .from(tvShows)
+        .where(eq(tvShows.id, tvShowId));
+      
+      if (result.length === 0 || !result[0].platforms) {
+        return [];
+      }
+      
+      // Convert string array to Platform objects
+      return result[0].platforms.map(name => ({ id: 0, name }));
+    }
+  }
+  
+  /**
+   * Update themes for a TV show using the junction table
+   */
+  private async updateThemesForShow(tvShowId: number, themeNames: string[]): Promise<void> {
+    try {
+      // Start a transaction
+      await db.transaction(async (tx) => {
+        // Remove existing theme associations
+        await tx
+          .delete(tvShowThemes)
+          .where(eq(tvShowThemes.tvShowId, tvShowId));
+        
+        // Process each theme name
+        for (const themeName of themeNames) {
+          // Skip empty theme names
+          if (!themeName.trim()) continue;
+          
+          // Find or create the theme
+          let themeId: number;
+          const existingTheme = await tx
+            .select()
+            .from(themes)
+            .where(eq(themes.name, themeName));
+            
+          if (existingTheme.length > 0) {
+            themeId = existingTheme[0].id;
+          } else {
+            // Create new theme
+            const newTheme = await tx
+              .insert(themes)
+              .values({ name: themeName })
+              .returning();
+            themeId = newTheme[0].id;
+          }
+          
+          // Create association in the junction table
+          await tx
+            .insert(tvShowThemes)
+            .values({ tvShowId, themeId })
+            .onConflictDoNothing();
+        }
+        
+        // Also update the array column for backward compatibility
+        await tx
+          .update(tvShows)
+          .set({ themes: themeNames })
+          .where(eq(tvShows.id, tvShowId));
+      });
+    } catch (error) {
+      console.error("Error updating themes for show", error);
+      // Fallback to just updating the array column
+      await db
+        .update(tvShows)
+        .set({ themes: themeNames })
+        .where(eq(tvShows.id, tvShowId));
+    }
+  }
+  
+  /**
+   * Update platforms for a TV show using the junction table
+   */
+  private async updatePlatformsForShow(tvShowId: number, platformNames: string[]): Promise<void> {
+    try {
+      // Start a transaction
+      await db.transaction(async (tx) => {
+        // Remove existing platform associations
+        await tx
+          .delete(tvShowPlatforms)
+          .where(eq(tvShowPlatforms.tvShowId, tvShowId));
+        
+        // Process each platform name
+        for (const platformName of platformNames) {
+          // Skip empty platform names
+          if (!platformName.trim()) continue;
+          
+          // Find or create the platform
+          let platformId: number;
+          const existingPlatform = await tx
+            .select()
+            .from(platforms)
+            .where(eq(platforms.name, platformName));
+            
+          if (existingPlatform.length > 0) {
+            platformId = existingPlatform[0].id;
+          } else {
+            // Create new platform
+            const newPlatform = await tx
+              .insert(platforms)
+              .values({ name: platformName })
+              .returning();
+            platformId = newPlatform[0].id;
+          }
+          
+          // Create association in the junction table
+          await tx
+            .insert(tvShowPlatforms)
+            .values({ tvShowId, platformId })
+            .onConflictDoNothing();
+        }
+        
+        // Also update the array column for backward compatibility
+        await tx
+          .update(tvShows)
+          .set({ availableOn: platformNames })
+          .where(eq(tvShows.id, tvShowId));
+      });
+    } catch (error) {
+      console.error("Error updating platforms for show", error);
+      // Fallback to just updating the array column
+      await db
+        .update(tvShows)
+        .set({ availableOn: platformNames })
+        .where(eq(tvShows.id, tvShowId));
+    }
+  }
   async getUser(id: number): Promise<User | undefined> {
     try {
       const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
@@ -465,13 +649,13 @@ export class DatabaseStorage implements IStorage {
         }
         
         const row = result.rows[0];
-        return {
+        const tvShow = {
           id: row.id,
           name: row.name || '',
           description: row.description || '',
           imageUrl: row.image_url,
           ageRange: row.age_range || '',
-          tantrumFactor: row.tantrum_factor || '',
+          episodeLength: row.episode_length || 0,
           themes: row.themes || [],
           
           // Stimulation metrics

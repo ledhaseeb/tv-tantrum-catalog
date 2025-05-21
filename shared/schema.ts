@@ -113,6 +113,30 @@ export const tvShowViews = pgTable("tv_show_views", {
   lastViewed: text("last_viewed").notNull().default(new Date().toISOString()),
 });
 
+// Theme and platform tables for the junction table pattern
+export const themes = pgTable("themes", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+});
+
+export const platforms = pgTable("platforms", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+});
+
+// Junction tables for many-to-many relationships
+export const tvShowThemes = pgTable("tv_show_themes", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull(),
+  themeId: integer("theme_id").notNull(),
+});
+
+export const tvShowPlatforms = pgTable("tv_show_platforms", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull(),
+  platformId: integer("platform_id").notNull(),
+});
+
 export const insertTvShowSchema = createInsertSchema(tvShows).omit({
   id: true,
 });
@@ -139,6 +163,36 @@ export type InsertTvShowSearch = z.infer<typeof insertTvShowSearchSchema>;
 export type TvShowSearch = typeof tvShowSearches.$inferSelect;
 export type InsertTvShowView = z.infer<typeof insertTvShowViewSchema>;
 export type TvShowView = typeof tvShowViews.$inferSelect;
+
+// Insert schemas for themes and platforms
+export const insertThemeSchema = createInsertSchema(themes).omit({
+  id: true,
+});
+
+export const insertPlatformSchema = createInsertSchema(platforms).omit({
+  id: true,
+});
+
+// Insert schemas for junction tables
+export const insertTvShowThemeSchema = createInsertSchema(tvShowThemes).omit({
+  id: true,
+});
+
+export const insertTvShowPlatformSchema = createInsertSchema(tvShowPlatforms).omit({
+  id: true,
+});
+
+// Types for themes and platforms
+export type InsertTheme = z.infer<typeof insertThemeSchema>;
+export type Theme = typeof themes.$inferSelect;
+export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
+export type Platform = typeof platforms.$inferSelect;
+
+// Types for junction tables
+export type InsertTvShowTheme = z.infer<typeof insertTvShowThemeSchema>;
+export type TvShowTheme = typeof tvShowThemes.$inferSelect;
+export type InsertTvShowPlatform = z.infer<typeof insertTvShowPlatformSchema>;
+export type TvShowPlatform = typeof tvShowPlatforms.$inferSelect;
 
 // GitHub show format based on actual data structure
 export const tvShowGitHubSchema = z.object({
