@@ -102,9 +102,15 @@ export const tvShowSearches = pgTable("tv_show_searches", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull(),
   searchCount: integer("search_count").notNull().default(1),
-  viewCount: integer("view_count").notNull().default(0),
   lastSearched: text("last_searched").notNull().default(new Date().toISOString()),
-  lastViewed: text("last_viewed"),
+});
+
+// Track show view counts
+export const tvShowViews = pgTable("tv_show_views", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull(),
+  viewCount: integer("view_count").notNull().default(1),
+  lastViewed: text("last_viewed").notNull().default(new Date().toISOString()),
 });
 
 export const insertTvShowSchema = createInsertSchema(tvShows).omit({
@@ -118,6 +124,10 @@ export const insertTvShowReviewSchema = createInsertSchema(tvShowReviews).omit({
 export const insertTvShowSearchSchema = createInsertSchema(tvShowSearches).omit({
   id: true,
   lastSearched: true,
+});
+
+export const insertTvShowViewSchema = createInsertSchema(tvShowViews).omit({
+  id: true,
   lastViewed: true,
 });
 
@@ -127,6 +137,8 @@ export type InsertTvShowReview = z.infer<typeof insertTvShowReviewSchema>;
 export type TvShowReview = typeof tvShowReviews.$inferSelect;
 export type InsertTvShowSearch = z.infer<typeof insertTvShowSearchSchema>;
 export type TvShowSearch = typeof tvShowSearches.$inferSelect;
+export type InsertTvShowView = z.infer<typeof insertTvShowViewSchema>;
+export type TvShowView = typeof tvShowViews.$inferSelect;
 
 // GitHub show format based on actual data structure
 export const tvShowGitHubSchema = z.object({

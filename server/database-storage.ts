@@ -924,27 +924,34 @@ export class DatabaseStorage implements IStorage {
 
   async trackShowView(tvShowId: number): Promise<void> {
     const now = new Date().toISOString();
-    const [existingSearch] = await db
-      .select()
-      .from(tvShowSearches)
-      .where(eq(tvShowSearches.tvShowId, tvShowId));
+    
+    try {
+      // Use the new separate table for view tracking
+      const [existingView] = await db
+        .select()
+        .from(tvShowViews)
+        .where(eq(tvShowViews.tvShowId, tvShowId));
 
-    if (existingSearch) {
-      await db
-        .update(tvShowSearches)
-        .set({
-          viewCount: existingSearch.viewCount + 1,
+      if (existingView) {
+        // Update existing view record
+        await db
+          .update(tvShowViews)
+          .set({
+            viewCount: existingView.viewCount + 1,
+            lastViewed: now,
+          })
+          .where(eq(tvShowViews.id, existingView.id));
+      } else {
+        // Create new view record
+        await db.insert(tvShowViews).values({
+          tvShowId,
+          viewCount: 1,
           lastViewed: now,
-        })
-        .where(eq(tvShowSearches.id, existingSearch.id));
-    } else {
-      await db.insert(tvShowSearches).values({
-        tvShowId,
-        searchCount: 0,
-        viewCount: 1,
-        lastViewed: now,
-        lastSearched: now,
-      });
+        });
+      }
+    } catch (error) {
+      console.error("Error tracking TV show view:", error);
+      throw error;
     }
   }
 
