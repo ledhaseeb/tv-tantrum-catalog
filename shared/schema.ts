@@ -68,7 +68,7 @@ export const tvShows = pgTable("tv_shows", {
   // We're keeping creativity_rating but removing the other specialized ratings
   creativityRating: integer("creativity_rating"),
   
-  // Platform and themes
+  // Platform and themes (original array columns preserved for backward compatibility)
   availableOn: text("available_on").array(),
   themes: text("themes").array(),
   
