@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { useNavigate } from "wouter";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -54,7 +54,7 @@ type SubmitShowFormValues = z.infer<typeof submitShowSchema>;
 
 export default function SubmitShow() {
   const { user } = useAuth();
-  const [, navigate] = useNavigate();
+  // Using window.location for navigation instead of useNavigate
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,7 +87,7 @@ export default function SubmitShow() {
         description: "You've earned points for your contribution. Thank you!",
         variant: "default",
       });
-      navigate("/user-dashboard?tab=submissions");
+      window.location.href = "/user-dashboard?tab=submissions";
     },
     onError: (error) => {
       toast({
@@ -106,7 +106,7 @@ export default function SubmitShow() {
         description: "Please log in to submit a show",
         variant: "destructive",
       });
-      navigate("/auth");
+      window.location.href = "/auth";
       return;
     }
 
@@ -125,7 +125,7 @@ export default function SubmitShow() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center pb-6">
-            <Button onClick={() => navigate("/auth")}>Login / Register</Button>
+            <Link href="/auth"><Button>Login / Register</Button></Link>
           </CardContent>
         </Card>
       </div>
@@ -377,7 +377,7 @@ export default function SubmitShow() {
                   type="button"
                   variant="outline"
                   className="w-full sm:w-auto"
-                  onClick={() => navigate("/user-dashboard")}
+                  onClick={() => window.location.href = "/user-dashboard"}
                 >
                   Cancel
                 </Button>
