@@ -18,6 +18,7 @@ export default function Navbar() {
   const { data: isAdmin = false } = useQuery({
     queryKey: ['/api/user/is-admin'],
     enabled: !!user,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch shows for search dropdown
