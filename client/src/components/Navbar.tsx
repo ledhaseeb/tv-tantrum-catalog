@@ -13,7 +13,7 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  // Use the original useAuth hook with isAdmin property
+  // Use the original authentication hook
   const { user, isLoading, isAdmin } = useAuth();
 
   // Fetch shows for search dropdown
@@ -117,7 +117,7 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {/* Authentication links */}
             <div className="hidden md:flex items-center gap-3">
-              {isAuthenticated ? (
+              {!!user ? (
                 <div className="flex items-center gap-2">
                   {isAdmin && (
                     <Link href="/admin">
@@ -159,14 +159,14 @@ export default function Navbar() {
                   </a>
                 </div>
               ) : (
-                <a href="/api/login">
+                <Link href="/auth">
                   <Button 
                     variant="ghost" 
                     className="text-white/90 hover:text-white hover:bg-primary-700"
                   >
                     Login
                   </Button>
-                </a>
+                </Link>
               )}
             </div>
             
@@ -240,7 +240,7 @@ export default function Navbar() {
                     </Link>
                     
                     {/* Authentication links */}
-                    {isAuthenticated ? (
+                    {!!user ? (
                       <>
                         {isAdmin && (
                           <Link 
