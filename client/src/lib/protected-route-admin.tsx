@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +12,7 @@ export function AdminRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading } = useAuth();
   // We'll need to check if user is admin via an API call
   const { data: isAdmin } = useQuery({
     queryKey: ["/api/user/is-admin"],
@@ -41,11 +41,11 @@ export function AdminRoute({
     );
   }
 
-  // If not logged in, redirect to login page
+  // If not logged in, redirect to auth page
   if (!user) {
     return (
       <Route path={path}>
-        <Redirect to="/api/login" />
+        <Redirect to="/auth" />
       </Route>
     );
   }

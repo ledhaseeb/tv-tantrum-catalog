@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -15,8 +15,15 @@ export function ApprovedRoute({
   const { toast } = useToast();
 
   useEffect(() => {
-      // With Replit auth, users are automatically approved
-  }, [toast]);
+    // If user is logged in but not approved, show toast and redirect
+    if (user && user.isApproved === false) {
+      toast({
+        title: "Access Denied",
+        description: "Your account is pending approval by an administrator.",
+        variant: "destructive",
+      });
+    }
+  }, [user, toast]);
 
   if (isLoading) {
     return (
@@ -28,11 +35,20 @@ export function ApprovedRoute({
     );
   }
 
-  // If not logged in, redirect to login
+  // If not logged in, redirect to auth page
   if (!user) {
     return (
       <Route path={path}>
-        <Redirect to="/api/login" />
+        <Redirect to="/auth" />
+      </Route>
+    );
+  }
+
+  // If logged in but not approved, redirect to pending page
+  if (user.isApproved === false) {
+    return (
+      <Route path={path}>
+        <Redirect to="/registration-pending" />
       </Route>
     );
   }

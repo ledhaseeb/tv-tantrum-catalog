@@ -148,15 +148,18 @@ export default function Navbar() {
                       <span>Dashboard</span>
                     </Button>
                   </Link>
-                  <a href="/api/logout">
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Logout</span>
-                    </Button>
-                  </a>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to log out?')) {
+                        window.location.href = '/auth?logout=true';
+                      }
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
                 </div>
               ) : (
                 <Link href="/auth">
@@ -268,24 +271,28 @@ export default function Navbar() {
                           <User className="h-5 w-5 mr-2" />
                           Dashboard
                         </Link>
-                        <a
-                          href="/api/logout"
-                          onClick={() => setIsNavOpen(false)}
+                        <button
+                          onClick={() => {
+                            setIsNavOpen(false);
+                            if (confirm('Are you sure you want to log out?')) {
+                              window.location.href = '/auth?logout=true';
+                            }
+                          }}
                           className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                         >
                           <LogOut className="h-5 w-5 mr-2" />
                           Logout
-                        </a>
+                        </button>
                       </>
                     ) : (
-                      <a 
-                        href="/api/login"
+                      <Link 
+                        href="/auth"
                         onClick={() => setIsNavOpen(false)}
                         className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                       >
                         <User className="h-5 w-5 mr-2" />
                         Login
-                      </a>
+                      </Link>
                     )}
                   </div>
                   
