@@ -1420,28 +1420,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async trackShowSearch(tvShowId: number): Promise<void> {
-    const now = new Date().toISOString();
-    const [existingSearch] = await db
-      .select()
-      .from(tvShowSearches)
-      .where(eq(tvShowSearches.tvShowId, tvShowId));
+    try {
+      const now = new Date();
+      const [existingSearch] = await db
+        .select()
+        .from(tvShowSearches)
+        .where(eq(tvShowSearches.tvShowId, tvShowId));
 
-    if (existingSearch) {
-      await db
-        .update(tvShowSearches)
-        .set({
-          searchCount: existingSearch.searchCount + 1,
+      if (existingSearch) {
+        await db
+          .update(tvShowSearches)
+          .set({
+            searchCount: existingSearch.searchCount + 1,
+            lastSearched: now,
+          })
+          .where(eq(tvShowSearches.id, existingSearch.id));
+      } else {
+        await db.insert(tvShowSearches).values({
+          tvShowId,
+          searchCount: 1,
+          viewCount: 0,
           lastSearched: now,
-        })
-        .where(eq(tvShowSearches.id, existingSearch.id));
-    } else {
-      await db.insert(tvShowSearches).values({
-        tvShowId,
-        searchCount: 1,
-        viewCount: 0,
-        lastSearched: now,
-        lastViewed: null,
-      });
+          lastViewed: null,
+        });
+      }
+    } catch (error) {
+      // Log error but don't let it block the search functionality
+      console.error(`Error tracking search for TV show ID ${tvShowId}:`, error);
     }
   }
 
