@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useLocation } from 'wouter';
+import { Link } from 'wouter';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { queryClient } from '@/lib/queryClient';
@@ -30,7 +30,7 @@ type FormValues = z.infer<typeof formSchema>;
 const ShowSubmission = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
+  // Using navigate function directly
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);

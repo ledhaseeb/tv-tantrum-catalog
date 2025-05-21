@@ -98,7 +98,7 @@ const Research = () => {
     : categorizedSummaries?.[activeCategory] || [];
 
   const handleReadMore = (summaryId: number) => {
-    setLocation(`/research/${summaryId}`);
+    navigate(`/research/${summaryId}`);
   };
 
   return (
