@@ -1427,27 +1427,46 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Fetching reviews for user ID: ${numericUserId} (original type: ${typeof userId})`);
     
-    // Use sql template to explicitly specify column names
-    const reviews = await db.execute(sql`
-      SELECT 
-        r.id, 
-        r.tv_show_id as "tvShowId",
-        r.user_id as "userId", 
-        r.user_name as "userName", 
-        r.rating, 
-        r.review, 
-        r.created_at as "createdAt",
-        r.show_name as "showName",
-        t.name as "tvShowName",
-        t.image_url as "showImageUrl"
-      FROM tv_show_reviews r
-      LEFT JOIN tv_shows t ON r.tv_show_id = t.id
-      WHERE r.user_id = ${numericUserId}
-      ORDER BY r.created_at DESC
-    `);
-    
-    console.log(`Found ${reviews.length} reviews for user ${numericUserId}`);
-    return reviews;
+    try {
+      // Use sql template to explicitly specify column names
+      const result = await db.execute(sql`
+        SELECT 
+          r.id, 
+          r.tv_show_id as "tvShowId",
+          r.user_id as "userId", 
+          r.user_name as "userName", 
+          r.rating, 
+          r.review, 
+          r.created_at as "createdAt",
+          r.show_name as "showName",
+          t.name as "tvShowName",
+          t.image_url as "showImageUrl"
+        FROM tv_show_reviews r
+        LEFT JOIN tv_shows t ON r.tv_show_id = t.id
+        WHERE r.user_id = ${numericUserId}
+        ORDER BY r.created_at DESC
+      `);
+      
+      // Convert the result to a proper array
+      const reviews = result.rows.map(row => ({
+        id: row.id,
+        tvShowId: row.tvShowId,
+        userId: row.userId,
+        userName: row.userName,
+        rating: row.rating,
+        review: row.review,
+        createdAt: row.createdAt,
+        showName: row.showName || row.tvShowName,
+        tvShowName: row.tvShowName,
+        showImageUrl: row.showImageUrl
+      }));
+      
+      console.log(`Retrieved ${reviews.length} reviews for user ${numericUserId}:`, reviews);
+      return reviews;
+    } catch (error) {
+      console.error(`Error getting reviews for user ${numericUserId}:`, error);
+      return [];
+    }
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
