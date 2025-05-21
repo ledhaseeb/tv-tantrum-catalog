@@ -84,23 +84,39 @@ export class DatabaseStorage implements IStorage {
     const lowerValue = value.toLowerCase();
     
     // Map various terms to our standardized ratings
-    if (lowerValue.includes('very low') || lowerValue.includes('very-low') || lowerValue === 'minimal' || lowerValue === 'none') {
+    if (lowerValue.includes('very low') || lowerValue.includes('very-low') || 
+        lowerValue === 'minimal' || lowerValue === 'none' || 
+        lowerValue === 'lowest' || lowerValue === 'slight' || 
+        lowerValue === 'quiet' || lowerValue === 'soft' || 
+        lowerValue === 'rare' || lowerValue === 'infrequent') {
       return 'Low';
     }
     
-    if (lowerValue.includes('low to moderate') || lowerValue.includes('low-to-moderate')) {
+    if (lowerValue.includes('low to moderate') || lowerValue.includes('low-to-moderate') || 
+        lowerValue.includes('light to moderate') || lowerValue.includes('mild') || 
+        lowerValue.includes('somewhat low') || lowerValue.includes('occasionally')) {
       return 'Low-Moderate';
     }
     
-    if (lowerValue.includes('medium') || lowerValue === 'mid' || lowerValue === 'average' || lowerValue === 'normal') {
+    if (lowerValue.includes('medium') || lowerValue === 'mid' || 
+        lowerValue === 'average' || lowerValue === 'normal' || 
+        lowerValue === 'balanced' || lowerValue === 'standard' || 
+        lowerValue === 'neutral' || lowerValue === 'regular' || 
+        lowerValue === 'common' || lowerValue === 'intermediate') {
       return 'Moderate';
     }
     
-    if (lowerValue.includes('moderate to high') || lowerValue.includes('moderate-to-high')) {
+    if (lowerValue.includes('moderate to high') || lowerValue.includes('moderate-to-high') || 
+        lowerValue.includes('somewhat high') || lowerValue.includes('elevated') || 
+        lowerValue.includes('above average') || lowerValue.includes('frequent')) {
       return 'Moderate-High';
     }
     
-    if (lowerValue.includes('very high') || lowerValue.includes('very-high') || lowerValue.includes('intense') || lowerValue.includes('maximum')) {
+    if (lowerValue.includes('very high') || lowerValue.includes('very-high') || 
+        lowerValue.includes('intense') || lowerValue.includes('maximum') || 
+        lowerValue.includes('extreme') || lowerValue.includes('highest') || 
+        lowerValue.includes('loud') || lowerValue.includes('strong') || 
+        lowerValue.includes('constant') || lowerValue.includes('heavy')) {
       return 'High';
     }
     
@@ -112,7 +128,8 @@ export class DatabaseStorage implements IStorage {
     if (lowerValue === 'high') return 'High';
     
     // Default to Moderate for any unrecognized values
-    console.log(`Unrecognized sensory metric value: "${value}", defaulting to Moderate`);
+    // Using specific log format to make these easy to find
+    console.warn(`[METRIC_STANDARDIZATION] Unrecognized sensory metric value: "${value}", defaulting to Moderate`);
     return 'Moderate';
   }
   
