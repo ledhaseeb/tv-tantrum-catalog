@@ -102,6 +102,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         if (typeof storage.getUserPoints === 'function') {
           pointsInfo = await storage.getUserPoints(userId) || pointsInfo;
+        } else {
+          // Calculate points based on user activities if getUserPoints function is not available
+          // Each review is worth 5 points
+          const reviewPoints = reviews.length * 5;
+          // Update the breakdown
+          pointsInfo.breakdown.reviews = reviewPoints;
+          pointsInfo.total = reviewPoints + pointsInfo.breakdown.upvotesGiven + 
+                            pointsInfo.breakdown.upvotesReceived + pointsInfo.breakdown.consecutiveLogins +
+                            pointsInfo.breakdown.shares + pointsInfo.breakdown.referrals +
+                            pointsInfo.breakdown.showSubmissions + pointsInfo.breakdown.researchRead;
+          
+          // Determine rank based on total points
+          if (pointsInfo.total >= 100) pointsInfo.rank = 'TV Enthusiast';
+          if (pointsInfo.total >= 500) pointsInfo.rank = 'TV Expert';
+          if (pointsInfo.total >= 1000) pointsInfo.rank = 'TV Master';
         }
       } catch (error) {
         console.error('Error getting user points:', error);
