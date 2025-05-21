@@ -1400,8 +1400,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getReviewsByUserId(userId: string | number): Promise<TvShowReview[]> {
+    // Convert userId to a number if it's a string
+    const numericUserId = typeof userId === 'string' ? parseInt(userId) : userId;
+    
+    console.log(`Fetching reviews for user ID: ${numericUserId} (original type: ${typeof userId})`);
+    
     // Use sql template to explicitly specify column names
-    return await db.execute(sql`
+    const reviews = await db.execute(sql`
       SELECT 
         r.id, 
         r.tv_show_id as "tvShowId",
@@ -1410,13 +1415,17 @@ export class DatabaseStorage implements IStorage {
         r.rating, 
         r.review, 
         r.created_at as "createdAt",
-        t.name as "showName",
+        r.show_name as "showName",
+        t.name as "tvShowName",
         t.image_url as "showImageUrl"
       FROM tv_show_reviews r
-      JOIN tv_shows t ON r.tv_show_id = t.id
-      WHERE r.user_id = ${userId}
+      LEFT JOIN tv_shows t ON r.tv_show_id = t.id
+      WHERE r.user_id = ${numericUserId}
       ORDER BY r.created_at DESC
     `);
+    
+    console.log(`Found ${reviews.length} reviews for user ${numericUserId}`);
+    return reviews;
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {

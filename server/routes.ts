@@ -516,10 +516,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to submit reviews" });
       }
       
-      const userId = req.user!.id;
+      // Convert user ID to a number if it's a string
+      const userId = typeof req.user!.id === 'string' ? parseInt(req.user!.id) : req.user!.id;
       const userName = req.user!.username || "Anonymous";
       
-      console.log("Submitting review as user:", userId, userName);
+      console.log("Submitting review as user:", userId, userName, "User ID type:", typeof userId);
       
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
