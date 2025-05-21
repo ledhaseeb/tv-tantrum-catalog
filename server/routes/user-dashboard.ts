@@ -45,6 +45,42 @@ export default function setupUserDashboardRoutes(router: Router, storage: IStora
       if (alreadyRead) {
         return res.json({ success: true, alreadyRead: true });
       }
+      
+      // Get user's read research summaries
+      router.get('/user/research/read', async (req: Request, res: Response) => {
+        try {
+          if (!req.session?.userId) {
+            return res.status(401).json({ error: 'Not authenticated' });
+          }
+          
+          const userId = req.session.userId;
+          
+          // Direct database query for read research summaries
+          const client = await pool.connect();
+          try {
+            const result = await client.query(`
+              SELECT 
+                rr.id, 
+                rr.research_id as "researchId",
+                rr.user_id as "userId",
+                rr.created_at as "createdAt",
+                r.title,
+                r.summary
+              FROM research_reads rr
+              JOIN research_summaries r ON rr.research_id = r.id
+              WHERE rr.user_id = $1
+              ORDER BY rr.created_at DESC
+            `, [userId]);
+            
+            res.json(result.rows);
+          } finally {
+            client.release();
+          }
+        } catch (error) {
+          console.error('Error fetching read research:', error);
+          res.status(500).json({ error: 'Failed to fetch read research' });
+        }
+      });
 
       // Mark as read and award points
       await storage.markResearchAsRead(userId, researchId);
@@ -502,6 +538,81 @@ export default function setupUserDashboardRoutes(router: Router, storage: IStora
     } catch (error) {
       console.error('Error generating referral code:', error);
       res.status(500).json({ error: 'Failed to generate referral code' });
+    }
+  });
+  
+  // Get user's reviews
+  router.get('/user/reviews', async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+      
+      const userId = req.session.userId;
+      
+      // Direct database query for reviews as fallback
+      const client = await pool.connect();
+      try {
+        const result = await client.query(`
+          SELECT 
+            r.id, 
+            r.tv_show_id as "tvShowId", 
+            r.user_name as "userName",
+            r.user_id as "userId",
+            r.rating, 
+            r.review, 
+            r.created_at as "createdAt",
+            s.name as "showName",
+            s.image_url as "showImage"
+          FROM tv_show_reviews r
+          JOIN tv_shows s ON r.tv_show_id = s.id
+          WHERE r.user_id = $1
+          ORDER BY r.created_at DESC
+        `, [userId]);
+        
+        res.json(result.rows);
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error fetching user reviews:', error);
+      res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+  });
+
+  // Get user's favorites
+  router.get('/user/favorites', async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+      
+      const userId = req.session.userId;
+      
+      // Direct database query for favorites
+      const client = await pool.connect();
+      try {
+        const result = await client.query(`
+          SELECT 
+            f.id, 
+            f.tv_show_id as "tvShowId", 
+            f.user_id as "userId",
+            f.created_at as "createdAt",
+            s.name as "showName",
+            s.image_url as "showImage"
+          FROM tv_show_favorites f
+          JOIN tv_shows s ON f.tv_show_id = s.id
+          WHERE f.user_id = $1
+          ORDER BY f.created_at DESC
+        `, [userId]);
+        
+        res.json(result.rows);
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error fetching user favorites:', error);
+      res.status(500).json({ error: 'Failed to fetch favorites' });
     }
   });
 
