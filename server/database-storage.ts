@@ -1384,19 +1384,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]> {
-    // Use sql template to explicitly specify column names
-    return await db.execute(sql`
-      SELECT 
-        id, 
-        tv_show_id as "tvShowId",
-        user_id as "userId", 
-        user_name as "userName", 
-        rating, 
-        review, 
-        created_at as "createdAt"
-      FROM tv_show_reviews 
-      WHERE tv_show_id = ${tvShowId}
-    `);
+    try {
+      // Use sql template to explicitly specify column names
+      const result = await db.execute(sql`
+        SELECT 
+          id, 
+          tv_show_id as "tvShowId",
+          user_id as "userId", 
+          user_name as "userName", 
+          rating, 
+          review, 
+          show_name as "showName",
+          created_at as "createdAt"
+        FROM tv_show_reviews 
+        WHERE tv_show_id = ${tvShowId}
+        ORDER BY created_at DESC
+      `);
+      
+      // Convert the result to a proper array
+      const reviews = result.rows.map(row => ({
+        id: row.id,
+        tvShowId: row.tvShowId,
+        userId: row.userId,
+        userName: row.userName,
+        rating: row.rating,
+        review: row.review,
+        showName: row.showName,
+        createdAt: row.createdAt
+      }));
+      
+      console.log(`Retrieved ${reviews.length} reviews for show ID ${tvShowId}`);
+      return reviews;
+    } catch (error) {
+      console.error(`Error getting reviews for show ID ${tvShowId}:`, error);
+      return [];
+    }
   }
   
   async getReviewsByUserId(userId: string | number): Promise<TvShowReview[]> {
