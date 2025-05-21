@@ -1433,9 +1433,14 @@ export class DatabaseStorage implements IStorage {
     let showName = null;
     try {
       if (review.tvShowId) {
-        const show = await this.getTvShowById(review.tvShowId);
-        if (show) {
-          showName = show.name;
+        // Get show name directly from database to avoid any type issues
+        const result = await db.execute(sql`
+          SELECT name FROM tv_shows WHERE id = ${review.tvShowId}
+        `);
+        
+        if (result && result.length > 0) {
+          showName = result[0].name;
+          console.log(`Found show name for review: "${showName}"`);
         }
       }
     } catch (error) {
@@ -1451,10 +1456,21 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     
+    console.log("Saved review with showName:", showName);
+    
     // Award points for submitting a review if applicable
     try {
-      if (review.userId && typeof this.awardPoints === 'function') {
-        await this.awardPoints(review.userId.toString(), 10, 'review', `Added review for ${showName || 'a TV show'}`);
+      if (review.userId) {
+        try {
+          await db.execute(sql`
+            UPDATE users 
+            SET total_points = COALESCE(total_points, 0) + 10 
+            WHERE id = ${review.userId}
+          `);
+          console.log(`Awarded 10 points to user ${review.userId} for review`);
+        } catch (pointsError) {
+          console.error("Simple points update error:", pointsError);
+        }
       }
     } catch (error) {
       console.error("Error awarding points for review:", error);
