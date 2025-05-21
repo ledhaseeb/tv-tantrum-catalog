@@ -3,6 +3,7 @@ import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews, 
   themes, platforms, tvShowThemes, tvShowPlatforms,
+  userPoints, reviewUpvotes, researchSummaries, userResearchReads, showSubmissions,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
@@ -13,7 +14,12 @@ import {
   type Platform, type InsertPlatform,
   type TvShowTheme, type InsertTvShowTheme,
   type TvShowPlatform, type InsertTvShowPlatform,
-  type TvShowGitHub
+  type TvShowGitHub,
+  type UserPoint, type InsertUserPoint,
+  type ReviewUpvote, type InsertReviewUpvote,
+  type ResearchSummary, type InsertResearchSummary,
+  type UserResearchRead, type InsertUserResearchRead,
+  type ShowSubmission, type InsertShowSubmission
 } from "@shared/schema";
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
 import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
@@ -1731,6 +1737,305 @@ function getDefaultImageUrl(title: string | undefined, image_filename: string | 
     .toLowerCase();
   
   return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${formattedTitle}.jpg`;
+}
+
+// Database class methods
+async getUserPointsHistory(userId: number): Promise<UserPoint[]> {
+  try {
+    const result = await db.select().from(userPoints).where(eq(userPoints.userId, userId)).orderBy(desc(userPoints.createdAt));
+    return result;
+  } catch (error) {
+    console.error('Error getting user points history:', error);
+    return [];
+  }
+}
+
+async addUserPoints(data: InsertUserPoint): Promise<UserPoint> {
+  try {
+    // Add points entry
+    const [pointEntry] = await db.insert(userPoints).values({
+      userId: data.userId,
+      points: data.points,
+      type: data.type,
+      description: data.description || "",
+      referenceId: data.referenceId || 0,
+    }).returning();
+    
+    // Update user's total points
+    await db.update(users)
+      .set({ points: sql`${users.points} + ${data.points}` })
+      .where(eq(users.id, data.userId));
+    
+    return pointEntry;
+  } catch (error) {
+    console.error('Error adding user points:', error);
+    throw error;
+  }
+}
+
+async updateLoginDate(userId: number): Promise<User | null> {
+  try {
+    const now = new Date().toISOString();
+    const [updatedUser] = await db.update(users)
+      .set({ lastLoginDate: now })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    // Check if it's a new day since last login
+    const lastLoginDay = updatedUser.lastLoginDate ? new Date(updatedUser.lastLoginDate).getDate() : -1;
+    const todayDay = new Date().getDate();
+    
+    if (lastLoginDay !== todayDay) {
+      // Add points for daily login
+      await this.addUserPoints({
+        userId,
+        points: 5,
+        type: 'login',
+        description: 'Daily login reward',
+        referenceId: 0
+      });
+    }
+    
+    return updatedUser;
+  } catch (error) {
+    console.error('Error updating login date:', error);
+    return null;
+  }
+}
+
+async getUserLeaderboard(limit: number = 10): Promise<User[]> {
+  try {
+    const leaderboard = await db.select()
+      .from(users)
+      .orderBy(desc(users.points))
+      .limit(limit);
+    
+    return leaderboard;
+  } catch (error) {
+    console.error('Error getting leaderboard:', error);
+    return [];
+  }
+}
+
+// Research methods
+async getResearchSummaries(): Promise<ResearchSummary[]> {
+  try {
+    const summaries = await db.select().from(researchSummaries);
+    return summaries;
+  } catch (error) {
+    console.error('Error getting research summaries:', error);
+    return [];
+  }
+}
+
+async getResearchSummaryById(id: number): Promise<ResearchSummary | null> {
+  try {
+    const summary = await db.select()
+      .from(researchSummaries)
+      .where(eq(researchSummaries.id, id))
+      .limit(1);
+    
+    return summary.length ? summary[0] : null;
+  } catch (error) {
+    console.error('Error getting research summary:', error);
+    return null;
+  }
+}
+
+async getUserReadResearch(userId: number): Promise<UserResearchRead[]> {
+  try {
+    const reads = await db.select()
+      .from(userResearchReads)
+      .where(eq(userResearchReads.userId, userId))
+      .orderBy(desc(userResearchReads.readAt));
+    
+    return reads;
+  } catch (error) {
+    console.error('Error getting user read research:', error);
+    return [];
+  }
+}
+
+async hasUserReadResearch(userId: number, researchId: number): Promise<boolean> {
+  try {
+    const result = await db.select()
+      .from(userResearchReads)
+      .where(and(
+        eq(userResearchReads.userId, userId),
+        eq(userResearchReads.researchId, researchId)
+      ))
+      .limit(1);
+    
+    return result.length > 0;
+  } catch (error) {
+    console.error('Error checking if user read research:', error);
+    return false;
+  }
+}
+
+async markResearchAsRead(userId: number, researchId: number): Promise<UserResearchRead | null> {
+  try {
+    // Check if already read
+    const alreadyRead = await this.hasUserReadResearch(userId, researchId);
+    if (alreadyRead) {
+      return null;
+    }
+    
+    // Mark as read
+    const [read] = await db.insert(userResearchReads)
+      .values({
+        userId,
+        researchId,
+        readAt: new Date().toISOString()
+      })
+      .returning();
+    
+    // Add points for reading research
+    await this.addUserPoints({
+      userId,
+      points: 10,
+      type: 'research_read',
+      description: 'Read research summary',
+      referenceId: researchId
+    });
+    
+    return read;
+  } catch (error) {
+    console.error('Error marking research as read:', error);
+    return null;
+  }
+}
+
+// Show submission methods
+async getUserShowSubmissions(userId: number): Promise<ShowSubmission[]> {
+  try {
+    const submissions = await db.select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.userId, userId))
+      .orderBy(desc(showSubmissions.createdAt));
+    
+    return submissions;
+  } catch (error) {
+    console.error('Error getting user show submissions:', error);
+    return [];
+  }
+}
+
+// Review upvotes methods
+async hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean> {
+  try {
+    const result = await db.select()
+      .from(reviewUpvotes)
+      .where(and(
+        eq(reviewUpvotes.userId, userId),
+        eq(reviewUpvotes.reviewId, reviewId)
+      ))
+      .limit(1);
+    
+    return result.length > 0;
+  } catch (error) {
+    console.error('Error checking if user upvoted review:', error);
+    return false;
+  }
+}
+
+async upvoteReview(userId: number, reviewId: number): Promise<ReviewUpvote | null> {
+  try {
+    // Check if already upvoted
+    const alreadyUpvoted = await this.hasUserUpvotedReview(userId, reviewId);
+    if (alreadyUpvoted) {
+      return null;
+    }
+    
+    // Get review info for points
+    const review = await db.select()
+      .from(tvShowReviews)
+      .where(eq(tvShowReviews.id, reviewId))
+      .limit(1);
+    
+    if (!review.length) {
+      return null;
+    }
+    
+    // Add upvote
+    const [upvote] = await db.insert(reviewUpvotes)
+      .values({
+        userId,
+        reviewId,
+        createdAt: new Date().toISOString()
+      })
+      .returning();
+    
+    // Add points to user who upvoted
+    await this.addUserPoints({
+      userId,
+      points: 1,
+      type: 'upvote_given',
+      description: 'Upvoted a review',
+      referenceId: reviewId
+    });
+    
+    // Add points to user who wrote the review
+    if (review[0].userId !== userId) {
+      await this.addUserPoints({
+        userId: review[0].userId,
+        points: 3,
+        type: 'upvote_received',
+        description: 'Received upvote on review',
+        referenceId: reviewId
+      });
+    }
+    
+    return upvote;
+  } catch (error) {
+    console.error('Error upvoting review:', error);
+    return null;
+  }
+}
+
+async removeUpvoteReview(userId: number, reviewId: number): Promise<boolean> {
+  try {
+    // Remove upvote
+    const result = await db.delete(reviewUpvotes)
+      .where(and(
+        eq(reviewUpvotes.userId, userId),
+        eq(reviewUpvotes.reviewId, reviewId)
+      ));
+    
+    return true;
+  } catch (error) {
+    console.error('Error removing upvote:', error);
+    return false;
+  }
+}
+
+async getReviewUpvotes(reviewId: number): Promise<number> {
+  try {
+    const result = await db.select({
+      count: sql`count(*)`
+    })
+    .from(reviewUpvotes)
+    .where(eq(reviewUpvotes.reviewId, reviewId));
+    
+    return Number(result[0].count);
+  } catch (error) {
+    console.error('Error getting review upvotes:', error);
+    return 0;
+  }
+}
+
+async getReviewsByUserId(userId: number): Promise<TvShowReview[]> {
+  try {
+    const reviews = await db.select()
+      .from(tvShowReviews)
+      .where(eq(tvShowReviews.userId, userId))
+      .orderBy(desc(tvShowReviews.createdAt));
+    
+    return reviews;
+  } catch (error) {
+    console.error('Error getting user reviews:', error);
+    return [];
+  }
 }
 
 export const storage = new DatabaseStorage();
