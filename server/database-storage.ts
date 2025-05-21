@@ -74,11 +74,46 @@ export class DatabaseStorage implements IStorage {
   // Private helper methods
   
   /**
-   * Standardize sensory metric values by converting 'very-high' to 'high'
+   * Standardize sensory metric values to use only approved ratings:
+   * Low, Low-Moderate, Moderate, Moderate-High, High
    */
   private standardizeSensoryMetric(value: string | null): string | null {
     if (!value) return null;
-    return value.replace(/very[ -]high/i, "high");
+    
+    // Convert to lowercase for case-insensitive comparison
+    const lowerValue = value.toLowerCase();
+    
+    // Map various terms to our standardized ratings
+    if (lowerValue.includes('very low') || lowerValue.includes('very-low') || lowerValue === 'minimal' || lowerValue === 'none') {
+      return 'Low';
+    }
+    
+    if (lowerValue.includes('low to moderate') || lowerValue.includes('low-to-moderate')) {
+      return 'Low-Moderate';
+    }
+    
+    if (lowerValue.includes('medium') || lowerValue === 'mid' || lowerValue === 'average' || lowerValue === 'normal') {
+      return 'Moderate';
+    }
+    
+    if (lowerValue.includes('moderate to high') || lowerValue.includes('moderate-to-high')) {
+      return 'Moderate-High';
+    }
+    
+    if (lowerValue.includes('very high') || lowerValue.includes('very-high') || lowerValue.includes('intense') || lowerValue.includes('maximum')) {
+      return 'High';
+    }
+    
+    // Direct mappings for our standard terms (preserving capitalization)
+    if (lowerValue === 'low') return 'Low';
+    if (lowerValue === 'low-moderate') return 'Low-Moderate';
+    if (lowerValue === 'moderate') return 'Moderate';
+    if (lowerValue === 'moderate-high') return 'Moderate-High';
+    if (lowerValue === 'high') return 'High';
+    
+    // Default to Moderate for any unrecognized values
+    console.log(`Unrecognized sensory metric value: "${value}", defaulting to Moderate`);
+    return 'Moderate';
   }
   
   // Private helper methods for junction tables
