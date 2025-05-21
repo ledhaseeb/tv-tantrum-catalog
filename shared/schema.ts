@@ -116,7 +116,7 @@ export const researchSummaries = pgTable("research_summaries", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  imageUrl: text("image_url"),
+  imageUrl: text("image_url").default(null),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
@@ -161,6 +161,8 @@ export const tvShowSearches = pgTable("tv_show_searches", {
   tvShowId: integer("tv_show_id").notNull(),
   searchCount: integer("search_count").notNull().default(1),
   lastSearched: text("last_searched").notNull().default(new Date().toISOString()),
+  viewCount: integer("view_count").notNull().default(0),
+  lastViewed: text("last_viewed").notNull().default(new Date().toISOString()),
 });
 
 // Track show view counts
