@@ -1,10 +1,11 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { sql, eq, asc, desc, and, or, like, inArray, isNull, notInArray } from "drizzle-orm";
 
 // --- User-related tables ---
 
-// Session storage table for Replit Auth
+// Session storage table for auth
 export const sessions = pgTable(
   "sessions",
   {
@@ -20,6 +21,7 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: text("id").primaryKey().notNull(),
   email: text("email").unique(),
+  password: text("password"), // Needed for our custom auth
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
@@ -31,35 +33,13 @@ export const users = pgTable("users", {
   isApproved: boolean("is_approved").default(false),
   totalPoints: integer("total_points").default(0),
   lastLoginDate: timestamp("last_login_date"),
+  loginStreak: integer("login_streak").default(0),
+  rank: text("rank").default("TV Watcher"),
   profileBio: text("profile_bio"),
   referralCode: text("referral_code").unique(),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-// --- Favorites table ---
-
-export const favorites = pgTable("favorites", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const insertFavoriteSchema = createInsertSchema(favorites).omit({
-  id: true,
-  createdAt: true,
-});
-
-// --- Gamification-related tables are defined after the main tables 
-// to avoid reference errors
-
 // --- Core TV Shows Schema ---
-
 export const tvShows = pgTable("tv_shows", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -109,8 +89,41 @@ export const tvShows = pgTable("tv_shows", {
   hasYoutubeData: boolean("has_youtube_data").default(false),
 });
 
-// --- YouTube-specific table ---
+// --- Favorites table ---
+export const favorites = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
+// --- Theme and Platform tables ---
+export const themes = pgTable("themes", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+});
+
+export const platforms = pgTable("platforms", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  url: text("url"),
+  iconUrl: text("icon_url"),
+});
+
+export const tvShowThemes = pgTable("tv_show_themes", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
+  themeId: integer("theme_id").notNull().references(() => themes.id, { onDelete: 'cascade' }),
+});
+
+export const tvShowPlatforms = pgTable("tv_show_platforms", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
+  platformId: integer("platform_id").notNull().references(() => platforms.id, { onDelete: 'cascade' }),
+});
+
+// --- YouTube-specific table ---
 export const youtubeChannels = pgTable("youtube_channels", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }).unique(),
@@ -120,38 +133,33 @@ export const youtubeChannels = pgTable("youtube_channels", {
   publishedAt: text("published_at"),
 });
 
-// --- Theme and Platform tables ---
-
-export const themes = pgTable("themes", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-});
-
-export const platforms = pgTable("platforms", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-});
-
-// --- Junction tables ---
-
-export const tvShowThemes = pgTable("tv_show_themes", {
+// --- Reviews table ---
+export const tvShowReviews = pgTable("tv_show_reviews", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  themeId: integer("theme_id").notNull().references(() => themes.id, { onDelete: 'cascade' }),
-}, (t) => ({
-  unq: primaryKey({ columns: [t.tvShowId, t.themeId] }),
-}));
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userName: text("user_name").notNull(),
+  rating: integer("rating").notNull(), // 1-5 scale
+  review: text("review").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
-export const tvShowPlatforms = pgTable("tv_show_platforms", {
+// --- Analytics tables ---
+export const tvShowSearches = pgTable("tv_show_searches", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  platformId: integer("platform_id").notNull().references(() => platforms.id, { onDelete: 'cascade' }),
-}, (t) => ({
-  unq: primaryKey({ columns: [t.tvShowId, t.platformId] }),
-}));
+  searchCount: integer("search_count").notNull().default(1),
+  lastSearched: timestamp("last_searched").notNull().defaultNow(),
+});
+
+export const tvShowViews = pgTable("tv_show_views", {
+  id: serial("id").primaryKey(),
+  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
+  viewCount: integer("view_count").notNull().default(1),
+  lastViewed: timestamp("last_viewed").notNull().defaultNow(),
+});
 
 // --- Gamification Tables ---
-
 export const userPointsHistory = pgTable("user_points_history", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -205,35 +213,17 @@ export const userReferrals = pgTable("user_referrals", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-// --- Reviews table ---
-
-export const tvShowReviews = pgTable("tv_show_reviews", {
-  id: serial("id").primaryKey(),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  userName: text("user_name").notNull(),
-  rating: integer("rating").notNull(), // 1-5 scale
-  review: text("review").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-// --- Analytics tables ---
-
-export const tvShowSearches = pgTable("tv_show_searches", {
-  id: serial("id").primaryKey(),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  searchCount: integer("search_count").notNull().default(1),
-  lastSearched: timestamp("last_searched").notNull().defaultNow(),
-});
-
-export const tvShowViews = pgTable("tv_show_views", {
-  id: serial("id").primaryKey(),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  viewCount: integer("view_count").notNull().default(1),
-  lastViewed: timestamp("last_viewed").notNull().defaultNow(),
-});
-
 // --- Zod schemas for inserting/selecting ---
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFavoriteSchema = createInsertSchema(favorites).omit({
+  id: true,
+  createdAt: true,
+});
 
 export const insertTvShowSchema = createInsertSchema(tvShows).omit({
   id: true,
@@ -275,7 +265,6 @@ export const insertTvShowPlatformSchema = createInsertSchema(tvShowPlatforms).om
 });
 
 // --- Gamification schemas ---
-
 export const insertUserPointsHistorySchema = createInsertSchema(userPointsHistory).omit({
   id: true,
   createdAt: true,
@@ -310,7 +299,6 @@ export const insertUserReferralSchema = createInsertSchema(userReferrals).omit({
 });
 
 // --- TypeScript types for database entities ---
-
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
@@ -363,29 +351,21 @@ export type ShowSubmission = typeof showSubmissions.$inferSelect;
 export type InsertUserReferral = z.infer<typeof insertUserReferralSchema>;
 export type UserReferral = typeof userReferrals.$inferSelect;
 
-// --- GitHub show format based on actual data structure ---
+// --- External data schema for GitHub import ---
 export const tvShowGitHubSchema = z.object({
-  title: z.string(),
-  stimulation_score: z.number(),
-  platform: z.string(),
-  target_age_group: z.string(),
-  seasons: z.string().nullable(),
-  avg_episode_length: z.string().nullable(),
-  themes: z.array(z.string()),
-  interactivity_level: z.string(),
-  animation_style: z.string(),
-  dialogue_intensity: z.string(),
-  sound_effects_level: z.string(),
-  music_tempo: z.string(),
-  total_music_level: z.string(),
-  total_sound_effect_time_level: z.string(),
-  scene_frequency: z.string(),
-  image_filename: z.string(),
-  release_year: z.number().optional(),
-  end_year: z.number().optional(),
-  // We'll add these derived fields for our application
-  id: z.number().optional().default(() => Math.floor(Math.random() * 10000)),
-  imageUrl: z.string().optional(),
+  name: z.string(),
+  description: z.string(),
+  age_range: z.string(),
+  episode_length: z.number(),
+  themes: z.array(z.string()).or(z.string()).optional().nullable(),
+  stimulation_score: z.number().or(z.string().transform(Number)),
+  interaction_level: z.string().optional().nullable(),
+  dialogue_intensity: z.string().optional().nullable(), 
+  sound_effects_level: z.string().optional().nullable(),
+  music_tempo: z.string().optional().nullable(),
+  total_music_level: z.string().optional().nullable(),
+  total_sound_effect_time_level: z.string().optional().nullable(),
+  scene_frequency: z.string().optional().nullable(),
 });
 
 export type TvShowGitHub = z.infer<typeof tvShowGitHubSchema>;

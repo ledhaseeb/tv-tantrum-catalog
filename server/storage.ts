@@ -1,4 +1,28 @@
-import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch, type Favorite } from "@shared/schema";
+import { 
+  users, 
+  type User, 
+  type InsertUser, 
+  type TvShow, 
+  type TvShowReview, 
+  type InsertTvShow, 
+  type InsertTvShowReview, 
+  type TvShowGitHub, 
+  type TvShowSearch, 
+  type InsertTvShowSearch, 
+  type Favorite,
+  type UserPointsHistory,
+  type InsertUserPointsHistory,
+  type ReviewUpvote,
+  type InsertReviewUpvote,
+  type ResearchSummary,
+  type InsertResearchSummary,
+  type UserReadResearch,
+  type InsertUserReadResearch,
+  type ShowSubmission,
+  type InsertShowSubmission,
+  type UserReferral,
+  type InsertUserReferral
+} from "@shared/schema";
 
 export interface IStorage {
   // User methods
@@ -7,25 +31,6 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: Partial<User>): Promise<User>;
-  
-  // User points and gamification methods
-  getUserPoints(userId: string): Promise<{ 
-    total: number; 
-    breakdown: {
-      reviews: number;
-      upvotesGiven: number;
-      upvotesReceived: number;
-      consecutiveLogins: number;
-      shares: number;
-      referrals: number;
-      showSubmissions: number;
-      researchRead: number;
-    }
-  }>;
-  getUserPointsHistory(userId: string): Promise<any[]>;
-  awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<any>;
-  getTopUsers(limit?: number): Promise<any[]>;
-  updateUserLoginStreak(userId: string): Promise<number>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -50,9 +55,6 @@ export interface IStorage {
   // Reviews methods
   getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]>;
   addReview(review: InsertTvShowReview): Promise<TvShowReview>;
-  addReviewUpvote(reviewId: number, userId: string): Promise<any>;
-  removeReviewUpvote(reviewId: number, userId: string): Promise<boolean>;
-  getReviewUpvotes(reviewId: number): Promise<any[]>;
   
   // Search/Popularity tracking methods
   trackShowSearch(tvShowId: number): Promise<void>;
@@ -63,58 +65,56 @@ export interface IStorage {
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
   
   // Favorites methods
-  addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
-  removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
-  getUserFavorites(userId: number): Promise<TvShow[]>;
-  isFavorite(userId: number, tvShowId: number): Promise<boolean>;
-  getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
+  addFavorite(userId: string, tvShowId: number): Promise<Favorite>;
+  removeFavorite(userId: string, tvShowId: number): Promise<boolean>;
+  getUserFavorites(userId: string): Promise<TvShow[]>;
+  isFavorite(userId: string, tvShowId: number): Promise<boolean>;
+  getSimilarShows(userId: string, limit?: number): Promise<TvShow[]>;
   getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
-  
-  // Research summaries methods
-  getResearchSummaries(): Promise<any[]>;
-  getResearchSummary(id: number): Promise<any>;
-  hasUserReadResearch(userId: string, researchId: number): Promise<boolean>;
-  markResearchAsRead(userId: string, researchId: number): Promise<any>;
-  getUserReadResearch(userId: string): Promise<any[]>;
-  addResearchSummary(research: any): Promise<any>;
-  
-  // Show submissions methods
-  addShowSubmission(submission: any): Promise<any>;
-  getUserShowSubmissions(userId: string): Promise<any[]>;
-  getPendingShowSubmissions(): Promise<any[]>;
-  updateShowSubmissionStatus(id: number, status: string): Promise<any>;
   
   // Gamification methods
   
   // Points and activities
-  awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<UserPointsHistory>;
-  getUserPoints(userId: number): Promise<number>;
-  getUserPointsHistory(userId: number): Promise<UserPointsHistory[]>;
-  updateUserLoginStreak(userId: number): Promise<number>;
+  getUserPoints(userId: string): Promise<{ 
+    total: number; 
+    breakdown: {
+      reviews: number;
+      upvotesGiven: number;
+      upvotesReceived: number;
+      consecutiveLogins: number;
+      shares: number;
+      referrals: number;
+      showSubmissions: number;
+      researchRead: number;
+    }
+  }>;
+  awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<UserPointsHistory>;
+  getUserPointsHistory(userId: string): Promise<UserPointsHistory[]>;
+  updateUserLoginStreak(userId: string): Promise<number>;
   
   // Review upvotes
-  addReviewUpvote(userId: number, reviewId: number): Promise<ReviewUpvote>;
-  removeReviewUpvote(userId: number, reviewId: number): Promise<boolean>;
+  addReviewUpvote(userId: string, reviewId: number): Promise<ReviewUpvote>;
+  removeReviewUpvote(userId: string, reviewId: number): Promise<boolean>;
   getReviewUpvotes(reviewId: number): Promise<ReviewUpvote[]>;
-  hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean>;
+  hasUserUpvotedReview(userId: string, reviewId: number): Promise<boolean>;
   
   // Research summaries
   getResearchSummaries(): Promise<ResearchSummary[]>;
   getResearchSummary(id: number): Promise<ResearchSummary | undefined>;
   addResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary>;
-  markResearchAsRead(userId: number, researchId: number): Promise<UserReadResearch>;
-  getUserReadResearch(userId: number): Promise<ResearchSummary[]>;
-  hasUserReadResearch(userId: number, researchId: number): Promise<boolean>;
+  markResearchAsRead(userId: string, researchId: number): Promise<UserReadResearch>;
+  getUserReadResearch(userId: string): Promise<ResearchSummary[]>;
+  hasUserReadResearch(userId: string, researchId: number): Promise<boolean>;
   
   // Show submissions
   addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission>;
-  getUserShowSubmissions(userId: number): Promise<ShowSubmission[]>;
+  getUserShowSubmissions(userId: string): Promise<ShowSubmission[]>;
   getPendingShowSubmissions(): Promise<ShowSubmission[]>;
   updateShowSubmissionStatus(id: number, status: string): Promise<ShowSubmission>;
   
   // User referrals
-  addUserReferral(referrerId: number, referredId: number): Promise<UserReferral>;
-  getUserReferrals(userId: number): Promise<UserReferral[]>;
+  addUserReferral(referrerId: string, referredId: string): Promise<UserReferral>;
+  getUserReferrals(userId: string): Promise<UserReferral[]>;
   
   // User leaderboard
   getTopUsers(limit?: number): Promise<User[]>;
@@ -128,16 +128,27 @@ export class MemStorage implements IStorage {
   private tvShowCurrentId: number;
   private reviewCurrentId: number;
   private searchCurrentId: number;
+  private userPointsHistories: Map<number, UserPointsHistory[]>;
+  private reviewUpvotes: Map<number, ReviewUpvote[]>;
+  private researchSummaries: Map<number, ResearchSummary>;
+  private userReadResearch: Map<string, number[]>;
+  private showSubmissions: Map<number, ShowSubmission>;
+  private userReferrals: Map<string, UserReferral[]>;
 
   constructor() {
     this.users = new Map();
     this.tvShows = new Map();
     this.tvShowReviews = new Map();
     this.tvShowSearches = new Map();
-    this.userCurrentId = 1;
     this.tvShowCurrentId = 1;
     this.reviewCurrentId = 1;
     this.searchCurrentId = 1;
+    this.userPointsHistories = new Map();
+    this.reviewUpvotes = new Map();
+    this.researchSummaries = new Map();
+    this.userReadResearch = new Map();
+    this.showSubmissions = new Map();
+    this.userReferrals = new Map();
     
     // Create an admin test user for development
     // The password hash is generated using the hashPassword function in auth.ts
