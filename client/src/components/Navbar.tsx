@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X, Award, UserCircle } from "lucide-react";
+import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -129,15 +129,6 @@ export default function Navbar() {
                       </Button>
                     </Link>
                   )}
-                  <Link href="/dashboard">
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                    >
-                      <UserCircle className="h-4 w-4" />
-                      <span>Dashboard</span>
-                    </Button>
-                  </Link>
                   <Button 
                     variant="ghost" 
                     className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
@@ -152,12 +143,6 @@ export default function Navbar() {
                   >
                     <User className="h-4 w-4" />
                     <span>{user.username}</span>
-                    {user.points > 0 && (
-                      <span className="ml-1 text-xs bg-yellow-400 text-primary px-1.5 py-0.5 rounded-full flex items-center">
-                        <Award className="h-3 w-3 mr-0.5" />
-                        {user.points}
-                      </span>
-                    )}
                   </Button>
                 </div>
               ) : (
@@ -254,14 +239,6 @@ export default function Navbar() {
                             Admin Dashboard
                           </Link>
                         )}
-                        <Link 
-                          href="/dashboard"
-                          onClick={() => setIsNavOpen(false)}
-                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                        >
-                          <UserCircle className="h-5 w-5 mr-2" />
-                          My Dashboard
-                        </Link>
                         <button
                           onClick={() => {
                             logoutMutation.mutate();
@@ -275,12 +252,6 @@ export default function Navbar() {
                         <div className="flex items-center px-3 py-2 text-base font-medium text-gray-500 rounded-md">
                           <User className="h-5 w-5 mr-2" />
                           {user.username}
-                          {user.points > 0 && (
-                            <span className="ml-1 text-xs bg-yellow-400 text-primary px-1.5 py-0.5 rounded-full flex items-center">
-                              <Award className="h-3 w-3 mr-0.5" />
-                              {user.points}
-                            </span>
-                          )}
                         </div>
                       </>
                     ) : (

@@ -13,7 +13,6 @@ import Compare from "@/pages/compare";
 import About from "@/pages/about";
 import AuthPage from "@/pages/auth-page-new";
 import AdminPage from "@/pages/admin-page";
-import UserDashboard from "@/pages/user-dashboard";
 import LandingPage from "@/pages/landing-page";
 import PreLaunchAbout from "@/pages/pre-launch-about";
 import PreLaunchFAQ from "@/pages/pre-launch-faq";
@@ -199,32 +198,6 @@ function Router() {
             <Footer />
           </div>
         </Route>
-        
-        {/* User Dashboard - requires authentication */}
-        {isDevMode ? (
-          <Route path="/dashboard">
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <UserDashboard />
-              </div>
-              <Footer />
-            </div>
-          </Route>
-        ) : (
-          <ApprovedRoute 
-            path="/dashboard" 
-            component={() => (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <UserDashboard />
-                </div>
-                <Footer />
-              </div>
-            )} 
-          />
-        )}
         {/* Admin route with approval and admin check */}
         {isDevMode ? (
           <Route path="/admin">

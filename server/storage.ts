@@ -1,26 +1,4 @@
-import { 
-  users, 
-  type User, 
-  type InsertUser, 
-  type TvShow, 
-  type TvShowReview, 
-  type InsertTvShow, 
-  type InsertTvShowReview, 
-  type TvShowGitHub, 
-  type TvShowSearch, 
-  type InsertTvShowSearch, 
-  type Favorite,
-  type ResearchSummary,
-  type InsertResearchSummary,
-  type UserResearchRead,
-  type InsertUserResearchRead,
-  type ShowSubmission,
-  type InsertShowSubmission,
-  type UserPoint,
-  type InsertUserPoint,
-  type ReviewUpvote,
-  type InsertReviewUpvote
-} from "@shared/schema";
+import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch, type Favorite } from "@shared/schema";
 
 export interface IStorage {
   // User methods
@@ -28,9 +6,6 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
-  updateLoginDate(userId: number): Promise<User | undefined>;
-  getUserLeaderboard(limit?: number): Promise<User[]>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -54,12 +29,7 @@ export interface IStorage {
   
   // Reviews methods
   getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]>;
-  getReviewsByUserId(userId: number): Promise<TvShowReview[]>;
   addReview(review: InsertTvShowReview): Promise<TvShowReview>;
-  upvoteReview(reviewId: number, userId: number): Promise<boolean>;
-  removeUpvoteReview(reviewId: number, userId: number): Promise<boolean>;
-  getReviewUpvotes(reviewId: number): Promise<number>;
-  hasUserUpvotedReview(reviewId: number, userId: number): Promise<boolean>;
   
   // Search/Popularity tracking methods
   trackShowSearch(tvShowId: number): Promise<void>;
@@ -76,26 +46,6 @@ export interface IStorage {
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
   getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
-  
-  // Points system
-  addUserPoints(data: InsertUserPoint): Promise<UserPoint>;
-  getUserPoints(userId: number): Promise<number>;
-  getUserPointsHistory(userId: number): Promise<UserPoint[]>;
-  
-  // Research summaries
-  getAllResearchSummaries(): Promise<ResearchSummary[]>;
-  getResearchSummaryById(id: number): Promise<ResearchSummary | undefined>;
-  addResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary>;
-  markResearchAsRead(userId: number, researchId: number): Promise<UserResearchRead>;
-  getUserReadResearch(userId: number): Promise<UserResearchRead[]>;
-  hasUserReadResearch(userId: number, researchId: number): Promise<boolean>;
-  
-  // Show submissions
-  addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission>;
-  getShowSubmissionById(id: number): Promise<ShowSubmission | undefined>;
-  getUserShowSubmissions(userId: number): Promise<ShowSubmission[]>;
-  getAllShowSubmissions(status?: string): Promise<ShowSubmission[]>;
-  updateShowSubmissionStatus(id: number, status: string, reviewedBy: number, notes?: string): Promise<ShowSubmission | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -103,45 +53,20 @@ export class MemStorage implements IStorage {
   private tvShows: Map<number, TvShow>;
   private tvShowReviews: Map<number, TvShowReview>;
   private tvShowSearches: Map<number, TvShowSearch>;
-  private userPoints: Map<number, UserPoint>;
-  private reviewUpvotes: Map<number, ReviewUpvote>;
-  private researchSummaries: Map<number, ResearchSummary>;
-  private userResearchReads: Map<number, UserResearchRead>;
-  private showSubmissions: Map<number, ShowSubmission>;
-  private favorites: Map<number, Favorite>;
   private userCurrentId: number;
   private tvShowCurrentId: number;
   private reviewCurrentId: number;
   private searchCurrentId: number;
-  private userPointsCurrentId: number;
-  private reviewUpvotesCurrentId: number;
-  private researchSummaryCurrentId: number;
-  private userResearchReadCurrentId: number;
-  private showSubmissionCurrentId: number;
-  private favoriteCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.tvShows = new Map();
     this.tvShowReviews = new Map();
     this.tvShowSearches = new Map();
-    this.userPoints = new Map();
-    this.reviewUpvotes = new Map();
-    this.researchSummaries = new Map();
-    this.userResearchReads = new Map();
-    this.showSubmissions = new Map();
-    this.favorites = new Map();
-    
     this.userCurrentId = 1;
     this.tvShowCurrentId = 1;
     this.reviewCurrentId = 1;
     this.searchCurrentId = 1;
-    this.userPointsCurrentId = 1;
-    this.reviewUpvotesCurrentId = 1;
-    this.researchSummaryCurrentId = 1;
-    this.userResearchReadCurrentId = 1;
-    this.showSubmissionCurrentId = 1;
-    this.favoriteCurrentId = 1;
     
     // Create an admin test user for development
     // The password hash is generated using the hashPassword function in auth.ts
@@ -185,339 +110,12 @@ export class MemStorage implements IStorage {
       country: insertUser.country || null,
       createdAt: now,
       isAdmin: insertUser.isAdmin ?? false,
-      isApproved: insertUser.isApproved ?? false,
-      points: 0,
-      lastLoginDate: now,
-      avatarUrl: null,
-      bio: null
+      isApproved: insertUser.isApproved ?? false
     };
     this.users.set(id, user);
     return user;
   }
-  
-  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
-    const existingUser = this.users.get(id);
-    if (!existingUser) return undefined;
-    
-    const updatedUser: User = { ...existingUser, ...userData };
-    this.users.set(id, updatedUser);
-    return updatedUser;
-  }
-  
-  async updateLoginDate(userId: number): Promise<User | undefined> {
-    const user = await this.getUser(userId);
-    if (!user) return undefined;
-    
-    const now = new Date().toISOString();
-    const lastLoginDate = user.lastLoginDate;
-    const updatedUser = { ...user, lastLoginDate: now };
-    
-    // Check if this is a different day login (for streak/loyalty points)
-    const lastLoginDay = lastLoginDate ? new Date(lastLoginDate).toDateString() : '';
-    const todayDay = new Date().toDateString();
-    
-    this.users.set(userId, updatedUser);
-    
-    // If it's a login on a different day, add login points
-    if (lastLoginDay !== todayDay) {
-      // Add points for daily login
-      this.addUserPoints({
-        userId,
-        points: 5,
-        type: 'login',
-        description: 'Daily login reward',
-        referenceId: 0 // No specific reference for login rewards
-      });
-    }
-    
-    return updatedUser;
-  }
-  
-  async getUserLeaderboard(limit: number = 10): Promise<User[]> {
-    const users = Array.from(this.users.values());
-    // Sort by points in descending order
-    users.sort((a, b) => (b.points || 0) - (a.points || 0));
-    // Return only the top N users
-    return users.slice(0, limit);
-  }
 
-  // Points system
-  async addUserPoints(data: InsertUserPoint): Promise<UserPoint> {
-    const id = this.userPointsCurrentId++;
-    const now = new Date().toISOString();
-    const userPoint: UserPoint = {
-      ...data,
-      id,
-      createdAt: now,
-      description: data.description || "",
-      referenceId: data.referenceId || 0
-    };
-    
-    this.userPoints.set(id, userPoint);
-    
-    // Update user's total points
-    const user = await this.getUser(data.userId);
-    if (user) {
-      user.points = (user.points || 0) + data.points;
-      this.users.set(data.userId, user);
-    }
-    
-    return userPoint;
-  }
-  
-  async getUserPoints(userId: number): Promise<number> {
-    const user = await this.getUser(userId);
-    return user?.points || 0;
-  }
-  
-  async getUserPointsHistory(userId: number): Promise<UserPoint[]> {
-    return Array.from(this.userPoints.values())
-      .filter(point => point.userId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }
-  
-  // Review methods
-  async getReviewsByUserId(userId: number): Promise<TvShowReview[]> {
-    return Array.from(this.tvShowReviews.values())
-      .filter(review => review.userId === userId);
-  }
-  
-  async upvoteReview(reviewId: number, userId: number): Promise<boolean> {
-    // Check if the user has already upvoted this review
-    const existingUpvote = Array.from(this.reviewUpvotes.values())
-      .find(upvote => upvote.reviewId === reviewId && upvote.userId === userId);
-    
-    if (existingUpvote) {
-      // User already upvoted, can't upvote again
-      return false;
-    }
-    
-    const review = Array.from(this.tvShowReviews.values())
-      .find(review => review.id === reviewId);
-    
-    if (!review) {
-      // Review doesn't exist
-      return false;
-    }
-    
-    // Create a new upvote record
-    const id = this.reviewUpvotesCurrentId++;
-    const now = new Date().toISOString();
-    const upvote: ReviewUpvote = {
-      id,
-      reviewId,
-      userId,
-      createdAt: now
-    };
-    
-    this.reviewUpvotes.set(id, upvote);
-    
-    // Increment the review's upvote count
-    review.upvotes = (review.upvotes || 0) + 1;
-    this.tvShowReviews.set(review.id, review);
-    
-    // Add points to the review author if it's not the same person upvoting their own review
-    if (review.userId !== userId) {
-      // Add points to review author for receiving an upvote
-      this.addUserPoints({
-        userId: review.userId,
-        points: 2, // 2 points for receiving an upvote
-        type: 'upvote_received',
-        referenceId: reviewId,
-        description: `Received an upvote on your review for show #${review.tvShowId}`
-      });
-      
-      // Add points to the user for giving an upvote
-      this.addUserPoints({
-        userId,
-        points: 1, // 1 point for giving an upvote
-        type: 'upvote_given',
-        referenceId: reviewId,
-        description: `You upvoted a review for show #${review.tvShowId}`
-      });
-    }
-    
-    return true;
-  }
-  
-  async removeUpvoteReview(reviewId: number, userId: number): Promise<boolean> {
-    // Find the upvote
-    const upvote = Array.from(this.reviewUpvotes.values())
-      .find(upvote => upvote.reviewId === reviewId && upvote.userId === userId);
-    
-    if (!upvote) {
-      // Upvote doesn't exist
-      return false;
-    }
-    
-    // Remove the upvote
-    this.reviewUpvotes.delete(upvote.id);
-    
-    // Find the review and decrement its upvote count
-    const review = Array.from(this.tvShowReviews.values())
-      .find(review => review.id === reviewId);
-    
-    if (review) {
-      review.upvotes = Math.max(0, (review.upvotes || 0) - 1);
-      this.tvShowReviews.set(review.id, review);
-    }
-    
-    return true;
-  }
-  
-  async getReviewUpvotes(reviewId: number): Promise<number> {
-    const review = Array.from(this.tvShowReviews.values())
-      .find(review => review.id === reviewId);
-    
-    return review?.upvotes || 0;
-  }
-  
-  async hasUserUpvotedReview(reviewId: number, userId: number): Promise<boolean> {
-    return Array.from(this.reviewUpvotes.values())
-      .some(upvote => upvote.reviewId === reviewId && upvote.userId === userId);
-  }
-  
-  // Research summaries
-  async getAllResearchSummaries(): Promise<ResearchSummary[]> {
-    return Array.from(this.researchSummaries.values());
-  }
-  
-  async getResearchSummaryById(id: number): Promise<ResearchSummary | undefined> {
-    return this.researchSummaries.get(id);
-  }
-  
-  async addResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary> {
-    const id = this.researchSummaryCurrentId++;
-    const now = new Date().toISOString();
-    const newSummary: ResearchSummary = {
-      ...summary,
-      id,
-      createdAt: now
-    };
-    
-    this.researchSummaries.set(id, newSummary);
-    return newSummary;
-  }
-  
-  async markResearchAsRead(userId: number, researchId: number): Promise<UserResearchRead> {
-    // Check if already marked as read
-    const existingRead = Array.from(this.userResearchReads.values())
-      .find(read => read.userId === userId && read.researchId === researchId);
-    
-    if (existingRead) {
-      return existingRead;
-    }
-    
-    // Create new read record
-    const id = this.userResearchReadCurrentId++;
-    const now = new Date().toISOString();
-    const read: UserResearchRead = {
-      id,
-      userId,
-      researchId,
-      readAt: now
-    };
-    
-    this.userResearchReads.set(id, read);
-    
-    // Add points for reading research
-    this.addUserPoints({
-      userId,
-      points: 10, // 10 points for reading a research summary
-      type: 'research_read',
-      referenceId: researchId,
-      description: 'Read a research summary'
-    });
-    
-    return read;
-  }
-  
-  async getUserReadResearch(userId: number): Promise<UserResearchRead[]> {
-    return Array.from(this.userResearchReads.values())
-      .filter(read => read.userId === userId);
-  }
-  
-  async hasUserReadResearch(userId: number, researchId: number): Promise<boolean> {
-    return Array.from(this.userResearchReads.values())
-      .some(read => read.userId === userId && read.researchId === researchId);
-  }
-  
-  // Show submissions
-  async addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission> {
-    const id = this.showSubmissionCurrentId++;
-    const now = new Date().toISOString();
-    const newSubmission: ShowSubmission = {
-      ...submission,
-      id,
-      createdAt: now,
-      status: 'pending',
-      reviewedAt: null,
-      reviewedBy: null,
-      adminNotes: null
-    };
-    
-    this.showSubmissions.set(id, newSubmission);
-    
-    // Add points for submitting a show
-    this.addUserPoints({
-      userId: submission.userId,
-      points: 15, // 15 points for submitting a show suggestion
-      type: 'show_submission',
-      referenceId: id,
-      description: 'Submitted a show suggestion'
-    });
-    
-    return newSubmission;
-  }
-  
-  async getShowSubmissionById(id: number): Promise<ShowSubmission | undefined> {
-    return this.showSubmissions.get(id);
-  }
-  
-  async getUserShowSubmissions(userId: number): Promise<ShowSubmission[]> {
-    return Array.from(this.showSubmissions.values())
-      .filter(submission => submission.userId === userId);
-  }
-  
-  async getAllShowSubmissions(status?: string): Promise<ShowSubmission[]> {
-    let submissions = Array.from(this.showSubmissions.values());
-    
-    if (status) {
-      submissions = submissions.filter(submission => submission.status === status);
-    }
-    
-    return submissions;
-  }
-  
-  async updateShowSubmissionStatus(id: number, status: string, reviewedBy: number, notes?: string): Promise<ShowSubmission | undefined> {
-    const submission = this.showSubmissions.get(id);
-    if (!submission) return undefined;
-    
-    const now = new Date().toISOString();
-    const updatedSubmission: ShowSubmission = {
-      ...submission,
-      status,
-      reviewedAt: now,
-      reviewedBy,
-      adminNotes: notes || null
-    };
-    
-    this.showSubmissions.set(id, updatedSubmission);
-    
-    // If the submission was approved, give additional points
-    if (status === 'approved') {
-      this.addUserPoints({
-        userId: submission.userId,
-        points: 25, // 25 additional points for an approved submission
-        type: 'submission_approved',
-        referenceId: id,
-        description: 'Your show submission was approved'
-      });
-    }
-    
-    return updatedSubmission;
-  }
-  
   // TV Shows methods
   async getAllTvShows(): Promise<TvShow[]> {
     return Array.from(this.tvShows.values());
@@ -812,20 +410,9 @@ export class MemStorage implements IStorage {
     const newReview: TvShowReview = { 
       ...review, 
       id,
-      createdAt: now,
-      upvotes: 0
+      createdAt: now
     };
     this.tvShowReviews.set(id, newReview);
-    
-    // Award points for leaving a review
-    this.addUserPoints({
-      userId: review.userId,
-      points: 10, // 10 points for writing a review
-      type: 'review_created',
-      referenceId: id,
-      description: `Created a review for show #${review.tvShowId}`
-    });
-    
     return newReview;
   }
   
