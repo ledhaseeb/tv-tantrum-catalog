@@ -28,6 +28,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
+  // Middleware to check if user is authenticated
+  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ message: 'Unauthorized: Please log in' });
+    }
+    next();
+  };
+  
   // Serve static files from the public directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
   
@@ -1651,6 +1659,350 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Error during custom image optimization", 
         error: error instanceof Error ? error.message : "Unknown error" 
       });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // Gamification API Routes
+  // -------------------------------------------------------------------------
+  
+  // User Dashboard
+  app.get("/api/user/dashboard", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your dashboard" });
+      }
+      
+      // Get user data
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get all user dashboard data in parallel
+      const [
+        pointsHistory,
+        favorites,
+        reviews,
+        readResearch,
+        submissions
+      ] = await Promise.all([
+        storage.getUserPointsHistory(userId),
+        storage.getUserFavorites(userId),
+        storage.getReviewsByTvShowId(userId), // Note: We need to create a getReviewsByUserId method
+        storage.getUserReadResearch(userId),
+        storage.getUserShowSubmissions(userId)
+      ]);
+      
+      // Update login streak if the user just logged in
+      await storage.updateUserLoginStreak(userId);
+      
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          totalPoints: user.totalPoints || 0,
+          profileBio: user.profileBio
+        },
+        pointsHistory,
+        favorites,
+        reviews,
+        readResearch,
+        submissions
+      });
+    } catch (error) {
+      console.error("Error fetching user dashboard:", error);
+      res.status(500).json({ message: "Failed to fetch user dashboard data" });
+    }
+  });
+  
+  // User Points
+  app.get("/api/user/points", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view points" });
+      }
+      
+      const points = await storage.getUserPoints(userId);
+      res.json({ points });
+    } catch (error) {
+      console.error("Error fetching user points:", error);
+      res.status(500).json({ message: "Failed to fetch user points" });
+    }
+  });
+  
+  app.get("/api/user/points/history", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view points history" });
+      }
+      
+      const history = await storage.getUserPointsHistory(userId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching points history:", error);
+      res.status(500).json({ message: "Failed to fetch points history" });
+    }
+  });
+  
+  // Review Upvotes
+  app.post("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to upvote reviews" });
+      }
+      
+      const reviewId = parseInt(req.params.reviewId);
+      
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      const upvote = await storage.addReviewUpvote(userId, reviewId);
+      res.json(upvote);
+    } catch (error) {
+      console.error("Error upvoting review:", error);
+      res.status(500).json({ message: "Failed to upvote review" });
+    }
+  });
+  
+  app.delete("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to remove upvotes" });
+      }
+      
+      const reviewId = parseInt(req.params.reviewId);
+      
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      await storage.removeReviewUpvote(userId, reviewId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing upvote:", error);
+      res.status(500).json({ message: "Failed to remove upvote" });
+    }
+  });
+  
+  app.get("/api/reviews/:reviewId/upvotes", async (req: Request, res: Response) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      const upvotes = await storage.getReviewUpvotes(reviewId);
+      res.json(upvotes);
+    } catch (error) {
+      console.error("Error fetching upvotes:", error);
+      res.status(500).json({ message: "Failed to fetch upvotes" });
+    }
+  });
+  
+  // Research Summaries
+  app.get("/api/research", async (req: Request, res: Response) => {
+    try {
+      const summaries = await storage.getResearchSummaries();
+      
+      // Check if user is logged in to determine read status
+      const userId = req.session?.userId;
+      if (userId) {
+        const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
+        const summariesWithReadStatus = summaries.map(summary => ({
+          ...summary,
+          hasRead: userReadIds.includes(summary.id)
+        }));
+        res.json(summariesWithReadStatus);
+      } else {
+        res.json(summaries.map(summary => ({
+          ...summary,
+          hasRead: false
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching research summaries:", error);
+      res.status(500).json({ message: "Failed to fetch research summaries" });
+    }
+  });
+  
+  app.get("/api/research/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid research ID" });
+      }
+      
+      const summary = await storage.getResearchSummary(id);
+      
+      if (!summary) {
+        return res.status(404).json({ message: "Research summary not found" });
+      }
+      
+      // Check if user has read this research
+      const userId = req.session?.userId;
+      if (userId) {
+        const hasRead = await storage.hasUserReadResearch(userId, id);
+        res.json({
+          ...summary,
+          hasRead
+        });
+      } else {
+        res.json({
+          ...summary,
+          hasRead: false
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching research summary:", error);
+      res.status(500).json({ message: "Failed to fetch research summary" });
+    }
+  });
+  
+  app.post("/api/research/:id/mark-read", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to mark research as read" });
+      }
+      
+      const researchId = parseInt(req.params.id);
+      
+      if (isNaN(researchId)) {
+        return res.status(400).json({ message: "Invalid research ID" });
+      }
+      
+      const readRecord = await storage.markResearchAsRead(userId, researchId);
+      res.json(readRecord);
+    } catch (error) {
+      console.error("Error marking research as read:", error);
+      res.status(500).json({ message: "Failed to mark research as read" });
+    }
+  });
+  
+  // Admin only - add research summary
+  app.post("/api/research", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to add research summaries" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can add research summaries" });
+      }
+      
+      const summary = await storage.addResearchSummary(req.body);
+      res.json(summary);
+    } catch (error) {
+      console.error("Error adding research summary:", error);
+      res.status(500).json({ message: "Failed to add research summary" });
+    }
+  });
+  
+  // Show Submissions
+  app.post("/api/show-submissions", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to submit shows" });
+      }
+      
+      const submission = await storage.addShowSubmission({
+        ...req.body,
+        userId
+      });
+      res.json(submission);
+    } catch (error) {
+      console.error("Error submitting show:", error);
+      res.status(500).json({ message: "Failed to submit show" });
+    }
+  });
+  
+  app.get("/api/show-submissions", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view submissions" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      // Admin can see all pending submissions
+      if (user?.isAdmin) {
+        const submissions = await storage.getPendingShowSubmissions();
+        res.json(submissions);
+      } else {
+        // Regular users only see their own submissions
+        const submissions = await storage.getUserShowSubmissions(userId);
+        res.json(submissions);
+      }
+    } catch (error) {
+      console.error("Error fetching show submissions:", error);
+      res.status(500).json({ message: "Failed to fetch show submissions" });
+    }
+  });
+  
+  // Admin only - update submission status
+  app.put("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to update submission status" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can update submission status" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid submission ID" });
+      }
+      
+      if (!["pending", "approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', or 'rejected'" });
+      }
+      
+      const submission = await storage.updateShowSubmissionStatus(id, status);
+      res.json(submission);
+    } catch (error) {
+      console.error("Error updating submission status:", error);
+      res.status(500).json({ message: "Failed to update submission status" });
+    }
+  });
+  
+  // User Leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const topUsers = await storage.getTopUsers(limit);
+      
+      // Return only necessary user info (username, points)
+      const leaderboard = topUsers.map(user => ({
+        id: user.id,
+        username: user.username,
+        totalPoints: user.totalPoints || 0
+      }));
+      
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
     }
   });
 
