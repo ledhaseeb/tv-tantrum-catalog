@@ -116,7 +116,7 @@ export const researchSummaries = pgTable("research_summaries", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  imageUrl: text("image_url"),
+  imageUrl: text("image_url").notNull().default(""), // Default to empty string instead of null
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
@@ -150,9 +150,9 @@ export const userPoints = pgTable("user_points", {
   userId: integer("user_id").notNull(),
   points: integer("points").notNull(),
   type: text("type").notNull(), // login, review, upvote_given, upvote_received, research_read, submission, etc.
-  referenceId: integer("reference_id"), // ID of the related entity (review, research, etc.)
+  referenceId: integer("reference_id").notNull().default(0), // ID of the related entity (review, research, etc.)
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
-  description: text("description"),
+  description: text("description").notNull().default(""), // Default empty string instead of null
 });
 
 // Track show search popularity
@@ -211,29 +211,42 @@ export const insertReviewUpvoteSchema = createInsertSchema(reviewUpvotes).omit({
   createdAt: true,
 });
 
-export const insertResearchSummarySchema = createInsertSchema(researchSummaries).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertResearchSummarySchema = createInsertSchema(researchSummaries)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    imageUrl: z.string().default(""),
+  });
 
 export const insertUserResearchReadSchema = createInsertSchema(userResearchReads).omit({
   id: true,
   readAt: true,
 });
 
-export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).omit({
-  id: true,
-  createdAt: true,
-  status: true,
-  reviewedAt: true,
-  reviewedBy: true,
-  adminNotes: true,
-});
+export const insertShowSubmissionSchema = createInsertSchema(showSubmissions)
+  .omit({
+    id: true,
+    createdAt: true,
+    status: true,
+    reviewedAt: true,
+    reviewedBy: true,
+    adminNotes: true,
+  })
+  .extend({
+    releaseYear: z.number().nullable().optional(),
+  });
 
-export const insertUserPointSchema = createInsertSchema(userPoints).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertUserPointSchema = createInsertSchema(userPoints)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    description: z.string().default(""),
+    referenceId: z.number().default(0),
+  });
 
 export const insertTvShowSearchSchema = createInsertSchema(tvShowSearches).omit({
   id: true,

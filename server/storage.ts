@@ -225,7 +225,8 @@ export class MemStorage implements IStorage {
         userId,
         points: 5,
         type: 'login',
-        description: 'Daily login reward'
+        description: 'Daily login reward',
+        referenceId: 0 // No specific reference for login rewards
       });
     }
     
@@ -247,7 +248,9 @@ export class MemStorage implements IStorage {
     const userPoint: UserPoint = {
       ...data,
       id,
-      createdAt: now
+      createdAt: now,
+      description: data.description || "",
+      referenceId: data.referenceId || 0
     };
     
     this.userPoints.set(id, userPoint);
