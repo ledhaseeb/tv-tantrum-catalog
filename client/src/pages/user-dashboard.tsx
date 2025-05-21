@@ -17,6 +17,13 @@ const UserDashboard = () => {
     queryKey: ['/api/user/dashboard'],
     enabled: !!user,
   });
+  
+  // Extract data from dashboard response
+  const userRank = dashboardData?.rank || "TV Watcher";
+  const totalPoints = dashboardData?.points || 0;
+  const pointsBreakdown = dashboardData?.pointsBreakdown || {};
+  const recommendations = dashboardData?.recommendedShows || [];
+  const loginStreak = dashboardData?.streak || 0;
 
   if (!user) {
     return (
