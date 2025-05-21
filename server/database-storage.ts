@@ -1433,18 +1433,43 @@ export class DatabaseStorage implements IStorage {
     let showName = null;
     try {
       if (review.tvShowId) {
-        // Get show name directly from database to avoid any type issues
-        const result = await db.execute(sql`
-          SELECT name FROM tv_shows WHERE id = ${review.tvShowId}
-        `);
+        // First try with a simple query
+        const show = await db.query.tvShows.findFirst({
+          where: eq(tvShows.id, review.tvShowId)
+        });
         
-        if (result && result.length > 0) {
-          showName = result[0].name;
+        if (show && show.name) {
+          showName = show.name;
           console.log(`Found show name for review: "${showName}"`);
+        } else {
+          // Fallback with a direct SQL query if findFirst failed
+          const result = await db.execute(sql`
+            SELECT name FROM tv_shows WHERE id = ${review.tvShowId} LIMIT 1
+          `);
+          
+          if (result && result.rows && result.rows[0]) {
+            showName = result.rows[0].name;
+            console.log(`Fallback: Found show name: "${showName}"`);
+          }
         }
       }
     } catch (error) {
       console.error("Error getting show name for review:", error);
+    }
+
+    // Directly get show name from show ID if still missing
+    if (!showName && review.tvShowId) {
+      try {
+        const rows = await db.execute(sql`
+          SELECT name FROM tv_shows WHERE id = ${review.tvShowId}
+        `);
+        if (rows && rows.rows && rows.rows.length > 0) {
+          showName = rows.rows[0].name;
+          console.log(`Last resort: Got show name: "${showName}"`);
+        }
+      } catch (e) {
+        console.error("Final attempt to get show name failed:", e);
+      }
     }
 
     // Let Postgres handle the timestamp with defaultNow()

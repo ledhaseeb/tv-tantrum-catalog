@@ -321,9 +321,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get reviews for this show
       const reviews = await storage.getReviewsByTvShowId(id);
+      console.log(`Found ${reviews?.length || 0} reviews for show ID ${id}`);
       
       // Track this view
       await storage.trackShowView(id);
+      
+      // Attach reviews to the show object
+      show.reviews = reviews;
       
       // Check if this is a YouTube show
       const isYouTubeShow = show.availableOn?.includes('YouTube');
