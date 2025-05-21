@@ -5,6 +5,7 @@ import { storage } from "./database-storage";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
+import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import fs from 'fs';
@@ -153,9 +154,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV shows - using dedicated search service for reliability
   app.get("/api/tv-shows", async (req: Request, res: Response) => {
     try {
-      // Import the search service
-      const { searchService } = require('./services/searchService');
-      
       // For search queries, use the dedicated search service
       if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
         const searchTerm = req.query.search.trim();
