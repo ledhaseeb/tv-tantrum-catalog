@@ -22,6 +22,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const [imageError, setImageError] = useState(false);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
+  // Normalize show data to handle API response field naming differences
+  const normalizedShow = {
+    ...show,
+    imageUrl: show.imageUrl || show.image_url || '',
+    ageRange: show.ageRange || show.age_range || '',
+    stimulationScore: show.stimulationScore || show.stimulation_score || 0
+  };
+  
   // Check if show is in favorites when component mounts or user changes
   useEffect(() => {
     const checkFavoriteStatus = async () => {
@@ -125,7 +133,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // Render stimulation score dots
   const renderStimulationDots = () => {
     const dots = [];
-    const score = show.stimulationScore;
+    const score = normalizedShow.stimulationScore;
     
     for (let i = 0; i < 5; i++) {
       const { bgColor, borderColor } = getStimulationDotColor(i);
@@ -356,12 +364,12 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         onClick();
       }}>
       <div className="relative">
-        {show.imageUrl && !imageError ? (
+        {normalizedShow.imageUrl && !imageError ? (
           <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden flex items-center justify-center">
             <div className="w-full h-full relative">
               <img 
                 className="absolute inset-0 w-full h-full object-cover"
-                src={show.imageUrl}
+                src={normalizedShow.imageUrl}
                 alt={show.name}
                 style={{ objectPosition: 'center top' }}
                 onError={() => {
