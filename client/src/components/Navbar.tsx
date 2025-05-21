@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X } from "lucide-react";
+import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X, BookOpen } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
   const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const { user, logoutMutation, isAdmin } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const isAdmin = user?.isAdmin || false;
 
   // Fetch shows for search dropdown
   const { data: shows } = useQuery({
@@ -116,7 +117,7 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {/* Authentication links */}
             <div className="hidden md:flex items-center gap-3">
-              {user ? (
+              {isAuthenticated ? (
                 <div className="flex items-center gap-2">
                   {isAdmin && (
                     <Link href="/admin">
@@ -144,27 +145,28 @@ export default function Navbar() {
                       className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
                     >
                       <User className="h-4 w-4" />
-                      <span>{user.username}</span>
+                      <span>Dashboard</span>
                     </Button>
                   </Link>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                    onClick={() => logoutMutation.mutate()}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </Button>
+                  <a href="/api/logout">
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </Button>
+                  </a>
                 </div>
               ) : (
-                <Link href="/auth">
+                <a href="/api/login">
                   <Button 
                     variant="ghost" 
                     className="text-white/90 hover:text-white hover:bg-primary-700"
                   >
-                    Login / Register
+                    Login
                   </Button>
-                </Link>
+                </a>
               )}
             </div>
             
@@ -238,7 +240,7 @@ export default function Navbar() {
                     </Link>
                     
                     {/* Authentication links */}
-                    {user ? (
+                    {isAuthenticated ? (
                       <>
                         {isAdmin && (
                           <Link 
@@ -250,30 +252,40 @@ export default function Navbar() {
                             Admin Dashboard
                           </Link>
                         )}
-                        <button
-                          onClick={() => {
-                            logoutMutation.mutate();
-                            setIsNavOpen(false);
-                          }}
+                        <Link 
+                          href="/research"
+                          onClick={() => setIsNavOpen(false)}
+                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                        >
+                          <BookOpen className="h-5 w-5 mr-2" />
+                          Research
+                        </Link>
+                        <Link 
+                          href="/user-dashboard"
+                          onClick={() => setIsNavOpen(false)}
+                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                        >
+                          <User className="h-5 w-5 mr-2" />
+                          Dashboard
+                        </Link>
+                        <a
+                          href="/api/logout"
+                          onClick={() => setIsNavOpen(false)}
                           className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                         >
                           <LogOut className="h-5 w-5 mr-2" />
                           Logout
-                        </button>
-                        <div className="flex items-center px-3 py-2 text-base font-medium text-gray-500 rounded-md">
-                          <User className="h-5 w-5 mr-2" />
-                          {user.username}
-                        </div>
+                        </a>
                       </>
                     ) : (
-                      <Link 
-                        href="/auth"
+                      <a 
+                        href="/api/login"
                         onClick={() => setIsNavOpen(false)}
                         className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                       >
                         <User className="h-5 w-5 mr-2" />
-                        Login / Register
-                      </Link>
+                        Login
+                      </a>
                     )}
                   </div>
                   

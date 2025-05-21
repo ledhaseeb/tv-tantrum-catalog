@@ -45,7 +45,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
 
 export const favorites = pgTable("favorites", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -151,7 +151,7 @@ export const tvShowPlatforms = pgTable("tv_show_platforms", {
 
 export const userPointsHistory = pgTable("user_points_history", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   points: integer("points").notNull(),
   activityType: text("activity_type").notNull(),
   description: text("description"),
@@ -161,7 +161,7 @@ export const userPointsHistory = pgTable("user_points_history", {
 export const reviewUpvotes = pgTable("review_upvotes", {
   id: serial("id").primaryKey(),
   reviewId: integer("review_id").notNull().references(() => tvShowReviews.id, { onDelete: 'cascade' }),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
