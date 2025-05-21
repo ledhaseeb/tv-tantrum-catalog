@@ -4,10 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { CalendarIcon, StarIcon, TrophyIcon, LineChart, BookOpen, Award, Send, UserPlus, FilePlus2 } from 'lucide-react';
+import { StarIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const UserDashboard = () => {
@@ -48,40 +47,13 @@ const UserDashboard = () => {
 
   const {
     user: userData,
-    pointsHistory,
     favorites,
-    reviews,
-    readResearch,
-    submissions
+    reviews
   } = dashboardData || {
     user: {},
-    pointsHistory: [],
     favorites: [],
-    reviews: [],
-    readResearch: [],
-    submissions: []
+    reviews: []
   };
-
-  // Calculate points breakdown
-  const pointsBreakdown = {
-    reviews: reviews?.length * 10 || 0,
-    upvotesGiven: pointsHistory?.filter((ph: any) => ph.activityType === 'upvote_given').length * 1 || 0,
-    upvotesReceived: pointsHistory?.filter((ph: any) => ph.activityType === 'upvote_received').length * 5 || 0,
-    consecutiveLogins: pointsHistory?.filter((ph: any) => ph.activityType === 'login_streak').reduce((sum: number, item: any) => sum + item.points, 0) || 0,
-    shares: pointsHistory?.filter((ph: any) => ph.activityType === 'share').length * 3 || 0,
-    referrals: pointsHistory?.filter((ph: any) => ph.activityType === 'referral').length * 25 || 0,
-    showSubmissions: submissions?.length * 15 || 0,
-    researchRead: readResearch?.length * 5 || 0,
-  };
-
-  // Calculate next milestone
-  const totalPoints = userData?.totalPoints || 0;
-  const milestones = [100, 250, 500, 1000, 2500, 5000, 10000];
-  const nextMilestone = milestones.find((m) => m > totalPoints) || milestones[milestones.length - 1] * 2;
-  const progress = (totalPoints / nextMilestone) * 100;
-
-  // Get user rank
-  const userRank = userData?.rank || 'TV Watcher';
 
   return (
     <div className="container max-w-4xl py-8">
