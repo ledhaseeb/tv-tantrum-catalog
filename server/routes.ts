@@ -10,9 +10,11 @@ import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@s
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
-import { updateShowImagesFromOmdb } from "./image-optimizer";
-import { updateCustomImageMap, applyCustomImages } from "./image-preservator";
-import { applyCustomShowDetails } from "./details-preservator";
+// Use the new consolidated utility files
+import * as imageOptimizer from "../image-optimizer.js";
+import * as imageManager from "../image-manager.js";
+import * as dataManager from "../data-manager.js";
+import * as apiDataUpdater from "../api-data-updater.js";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import path from "path";
@@ -795,7 +797,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if this show has a custom image from customImageMap.json 
-      const customImageUrl = getCustomImageUrl(id);
+      const customImageMap = imageManager.loadCustomImageMap();
+      const customImageUrl = customImageMap[id];
       
       // If the show already has a custom image or the current image is in the custom-images folder, don't overwrite it
       if (customImageUrl || 
