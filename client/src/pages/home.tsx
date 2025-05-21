@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import ShowCard from "@/components/ShowCard";
+import { Leaderboard } from "@/components/Leaderboard";
 import { TvShow } from "@shared/schema";
 import { Heart, Search } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
