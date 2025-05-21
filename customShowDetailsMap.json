@@ -2906,7 +2906,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate-High"
+    "sceneFrequency": "Moderate-High",
+    "description": "KID-E-CATS tells a story of family life, relationships and adventures of three kittens: Cookie, Pudding and their little sister Candy. They never stand still: together, they learn to express their feelings, support each other, and find a way out of any situation, with a little help from their imagination and some parental advice.\nНомер заявления о регистрации № 4875012312"
   },
   "120": {
     "stimulationScore": 4,
@@ -4899,7 +4900,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low-Moderate",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Welcome to Reef School, where every day is an underwater adventure. Join the little Reefies and their teacher Mr. Flip as they discover the extraordinary wonders of an imaginary Australian coral reef."
   },
   "202": {
     "stimulationScore": 3,
@@ -5311,7 +5313,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate-High"
+    "sceneFrequency": "Moderate-High",
+    "description": "This animated series follows Simon who is an adorable little rabbit who exudes all the vitality of childhood."
   },
   "219": {
     "stimulationScore": 2,
@@ -5516,7 +5519,7 @@
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low-Moderate",
     "sceneFrequency": "High",
-    "description": "A children's TV show"
+    "description": "Sweet little cartoon about big sister Stella and her little brother Sam set in an adorable world of imagination . The cute duo set off on all sorts of imaginative adventures in their own backyard whilst caring for each other and meeting friends along the way. My 3 &amp; 5 year old love it, and it's one of the rare toddler audience cartoons I don't mind having to watch, even multiple times. I highly recommend this one."
   },
   "227": {
     "stimulationScore": 3,
@@ -6602,7 +6605,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate-High",
-    "sceneFrequency": "Moderate-High"
+    "sceneFrequency": "Moderate-High",
+    "description": "A team of adventure heroes who dive into action whenever there is trouble under the sea! In a fleet of aquatic vehicles, they rescue amazing sea creatures, explore incredible new underwater worlds, and often save the day before returning safely to their home base, the Octopod. Buoyed by the companionship of three leading characters - Captain Barnacles Bear, Lieutenant Kwazii Cat, and Doctor Peso Penguin - the Octonauts are always ready to embark on an exciting new mission."
   },
   "271": {
     "stimulationScore": 5,
@@ -6868,7 +6872,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Follow the activities of two children."
   },
   "282": {
     "stimulationScore": 2,

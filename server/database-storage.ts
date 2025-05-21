@@ -71,6 +71,16 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Private helper methods
+  
+  /**
+   * Standardize sensory metric values by converting 'very-high' to 'high'
+   */
+  private standardizeSensoryMetric(value: string | null): string | null {
+    if (!value) return null;
+    return value.replace(/very[ -]high/i, "high");
+  }
+  
   // Private helper methods for junction tables
   
   /**
