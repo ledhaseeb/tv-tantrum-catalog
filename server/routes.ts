@@ -440,7 +440,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // }
       
       console.log("Starting image optimization process...");
-      const results = await updateShowImagesFromOmdb();
+      // Use our consolidated image optimizer utility instead
+      const shows = await storage.getAllTvShows();
+      const results = {
+        total: shows.length,
+        successful: [],
+        failed: []
+      };
+      
+      for (const show of shows) {
+        try {
+          if (show.imageUrl) {
+            const localImagePath = await imageOptimizer.getImage(show.imageUrl, show.id);
+            if (localImagePath) {
+              const optimizedUrl = await imageOptimizer.optimizeImage(localImagePath, show.id);
+              if (optimizedUrl) {
+                await imageOptimizer.updateShowImage(show.id, optimizedUrl);
+                results.successful.push(show.id);
+              } else {
+                results.failed.push(show.id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Error optimizing image for show ${show.id}:`, error);
+          results.failed.push(show.id);
+        }
+      }
       
       res.json({
         message: `Processed ${results.total} shows. Updated ${results.successful.length} images successfully.`,
@@ -874,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Save to our custom image map and update the show
-      updateCustomImageMap(id, imageUrl);
+      imageManager.updateCustomImageMap(id, imageUrl);
       
       // Update the show with the local image URL
       const updatedShow = await storage.updateTvShow(id, { imageUrl });
@@ -1293,7 +1319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If an image URL was provided, add it to our custom image map
       if (showData.imageUrl) {
-        updateCustomImageMap(newShow.id, showData.imageUrl);
+        imageManager.updateCustomImageMap(newShow.id, showData.imageUrl);
       }
       
       console.log(`Created new TV show: ${name} (ID: ${newShow.id})`);
@@ -1535,7 +1561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             
             // Update custom image map too
-            updateCustomImageMap(show.id, optimizedUrl);
+            imageManager.updateCustomImageMap(show.id, optimizedUrl);
             
             console.log(`Optimized image for show ${show.id}: ${optimizedUrl}`);
             optimizedCount++;
