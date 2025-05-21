@@ -620,6 +620,58 @@ export class DatabaseStorage implements IStorage {
           hasOmdbData: row.has_omdb_data || false,
           hasYoutubeData: row.has_youtube_data || false
         }));
+        
+        // Enhance with data from junction tables
+        try {
+          // Get themes from junction table
+          const themesResult = await client.query(`
+            SELECT tv_show_id, t.name 
+            FROM tv_show_themes tst
+            JOIN themes t ON tst.theme_id = t.id
+          `);
+          
+          // Group themes by TV show ID
+          const themesByShowId = new Map();
+          for (const row of themesResult.rows) {
+            const showId = row.tv_show_id;
+            if (!themesByShowId.has(showId)) {
+              themesByShowId.set(showId, []);
+            }
+            themesByShowId.get(showId).push(row.name);
+          }
+          
+          // Get platforms from junction table
+          const platformsResult = await client.query(`
+            SELECT tv_show_id, p.name 
+            FROM tv_show_platforms tsp
+            JOIN platforms p ON tsp.platform_id = p.id
+          `);
+          
+          // Group platforms by TV show ID
+          const platformsByShowId = new Map();
+          for (const row of platformsResult.rows) {
+            const showId = row.tv_show_id;
+            if (!platformsByShowId.has(showId)) {
+              platformsByShowId.set(showId, []);
+            }
+            platformsByShowId.get(showId).push(row.name);
+          }
+          
+          // Update each show with its themes and platforms
+          for (const show of tvShows) {
+            if (themesByShowId.has(show.id)) {
+              show.themes = themesByShowId.get(show.id);
+            }
+            if (platformsByShowId.has(show.id)) {
+              show.availableOn = platformsByShowId.get(show.id);
+            }
+          }
+        } catch (junctionError) {
+          console.error("Error enhancing with junction table data:", junctionError);
+          // Continue with original data if junction tables fail
+        }
+        
+        return tvShows;
       } finally {
         client.release();
       }
