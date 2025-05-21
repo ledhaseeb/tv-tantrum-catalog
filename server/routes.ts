@@ -354,9 +354,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create a complete response that includes both stored and external data
+      // Make sure reviews are properly formatted with their full data
       const response = {
         ...show,
-        reviews,
+        reviews: reviews.map(review => ({
+          id: review.id,
+          tvShowId: review.tvShowId,
+          userName: review.userName,
+          rating: review.rating,
+          review: review.review,
+          createdAt: review.createdAt
+        })),
         externalData
       };
       
