@@ -655,7 +655,6 @@ export class DatabaseStorage implements IStorage {
           description: row.description || '',
           imageUrl: row.image_url,
           ageRange: row.age_range || '',
-          episodeLength: row.episode_length || 0,
           themes: row.themes || [],
           
           // Stimulation metrics
@@ -705,6 +704,38 @@ export class DatabaseStorage implements IStorage {
           hasOmdbData: row.has_omdb_data || false,
           hasYoutubeData: row.has_youtube_data || false
         };
+        
+        // Enhance with junction table data
+        try {
+          // Get themes from junction table
+          const themesResult = await client.query(`
+            SELECT t.name FROM themes t
+            JOIN tv_show_themes tst ON t.id = tst.theme_id
+            WHERE tst.tv_show_id = $1
+          `, [id]);
+          
+          if (themesResult.rows.length > 0) {
+            // Use themes from junction table if available
+            tvShow.themes = themesResult.rows.map(row => row.name);
+          }
+          
+          // Get platforms from junction table
+          const platformsResult = await client.query(`
+            SELECT p.name FROM platforms p
+            JOIN tv_show_platforms tsp ON p.id = tsp.platform_id
+            WHERE tsp.tv_show_id = $1
+          `, [id]);
+          
+          if (platformsResult.rows.length > 0) {
+            // Use platforms from junction table if available
+            tvShow.availableOn = platformsResult.rows.map(row => row.name);
+          }
+        } catch (junctionError) {
+          console.error("Error enhancing with junction tables:", junctionError);
+          // Continue with original data if junction tables fail
+        }
+        
+        return tvShow;
       } finally {
         client.release();
       }
@@ -1013,6 +1044,14 @@ export class DatabaseStorage implements IStorage {
     if (show.isYouTubeChannel && !show.availableOn) {
       show.availableOn = ['YouTube'];
     }
+    
+    // Extract and handle themes with junction table if they're being updated
+    const themeNames = show.themes;
+    delete show.themes; // Remove themes from the direct update
+    
+    // Extract and handle platforms with junction table if they're being updated
+    const platformNames = show.availableOn;
+    delete show.availableOn; // Remove availableOn from the direct update
     
     // Save stimulation metrics and other important details to our custom details map
     const stimulationMetrics: Record<string, any> = {};
