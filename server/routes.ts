@@ -180,55 +180,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(allShows);
       }
       
-      // For any other filter combinations, use raw SQL instead of ORM
+      // For any other filter combinations, use the search service
       console.log("Filter query detected:", req.query);
       
-      // Use pool directly
-      const { pool } = require('./db');
-      const client = await pool.connect();
+      // Convert query params to the correct format for the search service
+      const filters: any = {};
       
-      try {
-        // Client is already connected
-        
-        // Base query that safely handles all filter combinations
-        let query = `SELECT * FROM tv_shows WHERE 1=1`;
-        const params: any[] = [];
-        let paramIndex = 1;
-        
-        // Add simple filter conditions
-        if (req.query.ageGroup && typeof req.query.ageGroup === 'string') {
-          query += ` AND age_group = $${paramIndex++}`;
-          params.push(req.query.ageGroup);
-        }
-        
-        if (req.query.tantrumFactor && typeof req.query.tantrumFactor === 'string') {
-          query += ` AND tantrum_factor = $${paramIndex++}`;
-          params.push(req.query.tantrumFactor);
-        }
-        
-        // Add name search if specified
-        if (req.query.search && typeof req.query.search === 'string') {
-          query += ` AND (name ILIKE $${paramIndex++} OR description ILIKE $${paramIndex++})`;
-          const searchPattern = `%${req.query.search}%`;
-          params.push(searchPattern, searchPattern);
-        }
-        
-        // Add sorting
-        if (req.query.sortBy && typeof req.query.sortBy === 'string') {
-          const sortField = req.query.sortBy === 'name' ? 'name' : 
-                          req.query.sortBy === 'releaseYear' ? 'release_year' :
-                          req.query.sortBy === 'rating' ? 'rating' : 'name';
-          query += ` ORDER BY ${sortField} ASC`;
-        } else {
-          query += ` ORDER BY name ASC`;
-        }
-        
-        // Execute the query
-        const result = await client.query(query, params);
-        return res.json(result.rows);
-      } finally {
-        await client.end();
+      // Copy over direct string filters
+      if (req.query.ageGroup) filters.ageGroup = req.query.ageGroup;
+      if (req.query.tantrumFactor) filters.tantrumFactor = req.query.tantrumFactor;
+      if (req.query.interactionLevel) filters.interactionLevel = req.query.interactionLevel;
+      if (req.query.dialogueIntensity) filters.dialogueIntensity = req.query.dialogueIntensity;
+      if (req.query.soundFrequency) filters.soundFrequency = req.query.soundFrequency;
+      if (req.query.sortBy) filters.sortBy = req.query.sortBy;
+      if (req.query.themeMatchMode) filters.themeMatchMode = req.query.themeMatchMode;
+      if (req.query.search) filters.search = req.query.search;
+      
+      // Handle themes special case - convert from string or array
+      if (req.query.themes) {
+        filters.themes = typeof req.query.themes === 'string'
+          ? req.query.themes.split(',').map((theme: string) => theme.trim())
+          : (req.query.themes as string[]).map((theme: string) => theme.trim());
       }
+      
+      // Use the search service for filtered search
+      const shows = await searchService.searchWithFilters(filters);
+      return res.json(shows);
     } catch (error) {
       console.error("Error in TV shows API:", error);
       res.status(500).json({ message: "Failed to fetch TV shows" });
