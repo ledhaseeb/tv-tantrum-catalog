@@ -1654,6 +1654,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Dashboard API Routes
+  
+  // Get user points
+  app.get("/api/user/points", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const points = await storage.getUserPoints(userId);
+      res.json({ points });
+    } catch (error) {
+      console.error("Error getting user points:", error);
+      res.status(500).json({ message: "Error retrieving user points" });
+    }
+  });
+  
+  // Get user points history
+  app.get("/api/user/points/history", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const history = await storage.getUserPointsHistory(userId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error getting points history:", error);
+      res.status(500).json({ message: "Error retrieving points history" });
+    }
+  });
+  
+  // Get user reviews
+  app.get("/api/user/reviews", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const reviews = await storage.getReviewsByUserId(userId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error getting user reviews:", error);
+      res.status(500).json({ message: "Error retrieving user reviews" });
+    }
+  });
+  
+  // Get user show submissions
+  app.get("/api/user/submissions", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const submissions = await storage.getUserShowSubmissions(userId);
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error getting user submissions:", error);
+      res.status(500).json({ message: "Error retrieving user submissions" });
+    }
+  });
+  
+  // Get user favorites
+  app.get("/api/user/favorites", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const favorites = await storage.getUserFavorites(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error getting user favorites:", error);
+      res.status(500).json({ message: "Error retrieving user favorites" });
+    }
+  });
+  
+  // Get user read research
+  app.get("/api/user/research/read", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const readResearch = await storage.getUserReadResearch(userId);
+      res.json(readResearch);
+    } catch (error) {
+      console.error("Error getting read research:", error);
+      res.status(500).json({ message: "Error retrieving read research" });
+    }
+  });
+  
+  // Mark research as read
+  app.post("/api/research/:id/mark-read", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const researchId = parseInt(req.params.id, 10);
+      
+      // Check if the research exists
+      const research = await storage.getResearchSummaryById(researchId);
+      if (!research) {
+        return res.status(404).json({ message: "Research summary not found" });
+      }
+      
+      // Check if already marked as read
+      const alreadyRead = await storage.hasUserReadResearch(userId, researchId);
+      if (alreadyRead) {
+        return res.status(200).json({ message: "Already marked as read", alreadyRead: true });
+      }
+      
+      // Mark as read and award points
+      const readRecord = await storage.markResearchAsRead(userId, researchId);
+      res.status(201).json(readRecord);
+    } catch (error) {
+      console.error("Error marking research as read:", error);
+      res.status(500).json({ message: "Error marking research as read" });
+    }
+  });
+  
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+      const leaderboard = await storage.getUserLeaderboard(limit);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error getting leaderboard:", error);
+      res.status(500).json({ message: "Error retrieving leaderboard" });
+    }
+  });
+  
+  // Add login points for daily login (called by auth system on successful login)
+  app.post("/api/user/login-reward", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Get user's last login date
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if this is first login of the day
+      let shouldAwardPoints = true;
+      if (user.lastLoginDate) {
+        const lastLogin = new Date(user.lastLoginDate);
+        const today = new Date();
+        
+        // Check if last login was on a different day
+        shouldAwardPoints = 
+          lastLogin.getFullYear() !== today.getFullYear() ||
+          lastLogin.getMonth() !== today.getMonth() ||
+          lastLogin.getDate() !== today.getDate();
+      }
+      
+      // Award points if first login of the day
+      if (shouldAwardPoints) {
+        const pointsAwarded = await storage.addUserPoints({
+          userId,
+          points: 5, // 5 points for daily login
+          type: 'login',
+          description: 'Daily login reward',
+          referenceId: null
+        });
+        
+        // Update user's last login date
+        await storage.updateLoginDate(userId);
+        
+        return res.json({ success: true, pointsAwarded });
+      } else {
+        return res.json({ success: true, alreadyRewarded: true });
+      }
+    } catch (error) {
+      console.error("Error awarding login points:", error);
+      res.status(500).json({ message: "Error awarding login points" });
+    }
+  });
+  
+  // Review upvoting endpoints
+  app.post("/api/reviews/:id/upvote", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const reviewId = parseInt(req.params.id, 10);
+      
+      // Check if already upvoted
+      const hasUpvoted = await storage.hasUserUpvotedReview(reviewId, userId);
+      if (hasUpvoted) {
+        return res.status(400).json({ message: "Already upvoted this review" });
+      }
+      
+      const success = await storage.upvoteReview(reviewId, userId);
+      if (success) {
+        const upvoteCount = await storage.getReviewUpvotes(reviewId);
+        res.json({ success: true, upvotes: upvoteCount });
+      } else {
+        res.status(404).json({ message: "Review not found" });
+      }
+    } catch (error) {
+      console.error("Error upvoting review:", error);
+      res.status(500).json({ message: "Error upvoting review" });
+    }
+  });
+  
+  app.post("/api/reviews/:id/remove-upvote", ensureAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const reviewId = parseInt(req.params.id, 10);
+      
+      // Check if upvoted
+      const hasUpvoted = await storage.hasUserUpvotedReview(reviewId, userId);
+      if (!hasUpvoted) {
+        return res.status(400).json({ message: "You haven't upvoted this review" });
+      }
+      
+      const success = await storage.removeUpvoteReview(reviewId, userId);
+      if (success) {
+        const upvoteCount = await storage.getReviewUpvotes(reviewId);
+        res.json({ success: true, upvotes: upvoteCount });
+      } else {
+        res.status(404).json({ message: "Review or upvote not found" });
+      }
+    } catch (error) {
+      console.error("Error removing upvote:", error);
+      res.status(500).json({ message: "Error removing upvote" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
