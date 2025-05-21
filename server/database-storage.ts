@@ -1421,8 +1421,7 @@ export class DatabaseStorage implements IStorage {
 
   async trackShowSearch(tvShowId: number): Promise<void> {
     try {
-      // The key fix: Execute raw SQL to avoid type compatibility issues with Date objects
-      // This uses PostgreSQL's native date handling
+      // Use direct query with parameters to avoid timestamp issues
       const client = await pool.connect();
       
       try {
@@ -1435,14 +1434,15 @@ export class DatabaseStorage implements IStorage {
         if (checkResult.rows.length > 0) {
           // Update existing record
           const existingSearch = checkResult.rows[0];
+          const newCount = existingSearch.search_count + 1;
           await client.query(
-            'UPDATE tv_show_searches SET search_count = $1, last_searched = NOW() WHERE id = $2',
-            [existingSearch.search_count + 1, existingSearch.id]
+            'UPDATE tv_show_searches SET search_count = $1, last_searched = CURRENT_TIMESTAMP WHERE id = $2',
+            [newCount, existingSearch.id]
           );
         } else {
           // Insert new record
           await client.query(
-            'INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched) VALUES ($1, $2, NOW())',
+            'INSERT INTO tv_show_searches (tv_show_id, search_count, last_searched) VALUES ($1, $2, CURRENT_TIMESTAMP)',
             [tvShowId, 1]
           );
         }

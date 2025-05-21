@@ -223,14 +223,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If this is a search request, track the search for each returned show
       if (typeof search === 'string' && search.trim() && shows.length > 0) {
         try {
-          // Track search data for each of the first 5 results
-          const topResults = shows.slice(0, 5);
-          for (const show of topResults) {
-            await storage.trackShowSearch(show.id);
+          // Track search data for only the first result to avoid overwhelming the database
+          // This still gives us useful analytics while reducing database load
+          if (shows[0]) {
+            // Use a non-blocking approach so search results aren't delayed
+            setTimeout(() => {
+              storage.trackShowSearch(shows[0].id)
+                .catch(error => console.error(`Background tracking error for show ${shows[0].id}:`, error));
+            }, 10);
           }
         } catch (error) {
           // Log error but don't let it block the search functionality
-          console.error("Error tracking search results:", error);
+          console.error("Error preparing search tracking:", error);
         }
       }
       res.json(shows);
