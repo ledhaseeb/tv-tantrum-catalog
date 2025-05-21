@@ -645,16 +645,16 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             )}
           </div>
           
-          {/* Interaction Level */}
+          {/* Interactivity Level */}
           <div>
-            <Label htmlFor="interaction-level" className="block text-sm font-medium text-gray-700 mb-1">
-              Interaction Level
+            <Label htmlFor="interactivity-level" className="block text-sm font-medium text-gray-700 mb-1">
+              Interactivity Level
             </Label>
             <Select 
               value={filters.interactionLevel} 
               onValueChange={(value) => handleFilterChange('interactionLevel', value)}
             >
-              <SelectTrigger id="interaction-level">
+              <SelectTrigger id="interactivity-level">
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>
