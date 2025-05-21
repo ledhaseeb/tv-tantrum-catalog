@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { Award, StarIcon, Trophy } from 'lucide-react';
+import { Award, StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar, Send, Share } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const UserDashboard = () => {
@@ -182,7 +182,7 @@ const UserDashboard = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
+                    <Calendar className="w-4 h-4 mr-2 text-green-500" />
                     <span>Login Streaks</span>
                   </div>
                   <span className="font-medium">{pointsBreakdown.consecutiveLogins} points</span>

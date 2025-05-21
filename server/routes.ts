@@ -70,26 +70,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get user reviews
-      const reviews = await storage.getReviewsByUserId(userId);
+      let reviews = [];
+      try {
+        reviews = await storage.getReviewsByUserId(userId);
+      } catch (error) {
+        console.error('Error getting user reviews:', error);
+      }
       
       // Get user favorites
-      const favorites = await storage.getUserFavorites(userId);
+      let favorites = [];
+      try {
+        favorites = await storage.getUserFavorites(userId);
+      } catch (error) {
+        console.error('Error getting user favorites:', error);
+      }
+      
+      // Default point breakdown structure
+      const defaultPointsBreakdown = {
+        reviews: 0,
+        upvotesGiven: 0,
+        upvotesReceived: 0,
+        consecutiveLogins: 0,
+        shares: 0,
+        referrals: 0,
+        showSubmissions: 0,
+        researchRead: 0
+      };
       
       // Get user's gamification data
-      const pointsInfo = await storage.getUserPoints(userId);
-      const pointsHistory = await storage.getUserPointsHistory(userId);
+      let pointsInfo = { total: 0, breakdown: defaultPointsBreakdown, rank: 'TV Watcher' };
+      try {
+        if (typeof storage.getUserPoints === 'function') {
+          pointsInfo = await storage.getUserPoints(userId) || pointsInfo;
+        }
+      } catch (error) {
+        console.error('Error getting user points:', error);
+      }
+      
+      // Get user points history
+      let pointsHistory = [];
+      try {
+        if (typeof storage.getUserPointsHistory === 'function') {
+          pointsHistory = await storage.getUserPointsHistory(userId) || [];
+        }
+      } catch (error) {
+        console.error('Error getting user points history:', error);
+      }
       
       // Get similar shows based on user preferences
-      const recommendedShows = await storage.getSimilarShows(userId, 5);
+      let recommendedShows = [];
+      try {
+        recommendedShows = await storage.getSimilarShows(userId, 5) || [];
+      } catch (error) {
+        console.error('Error getting recommended shows:', error);
+      }
       
       // Get user login streak
-      const loginStreak = await storage.getUserLoginStreak(userId);
+      let loginStreak = { currentStreak: 0, weeklyStreak: 0, monthlyStreak: 0 };
+      try {
+        if (typeof storage.getUserLoginStreak === 'function') {
+          loginStreak = await storage.getUserLoginStreak(userId) || loginStreak;
+        }
+      } catch (error) {
+        console.error('Error getting user login streak:', error);
+      }
 
       // Get leaderboard data (top 10 users)
-      const topUsers = await storage.getTopUsers(10);
+      let topUsers = [];
+      try {
+        if (typeof storage.getTopUsers === 'function') {
+          topUsers = await storage.getTopUsers(10) || [];
+        }
+      } catch (error) {
+        console.error('Error getting top users:', error);
+      }
       
       // Get read research summaries
-      const readResearch = await storage.getUserReadResearch(userId);
+      let readResearch = [];
+      try {
+        if (typeof storage.getUserReadResearch === 'function') {
+          readResearch = await storage.getUserReadResearch(userId) || [];
+        }
+      } catch (error) {
+        console.error('Error getting read research:', error);
+      }
       
       // Get show submissions - empty placeholder for now
       let submissions = [];
@@ -98,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dashboardData = {
         user,
         points: pointsInfo.total || 0,
-        pointsBreakdown: pointsInfo.breakdown,
+        pointsBreakdown: pointsInfo.breakdown || defaultPointsBreakdown,
         rank: user.rank || "TV Watcher",
         reviews,
         favorites,
