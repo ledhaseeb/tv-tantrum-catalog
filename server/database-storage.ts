@@ -1755,4 +1755,527 @@ function getDefaultImageUrl(title: string | undefined, image_filename: string | 
   return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${formattedTitle}.jpg`;
 }
 
+  // Gamification methods
+  
+  // Points and activities
+  async awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<any> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        // Add points history entry
+        const historyResult = await client.query(
+          'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4) RETURNING *',
+          [userId.toString(), points, activityType, description]
+        );
+        
+        // Update total points in user table
+        await client.query(
+          'UPDATE users SET total_points = total_points + $1 WHERE id = $2',
+          [points, userId.toString()]
+        );
+        
+        await client.query('COMMIT');
+        return historyResult.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error awarding points:', error);
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error in awardPoints:', error);
+      throw error;
+    }
+  }
+  
+  async getUserPoints(userId: number): Promise<number> {
+    try {
+      const result = await pool.query(
+        'SELECT total_points FROM users WHERE id = $1',
+        [userId.toString()]
+      );
+      
+      if (result.rows.length === 0) {
+        return 0;
+      }
+      
+      return result.rows[0].total_points || 0;
+    } catch (error) {
+      console.error('Error getting user points:', error);
+      return 0;
+    }
+  }
+  
+  async getUserPointsHistory(userId: number): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM user_points_history WHERE user_id = $1 ORDER BY created_at DESC',
+        [userId.toString()]
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting user points history:', error);
+      return [];
+    }
+  }
+  
+  async updateUserLoginStreak(userId: number): Promise<number> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        // Get the user's last login record
+        const lastLoginResult = await client.query(
+          'SELECT * FROM user_points_history WHERE user_id = $1 AND activity_type = $2 ORDER BY created_at DESC LIMIT 1',
+          [userId.toString(), 'login_streak']
+        );
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        // Calculate days between dates
+        const dateDiffInDays = (date1: Date, date2: Date) => {
+          const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+          const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+          return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
+        };
+        
+        // If no previous login or last login was more than 2 days ago, reset streak to 1
+        if (lastLoginResult.rows.length === 0 || 
+            dateDiffInDays(new Date(lastLoginResult.rows[0].created_at), today) > 1) {
+          
+          // Award points for a streak of 1
+          await client.query(
+            'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+            [userId.toString(), 5, 'login_streak', 'First day login streak']
+          );
+          
+          // Update user's total points
+          await client.query(
+            'UPDATE users SET total_points = total_points + $1, last_login_date = $2 WHERE id = $3',
+            [5, now, userId.toString()]
+          );
+          
+          await client.query('COMMIT');
+          return 1;
+        } 
+        // If last login was yesterday, increment streak
+        else if (dateDiffInDays(new Date(lastLoginResult.rows[0].created_at), today) === 1) {
+          // Get the current streak count from the description
+          const lastLogin = lastLoginResult.rows[0];
+          const currentStreakMatch = lastLogin.description?.match(/Day (\d+) of login streak/);
+          const currentStreak = currentStreakMatch ? parseInt(currentStreakMatch[1], 10) : 1;
+          const newStreak = currentStreak + 1;
+          
+          // Calculate points (more points for longer streaks)
+          let points = 5; // Base points
+          if (newStreak >= 30) points = 25; // Month-long streak
+          else if (newStreak >= 14) points = 15; // Two-week streak
+          else if (newStreak >= 7) points = 10; // Week-long streak
+          
+          // Award points for continuing the streak
+          await client.query(
+            'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+            [userId.toString(), points, 'login_streak', `Day ${newStreak} of login streak`]
+          );
+          
+          // Update user's total points
+          await client.query(
+            'UPDATE users SET total_points = total_points + $1, last_login_date = $2 WHERE id = $3',
+            [points, now, userId.toString()]
+          );
+          
+          await client.query('COMMIT');
+          return newStreak;
+        } 
+        // If already logged in today, just update the login date
+        else {
+          await client.query(
+            'UPDATE users SET last_login_date = $1 WHERE id = $2',
+            [now, userId.toString()]
+          );
+          
+          await client.query('COMMIT');
+          
+          const currentStreakMatch = lastLoginResult.rows[0].description?.match(/Day (\d+) of login streak/);
+          return currentStreakMatch ? parseInt(currentStreakMatch[1], 10) : 1;
+        }
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error updating login streak:', error);
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error in updateUserLoginStreak:', error);
+      return 1;
+    }
+  }
+  
+  // Review upvotes
+  async addReviewUpvote(userId: number, reviewId: number): Promise<any> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        // Check if already upvoted
+        const existingResult = await client.query(
+          'SELECT * FROM review_upvotes WHERE user_id = $1 AND review_id = $2',
+          [userId.toString(), reviewId]
+        );
+        
+        if (existingResult.rows.length > 0) {
+          throw new Error('User has already upvoted this review');
+        }
+        
+        // Get the review to find the review owner
+        const reviewResult = await client.query(
+          'SELECT * FROM tv_show_reviews WHERE id = $1',
+          [reviewId]
+        );
+        
+        if (reviewResult.rows.length === 0) {
+          throw new Error('Review not found');
+        }
+        
+        // Add the upvote
+        const upvoteResult = await client.query(
+          'INSERT INTO review_upvotes (user_id, review_id) VALUES ($1, $2) RETURNING *',
+          [userId.toString(), reviewId]
+        );
+        
+        // Award points to the user giving the upvote (1 point)
+        await client.query(
+          'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+          [userId.toString(), 1, 'upvote_given', `Upvoted review #${reviewId}`]
+        );
+        
+        // Update user's total points
+        await client.query(
+          'UPDATE users SET total_points = total_points + $1 WHERE id = $2',
+          [1, userId.toString()]
+        );
+        
+        // Award points to the review owner (5 points)
+        const reviewOwnerId = reviewResult.rows[0].user_id;
+        if (reviewOwnerId !== userId.toString()) { // Don't award points for upvoting your own review
+          await client.query(
+            'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+            [reviewOwnerId, 5, 'upvote_received', `Received upvote on review #${reviewId}`]
+          );
+          
+          // Update review owner's total points
+          await client.query(
+            'UPDATE users SET total_points = total_points + $1 WHERE id = $2',
+            [5, reviewOwnerId]
+          );
+        }
+        
+        await client.query('COMMIT');
+        return upvoteResult.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error adding review upvote:', error);
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error in addReviewUpvote:', error);
+      throw error;
+    }
+  }
+  
+  async removeReviewUpvote(userId: number, reviewId: number): Promise<boolean> {
+    try {
+      await pool.query(
+        'DELETE FROM review_upvotes WHERE user_id = $1 AND review_id = $2',
+        [userId.toString(), reviewId]
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Error removing review upvote:', error);
+      return false;
+    }
+  }
+  
+  async getReviewUpvotes(reviewId: number): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM review_upvotes WHERE review_id = $1',
+        [reviewId]
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting review upvotes:', error);
+      return [];
+    }
+  }
+  
+  async hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM review_upvotes WHERE user_id = $1 AND review_id = $2',
+        [userId.toString(), reviewId]
+      );
+      
+      return result.rows.length > 0;
+    } catch (error) {
+      console.error('Error checking if user upvoted review:', error);
+      return false;
+    }
+  }
+  
+  // Research summaries
+  async getResearchSummaries(): Promise<any[]> {
+    try {
+      const result = await pool.query('SELECT * FROM research_summaries ORDER BY created_at DESC');
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting research summaries:', error);
+      return [];
+    }
+  }
+  
+  async getResearchSummary(id: number): Promise<any | null> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM research_summaries WHERE id = $1',
+        [id]
+      );
+      
+      if (result.rows.length === 0) {
+        return null;
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error getting research summary:', error);
+      return null;
+    }
+  }
+  
+  async hasUserReadResearch(userId: number, researchId: number): Promise<boolean> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM user_read_research WHERE user_id = $1 AND research_id = $2',
+        [userId.toString(), researchId]
+      );
+      
+      return result.rows.length > 0;
+    } catch (error) {
+      console.error('Error checking if user read research:', error);
+      return false;
+    }
+  }
+  
+  async markResearchAsRead(userId: number, researchId: number): Promise<any> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        // Check if already read
+        const alreadyReadResult = await client.query(
+          'SELECT * FROM user_read_research WHERE user_id = $1 AND research_id = $2',
+          [userId.toString(), researchId]
+        );
+        
+        if (alreadyReadResult.rows.length > 0) {
+          throw new Error('User has already read this research');
+        }
+        
+        // Mark as read
+        const readResult = await client.query(
+          'INSERT INTO user_read_research (user_id, research_id) VALUES ($1, $2) RETURNING *',
+          [userId.toString(), researchId]
+        );
+        
+        // Award points (5 points for reading research)
+        await client.query(
+          'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+          [userId.toString(), 5, 'research_read', `Read research summary #${researchId}`]
+        );
+        
+        // Update user's total points
+        await client.query(
+          'UPDATE users SET total_points = total_points + $1 WHERE id = $2',
+          [5, userId.toString()]
+        );
+        
+        await client.query('COMMIT');
+        return readResult.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error marking research as read:', error);
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error in markResearchAsRead:', error);
+      throw error;
+    }
+  }
+  
+  async addResearchSummary(data: any): Promise<any> {
+    try {
+      const result = await pool.query(
+        'INSERT INTO research_summaries (title, content, image_url) VALUES ($1, $2, $3) RETURNING *',
+        [data.title, data.content, data.imageUrl]
+      );
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error adding research summary:', error);
+      throw error;
+    }
+  }
+  
+  async getUserReadResearch(userId: number): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        `SELECT rs.* FROM research_summaries rs
+         JOIN user_read_research urr ON rs.id = urr.research_id
+         WHERE urr.user_id = $1
+         ORDER BY urr.read_at DESC`,
+        [userId.toString()]
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting user read research:', error);
+      return [];
+    }
+  }
+  
+  // Show submissions
+  async addShowSubmission(submission: any): Promise<any> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        // Add the submission
+        const submissionResult = await client.query(
+          `INSERT INTO show_submissions (
+            user_id, name, description, age_range, episode_length, platform, additional_notes, status
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          [
+            submission.userId.toString(),
+            submission.name,
+            submission.description,
+            submission.ageRange,
+            submission.episodeLength,
+            submission.platform,
+            submission.additionalNotes,
+            'pending'
+          ]
+        );
+        
+        // Award points (15 points for submitting a show)
+        await client.query(
+          'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+          [submission.userId.toString(), 15, 'show_submission', `Submitted show: ${submission.name}`]
+        );
+        
+        // Update user's total points
+        await client.query(
+          'UPDATE users SET total_points = total_points + $1 WHERE id = $2',
+          [15, submission.userId.toString()]
+        );
+        
+        await client.query('COMMIT');
+        return submissionResult.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error adding show submission:', error);
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error in addShowSubmission:', error);
+      throw error;
+    }
+  }
+  
+  async getUserShowSubmissions(userId: number): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM show_submissions WHERE user_id = $1 ORDER BY created_at DESC',
+        [userId.toString()]
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting user show submissions:', error);
+      return [];
+    }
+  }
+  
+  async getPendingShowSubmissions(): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        "SELECT * FROM show_submissions WHERE status = 'pending' ORDER BY created_at DESC"
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting pending show submissions:', error);
+      return [];
+    }
+  }
+  
+  async updateShowSubmissionStatus(id: number, status: string): Promise<any> {
+    try {
+      const result = await pool.query(
+        'UPDATE show_submissions SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+        [status, id]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new Error('Show submission not found');
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error updating show submission status:', error);
+      throw error;
+    }
+  }
+  
+  // Leaderboard
+  async getTopUsers(limit: number = 10): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        `SELECT u.id, u.username, u.profile_image_url, u.total_points
+         FROM users u
+         ORDER BY u.total_points DESC
+         LIMIT $1`,
+        [limit]
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting top users:', error);
+      return [];
+    }
+  }
+}
+
 export const storage = new DatabaseStorage();
