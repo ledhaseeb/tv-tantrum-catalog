@@ -1,81 +1,62 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { 
-  User, 
-  Award, 
-  Star, 
-  ThumbsUp, 
-  Send, 
-  TrendingUp,
-  Calendar,
-  BookOpen
-} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Trophy, Star, ThumbsUp, Calendar, Share2, Users, Film } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { formatDistanceToNow } from "date-fns";
 
-interface UserDashboardData {
-  user: {
-    id: number;
-    username: string;
-    totalPoints: number;
-    profileBio: string | null;
+// Types for the dashboard
+interface UserPoints {
+  total: number;
+  breakdown: {
+    reviews: number;
+    upvotesGiven: number;
+    upvotesReceived: number;
+    consecutiveLogins: number;
+    shares: number;
+    referrals: number;
+    showSubmissions: number;
+    researchRead: number;
   };
-  pointsHistory: PointHistory[];
-  favorites: Favorite[];
-  reviews: Review[];
-  readResearch: ResearchSummary[];
-  submissions: ShowSubmission[];
+  nextMilestone: number;
 }
 
-interface PointHistory {
+interface PointHistoryItem {
   id: number;
   userId: number;
+  action: string;
   points: number;
-  reason: string;
   createdAt: string;
+  reference?: string;
+  referenceType?: string;
 }
 
-interface Favorite {
+interface TvShowRating {
   id: number;
+  showId: number;
   userId: number;
-  tvShowId: number;
+  rating: number;
+  comment: string;
   createdAt: string;
   tvShow: {
     id: number;
-    name: string;
+    title: string;
     imageUrl: string;
   };
 }
 
-interface Review {
+interface FavoriteShow {
   id: number;
   userId: number;
-  tvShowId: number;
-  userName: string;
-  rating: number;
-  review: string;
+  showId: number;
   createdAt: string;
-  tvShow?: {
+  tvShow: {
     id: number;
-    name: string;
+    title: string;
     imageUrl: string;
   };
 }
@@ -83,597 +64,339 @@ interface Review {
 interface ResearchSummary {
   id: number;
   title: string;
-  summary: string;
-  fullText: string;
-  source: string;
-  publishDate: string;
-}
-
-interface ShowSubmission {
-  id: number;
-  userId: number;
-  name: string;
-  description: string;
-  ageRange: string;
-  creator: string;
-  status: "pending" | "approved" | "rejected";
-  reason: string | null;
-  createdAt: string;
+  readAt: string;
 }
 
 interface LeaderboardUser {
   id: number;
   username: string;
-  totalPoints: number;
+  points: number;
+  rank: number;
 }
 
 export default function UserDashboard() {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("overview");
-
-  // Fetch user dashboard data
-  const { data, isLoading } = useQuery({
-    queryKey: ['/api/user/dashboard'],
+  const { user, isLoading: isAuthLoading } = useAuth();
+  
+  // Fetch user points
+  const { data: userPoints, isLoading: isPointsLoading } = useQuery<UserPoints>({
+    queryKey: ['/api/user/points'],
     enabled: !!user,
   });
-
-  // Fetch leaderboard data
-  const { data: leaderboard, isLoading: isLeaderboardLoading } = useQuery({
+  
+  // Fetch point history
+  const { data: pointHistory, isLoading: isHistoryLoading } = useQuery<PointHistoryItem[]>({
+    queryKey: ['/api/user/points/history'],
+    enabled: !!user,
+  });
+  
+  // Fetch user ratings
+  const { data: userRatings, isLoading: isRatingsLoading } = useQuery<TvShowRating[]>({
+    queryKey: ['/api/user/ratings'],
+    enabled: !!user,
+  });
+  
+  // Fetch user favorites
+  const { data: userFavorites, isLoading: isFavoritesLoading } = useQuery<FavoriteShow[]>({
+    queryKey: ['/api/user/favorites'],
+    enabled: !!user,
+  });
+  
+  // Fetch research summaries read
+  const { data: researchRead, isLoading: isResearchLoading } = useQuery<ResearchSummary[]>({
+    queryKey: ['/api/user/research'],
+    enabled: !!user,
+  });
+  
+  // Fetch leaderboard
+  const { data: leaderboard, isLoading: isLeaderboardLoading } = useQuery<LeaderboardUser[]>({
     queryKey: ['/api/leaderboard'],
   });
-
+  
+  const isLoading = 
+    isAuthLoading || 
+    isPointsLoading || 
+    isHistoryLoading || 
+    isRatingsLoading || 
+    isFavoritesLoading || 
+    isResearchLoading || 
+    isLeaderboardLoading;
+  
   if (isLoading) {
     return (
-      <div className="container max-w-7xl mx-auto py-8 px-4">
-        <div className="flex flex-col items-center justify-center h-64">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-lg">Loading dashboard...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
+  
   if (!user) {
     return (
-      <div className="container max-w-7xl mx-auto py-8 px-4">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle>User Dashboard</CardTitle>
-            <CardDescription>
-              Please log in to view your dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center pb-6">
-            <Button asChild>
-              <Link href="/auth">Login / Register</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="container py-12 mx-auto text-center">
+        <h1 className="text-3xl font-bold mb-6">Access Denied</h1>
+        <p className="mb-6">You need to be logged in to view your dashboard.</p>
+        <Link href="/auth">
+          <Button>Log In</Button>
+        </Link>
       </div>
     );
   }
-
-  const dashboardData = data as UserDashboardData;
   
-  // Calculate user level based on points
-  const userPoints = dashboardData?.user?.totalPoints || 0;
-  const userLevel = Math.floor(userPoints / 100) + 1;
-  const pointsToNextLevel = (userLevel * 100) - userPoints;
-  const progressPercent = ((userPoints % 100) / 100) * 100;
-
+  const progressToNextMilestone = userPoints ? 
+    Math.min(100, (userPoints.total / userPoints.nextMilestone) * 100) : 0;
+  
+  const currentRank = leaderboard?.find(u => u.id === parseInt(user.id))?.rank || 0;
+  
   return (
-    <div className="container max-w-7xl mx-auto py-8 px-4">
+    <div className="container py-8 mx-auto">
+      <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
+      <p className="text-muted-foreground mb-8">
+        Track your activity and rewards
+      </p>
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* User profile card */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <div className="bg-primary rounded-full flex items-center justify-center h-full w-full">
-                  <User className="h-8 w-8 text-primary-foreground" />
-                </div>
-              </Avatar>
-              <div>
-                <CardTitle className="text-2xl">{dashboardData.user.username}</CardTitle>
-                <CardDescription>{dashboardData.user.profileBio || "No bio added yet"}</CardDescription>
-              </div>
-            </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center">
+              <Trophy className="mr-2 h-5 w-5 text-yellow-500" />
+              Total Points
+            </CardTitle>
+            <CardDescription>Your contribution score</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex flex-col items-center p-4 bg-muted rounded-lg">
-                <Star className="h-8 w-8 text-primary mb-2" />
-                <span className="text-2xl font-bold">{dashboardData.reviews.length}</span>
-                <span className="text-sm text-muted-foreground">Reviews</span>
+            <div className="text-3xl font-bold mb-2">{userPoints?.total || 0}</div>
+            <div className="mb-2 text-sm text-muted-foreground">
+              Next milestone: {userPoints?.nextMilestone || 100} points
+            </div>
+            <Progress value={progressToNextMilestone} className="h-2" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center">
+              <Star className="mr-2 h-5 w-5 text-yellow-500" />
+              My Activity
+            </CardTitle>
+            <CardDescription>Recent contributions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm space-y-2">
+              <div className="flex justify-between">
+                <span>Reviews</span>
+                <span className="font-semibold">{userRatings?.length || 0}</span>
               </div>
-              <div className="flex flex-col items-center p-4 bg-muted rounded-lg">
-                <ThumbsUp className="h-8 w-8 text-primary mb-2" />
-                <span className="text-2xl font-bold">{dashboardData.favorites.length}</span>
-                <span className="text-sm text-muted-foreground">Favorites</span>
+              <div className="flex justify-between">
+                <span>Upvotes Given</span>
+                <span className="font-semibold">{userPoints?.breakdown.upvotesGiven || 0}</span>
               </div>
-              <div className="flex flex-col items-center p-4 bg-muted rounded-lg">
-                <BookOpen className="h-8 w-8 text-primary mb-2" />
-                <span className="text-2xl font-bold">{dashboardData.readResearch.length}</span>
-                <span className="text-sm text-muted-foreground">Research Read</span>
+              <div className="flex justify-between">
+                <span>Upvotes Received</span>
+                <span className="font-semibold">{userPoints?.breakdown.upvotesReceived || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Research Summaries Read</span>
+                <span className="font-semibold">{researchRead?.length || 0}</span>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* Points and level card */}
+        
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="flex items-center">
-              <Award className="h-5 w-5 mr-2 text-primary" />
-              Level {userLevel}
+              <Users className="mr-2 h-5 w-5 text-blue-500" />
+              Leaderboard Rank
             </CardTitle>
-            <CardDescription>
-              {pointsToNextLevel} points to level {userLevel + 1}
-            </CardDescription>
+            <CardDescription>Your standing in the community</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <span className="block mb-2 text-sm font-medium">
-                Progress to next level:
-              </span>
-              <Progress value={progressPercent} className="h-2" />
-            </div>
-            <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
-              <span className="text-sm font-medium">Total Points:</span>
-              <Badge variant="secondary" className="text-lg">
-                {userPoints} pts
-              </Badge>
+            <div className="text-3xl font-bold mb-2">#{currentRank}</div>
+            <div className="text-sm space-y-1">
+              {leaderboard?.slice(0, 3).map((leader, index) => (
+                <div key={leader.id} className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <Badge variant={index === 0 ? "default" : "outline"} className="mr-2">
+                      #{leader.rank}
+                    </Badge>
+                    <span>{leader.username}</span>
+                  </div>
+                  <span className="font-semibold">{leader.points} pts</span>
+                </div>
+              ))}
+              {currentRank > 3 && (
+                <div className="text-center pt-2">
+                  <Link href="/leaderboard">
+                    <Button variant="link" size="sm" className="text-xs">
+                      View Full Leaderboard
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Main content tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-5 max-w-3xl mx-auto">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="points">Points</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="research">Research</TabsTrigger>
-          <TabsTrigger value="submissions">Submissions</TabsTrigger>
+      
+      <Tabs defaultValue="ratings" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="ratings" className="flex items-center">
+            <Star className="mr-2 h-4 w-4" />
+            My Ratings
+          </TabsTrigger>
+          <TabsTrigger value="favorites" className="flex items-center">
+            <Film className="mr-2 h-4 w-4" />
+            My Favorites
+          </TabsTrigger>
+          <TabsTrigger value="points" className="flex items-center">
+            <Trophy className="mr-2 h-4 w-4" />
+            Points History
+          </TabsTrigger>
         </TabsList>
-
-        {/* Overview Tab */}
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Star className="h-5 w-5 mr-2" />
-                  Recent Reviews
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {dashboardData.reviews.length > 0 ? (
-                  <div className="space-y-4">
-                    {dashboardData.reviews.slice(0, 3).map((review) => (
-                      <div key={review.id} className="flex items-start gap-3 pb-3 border-b">
-                        <div className="h-10 w-10 flex items-center justify-center bg-muted rounded-md">
-                          <Star className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <h4 className="font-medium">{review.tvShow?.name || `Show #${review.tvShowId}`}</h4>
-                            <div className="flex items-center">
-                              {Array(5).fill(0).map((_, idx) => (
-                                <Star 
-                                  key={idx} 
-                                  className={`h-4 w-4 ${idx < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground'}`} 
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{review.review}</p>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                    {dashboardData.reviews.length > 3 && (
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => setActiveTab("reviews")}
-                      >
-                        View All Reviews
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">You haven't reviewed any shows yet.</p>
-                    <Button asChild className="mt-2">
-                      <Link href="/browse">Browse Shows</Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <TrendingUp className="h-5 w-5 mr-2" />
-                  Leaderboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLeaderboardLoading ? (
-                  <div className="flex justify-center py-6">
-                    <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {(leaderboard as LeaderboardUser[])?.slice(0, 5).map((leaderUser, index) => (
-                      <div key={leaderUser.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold ${
-                            index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                            index === 1 ? 'bg-gray-100 text-gray-800' :
-                            index === 2 ? 'bg-amber-100 text-amber-800' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
-                            {index + 1}
-                          </div>
-                          <span className="font-medium">{leaderUser.username}</span>
-                        </div>
-                        <Badge>{leaderUser.totalPoints} pts</Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {dashboardData.pointsHistory.length > 0 ? (
-                  <div className="space-y-4">
-                    {dashboardData.pointsHistory.slice(0, 5).map((activity) => (
-                      <div key={activity.id} className="flex items-start gap-3">
-                        <div className="h-10 w-10 flex items-center justify-center bg-muted rounded-md">
-                          {activity.reason.includes('review') ? (
-                            <Star className="h-5 w-5 text-primary" />
-                          ) : activity.reason.includes('upvote') ? (
-                            <ThumbsUp className="h-5 w-5 text-primary" />
-                          ) : activity.reason.includes('research') ? (
-                            <BookOpen className="h-5 w-5 text-primary" />
-                          ) : activity.reason.includes('login') ? (
-                            <Calendar className="h-5 w-5 text-primary" />
-                          ) : (
-                            <Award className="h-5 w-5 text-primary" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <h4 className="font-medium">{activity.reason}</h4>
-                            <Badge variant="outline" className="text-primary">
-                              +{activity.points} pts
-                            </Badge>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(activity.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">No activity yet.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Points Tab */}
-        <TabsContent value="points">
+        
+        <TabsContent value="ratings">
           <Card>
             <CardHeader>
-              <CardTitle>Points History</CardTitle>
+              <CardTitle>My Ratings</CardTitle>
               <CardDescription>
-                View all your points earned from various activities
+                Shows you've rated and reviewed
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {dashboardData.pointsHistory.length > 0 ? (
-                <div className="space-y-4">
-                  {dashboardData.pointsHistory.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 pb-3 border-b">
-                      <div className="h-12 w-12 flex items-center justify-center bg-muted rounded-md">
-                        {activity.reason.includes('review') ? (
-                          <Star className="h-6 w-6 text-primary" />
-                        ) : activity.reason.includes('upvote') ? (
-                          <ThumbsUp className="h-6 w-6 text-primary" />
-                        ) : activity.reason.includes('research') ? (
-                          <BookOpen className="h-6 w-6 text-primary" />
-                        ) : activity.reason.includes('login') ? (
-                          <Calendar className="h-6 w-6 text-primary" />
-                        ) : (
-                          <Award className="h-6 w-6 text-primary" />
-                        )}
+              {userRatings && userRatings.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {userRatings.map(rating => (
+                    <div key={rating.id} className="flex border rounded-lg overflow-hidden">
+                      <div className="w-24 h-24 flex-shrink-0">
+                        <img 
+                          src={rating.tvShow.imageUrl} 
+                          alt={rating.tvShow.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{activity.reason}</h4>
-                            <span className="text-sm text-muted-foreground">
-                              {new Date(activity.createdAt).toLocaleDateString()} at {new Date(activity.createdAt).toLocaleTimeString()}
-                            </span>
+                      <div className="p-3 flex-1">
+                        <Link href={`/show/${rating.showId}`}>
+                          <h4 className="font-semibold text-sm mb-1 hover:text-primary-500 line-clamp-1">
+                            {rating.tvShow.title}
+                          </h4>
+                        </Link>
+                        <div className="flex items-center mb-1">
+                          <div className="flex">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star 
+                                key={star} 
+                                className={`h-3 w-3 ${star <= rating.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                              />
+                            ))}
                           </div>
-                          <Badge variant="outline" className="text-primary text-lg">
-                            +{activity.points} pts
-                          </Badge>
                         </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {rating.comment || "No comment added"}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <Award className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">No points history yet.</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Earn points by rating shows, upvoting reviews, reading research, and more!
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>You haven't rated any shows yet.</p>
+                  <Link href="/browse">
+                    <Button variant="link" className="mt-2">
+                      Browse Shows to Rate
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="favorites">
+          <Card>
+            <CardHeader>
+              <CardTitle>My Favorites</CardTitle>
+              <CardDescription>
+                Shows you've added to your favorites
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userFavorites && userFavorites.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {userFavorites.map(favorite => (
+                    <div key={favorite.id} className="flex border rounded-lg overflow-hidden">
+                      <div className="w-24 h-24 flex-shrink-0">
+                        <img 
+                          src={favorite.tvShow.imageUrl} 
+                          alt={favorite.tvShow.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-3 flex-1">
+                        <Link href={`/show/${favorite.showId}`}>
+                          <h4 className="font-semibold text-sm mb-1 hover:text-primary-500 line-clamp-1">
+                            {favorite.tvShow.title}
+                          </h4>
+                        </Link>
+                        <p className="text-xs text-muted-foreground">
+                          Added {formatDistanceToNow(new Date(favorite.createdAt))} ago
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>You haven't favorited any shows yet.</p>
+                  <Link href="/browse">
+                    <Button variant="link" className="mt-2">
+                      Browse Shows to Favorite
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="points">
+          <Card>
+            <CardHeader>
+              <CardTitle>Points History</CardTitle>
+              <CardDescription>
+                Track how you've earned points on TV Tantrum
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pointHistory && pointHistory.length > 0 ? (
+                <div className="space-y-4">
+                  {pointHistory.map(item => (
+                    <div key={item.id} className="flex justify-between items-center border-b pb-3">
+                      <div className="flex-1">
+                        <div className="font-medium">{item.action}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(item.createdAt))} ago
+                          {item.referenceType && item.reference && (
+                            <span> • {item.referenceType}: {item.reference}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold text-green-600">
+                        +{item.points} points
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No point history available yet.</p>
+                  <p className="text-sm mt-2">
+                    Earn points by rating shows, receiving upvotes, and more!
                   </p>
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Reviews Tab */}
-        <TabsContent value="reviews">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Reviews</CardTitle>
-              <CardDescription>
-                All the reviews you've written for TV shows
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {dashboardData.reviews.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {dashboardData.reviews.map((review) => (
-                    <Card key={review.id} className="overflow-hidden">
-                      <div className="flex h-full">
-                        <div className="w-1/3 bg-muted">
-                          {review.tvShow?.imageUrl ? (
-                            <img 
-                              src={review.tvShow.imageUrl} 
-                              alt={review.tvShow.name} 
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center">
-                              <Star className="h-12 w-12 text-primary-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="w-2/3 p-4">
-                          <h3 className="font-bold mb-2">
-                            {review.tvShow?.name || `Show #${review.tvShowId}`}
-                          </h3>
-                          <div className="flex mb-2">
-                            {Array(5).fill(0).map((_, idx) => (
-                              <Star 
-                                key={idx} 
-                                className={`h-4 w-4 ${idx < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground'}`} 
-                              />
-                            ))}
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-3">{review.review}</p>
-                          <div className="mt-2 text-xs text-muted-foreground">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </div>
-                          <Button 
-                            variant="link" 
-                            size="sm" 
-                            className="px-0"
-                            asChild
-                          >
-                            <Link href={`/show/${review.tvShowId}`}>
-                              View Show
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Star className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">You haven't reviewed any shows yet.</p>
-                  <Button asChild className="mt-4">
-                    <Link href="/browse">Browse Shows to Review</Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Research Tab */}
-        <TabsContent value="research">
-          <Card>
-            <CardHeader>
-              <CardTitle>Research Summaries</CardTitle>
-              <CardDescription>
-                Research articles you've read about children's media
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {dashboardData.readResearch.length > 0 ? (
-                <div className="space-y-6">
-                  {dashboardData.readResearch.map((research) => (
-                    <Card key={research.id} className="overflow-hidden">
-                      <CardHeader className="pb-3">
-                        <CardTitle>{research.title}</CardTitle>
-                        <CardDescription>
-                          Source: {research.source} | {new Date(research.publishDate).toLocaleDateString()}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground">{research.summary}</p>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="mt-4"
-                          asChild
-                        >
-                          <Link href={`/research/${research.id}`}>
-                            Read Full Article
-                          </Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">You haven't read any research summaries yet.</p>
-                  <Button asChild className="mt-4">
-                    <Link href="/research">Browse Research</Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Submissions Tab */}
-        <TabsContent value="submissions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Show Submissions</CardTitle>
-              <CardDescription>
-                TV shows you've submitted for consideration
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6 flex justify-end">
-                <Button asChild>
-                  <Link href="/submit-show">
-                    <Send className="h-4 w-4 mr-2" />
-                    Submit New Show
-                  </Link>
-                </Button>
-              </div>
-              {dashboardData.submissions.length > 0 ? (
-                <div className="space-y-4">
-                  {dashboardData.submissions.map((submission) => (
-                    <Card key={submission.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-center">
-                          <CardTitle>{submission.name}</CardTitle>
-                          <Badge 
-                            className={
-                              submission.status === "approved" ? "bg-green-500" :
-                              submission.status === "rejected" ? "bg-red-500" :
-                              "bg-yellow-500"
-                            }
-                          >
-                            {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                          </Badge>
-                        </div>
-                        <CardDescription>
-                          Submitted on {new Date(submission.createdAt).toLocaleDateString()}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="mb-2"><span className="font-medium">Age Range:</span> {submission.ageRange}</p>
-                        <p className="mb-2"><span className="font-medium">Creator:</span> {submission.creator}</p>
-                        <p className="mb-4 text-muted-foreground">{submission.description}</p>
-                        
-                        {submission.status === "rejected" && submission.reason && (
-                          <div className="bg-muted p-3 rounded-md mt-2">
-                            <p className="font-medium">Reason for rejection:</p>
-                            <p className="text-sm text-muted-foreground">{submission.reason}</p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Send className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">You haven't submitted any shows yet.</p>
-                  <Button asChild className="mt-4">
-                    <Link href="/submit-show">
-                      Submit Your First Show
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
-
-      {/* Leaderboard footer section */}
-      <div className="mt-12">
-        <Separator className="mb-8" />
-        <h2 className="text-2xl font-bold mb-6 text-center">Community Leaderboard</h2>
-        
-        {isLeaderboardLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(leaderboard as LeaderboardUser[])?.slice(0, 9).map((leaderUser, index) => (
-              <Card key={leaderUser.id} className={
-                index < 3 ? "border-2 " + 
-                (index === 0 ? "border-yellow-400" : 
-                 index === 1 ? "border-gray-400" : 
-                 "border-amber-600") : ""
-              }>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-12 w-12 rounded-full flex items-center justify-center text-lg font-bold ${
-                      index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                      index === 1 ? 'bg-gray-100 text-gray-800' :
-                      index === 2 ? 'bg-amber-100 text-amber-800' :
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg">{leaderUser.username}</h3>
-                      <div className="flex items-center">
-                        <Award className="h-4 w-4 text-primary mr-1" />
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Level {Math.floor(leaderUser.totalPoints / 100) + 1}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="ml-auto">
-                      <Badge className="text-lg">{leaderUser.totalPoints} pts</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

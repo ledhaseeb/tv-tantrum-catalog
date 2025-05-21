@@ -245,7 +245,7 @@ export default function Navbar() {
                     {/* Authentication links */}
                     {!!user ? (
                       <>
-                        {isAdmin && (
+                        {user?.isAdmin && (
                           <Link 
                             href="/admin"
                             onClick={() => setIsNavOpen(false)}
