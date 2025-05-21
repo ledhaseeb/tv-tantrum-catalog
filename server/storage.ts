@@ -582,8 +582,60 @@ export class MemStorage implements IStorage {
     return [];
   }
   
-  async updateUserLoginStreak(userId: number): Promise<void> {
-    return;
+  async updateUserLoginStreak(userId: string): Promise<number> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    const now = new Date();
+    const lastLogin = user.lastLoginDate;
+    let streak = user.loginStreak || 0;
+    let pointsAwarded = 0;
+    
+    if (lastLogin) {
+      // Calculate days since last login
+      const daysSinceLastLogin = Math.floor((now.getTime() - new Date(lastLogin).getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceLastLogin === 1) {
+        // Consecutive login - increase streak
+        streak += 1;
+        
+        // Award points based on streak
+        if (streak % 7 === 0) {
+          // Weekly bonus - 20 points
+          pointsAwarded = 20;
+          await this.awardPoints(userId, pointsAwarded, "consecutive_login", `Weekly login streak bonus: ${streak} days`);
+        } else if (streak % 30 === 0) {
+          // Monthly bonus - 50 points
+          pointsAwarded = 50;
+          await this.awardPoints(userId, pointsAwarded, "consecutive_login", `Monthly login streak bonus: ${streak} days`);
+        } else {
+          // Regular consecutive login - 5 points
+          pointsAwarded = 5;
+          await this.awardPoints(userId, pointsAwarded, "consecutive_login", `Daily login streak: ${streak} days`);
+        }
+      } else if (daysSinceLastLogin > 1) {
+        // Streak broken
+        streak = 1;
+        pointsAwarded = 1;
+        await this.awardPoints(userId, pointsAwarded, "consecutive_login", "Login streak reset - first day");
+      }
+    } else {
+      // First login
+      streak = 1;
+      pointsAwarded = 1;
+      await this.awardPoints(userId, pointsAwarded, "consecutive_login", "First login");
+    }
+    
+    // Update user login data
+    await this.upsertUser({
+      id: userId,
+      lastLoginDate: now,
+      loginStreak: streak
+    });
+    
+    return streak;
   }
   
   async getResearchSummaries(): Promise<any[]> {
@@ -606,16 +658,71 @@ export class MemStorage implements IStorage {
     return {};
   }
   
-  async addReviewUpvote(userId: number, reviewId: number): Promise<any> {
-    return {};
+  async addReviewUpvote(userId: string, reviewId: number): Promise<ReviewUpvote> {
+    // Check if review exists
+    const review = Array.from(this.tvShowReviews.values()).find(r => r.id === reviewId);
+    if (!review) {
+      throw new Error("Review not found");
+    }
+    
+    // Check if user has already upvoted
+    const hasUpvoted = await this.hasUserUpvotedReview(userId, reviewId);
+    if (hasUpvoted) {
+      throw new Error("User has already upvoted this review");
+    }
+    
+    // Create upvote
+    const upvote: ReviewUpvote = {
+      id: this.reviewUpvoteId++,
+      userId,
+      reviewId,
+      createdAt: new Date()
+    };
+    
+    // Add to storage
+    if (!this.reviewUpvotes.has(reviewId)) {
+      this.reviewUpvotes.set(reviewId, []);
+    }
+    this.reviewUpvotes.get(reviewId)!.push(upvote);
+    
+    // Award points to upvoter
+    await this.awardPoints(userId, 1, "upvote_given", `Upvoted review #${reviewId}`);
+    
+    // Award points to review creator if they're different users
+    if (review.userId !== userId) {
+      await this.awardPoints(review.userId, 5, "upvote_received", `Received upvote on review #${reviewId}`);
+    }
+    
+    return upvote;
   }
   
-  async removeReviewUpvote(userId: number, reviewId: number): Promise<void> {
-    return;
+  async removeReviewUpvote(userId: string, reviewId: number): Promise<boolean> {
+    // Check if review exists
+    if (!this.reviewUpvotes.has(reviewId)) {
+      return false;
+    }
+    
+    // Get current upvotes
+    const upvotes = this.reviewUpvotes.get(reviewId)!;
+    const initialLength = upvotes.length;
+    
+    // Filter out the upvote to remove
+    const filteredUpvotes = upvotes.filter(upvote => upvote.userId !== userId);
+    
+    // Update storage
+    this.reviewUpvotes.set(reviewId, filteredUpvotes);
+    
+    // Return whether an upvote was removed
+    return filteredUpvotes.length < initialLength;
   }
   
-  async getReviewUpvotes(reviewId: number): Promise<any[]> {
-    return [];
+  async getReviewUpvotes(reviewId: number): Promise<ReviewUpvote[]> {
+    return this.reviewUpvotes.get(reviewId) || [];
+  }
+  
+  async hasUserUpvotedReview(userId: string, reviewId: number): Promise<boolean> {
+    const upvotes = await this.getReviewUpvotes(reviewId);
+    return upvotes.some(upvote => upvote.userId === userId);
   }
   
   async addShowSubmission(data: any): Promise<any> {
@@ -848,24 +955,77 @@ export class MemStorage implements IStorage {
   
   // These methods are implemented in DatabaseStorage but need stubs here
   // Favorites methods
-  async addFavorite(userId: number, tvShowId: number): Promise<Favorite> {
-    // This is just a stub since we're using DatabaseStorage
-    throw new Error('Method not implemented in MemStorage');
+  async addFavorite(userId: string, tvShowId: number): Promise<Favorite> {
+    const show = await this.getTvShowById(tvShowId);
+    if (!show) {
+      throw new Error("TV Show not found");
+    }
+    
+    // Check if already favorited
+    const isFav = await this.isFavorite(userId, tvShowId);
+    if (isFav) {
+      throw new Error("TV Show already in favorites");
+    }
+    
+    // Add to favorites
+    if (!this.favorites.has(userId)) {
+      this.favorites.set(userId, []);
+    }
+    this.favorites.get(userId)!.push(tvShowId);
+    
+    // Create favorite record
+    const favorite: Favorite = {
+      id: Math.floor(Math.random() * 1000000), // Simple ID generation for in-memory storage
+      userId,
+      tvShowId,
+      createdAt: new Date()
+    };
+    
+    // Award points for the first favorite (only up to 10 favorites)
+    const userFavorites = await this.getUserFavorites(userId);
+    if (userFavorites.length <= 10) {
+      await this.awardPoints(userId, 2, "add_favorite", `Added ${show.name} to favorites`);
+    }
+    
+    return favorite;
   }
   
-  async removeFavorite(userId: number, tvShowId: number): Promise<boolean> {
-    // This is just a stub since we're using DatabaseStorage
-    throw new Error('Method not implemented in MemStorage');
+  async removeFavorite(userId: string, tvShowId: number): Promise<boolean> {
+    if (!this.favorites.has(userId)) {
+      return false;
+    }
+    
+    const favorites = this.favorites.get(userId)!;
+    const initialLength = favorites.length;
+    
+    // Filter out the favorite to remove
+    const filteredFavorites = favorites.filter(id => id !== tvShowId);
+    
+    // Update storage
+    this.favorites.set(userId, filteredFavorites);
+    
+    // Return whether a favorite was removed
+    return filteredFavorites.length < initialLength;
   }
   
-  async getUserFavorites(userId: number): Promise<TvShow[]> {
-    // This is just a stub since we're using DatabaseStorage
-    throw new Error('Method not implemented in MemStorage');
+  async getUserFavorites(userId: string): Promise<TvShow[]> {
+    const favoriteIds = this.favorites.get(userId) || [];
+    const favorites: TvShow[] = [];
+    
+    // Get show details for each favorite ID
+    for (const id of favoriteIds) {
+      const show = await this.getTvShowById(id);
+      if (show) {
+        favorites.push(show);
+      }
+    }
+    
+    return favorites;
   }
   
-  async isFavorite(userId: number, tvShowId: number): Promise<boolean> {
-    // This is just a stub since we're using DatabaseStorage
-    throw new Error('Method not implemented in MemStorage');
+  async isFavorite(userId: string, tvShowId: number): Promise<boolean> {
+    const favoriteIds = this.favorites.get(userId) || [];
+    return favoriteIds.includes(tvShowId);
   }
   
   async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
