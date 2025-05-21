@@ -1399,19 +1399,23 @@ export class DatabaseStorage implements IStorage {
     `);
   }
   
-  async getReviewsByUserId(userId: number): Promise<TvShowReview[]> {
+  async getReviewsByUserId(userId: string | number): Promise<TvShowReview[]> {
     // Use sql template to explicitly specify column names
     return await db.execute(sql`
       SELECT 
-        id, 
-        tv_show_id as "tvShowId",
-        user_id as "userId", 
-        user_name as "userName", 
-        rating, 
-        review, 
-        created_at as "createdAt"
-      FROM tv_show_reviews 
-      WHERE user_id = ${userId}
+        r.id, 
+        r.tv_show_id as "tvShowId",
+        r.user_id as "userId", 
+        r.user_name as "userName", 
+        r.rating, 
+        r.review, 
+        r.created_at as "createdAt",
+        t.name as "showName",
+        t.image_url as "showImageUrl"
+      FROM tv_show_reviews r
+      JOIN tv_shows t ON r.tv_show_id = t.id
+      WHERE r.user_id = ${userId}
+      ORDER BY r.created_at DESC
     `);
   }
 
