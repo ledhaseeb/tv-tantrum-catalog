@@ -7,7 +7,7 @@ import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub, tvShows, users, tvShowReviews, userPoints, reviewUpvotes, userResearchReads, researchSummaries, showSubmissions, favorites } from "@shared/schema";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 import { db } from "./db";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';

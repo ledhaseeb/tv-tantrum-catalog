@@ -1782,9 +1782,8 @@ getUserPoints = async (userId: number): Promise<number> => {
     console.error('Error getting user points:', error);
     return 0;
   }
-}
 
-async getUserPointsHistory(userId: number): Promise<UserPoint[]> {
+  async getUserPointsHistory(userId: number): Promise<UserPoint[]> {
   try {
     const result = await db.select()
       .from(userPoints)
