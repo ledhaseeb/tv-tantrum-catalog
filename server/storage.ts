@@ -459,21 +459,18 @@ export class MemStorage implements IStorage {
       // Increment the view count
       const updatedSearch: TvShowSearch = {
         ...existingSearch,
-        viewCount: existingSearch.viewCount + 1,
-        lastSearched: existingSearch.lastSearched,
-        lastViewed: now // Update timestamp for last viewed
+        searchCount: existingSearch.searchCount,
+        lastSearched: existingSearch.lastSearched
       };
       this.tvShowSearches.set(existingSearch.id, updatedSearch);
     } else {
-      // Create a new record with view count = 1
+      // Create a new record with search data
       const id = this.searchCurrentId++;
       const newSearch: TvShowSearch = {
         id,
         tvShowId,
         searchCount: 0,
-        viewCount: 1,
-        lastSearched: now,
-        lastViewed: now
+        lastSearched: now
       };
       this.tvShowSearches.set(id, newSearch);
     }

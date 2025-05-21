@@ -1430,8 +1430,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async trackShowView(tvShowId: number): Promise<void> {
-    const now = new Date().toISOString();
-    
     try {
       // Use the new separate table for view tracking
       const [existingView] = await db
@@ -1445,7 +1443,6 @@ export class DatabaseStorage implements IStorage {
           .update(tvShowViews)
           .set({
             viewCount: existingView.viewCount + 1,
-            lastViewed: now,
           })
           .where(eq(tvShowViews.id, existingView.id));
       } else {
