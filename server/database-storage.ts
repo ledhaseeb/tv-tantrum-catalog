@@ -1422,49 +1422,37 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getReviewsByUserId(userId: string | number): Promise<TvShowReview[]> {
-    // Convert userId to a number if it's a string
-    const numericUserId = typeof userId === 'string' ? parseInt(userId) : userId;
-    
-    console.log(`Fetching reviews for user ID: ${numericUserId} (original type: ${typeof userId})`);
-    
     try {
-      // Use sql template to explicitly specify column names
-      const result = await db.execute(sql`
+      // Convert userId to a number if it's a string
+      const numericUserId = typeof userId === 'string' ? parseInt(userId) : userId;
+      
+      console.log(`Fetching reviews for user ID: ${numericUserId} (original type: ${typeof userId})`);
+      
+      // Fall back to direct SQL query since we're having issues with the ORM
+      const { rows } = await db.execute(sql`
         SELECT 
           r.id, 
-          r.tv_show_id as "tvShowId",
-          r.user_id as "userId", 
-          r.user_name as "userName", 
+          r.tv_show_id AS "tvShowId",
+          r.user_id AS "userId", 
+          r.user_name AS "userName", 
           r.rating, 
           r.review, 
-          r.created_at as "createdAt",
-          r.show_name as "showName",
-          t.name as "tvShowName",
-          t.image_url as "showImageUrl"
+          r.created_at AS "createdAt",
+          r.show_name AS "showName",
+          t.name AS "tvShowName",
+          t.image_url AS "showImageUrl"
         FROM tv_show_reviews r
         LEFT JOIN tv_shows t ON r.tv_show_id = t.id
         WHERE r.user_id = ${numericUserId}
         ORDER BY r.created_at DESC
       `);
       
-      // Convert the result to a proper array
-      const reviews = result.rows.map(row => ({
-        id: row.id,
-        tvShowId: row.tvShowId,
-        userId: row.userId,
-        userName: row.userName,
-        rating: row.rating,
-        review: row.review,
-        createdAt: row.createdAt,
-        showName: row.showName || row.tvShowName,
-        tvShowName: row.tvShowName,
-        showImageUrl: row.showImageUrl
-      }));
-      
-      console.log(`Retrieved ${reviews.length} reviews for user ${numericUserId}:`, reviews);
-      return reviews;
+      console.log(`Found ${rows.length} reviews for user ${numericUserId}`, 
+        rows.length > 0 ? JSON.stringify(rows[0]) : 'No reviews found');
+        
+      return rows;
     } catch (error) {
-      console.error(`Error getting reviews for user ${numericUserId}:`, error);
+      console.error(`Error getting reviews for user ${userId}:`, error);
       return [];
     }
   }
