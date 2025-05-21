@@ -74,17 +74,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user favorites
       const favorites = await storage.getUserFavorites(userId);
       
-      // Get user points history
-      const pointsHistory = await storage.getUserPointsHistory(userId);
+      // Get user points history (using empty array as fallback if not implemented)
+      let pointsHistory = [];
+      try {
+        if (typeof storage.getUserPointsHistory === 'function') {
+          pointsHistory = await storage.getUserPointsHistory(userId);
+        }
+      } catch (error) {
+        console.log('Points history not available:', error);
+      }
       
-      // Get read research summaries
-      const readResearch = await storage.getUserReadResearch(userId);
+      // Get read research summaries (using empty array as fallback if not implemented)
+      let readResearch = [];
+      try {
+        if (typeof storage.getUserReadResearch === 'function') {
+          readResearch = await storage.getUserReadResearch(userId);
+        }
+      } catch (error) {
+        console.log('Read research not available:', error);
+      }
       
-      // Get show submissions
-      const submissions = await storage.getUserShowSubmissions(userId);
+      // Get show submissions (using empty array as fallback if not implemented)
+      let submissions = [];
+      try {
+        if (typeof storage.getUserShowSubmissions === 'function') {
+          submissions = await storage.getUserShowSubmissions(userId);
+        }
+      } catch (error) {
+        console.log('Show submissions not available:', error);
+      }
       
-      // Update login streak
-      await storage.updateUserLoginStreak(userId);
+      // Update login streak if method exists
+      try {
+        if (typeof storage.updateUserLoginStreak === 'function') {
+          await storage.updateUserLoginStreak(userId);
+        }
+      } catch (error) {
+        console.log('Login streak update not available:', error);
+      }
       
       // Compile dashboard data
       const dashboardData = {
