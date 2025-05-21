@@ -511,6 +511,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add a new review for a TV show
   app.post("/api/shows/:id/reviews", async (req: Request, res: Response) => {
     try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to submit reviews" });
+      }
+      
+      const userId = req.user!.id;
+      const userName = req.user!.username || "Anonymous";
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid show ID" });
@@ -524,11 +532,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate review data
       const validatedData = insertTvShowReviewSchema.parse({
         ...req.body,
-        tvShowId: id
+        tvShowId: id,
+        userId: userId,
+        userName: userName
       });
       
       // Add review to storage
       const newReview = await storage.addReview(validatedData);
+      
+      // Award points for submitting a review
+      try {
+        if (typeof storage.addUserPoints === 'function') {
+          await storage.addUserPoints(userId, 10, 'review');
+        }
+      } catch (pointsError) {
+        console.error('Error awarding points for review:', pointsError);
+        // Continue even if points couldn't be awarded
+      }
+      
       res.status(201).json(newReview);
     } catch (error) {
       if (error instanceof ZodError) {
