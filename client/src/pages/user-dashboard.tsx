@@ -191,7 +191,7 @@ const UserDashboard = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-green-500" />
+                    <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
                     <span>Login Streaks</span>
                   </div>
                   <span className="font-medium">{pointsBreakdown.consecutiveLogins} points</span>
