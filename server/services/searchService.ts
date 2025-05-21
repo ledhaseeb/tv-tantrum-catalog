@@ -110,7 +110,7 @@ export class SearchService {
       
       // Sensory-specific filters
       if (filters.interactionLevel) {
-        query += ` AND interaction_level = $${paramIndex}`;
+        query += ` AND interactivity_level = $${paramIndex}`;
         params.push(filters.interactionLevel);
         paramIndex++;
       }
