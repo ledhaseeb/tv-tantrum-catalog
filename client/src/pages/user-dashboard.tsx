@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { StarIcon } from 'lucide-react';
+import { Award, StarIcon, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const UserDashboard = () => {
@@ -69,7 +69,7 @@ const UserDashboard = () => {
           <p className="text-gray-500">{user?.email}</p>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant="outline" className="bg-orange-50 text-orange-500 border-orange-200">
-              <TrophyIcon className="w-3 h-3 mr-1" /> {userRank}
+              <Trophy className="w-3 h-3 mr-1" /> {userRank}
             </Badge>
             <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
               <Award className="w-3 h-3 mr-1" /> {totalPoints} Points

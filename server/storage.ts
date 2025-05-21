@@ -562,12 +562,136 @@ export class MemStorage implements IStorage {
   }
   
   // Gamification methods
-  async getUserPoints(userId: number): Promise<number> {
-    return 0;
+  async getUserPoints(userId: string): Promise<{ 
+    total: number; 
+    breakdown: {
+      reviews: number;
+      upvotesGiven: number;
+      upvotesReceived: number;
+      consecutiveLogins: number;
+      shares: number;
+      referrals: number;
+      showSubmissions: number;
+      researchRead: number;
+    }
+  }> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Get all point history entries
+    const pointsHistory = this.userPointsHistories.get(userId) || [];
+    
+    // Calculate breakdown
+    const breakdown = {
+      reviews: 0,
+      upvotesGiven: 0,
+      upvotesReceived: 0,
+      consecutiveLogins: 0,
+      shares: 0,
+      referrals: 0,
+      showSubmissions: 0,
+      researchRead: 0
+    };
+    
+    // Calculate points by activity type
+    pointsHistory.forEach(entry => {
+      switch (entry.activityType) {
+        case 'review':
+          breakdown.reviews += entry.points;
+          break;
+        case 'upvote_given':
+          breakdown.upvotesGiven += entry.points;
+          break;
+        case 'upvote_received':
+          breakdown.upvotesReceived += entry.points;
+          break;
+        case 'consecutive_login':
+          breakdown.consecutiveLogins += entry.points;
+          break;
+        case 'share':
+          breakdown.shares += entry.points;
+          break;
+        case 'referral':
+          breakdown.referrals += entry.points;
+          break;
+        case 'show_submission':
+          breakdown.showSubmissions += entry.points;
+          break;
+        case 'research_read':
+          breakdown.researchRead += entry.points;
+          break;
+      }
+    });
+    
+    return {
+      total: user.totalPoints || 0,
+      breakdown
+    };
   }
   
-  async getUserPointsHistory(userId: number): Promise<any[]> {
-    return [];
+  async awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<UserPointsHistory> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Create points history entry
+    const pointsEntry: UserPointsHistory = {
+      id: this.userPointsHistoryId++,
+      userId,
+      points,
+      activityType,
+      description: description || null,
+      createdAt: new Date()
+    };
+    
+    // Add to history
+    if (!this.userPointsHistories.has(userId)) {
+      this.userPointsHistories.set(userId, []);
+    }
+    this.userPointsHistories.get(userId)!.push(pointsEntry);
+    
+    // Update user total points
+    const totalPoints = (user.totalPoints || 0) + points;
+    await this.updateUserRank(userId, totalPoints);
+    
+    // Update user object
+    await this.upsertUser({
+      id: userId,
+      totalPoints
+    });
+    
+    return pointsEntry;
+  }
+  
+  private async updateUserRank(userId: string, totalPoints: number): Promise<void> {
+    let newRank = "TV Watcher";
+    
+    // Define rank thresholds
+    if (totalPoints >= 1000) {
+      newRank = "TV Expert";
+    } else if (totalPoints >= 500) {
+      newRank = "TV Enthusiast";
+    } else if (totalPoints >= 200) {
+      newRank = "TV Fan";
+    } else if (totalPoints >= 50) {
+      newRank = "TV Viewer";
+    }
+    
+    // Update user rank if changed
+    const user = await this.getUser(userId);
+    if (user && user.rank !== newRank) {
+      await this.upsertUser({
+        id: userId,
+        rank: newRank
+      });
+    }
+  }
+  
+  async getUserPointsHistory(userId: string): Promise<UserPointsHistory[]> {
+    return this.userPointsHistories.get(userId) || [];
   }
   
   async getUserFavorites(userId: number): Promise<any[]> {
@@ -737,8 +861,17 @@ export class MemStorage implements IStorage {
     return {};
   }
   
-  async getTopUsers(limit: number): Promise<any[]> {
-    return []
+  async getTopUsers(limit: number = 10): Promise<User[]> {
+    // Get all users
+    const allUsers = Array.from(this.users.values());
+    
+    // Sort by total points (highest first)
+    const sortedUsers = [...allUsers].sort((a, b) => 
+      (b.totalPoints || 0) - (a.totalPoints || 0)
+    );
+    
+    // Return top N users
+    return sortedUsers.slice(0, limit);
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
@@ -1028,9 +1161,71 @@ export class MemStorage implements IStorage {
     return favoriteIds.includes(tvShowId);
   }
   
-  async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
-    // This is just a stub since we're using DatabaseStorage
-    throw new Error('Method not implemented in MemStorage');
+  async getSimilarShows(userId: string, limit: number = 5): Promise<TvShow[]> {
+    // Get user's favorite shows
+    const userFavorites = await this.getUserFavorites(userId);
+    
+    if (userFavorites.length === 0) {
+      // If user has no favorites, return popular shows
+      return this.getPopularShows(limit);
+    }
+    
+    // Get all shows
+    const allShows = await this.getAllTvShows();
+    
+    // Remove shows the user has already favorited
+    const candidateShows = allShows.filter(show => 
+      !userFavorites.some(fav => fav.id === show.id)
+    );
+    
+    // Define a scoring function to measure similarity
+    const scoreShow = (show: TvShow) => {
+      let score = 0;
+      
+      // Compare each favorite with the candidate show
+      userFavorites.forEach(favorite => {
+        // Score based on matching age range
+        if (favorite.ageRange === show.ageRange) {
+          score += 2;
+        }
+        
+        // Score based on similar stimulation score
+        const stimDiff = Math.abs(favorite.stimulationScore - show.stimulationScore);
+        if (stimDiff < 1) score += 3;
+        else if (stimDiff < 2) score += 2;
+        else if (stimDiff < 3) score += 1;
+        
+        // Score based on matching themes
+        const favoriteThemes = favorite.themes || [];
+        const showThemes = show.themes || [];
+        
+        const matchingThemes = favoriteThemes.filter(theme => 
+          showThemes.includes(theme)
+        ).length;
+        
+        score += matchingThemes * 1.5;
+      });
+      
+      // Average the score by the number of favorites to normalize
+      return score / userFavorites.length;
+    };
+    
+    // Score and sort candidate shows
+    interface ScoredShow {
+      show: TvShow;
+      score: number;
+    }
+    
+    const scoredShows: ScoredShow[] = candidateShows.map(show => ({
+      show,
+      score: scoreShow(show)
+    }));
+    
+    // Sort by score (highest first)
+    scoredShows.sort((a, b) => b.score - a.score);
+    
+    // Return top N shows
+    return scoredShows.slice(0, limit).map(item => item.show);
   }
   
   async getSimilarShowsByShowId(showId: number, limit: number = 4): Promise<TvShow[]> {
