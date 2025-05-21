@@ -28,24 +28,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+  // Auth routes - using original custom authentication system
+  app.get('/api/auth/user', (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
     }
+    res.json(req.user);
   });
   
   // Check if user is admin
-  app.get('/api/user/is-admin', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/is-admin', (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user?.isAdmin || false);
+      res.json(req.user!.isAdmin || false);
     } catch (error) {
       console.error("Error checking admin status:", error);
       res.status(500).json({ message: "Failed to check admin status" });
@@ -54,22 +51,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add user authentication endpoints
   
-  // Get current user
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Get current user - Already handled by custom auth
   
   // Get user dashboard data
-  app.get('/api/user/dashboard', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/dashboard', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const userId = req.user!.id;
       
       // Get user data
       const user = await storage.getUser(userId);
