@@ -135,9 +135,11 @@ export const tvShowPlatforms = pgTable("tv_show_platforms", {
 export const tvShowReviews = pgTable("tv_show_reviews", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'set null' }),
   userName: text("user_name").notNull(),
   rating: integer("rating").notNull(), // 1-5 scale
   review: text("review").notNull(),
+  showName: text("show_name"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

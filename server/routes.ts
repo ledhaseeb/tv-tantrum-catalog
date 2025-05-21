@@ -519,6 +519,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user!.id;
       const userName = req.user!.username || "Anonymous";
       
+      console.log("Submitting review as user:", userId, userName);
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid show ID" });
@@ -529,26 +531,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "TV show not found" });
       }
       
-      // Validate review data
-      const validatedData = insertTvShowReviewSchema.parse({
+      console.log("Review data:", {
+        ...req.body,
+        userId,
+        userName,
+        showName: show.name
+      });
+      
+      // Validate and prepare review data
+      const reviewData = {
         ...req.body,
         tvShowId: id,
         userId: userId,
-        userName: userName
-      });
+        userName: userName,
+        showName: show.name
+      };
       
       // Add review to storage
-      const newReview = await storage.addReview(validatedData);
-      
-      // Award points for submitting a review
-      try {
-        if (typeof storage.addUserPoints === 'function') {
-          await storage.addUserPoints(userId, 10, 'review');
-        }
-      } catch (pointsError) {
-        console.error('Error awarding points for review:', pointsError);
-        // Continue even if points couldn't be awarded
-      }
+      const newReview = await storage.addReview(reviewData);
+      console.log("New review created:", newReview);
       
       res.status(201).json(newReview);
     } catch (error) {

@@ -1420,13 +1420,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
+    // Get the show name to store with the review
+    let showName = null;
+    try {
+      if (review.tvShowId) {
+        const show = await this.getTvShowById(review.tvShowId);
+        if (show) {
+          showName = show.name;
+        }
+      }
+    } catch (error) {
+      console.error("Error getting show name for review:", error);
+    }
+
     // Let Postgres handle the timestamp with defaultNow()
     const [newReview] = await db
       .insert(tvShowReviews)
       .values({
-        ...review
+        ...review,
+        showName: showName
       })
       .returning();
+    
+    // Award points for submitting a review if applicable
+    try {
+      if (review.userId && typeof this.awardPoints === 'function') {
+        await this.awardPoints(review.userId.toString(), 10, 'review', `Added review for ${showName || 'a TV show'}`);
+      }
+    } catch (error) {
+      console.error("Error awarding points for review:", error);
+    }
+    
     return newReview;
   }
 
