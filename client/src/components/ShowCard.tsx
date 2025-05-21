@@ -19,6 +19,7 @@ interface ShowCardProps {
 
 export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
   // Check if show is in favorites when component mounts or user changes
@@ -182,28 +183,16 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       >
         {/* Image */}
         <div className="relative">
-          {show.imageUrl ? (
+          {show.imageUrl && !imageError ? (
             <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden">
               <img 
                 className="w-full h-full object-cover"
                 src={show.imageUrl}
                 alt={show.name}
                 style={{ objectPosition: 'center top' }}
-                onError={(e) => {
-                  // If image fails to load, replace with a TV icon placeholder
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null; // Prevent infinite loop
-                  const parentEl = target.parentElement;
-                  if (parentEl) {
-                    parentEl.classList.add('bg-gray-200');
-                    parentEl.innerHTML = `
-                    <div class="flex items-center justify-center w-full h-full">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
-                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                        <polyline points="17 2 12 7 7 2"></polyline>
-                      </svg>
-                    </div>`;
-                  }
+                onError={() => {
+                  // If image fails to load, set state to show placeholder
+                  setImageError(true);
                 }}
               />
             </div>
@@ -367,7 +356,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         onClick();
       }}>
       <div className="relative">
-        {show.imageUrl ? (
+        {show.imageUrl && !imageError ? (
           <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden flex items-center justify-center">
             <div className="w-full h-full relative">
               <img 
@@ -375,25 +364,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                 src={show.imageUrl}
                 alt={show.name}
                 style={{ objectPosition: 'center top' }}
-                onError={(e) => {
-                  // If image fails to load, replace with a TV icon placeholder
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null; // Prevent infinite loop
-                  target.src = ''; // Clear the src
-                  
-                  // Get the parent container
-                  const container = target.parentElement && target.parentElement.parentElement;
-                  if (container) {
-                    container.classList.add('bg-gray-200');
-                    container.innerHTML = `
-                      <div class="flex items-center justify-center w-full h-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
-                          <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                          <polyline points="17 2 12 7 7 2"></polyline>
-                        </svg>
-                      </div>
-                    `;
-                  }
+                onError={() => {
+                  // If image fails to load, set state to show placeholder
+                  setImageError(true);
                 }}
               />
             </div>
