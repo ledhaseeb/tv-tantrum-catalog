@@ -1784,20 +1784,20 @@ getUserPoints = async (userId: number): Promise<number> => {
   }
 
   async getUserPointsHistory(userId: number): Promise<UserPoint[]> {
-  try {
-    const result = await db.select()
-      .from(userPoints)
-      .where(eq(userPoints.userId, userId))
-      .orderBy(desc(userPoints.createdAt));
-    
-    return result;
-  } catch (error) {
-    console.error('Error getting user points history:', error);
-    return [];
+    try {
+      const result = await db.select()
+        .from(userPoints)
+        .where(eq(userPoints.userId, userId))
+        .orderBy(desc(userPoints.createdAt));
+      
+      return result;
+    } catch (error) {
+      console.error('Error getting user points history:', error);
+      return [];
+    }
   }
-}
 
-async addUserPoints(data: InsertUserPoint): Promise<UserPoint> {
+  async addUserPoints(data: InsertUserPoint): Promise<UserPoint> {
   try {
     // Add points entry
     const [pointEntry] = await db.insert(userPoints)
