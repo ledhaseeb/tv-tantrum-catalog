@@ -3,6 +3,7 @@ import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews, 
   themes, platforms, tvShowThemes, tvShowPlatforms,
+  userPointsHistory, reviewUpvotes, researchSummaries, userReadResearch, showSubmissions, userReferrals,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
@@ -13,6 +14,12 @@ import {
   type Platform, type InsertPlatform,
   type TvShowTheme, type InsertTvShowTheme,
   type TvShowPlatform, type InsertTvShowPlatform,
+  type UserPointsHistory, type InsertUserPointsHistory,
+  type ReviewUpvote, type InsertReviewUpvote,
+  type ResearchSummary, type InsertResearchSummary,
+  type UserReadResearch, type InsertUserReadResearch,
+  type ShowSubmission, type InsertShowSubmission,
+  type UserReferral, type InsertUserReferral,
   type TvShowGitHub
 } from "@shared/schema";
 import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
