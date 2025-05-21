@@ -566,18 +566,20 @@ export class DatabaseStorage implements IStorage {
       // Direct SQL query approach for reliability
       const client = await pool.connect();
       try {
+        // Get basic show data
         const result = await client.query('SELECT * FROM tv_shows ORDER BY name');
         console.log(`Retrieved ${result.rowCount} TV shows from database`);
         
-        // Map the database rows to our TvShow model
-        return result.rows.map(row => ({
+        // Create initial show objects
+        const tvShows = result.rows.map(row => ({
           id: row.id,
           name: row.name || '',
           description: row.description || '',
           imageUrl: row.image_url,
           ageRange: row.age_range || '',
-          tantrumFactor: row.tantrum_factor || '',
-          themes: row.themes || [],
+          episodeLength: row.episode_length || 0,
+          themes: [], // Will be populated from junction table
+          availableOn: [], // Will be populated from junction table
           
           // Stimulation metrics
           stimulationScore: row.stimulation_score || 0,
@@ -1085,12 +1087,44 @@ export class DatabaseStorage implements IStorage {
       .set(show)
       .where(eq(tvShows.id, id))
       .returning();
-    return updatedShow;
+      
+    // Update themes if provided
+    if (themeNames && Array.isArray(themeNames)) {
+      try {
+        await this.updateThemesForShow(id, themeNames);
+      } catch (error) {
+        console.error("Error updating themes:", error);
+        // Continue with the update even if theme update fails
+      }
+    }
+    
+    // Update platforms if provided
+    if (platformNames && Array.isArray(platformNames)) {
+      try {
+        await this.updatePlatformsForShow(id, platformNames);
+      } catch (error) {
+        console.error("Error updating platforms:", error);
+        // Continue with the update even if platform update fails
+      }
+    }
+    
+    // Return the updated show with junction table data included
+    return this.getTvShowById(id);
   }
 
   async deleteTvShow(id: number): Promise<boolean> {
-    const result = await db.delete(tvShows).where(eq(tvShows.id, id));
-    return result.count > 0;
+    try {
+      // First, delete any junction table entries
+      await db.delete(tvShowThemes).where(eq(tvShowThemes.tvShowId, id));
+      await db.delete(tvShowPlatforms).where(eq(tvShowPlatforms.tvShowId, id));
+      
+      // Then delete the show itself
+      const result = await db.delete(tvShows).where(eq(tvShows.id, id));
+      return result.count > 0;
+    } catch (error) {
+      console.error(`Error deleting TV show with ID ${id}:`, error);
+      throw error;
+    }
   }
 
   async getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]> {
