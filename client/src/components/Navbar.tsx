@@ -152,16 +152,18 @@ export default function Navbar() {
                     variant="ghost" 
                     className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
                     onClick={() => {
-                      if (confirm('Are you sure you want to log out?')) {
-                        // Use the logout mutation from useAuth
-                        fetch('/api/logout', {
-                          method: 'POST',
-                          credentials: 'include'
-                        }).then(() => {
-                          // Redirect to home page after logout
-                          window.location.href = '/home';
-                        });
-                      }
+                      // Perform the logout without a confirmation dialog
+                      fetch('/api/logout', {
+                        method: 'POST',
+                        credentials: 'include'
+                      }).then(() => {
+                        // Redirect to home page after logout
+                        window.location.href = '/home';
+                      }).catch(err => {
+                        console.error("Logout error:", err);
+                        // Force reload even if there's an error
+                        window.location.href = '/home';
+                      });
                     }}
                   >
                     <LogOut className="h-4 w-4" />
@@ -281,16 +283,18 @@ export default function Navbar() {
                         <button
                           onClick={() => {
                             setIsNavOpen(false);
-                            if (confirm('Are you sure you want to log out?')) {
-                              // Use the custom logout endpoint
-                              fetch('/api/logout', {
-                                method: 'POST',
-                                credentials: 'include'
-                              }).then(() => {
-                                // Redirect to home page after logout
-                                window.location.href = '/home';
-                              });
-                            }
+                            // Use the custom logout endpoint without confirmation
+                            fetch('/api/logout', {
+                              method: 'POST',
+                              credentials: 'include'
+                            }).then(() => {
+                              // Redirect to home page after logout
+                              window.location.href = '/home';
+                            }).catch(err => {
+                              console.error("Logout error:", err);
+                              // Force reload even if there's an error
+                              window.location.href = '/home';
+                            });
                           }}
                           className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                         >
