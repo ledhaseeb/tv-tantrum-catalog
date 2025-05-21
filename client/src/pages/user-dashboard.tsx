@@ -294,7 +294,7 @@ const UserDashboard = () => {
                   {reviews.map((review: any) => (
                     <div key={review.id} className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium">{review.tvShowName || "TV Show"}</h3>
+                        <h3 className="font-medium">{review.showName || review.tvShowName || "TV Show"}</h3>
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <StarIcon
