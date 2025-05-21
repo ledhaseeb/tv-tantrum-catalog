@@ -103,11 +103,14 @@ export class MemStorage implements IStorage {
     const id = this.userCurrentId++;
     const now = new Date().toISOString();
     const user: User = { 
-      ...insertUser, 
       id,
+      email: insertUser.email,
+      password: insertUser.password,
+      username: insertUser.username,
+      country: insertUser.country || null,
       createdAt: now,
       isAdmin: insertUser.isAdmin ?? false,
-      username: insertUser.username ?? null
+      isApproved: insertUser.isApproved ?? false
     };
     this.users.set(id, user);
     return user;
@@ -366,12 +369,14 @@ export class MemStorage implements IStorage {
       isOngoing: show.isOngoing ?? true,
       imageUrl: show.imageUrl ?? null,
       availableOn: show.availableOn ?? [],
-      friendshipRating: show.friendshipRating ?? null,
-      problemSolvingRating: show.problemSolvingRating ?? null,
-      relatableSituationsRating: show.relatableSituationsRating ?? null,
-      emotionalIntelligenceRating: show.emotionalIntelligenceRating ?? null,
       creativityRating: show.creativityRating ?? null,
-      educationalValueRating: show.educationalValueRating ?? null
+      interactivityLevel: show.interactivityLevel ?? null,
+      dialogueIntensity: show.dialogueIntensity ?? null,
+      soundEffectsLevel: show.soundEffectsLevel ?? null,
+      musicTempo: show.musicTempo ?? null,
+      totalMusicLevel: show.totalMusicLevel ?? null,
+      totalSoundEffectTimeLevel: show.totalSoundEffectTimeLevel ?? null,
+      sceneFrequency: show.sceneFrequency ?? null
     };
     
     // Use explicit casting to TvShow to handle any type issues
