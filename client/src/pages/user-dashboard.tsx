@@ -24,6 +24,10 @@ const UserDashboard = () => {
   const pointsBreakdown = dashboardData?.pointsBreakdown || {};
   const recommendations = dashboardData?.recommendedShows || [];
   const loginStreak = dashboardData?.streak || 0;
+  
+  // Calculate next milestone and progress
+  const nextMilestone = Math.ceil(totalPoints / 100) * 100 + 100;
+  const progress = (totalPoints % 100) / 100 * 100;
 
   if (!user) {
     return (
