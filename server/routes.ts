@@ -9,7 +9,7 @@ import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth } from "./auth";
 // Use the new consolidated utility files
 import * as imageOptimizer from "../image-optimizer.js";
 import * as imageManager from "../image-manager.js";
