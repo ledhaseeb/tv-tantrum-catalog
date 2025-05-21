@@ -14,7 +14,8 @@ export default function Navbar() {
   const [showResults, setShowResults] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { user, isLoading, isAuthenticated } = useAuth();
-  const isAdmin = user?.isAdmin || false;
+  // If user exists and has an isAdmin property, use it; otherwise, default to false
+  const isAdmin = user ? (user.isAdmin || false) : false;
 
   // Fetch shows for search dropdown
   const { data: shows } = useQuery({

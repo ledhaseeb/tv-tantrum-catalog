@@ -176,14 +176,14 @@ export const researchSummaries = pgTable("research_summaries", {
 
 export const userReadResearch = pgTable("user_read_research", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   researchId: integer("research_id").notNull().references(() => researchSummaries.id, { onDelete: 'cascade' }),
   readAt: timestamp("read_at").notNull().defaultNow(),
 });
 
 export const showSubmissions = pgTable("show_submissions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   description: text("description").notNull(),
   ageRange: text("age_range").notNull(),
@@ -197,8 +197,8 @@ export const showSubmissions = pgTable("show_submissions", {
 
 export const userReferrals = pgTable("user_referrals", {
   id: serial("id").primaryKey(),
-  referrerId: integer("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  referredId: integer("referred_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referrerId: text("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referredId: text("referred_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -207,7 +207,7 @@ export const userReferrals = pgTable("user_referrals", {
 export const tvShowReviews = pgTable("tv_show_reviews", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   userName: text("user_name").notNull(),
   rating: integer("rating").notNull(), // 1-5 scale
   review: text("review").notNull(),
