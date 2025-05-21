@@ -1,4 +1,26 @@
-import { users, type User, type InsertUser, type TvShow, type TvShowReview, type InsertTvShow, type InsertTvShowReview, type TvShowGitHub, type TvShowSearch, type InsertTvShowSearch, type Favorite } from "@shared/schema";
+import { 
+  users, 
+  type User, 
+  type InsertUser, 
+  type TvShow, 
+  type TvShowReview, 
+  type InsertTvShow, 
+  type InsertTvShowReview, 
+  type TvShowGitHub, 
+  type TvShowSearch, 
+  type InsertTvShowSearch, 
+  type Favorite,
+  type ResearchSummary,
+  type InsertResearchSummary,
+  type UserResearchRead,
+  type InsertUserResearchRead,
+  type ShowSubmission,
+  type InsertShowSubmission,
+  type UserPoint,
+  type InsertUserPoint,
+  type ReviewUpvote,
+  type InsertReviewUpvote
+} from "@shared/schema";
 
 export interface IStorage {
   // User methods
@@ -6,6 +28,9 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<User>): Promise<User | undefined>;
+  updateLoginDate(userId: number): Promise<User | undefined>;
+  getUserLeaderboard(limit?: number): Promise<User[]>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -29,7 +54,12 @@ export interface IStorage {
   
   // Reviews methods
   getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]>;
+  getReviewsByUserId(userId: number): Promise<TvShowReview[]>;
   addReview(review: InsertTvShowReview): Promise<TvShowReview>;
+  upvoteReview(reviewId: number, userId: number): Promise<boolean>;
+  removeUpvoteReview(reviewId: number, userId: number): Promise<boolean>;
+  getReviewUpvotes(reviewId: number): Promise<number>;
+  hasUserUpvotedReview(reviewId: number, userId: number): Promise<boolean>;
   
   // Search/Popularity tracking methods
   trackShowSearch(tvShowId: number): Promise<void>;
@@ -46,6 +76,26 @@ export interface IStorage {
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
   getSimilarShowsByShowId(showId: number, limit?: number): Promise<TvShow[]>;
+  
+  // Points system
+  addUserPoints(data: InsertUserPoint): Promise<UserPoint>;
+  getUserPoints(userId: number): Promise<number>;
+  getUserPointsHistory(userId: number): Promise<UserPoint[]>;
+  
+  // Research summaries
+  getAllResearchSummaries(): Promise<ResearchSummary[]>;
+  getResearchSummaryById(id: number): Promise<ResearchSummary | undefined>;
+  addResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary>;
+  markResearchAsRead(userId: number, researchId: number): Promise<UserResearchRead>;
+  getUserReadResearch(userId: number): Promise<UserResearchRead[]>;
+  hasUserReadResearch(userId: number, researchId: number): Promise<boolean>;
+  
+  // Show submissions
+  addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission>;
+  getShowSubmissionById(id: number): Promise<ShowSubmission | undefined>;
+  getUserShowSubmissions(userId: number): Promise<ShowSubmission[]>;
+  getAllShowSubmissions(status?: string): Promise<ShowSubmission[]>;
+  updateShowSubmissionStatus(id: number, status: string, reviewedBy: number, notes?: string): Promise<ShowSubmission | undefined>;
 }
 
 export class MemStorage implements IStorage {

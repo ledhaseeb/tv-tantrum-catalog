@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -11,6 +11,10 @@ export const users = pgTable("users", {
   country: text("country"),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
   isApproved: boolean("is_approved").default(false),
+  points: integer("points").default(0).notNull(),
+  lastLoginDate: text("last_login_date").default(new Date().toISOString()),
+  avatarUrl: text("avatar_url"),
+  bio: text("bio"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -91,10 +95,64 @@ export const tvShows = pgTable("tv_shows", {
 export const tvShowReviews = pgTable("tv_show_reviews", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull(),
+  userId: integer("user_id").notNull(),
   userName: text("user_name").notNull(),
   rating: integer("rating").notNull(), // 1-5 scale
   review: text("review").notNull(),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
+  upvotes: integer("upvotes").default(0).notNull(),
+});
+
+// Track upvotes on reviews to prevent duplicate upvotes
+export const reviewUpvotes = pgTable("review_upvotes", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").notNull(),
+  userId: integer("user_id").notNull(),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
+});
+
+// Research summaries that users can read to earn points
+export const researchSummaries = pgTable("research_summaries", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
+});
+
+// Track which users have read which research summaries
+export const userResearchReads = pgTable("user_research_reads", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  researchId: integer("research_id").notNull(),
+  readAt: text("read_at").notNull().default(new Date().toISOString()),
+});
+
+// Track show submissions from users
+export const showSubmissions = pgTable("show_submissions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  ageRange: text("age_range").notNull(),
+  platform: text("platform").notNull(),
+  releaseYear: integer("release_year"),
+  status: text("status").default("pending").notNull(), // pending, approved, rejected
+  adminNotes: text("admin_notes"),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
+  reviewedAt: text("reviewed_at"),
+  reviewedBy: integer("reviewed_by"), // admin user ID
+});
+
+// Track user point transactions
+export const userPoints = pgTable("user_points", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  points: integer("points").notNull(),
+  type: text("type").notNull(), // login, review, upvote_given, upvote_received, research_read, submission, etc.
+  referenceId: integer("reference_id"), // ID of the related entity (review, research, etc.)
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
+  description: text("description"),
 });
 
 // Track show search popularity
@@ -143,6 +201,36 @@ export const insertTvShowSchema = createInsertSchema(tvShows).omit({
 
 export const insertTvShowReviewSchema = createInsertSchema(tvShowReviews).omit({
   id: true,
+  upvotes: true,
+});
+
+export const insertReviewUpvoteSchema = createInsertSchema(reviewUpvotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertResearchSummarySchema = createInsertSchema(researchSummaries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserResearchReadSchema = createInsertSchema(userResearchReads).omit({
+  id: true,
+  readAt: true,
+});
+
+export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  reviewedAt: true,
+  reviewedBy: true,
+  adminNotes: true,
+});
+
+export const insertUserPointSchema = createInsertSchema(userPoints).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertTvShowSearchSchema = createInsertSchema(tvShowSearches).omit({
@@ -163,6 +251,22 @@ export type InsertTvShowSearch = z.infer<typeof insertTvShowSearchSchema>;
 export type TvShowSearch = typeof tvShowSearches.$inferSelect;
 export type InsertTvShowView = z.infer<typeof insertTvShowViewSchema>;
 export type TvShowView = typeof tvShowViews.$inferSelect;
+
+// Types for gamification and user dashboard features
+export type InsertReviewUpvote = z.infer<typeof insertReviewUpvoteSchema>;
+export type ReviewUpvote = typeof reviewUpvotes.$inferSelect;
+
+export type InsertResearchSummary = z.infer<typeof insertResearchSummarySchema>;
+export type ResearchSummary = typeof researchSummaries.$inferSelect;
+
+export type InsertUserResearchRead = z.infer<typeof insertUserResearchReadSchema>;
+export type UserResearchRead = typeof userResearchReads.$inferSelect;
+
+export type InsertShowSubmission = z.infer<typeof insertShowSubmissionSchema>;
+export type ShowSubmission = typeof showSubmissions.$inferSelect;
+
+export type InsertUserPoint = z.infer<typeof insertUserPointSchema>;
+export type UserPoint = typeof userPoints.$inferSelect;
 
 // Insert schemas for themes and platforms
 export const insertThemeSchema = createInsertSchema(themes).omit({
