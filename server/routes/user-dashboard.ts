@@ -206,8 +206,33 @@ export default function setupUserDashboardRoutes(router: Router, storage: IStora
       }
 
       const userId = req.session.userId;
-      const reviews = await storage.getUserReviews(userId);
-      res.json(reviews);
+      console.log(`Fetching reviews for user ID ${userId}`);
+      
+      // Use a direct database query to ensure we get all reviews
+      const client = await pool.connect();
+      try {
+        const result = await client.query(`
+          SELECT 
+            r.id, 
+            r.tv_show_id as "tvShowId", 
+            r.user_name as "userName",
+            r.rating, 
+            r.review, 
+            r.created_at as "createdAt",
+            s.name as "showName",
+            COALESCE(s.image_url, '') as "showImageUrl",
+            (SELECT COUNT(*) FROM review_upvotes WHERE review_id = r.id) as "upvotes"
+          FROM tv_show_reviews r
+          JOIN tv_shows s ON r.tv_show_id = s.id
+          WHERE r.user_id = $1
+          ORDER BY r.created_at DESC
+        `, [userId]);
+        
+        console.log(`Found ${result.rows.length} reviews for user ID ${userId}:`, result.rows);
+        res.json(result.rows);
+      } finally {
+        client.release();
+      }
     } catch (error) {
       console.error('Error fetching user reviews:', error);
       res.status(500).json({ error: 'Failed to fetch reviews' });
