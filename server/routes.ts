@@ -138,41 +138,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Ensure we have review points history records for each review
         try {
-          if (typeof storage.awardPoints === 'function') {
-            // Check if we already have points history records for these reviews
-            const existingEntries = await db.execute(sql`
-              SELECT r.id AS review_id
-              FROM tv_show_reviews r
-              LEFT JOIN user_points_history ph ON 
-                ph.description LIKE CONCAT('%Review of ', r.show_name, '%') AND
-                ph.user_id = ${numericUserId} AND
-                ph.activity_type = 'review'
-              WHERE r.user_id = ${numericUserId} AND ph.id IS NULL
-            `);
+          // Let's directly create point history records for all reviews
+          for (const review of reviews) {
+            console.log(`Processing review points for review ID ${review.id}`);
             
-            // For any reviews without points history, add them
-            if (existingEntries.rows.length > 0) {
-              for (const review of reviews) {
-                // Check if we already recorded points for this review
-                const hasRecord = await db.execute(sql`
-                  SELECT COUNT(*) FROM user_points_history 
-                  WHERE user_id = ${numericUserId} 
-                  AND activity_type = 'review'
-                  AND description = ${'Review of ' + review.showName + ' - ' + review.id}
-                `);
+            try {
+              // First check if we already have a record for this review
+              const existingRecords = await pool.query(
+                `SELECT id FROM user_points_history 
+                 WHERE user_id = $1 
+                 AND activity_type = 'review' 
+                 AND description LIKE $2`,
+                [numericUserId, `%${review.showName}%`]
+              );
+              
+              // Only add if no record exists
+              if (existingRecords.rowCount === 0) {
+                // Add points directly using pool query for better compatibility
+                await pool.query(
+                  `INSERT INTO user_points_history (user_id, points, activity_type, description)
+                   VALUES ($1, $2, $3, $4)`,
+                  [numericUserId, 5, 'review', `Review of ${review.showName}`]
+                );
                 
-                // If no record exists, award points
-                if (hasRecord.rows[0].count === '0') {
-                  await storage.awardPoints(
-                    userId.toString(), 
-                    5, 
-                    'review', 
-                    `Review of ${review.showName} - ${review.id}`
-                  );
-                  console.log(`Added points history for review ${review.id} of ${review.showName}`);
-                }
+                console.log(`Successfully added points for review of ${review.showName}`);
+              } else {
+                console.log(`Points already recorded for review of ${review.showName}`);
               }
+            } catch (reviewPointsError) {
+              console.error(`Error recording points for review ${review.id}:`, reviewPointsError);
             }
+          }
+          
+          // Force recalculation of points from the history records
+          const pointsRecords = await pool.query(
+            `SELECT SUM(points) as total FROM user_points_history WHERE user_id = $1 AND activity_type = 'review'`,
+            [numericUserId]
+          );
+          
+          if (pointsRecords.rows.length > 0) {
+            pointsInfo.breakdown.reviews = parseInt(pointsRecords.rows[0].total || '0');
+            console.log(`Updated review points from history: ${pointsInfo.breakdown.reviews}`);
+            
+            // Recalculate total again with the fresh data
+            pointsInfo.total = pointsInfo.breakdown.reviews + 
+                          (pointsInfo.breakdown.upvotesGiven || 0) + 
+                          (pointsInfo.breakdown.upvotesReceived || 0) + 
+                          (pointsInfo.breakdown.consecutiveLogins || 0) +
+                          (pointsInfo.breakdown.shares || 0) + 
+                          (pointsInfo.breakdown.referrals || 0) +
+                          (pointsInfo.breakdown.showSubmissions || 0) + 
+                          (pointsInfo.breakdown.researchRead || 0);
           }
         } catch (error) {
           console.error('Error recording review points history:', error);
