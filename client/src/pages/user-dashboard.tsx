@@ -1,396 +1,375 @@
-import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Trophy, Star, ThumbsUp, Calendar, Share2, Users, Film } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
-import { formatDistanceToNow } from "date-fns";
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns';
+import { CalendarIcon, StarIcon, TrophyIcon, LineChart, BookOpen, Award, Send, UserPlus, FilePlus2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
-// Types for the dashboard
-interface UserPoints {
-  total: number;
-  breakdown: {
-    reviews: number;
-    upvotesGiven: number;
-    upvotesReceived: number;
-    consecutiveLogins: number;
-    shares: number;
-    referrals: number;
-    showSubmissions: number;
-    researchRead: number;
-  };
-  nextMilestone: number;
-}
+const UserDashboard = () => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
 
-interface PointHistoryItem {
-  id: number;
-  userId: number;
-  action: string;
-  points: number;
-  createdAt: string;
-  reference?: string;
-  referenceType?: string;
-}
-
-interface TvShowRating {
-  id: number;
-  showId: number;
-  userId: number;
-  rating: number;
-  comment: string;
-  createdAt: string;
-  tvShow: {
-    id: number;
-    title: string;
-    imageUrl: string;
-  };
-}
-
-interface FavoriteShow {
-  id: number;
-  userId: number;
-  showId: number;
-  createdAt: string;
-  tvShow: {
-    id: number;
-    title: string;
-    imageUrl: string;
-  };
-}
-
-interface ResearchSummary {
-  id: number;
-  title: string;
-  readAt: string;
-}
-
-interface LeaderboardUser {
-  id: number;
-  username: string;
-  points: number;
-  rank: number;
-}
-
-export default function UserDashboard() {
-  const { user, isLoading: isAuthLoading } = useAuth();
-  
-  // Fetch user points
-  const { data: userPoints, isLoading: isPointsLoading } = useQuery<UserPoints>({
-    queryKey: ['/api/user/points'],
+  const { data: dashboardData, isLoading: isLoadingDashboard } = useQuery({
+    queryKey: ['/api/user/dashboard'],
     enabled: !!user,
   });
-  
-  // Fetch point history
-  const { data: pointHistory, isLoading: isHistoryLoading } = useQuery<PointHistoryItem[]>({
-    queryKey: ['/api/user/points/history'],
-    enabled: !!user,
-  });
-  
-  // Fetch user ratings
-  const { data: userRatings, isLoading: isRatingsLoading } = useQuery<TvShowRating[]>({
-    queryKey: ['/api/user/ratings'],
-    enabled: !!user,
-  });
-  
-  // Fetch user favorites
-  const { data: userFavorites, isLoading: isFavoritesLoading } = useQuery<FavoriteShow[]>({
-    queryKey: ['/api/user/favorites'],
-    enabled: !!user,
-  });
-  
-  // Fetch research summaries read
-  const { data: researchRead, isLoading: isResearchLoading } = useQuery<ResearchSummary[]>({
-    queryKey: ['/api/user/research'],
-    enabled: !!user,
-  });
-  
-  // Fetch leaderboard
-  const { data: leaderboard, isLoading: isLeaderboardLoading } = useQuery<LeaderboardUser[]>({
-    queryKey: ['/api/leaderboard'],
-  });
-  
-  const isLoading = 
-    isAuthLoading || 
-    isPointsLoading || 
-    isHistoryLoading || 
-    isRatingsLoading || 
-    isFavoritesLoading || 
-    isResearchLoading || 
-    isLeaderboardLoading;
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
+
   if (!user) {
     return (
-      <div className="container py-12 mx-auto text-center">
-        <h1 className="text-3xl font-bold mb-6">Access Denied</h1>
-        <p className="mb-6">You need to be logged in to view your dashboard.</p>
-        <Link href="/auth">
-          <Button>Log In</Button>
-        </Link>
+      <div className="container max-w-4xl py-8">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-2">Please Log In</h2>
+          <p className="text-gray-500">You need to be logged in to view your dashboard.</p>
+        </div>
       </div>
     );
   }
-  
-  const progressToNextMilestone = userPoints ? 
-    Math.min(100, (userPoints.total / userPoints.nextMilestone) * 100) : 0;
-  
-  const currentRank = leaderboard?.find(u => u.id === parseInt(user.id))?.rank || 0;
-  
-  return (
-    <div className="container py-8 mx-auto">
-      <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
-      <p className="text-muted-foreground mb-8">
-        Track your activity and rewards
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center">
-              <Trophy className="mr-2 h-5 w-5 text-yellow-500" />
-              Total Points
-            </CardTitle>
-            <CardDescription>Your contribution score</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{userPoints?.total || 0}</div>
-            <div className="mb-2 text-sm text-muted-foreground">
-              Next milestone: {userPoints?.nextMilestone || 100} points
-            </div>
-            <Progress value={progressToNextMilestone} className="h-2" />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center">
-              <Star className="mr-2 h-5 w-5 text-yellow-500" />
-              My Activity
-            </CardTitle>
-            <CardDescription>Recent contributions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm space-y-2">
-              <div className="flex justify-between">
-                <span>Reviews</span>
-                <span className="font-semibold">{userRatings?.length || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Upvotes Given</span>
-                <span className="font-semibold">{userPoints?.breakdown.upvotesGiven || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Upvotes Received</span>
-                <span className="font-semibold">{userPoints?.breakdown.upvotesReceived || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Research Summaries Read</span>
-                <span className="font-semibold">{researchRead?.length || 0}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5 text-blue-500" />
-              Leaderboard Rank
-            </CardTitle>
-            <CardDescription>Your standing in the community</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">#{currentRank}</div>
-            <div className="text-sm space-y-1">
-              {leaderboard?.slice(0, 3).map((leader, index) => (
-                <div key={leader.id} className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <Badge variant={index === 0 ? "default" : "outline"} className="mr-2">
-                      #{leader.rank}
-                    </Badge>
-                    <span>{leader.username}</span>
-                  </div>
-                  <span className="font-semibold">{leader.points} pts</span>
-                </div>
-              ))}
-              {currentRank > 3 && (
-                <div className="text-center pt-2">
-                  <Link href="/leaderboard">
-                    <Button variant="link" size="sm" className="text-xs">
-                      View Full Leaderboard
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+
+  if (isLoadingDashboard) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-[250px]" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-[200px] w-full" />
+            <Skeleton className="h-[200px] w-full" />
+            <Skeleton className="h-[200px] w-full" />
+          </div>
+          <Skeleton className="h-[400px] w-full" />
+        </div>
       </div>
-      
-      <Tabs defaultValue="ratings" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="ratings" className="flex items-center">
-            <Star className="mr-2 h-4 w-4" />
-            My Ratings
-          </TabsTrigger>
-          <TabsTrigger value="favorites" className="flex items-center">
-            <Film className="mr-2 h-4 w-4" />
-            My Favorites
-          </TabsTrigger>
-          <TabsTrigger value="points" className="flex items-center">
-            <Trophy className="mr-2 h-4 w-4" />
-            Points History
-          </TabsTrigger>
+    );
+  }
+
+  const {
+    user: userData,
+    pointsHistory,
+    favorites,
+    reviews,
+    readResearch,
+    submissions
+  } = dashboardData || {
+    user: {},
+    pointsHistory: [],
+    favorites: [],
+    reviews: [],
+    readResearch: [],
+    submissions: []
+  };
+
+  // Calculate points breakdown
+  const pointsBreakdown = {
+    reviews: reviews?.length * 10 || 0,
+    upvotesGiven: pointsHistory?.filter((ph: any) => ph.activityType === 'upvote_given').length * 1 || 0,
+    upvotesReceived: pointsHistory?.filter((ph: any) => ph.activityType === 'upvote_received').length * 5 || 0,
+    consecutiveLogins: pointsHistory?.filter((ph: any) => ph.activityType === 'login_streak').reduce((sum: number, item: any) => sum + item.points, 0) || 0,
+    shares: pointsHistory?.filter((ph: any) => ph.activityType === 'share').length * 3 || 0,
+    referrals: pointsHistory?.filter((ph: any) => ph.activityType === 'referral').length * 25 || 0,
+    showSubmissions: submissions?.length * 15 || 0,
+    researchRead: readResearch?.length * 5 || 0,
+  };
+
+  // Calculate next milestone
+  const totalPoints = userData?.totalPoints || 0;
+  const milestones = [100, 250, 500, 1000, 2500, 5000, 10000];
+  const nextMilestone = milestones.find((m) => m > totalPoints) || milestones[milestones.length - 1] * 2;
+  const progress = (totalPoints / nextMilestone) * 100;
+
+  // Get user rank
+  const userRank = userData?.rank || 'TV Watcher';
+
+  return (
+    <div className="container max-w-4xl py-8">
+      <div className="flex flex-col md:flex-row gap-6 md:items-center mb-8">
+        <Avatar className="w-20 h-20">
+          <AvatarImage src={userData?.profileImageUrl} alt={userData?.username} />
+          <AvatarFallback className="text-2xl">
+            {userData?.username?.slice(0, 2).toUpperCase() || 'U'}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="text-3xl font-bold">{userData?.username}'s Dashboard</h1>
+          <p className="text-gray-500">{userData?.email}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="outline" className="bg-orange-50 text-orange-500 border-orange-200">
+              <TrophyIcon className="w-3 h-3 mr-1" /> {userRank}
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
+              <Award className="w-3 h-3 mr-1" /> {totalPoints} Points
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress to next milestone */}
+      <Card className="mb-8">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Progress to Next Milestone</CardTitle>
+          <CardDescription>
+            {totalPoints} / {nextMilestone} points
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Progress value={progress} className="h-2" />
+          <div className="mt-2 text-sm text-gray-500">
+            Earn {nextMilestone - totalPoints} more points to reach the next milestone!
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
+        <TabsList className="grid grid-cols-3 mb-8">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="content">Your Content</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="ratings">
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Reviews</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{reviews?.length || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {pointsBreakdown.reviews} Points Earned
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Upvotes Received</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {pointsHistory?.filter((ph: any) => ph.activityType === 'upvote_received').length || 0}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {pointsBreakdown.upvotesReceived} Points Earned
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Research Read</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{readResearch?.length || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {pointsBreakdown.researchRead} Points Earned
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>My Ratings</CardTitle>
-              <CardDescription>
-                Shows you've rated and reviewed
-              </CardDescription>
+              <CardTitle>Points Breakdown</CardTitle>
+              <CardDescription>How you've earned your points</CardDescription>
             </CardHeader>
             <CardContent>
-              {userRatings && userRatings.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userRatings.map(rating => (
-                    <div key={rating.id} className="flex border rounded-lg overflow-hidden">
-                      <div className="w-24 h-24 flex-shrink-0">
-                        <img 
-                          src={rating.tvShow.imageUrl} 
-                          alt={rating.tvShow.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-3 flex-1">
-                        <Link href={`/show/${rating.showId}`}>
-                          <h4 className="font-semibold text-sm mb-1 hover:text-primary-500 line-clamp-1">
-                            {rating.tvShow.title}
-                          </h4>
-                        </Link>
-                        <div className="flex items-center mb-1">
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map(star => (
-                              <Star 
-                                key={star} 
-                                className={`h-3 w-3 ${star <= rating.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {rating.comment || "No comment added"}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <StarIcon className="w-4 h-4 mr-2 text-yellow-500" />
+                    <span>Reviews</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.reviews} points</span>
                 </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>You haven't rated any shows yet.</p>
-                  <Link href="/browse">
-                    <Button variant="link" className="mt-2">
-                      Browse Shows to Rate
-                    </Button>
-                  </Link>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Award className="w-4 h-4 mr-2 text-purple-500" />
+                    <span>Upvotes Received</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.upvotesReceived} points</span>
                 </div>
-              )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <LineChart className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>Upvotes Given</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.upvotesGiven} points</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
+                    <span>Login Streaks</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.consecutiveLogins} points</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Send className="w-4 h-4 mr-2 text-indigo-500" />
+                    <span>Shares</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.shares} points</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <UserPlus className="w-4 h-4 mr-2 text-pink-500" />
+                    <span>Referrals</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.referrals} points</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <FilePlus2 className="w-4 h-4 mr-2 text-orange-500" />
+                    <span>Show Submissions</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.showSubmissions} points</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <BookOpen className="w-4 h-4 mr-2 text-teal-500" />
+                    <span>Research Read</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.researchRead} points</span>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-gray-100 flex items-center justify-between font-bold">
+                  <span>Total Points</span>
+                  <span>{totalPoints} points</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="favorites">
+
+        <TabsContent value="activity" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>My Favorites</CardTitle>
-              <CardDescription>
-                Shows you've added to your favorites
-              </CardDescription>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Your latest actions on TV Tantrum</CardDescription>
             </CardHeader>
             <CardContent>
-              {userFavorites && userFavorites.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userFavorites.map(favorite => (
-                    <div key={favorite.id} className="flex border rounded-lg overflow-hidden">
-                      <div className="w-24 h-24 flex-shrink-0">
-                        <img 
-                          src={favorite.tvShow.imageUrl} 
-                          alt={favorite.tvShow.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-3 flex-1">
-                        <Link href={`/show/${favorite.showId}`}>
-                          <h4 className="font-semibold text-sm mb-1 hover:text-primary-500 line-clamp-1">
-                            {favorite.tvShow.title}
-                          </h4>
-                        </Link>
-                        <p className="text-xs text-muted-foreground">
-                          Added {formatDistanceToNow(new Date(favorite.createdAt))} ago
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>You haven't favorited any shows yet.</p>
-                  <Link href="/browse">
-                    <Button variant="link" className="mt-2">
-                      Browse Shows to Favorite
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="points">
-          <Card>
-            <CardHeader>
-              <CardTitle>Points History</CardTitle>
-              <CardDescription>
-                Track how you've earned points on TV Tantrum
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {pointHistory && pointHistory.length > 0 ? (
+              {pointsHistory?.length > 0 ? (
                 <div className="space-y-4">
-                  {pointHistory.map(item => (
-                    <div key={item.id} className="flex justify-between items-center border-b pb-3">
-                      <div className="flex-1">
-                        <div className="font-medium">{item.action}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {formatDistanceToNow(new Date(item.createdAt))} ago
-                          {item.referenceType && item.reference && (
-                            <span> • {item.referenceType}: {item.reference}</span>
-                          )}
-                        </div>
+                  {pointsHistory.slice(0, 10).map((activity: any) => (
+                    <div key={activity.id} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
+                      <div className="bg-gray-100 p-2 rounded-full">
+                        {activity.activityType === 'review' && <StarIcon className="w-4 h-4 text-yellow-500" />}
+                        {activity.activityType === 'upvote_given' && <LineChart className="w-4 h-4 text-blue-500" />}
+                        {activity.activityType === 'upvote_received' && <Award className="w-4 h-4 text-purple-500" />}
+                        {activity.activityType === 'login_streak' && <CalendarIcon className="w-4 h-4 text-green-500" />}
+                        {activity.activityType === 'share' && <Send className="w-4 h-4 text-indigo-500" />}
+                        {activity.activityType === 'referral' && <UserPlus className="w-4 h-4 text-pink-500" />}
+                        {activity.activityType === 'show_submission' && <FilePlus2 className="w-4 h-4 text-orange-500" />}
+                        {activity.activityType === 'research_read' && <BookOpen className="w-4 h-4 text-teal-500" />}
                       </div>
-                      <div className="text-sm font-semibold text-green-600">
-                        +{item.points} points
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <p className="font-medium">
+                            {activity.description || formatActivityType(activity.activityType)}
+                          </p>
+                          <Badge variant="outline">+{activity.points} points</Badge>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No point history available yet.</p>
-                  <p className="text-sm mt-2">
-                    Earn points by rating shows, receiving upvotes, and more!
-                  </p>
+                <div className="text-center py-6 text-gray-500">
+                  <p>No activity yet. Start interacting with TV Tantrum to earn points!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="content" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Reviews</CardTitle>
+              <CardDescription>Reviews you've written for TV shows</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {reviews?.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review: any) => (
+                    <div key={review.id} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-medium">{review.tvShowName || "TV Show"}</h3>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <StarIcon
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600">{review.review}</p>
+                      <div className="mt-2 text-xs text-gray-500">
+                        {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <p>You haven't written any reviews yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Favorites</CardTitle>
+              <CardDescription>TV shows you've added to your favorites</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {favorites?.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {favorites.map((show: any) => (
+                    <div
+                      key={show.id}
+                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg"
+                    >
+                      <div className="w-12 h-12 rounded-md overflow-hidden">
+                        <img
+                          src={show.imageUrl || "https://placehold.co/100x100?text=TV"}
+                          alt={show.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-medium line-clamp-1">{show.name}</h3>
+                        <p className="text-xs text-gray-500">
+                          {show.releaseYear}
+                          {show.endYear && show.endYear !== show.releaseYear
+                            ? ` - ${show.endYear}`
+                            : show.isOngoing
+                            ? " - Present"
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <p>You haven't added any favorites yet.</p>
                 </div>
               )}
             </CardContent>
@@ -399,4 +378,22 @@ export default function UserDashboard() {
       </Tabs>
     </div>
   );
+};
+
+// Helper function to format activity types for display
+function formatActivityType(type: string): string {
+  const formats: Record<string, string> = {
+    review: "Added a review",
+    upvote_given: "Upvoted a review",
+    upvote_received: "Received an upvote",
+    login_streak: "Login streak bonus",
+    share: "Shared content",
+    referral: "Referred a new user",
+    show_submission: "Submitted a new show",
+    research_read: "Read research content"
+  };
+  
+  return formats[type] || type.replace(/_/g, " ");
 }
+
+export default UserDashboard;
