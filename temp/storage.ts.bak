@@ -125,7 +125,6 @@ export class MemStorage implements IStorage {
   private tvShows: Map<number, TvShow>;
   private tvShowReviews: Map<number, TvShowReview>;
   private tvShowSearches: Map<number, TvShowSearch>;
-  private userCurrentId: number;
   private tvShowCurrentId: number;
   private reviewCurrentId: number;
   private searchCurrentId: number;
@@ -916,6 +915,9 @@ export class MemStorage implements IStorage {
     return result;
   }
 }
+
+// Temporarily reverting to MemStorage due to database connection issues
+// import { DatabaseStorage } from './database-storage';
 
 // Using in-memory storage for development
 export const storage = new MemStorage();
