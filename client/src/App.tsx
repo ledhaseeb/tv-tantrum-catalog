@@ -18,6 +18,9 @@ import PreLaunchAbout from "@/pages/pre-launch-about";
 import PreLaunchFAQ from "@/pages/pre-launch-faq";
 import TokenEntryPage from "@/pages/token-entry";
 import RegistrationPendingPage from "@/pages/registration-pending";
+import UserDashboard from "@/pages/user-dashboard";
+import SubmitShow from "@/pages/submit-show";
+import Research from "@/pages/research";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
@@ -198,6 +201,85 @@ function Router() {
             <Footer />
           </div>
         </Route>
+
+        {/* User Dashboard - Accessible for logged in users */}
+        {isDevMode ? (
+          <Route path="/user-dashboard">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <UserDashboard />
+              </div>
+              <Footer />
+            </div>
+          </Route>
+        ) : (
+          <ApprovedRoute 
+            path="/user-dashboard" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <UserDashboard />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
+        )}
+
+        {/* Submit Show - Accessible for logged in users */}
+        {isDevMode ? (
+          <Route path="/submit-show">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <SubmitShow />
+              </div>
+              <Footer />
+            </div>
+          </Route>
+        ) : (
+          <ApprovedRoute 
+            path="/submit-show" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <SubmitShow />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
+        )}
+
+        {/* Research Page - Accessible for logged in users */}
+        {isDevMode ? (
+          <Route path="/research">
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <Research />
+              </div>
+              <Footer />
+            </div>
+          </Route>
+        ) : (
+          <ApprovedRoute 
+            path="/research" 
+            component={() => (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <Research />
+                </div>
+                <Footer />
+              </div>
+            )} 
+          />
+        )}
+
         {/* Admin route with approval and admin check */}
         {isDevMode ? (
           <Route path="/admin">
