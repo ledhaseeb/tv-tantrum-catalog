@@ -12,7 +12,7 @@ import { BookOpen, BookText, ArrowRight, Lock } from 'lucide-react';
 const Research = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
 
   const { data: summaries, isLoading: isLoadingSummaries } = useQuery({
     queryKey: ['/api/research'],
