@@ -4,10 +4,14 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkDatabaseConnection } from "./db";
+import testRouter from "./routes/test-reviews";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Register the test router for debugging reviews
+app.use(testRouter);
 
 // Serve TV show images from the primary media directory
 app.use('/media/tv-shows', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
