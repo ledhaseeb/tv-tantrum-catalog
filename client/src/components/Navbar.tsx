@@ -129,6 +129,24 @@ export default function Navbar() {
                       </Button>
                     </Link>
                   )}
+                  <Link href="/research">
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span>Research</span>
+                    </Button>
+                  </Link>
+                  <Link href="/user-dashboard">
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    >
+                      <User className="h-4 w-4" />
+                      <span>{user.username}</span>
+                    </Button>
+                  </Link>
                   <Button 
                     variant="ghost" 
                     className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
@@ -136,13 +154,6 @@ export default function Navbar() {
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>{user.username}</span>
                   </Button>
                 </div>
               ) : (

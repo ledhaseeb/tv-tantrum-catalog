@@ -13,22 +13,20 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { 
-  Badge,
-  Button,
-  Avatar,
-  Progress,
-  Separator
-} from "@/components/ui/";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { 
   User, 
   Award, 
   Star, 
   ThumbsUp, 
-  BookOpen, 
   Send, 
   TrendingUp,
-  Calendar 
+  Calendar,
+  BookOpen
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";

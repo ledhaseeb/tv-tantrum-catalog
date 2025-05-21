@@ -438,6 +438,84 @@ export class MemStorage implements IStorage {
     return Array.from(this.tvShowReviews.values())
       .filter(review => review.tvShowId === tvShowId);
   }
+  
+  async getReviewsByUserId(userId: number): Promise<TvShowReview[]> {
+    return Array.from(this.tvShowReviews.values())
+      .filter(review => review.userId === userId);
+  }
+  
+  // Gamification methods
+  async getUserPoints(userId: number): Promise<number> {
+    return 0;
+  }
+  
+  async getUserPointsHistory(userId: number): Promise<any[]> {
+    return [];
+  }
+  
+  async getUserFavorites(userId: number): Promise<any[]> {
+    return [];
+  }
+  
+  async getUserReadResearch(userId: number): Promise<any[]> {
+    return [];
+  }
+  
+  async getUserShowSubmissions(userId: number): Promise<any[]> {
+    return [];
+  }
+  
+  async updateUserLoginStreak(userId: number): Promise<void> {
+    return;
+  }
+  
+  async getResearchSummaries(): Promise<any[]> {
+    return [];
+  }
+  
+  async getResearchSummary(id: number): Promise<any | null> {
+    return null;
+  }
+  
+  async hasUserReadResearch(userId: number, researchId: number): Promise<boolean> {
+    return false;
+  }
+  
+  async markResearchAsRead(userId: number, researchId: number): Promise<any> {
+    return {};
+  }
+  
+  async addResearchSummary(data: any): Promise<any> {
+    return {};
+  }
+  
+  async addReviewUpvote(userId: number, reviewId: number): Promise<any> {
+    return {};
+  }
+  
+  async removeReviewUpvote(userId: number, reviewId: number): Promise<void> {
+    return;
+  }
+  
+  async getReviewUpvotes(reviewId: number): Promise<any[]> {
+    return [];
+  }
+  
+  async addShowSubmission(data: any): Promise<any> {
+    return {};
+  }
+  
+  async getPendingShowSubmissions(): Promise<any[]> {
+    return [];
+  }
+  
+  async updateShowSubmissionStatus(id: number, status: string): Promise<any> {
+    return {};
+  }
+  
+  async getTopUsers(limit: number): Promise<any[]> {
+    return []
+  }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
     const id = this.reviewCurrentId++;

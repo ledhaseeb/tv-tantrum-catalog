@@ -4,14 +4,30 @@ import { z } from "zod";
 
 // --- User-related tables ---
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: text("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => ({
+    expireIdx: primaryKey({ columns: [table.expire] }),
+  })
+);
+
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  id: text("id").primaryKey().notNull(),
+  email: text("email").unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  profileImageUrl: text("profile_image_url"),
+  username: text("username"),
   isAdmin: boolean("is_admin").default(false),
-  username: text("username").notNull(),
   country: text("country"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
   isApproved: boolean("is_approved").default(false),
   totalPoints: integer("total_points").default(0),
   lastLoginDate: timestamp("last_login_date"),
@@ -19,14 +35,10 @@ export const users = pgTable("users", {
   referralCode: text("referral_code").unique(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  email: true,
-  password: true,
-  username: true,
-  country: true,
-  isAdmin: true,
-  isApproved: true,
-  profileBio: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // --- Favorites table ---
