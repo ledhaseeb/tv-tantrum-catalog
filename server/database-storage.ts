@@ -1392,12 +1392,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addReview(review: InsertTvShowReview): Promise<TvShowReview> {
-    const now = new Date().toISOString();
+    // Let Postgres handle the timestamp with defaultNow()
     const [newReview] = await db
       .insert(tvShowReviews)
       .values({
-        ...review,
-        createdAt: now
+        ...review
       })
       .returning();
     return newReview;
