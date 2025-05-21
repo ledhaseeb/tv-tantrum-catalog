@@ -114,8 +114,8 @@ const ShowSubmission = () => {
           description: "Thank you for your submission. You've earned 15 points!",
         });
         
-        // Navigate back to dashboard or show page
-        navigate('/user-dashboard');
+        // Redirect using window.location instead of wouter navigation
+        window.location.href = '/user-dashboard';
       } else {
         throw new Error('Failed to submit show');
       }
@@ -344,13 +344,14 @@ const ShowSubmission = () => {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/')}
-                  >
-                    Cancel
-                  </Button>
+                  <Link href="/user-dashboard">
+                    <Button
+                      type="button"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                  </Link>
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}

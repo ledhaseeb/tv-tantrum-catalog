@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from 'wouter';
+import { Link } from 'wouter';
 import { BookOpen, BookText, ArrowRight, Lock } from 'lucide-react';
 
 const Research = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [, navigate] = useLocation();
+  // Using Link component for navigation instead of useLocation
 
   const { data: summaries, isLoading: isLoadingSummaries } = useQuery({
     queryKey: ['/api/research'],
@@ -98,7 +98,8 @@ const Research = () => {
     : categorizedSummaries?.[activeCategory] || [];
 
   const handleReadMore = (summaryId: number) => {
-    navigate(`/research/${summaryId}`);
+    // Use window.location instead of navigate for consistent navigation approach
+    window.location.href = `/research/${summaryId}`;
   };
 
   return (
