@@ -1419,6 +1419,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin-only API to standardize all sensory metrics to approved scale
+  app.post("/api/admin/standardize-metrics", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Cast storage to DatabaseStorage to access the standardization method
+      const dbStorage = storage as DatabaseStorage;
+      if (typeof dbStorage.standardizeAllSensoryMetrics !== 'function') {
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Database storage required for this operation' 
+        });
+      }
+      
+      // Run the standardization
+      const result = await dbStorage.standardizeAllSensoryMetrics();
+      return res.json(result);
+    } catch (error) {
+      console.error('Error standardizing sensory metrics:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to standardize metrics' 
+      });
+    }
+  });
+  
   // Admin-only API to optimize all custom images for SEO
   app.post("/api/admin/optimize-custom-images", async (req: Request, res: Response) => {
     try {

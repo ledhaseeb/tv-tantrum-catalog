@@ -71,6 +71,107 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  /**
+   * Standardizes all sensory metrics in the database to use the approved 5-level scale
+   */
+  async standardizeAllSensoryMetrics(): Promise<{success: boolean, unrecognizedValues: string[]}> {
+    const unrecognizedValues = new Set<string>();
+    const client = await pool.connect();
+    
+    try {
+      // Start transaction
+      await client.query('BEGIN');
+      
+      // Get all TV shows
+      const result = await client.query('SELECT * FROM tv_shows');
+      console.log(`Standardizing sensory metrics for ${result.rowCount} TV shows`);
+      
+      // Track stats
+      let totalUpdates = 0;
+      let showsUpdated = 0;
+      
+      // Process each show
+      for (const show of result.rows) {
+        let updated = false;
+        const updates: Record<string, string> = {};
+        
+        // Sensory metric fields to standardize
+        const fields = [
+          'interaction_level',
+          'dialogue_intensity',
+          'sound_frequency',
+          'total_music_level',
+          'music_tempo',
+          'sound_effects_level',
+          'scene_frequency',
+          'total_sound_effect_time_level',
+          'interactivity_level'
+        ];
+        
+        // Check and standardize each field
+        for (const field of fields) {
+          const originalValue = show[field];
+          
+          if (originalValue) {
+            const standardizedValue = this.standardizeSensoryMetric(originalValue);
+            
+            // If the value changed, mark for update
+            if (standardizedValue !== originalValue) {
+              updates[field] = standardizedValue;
+              updated = true;
+              totalUpdates++;
+              
+              // Log non-standard values for reporting
+              if (!['Low', 'Low-Moderate', 'Moderate', 'Moderate-High', 'High'].includes(originalValue)) {
+                unrecognizedValues.add(`"${originalValue}" → "${standardizedValue}"`);
+              }
+            }
+          }
+        }
+        
+        // If any fields were standardized, update the show
+        if (updated) {
+          const setClause = Object.entries(updates)
+            .map(([field, value]) => `${field} = $${field}`)
+            .join(', ');
+          
+          const queryParams: any = { id: show.id };
+          Object.entries(updates).forEach(([field, value]) => {
+            queryParams[field] = value;
+          });
+          
+          const updateQuery = `
+            UPDATE tv_shows 
+            SET ${setClause}
+            WHERE id = $id
+          `;
+          
+          await client.query(updateQuery, queryParams);
+          showsUpdated++;
+        }
+      }
+      
+      // Commit changes
+      await client.query('COMMIT');
+      console.log(`Standardization complete: Updated ${totalUpdates} metrics across ${showsUpdated} shows`);
+      
+      return {
+        success: true,
+        unrecognizedValues: Array.from(unrecognizedValues)
+      };
+    } catch (error) {
+      // Rollback on error
+      await client.query('ROLLBACK');
+      console.error('Error standardizing sensory metrics:', error);
+      return {
+        success: false,
+        unrecognizedValues: Array.from(unrecognizedValues)
+      };
+    } finally {
+      client.release();
+    }
+  }
+  
   // Private helper methods
   
   /**
