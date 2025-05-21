@@ -55,6 +55,86 @@ export const insertFavoriteSchema = createInsertSchema(favorites).omit({
   createdAt: true,
 });
 
+// --- Gamification-related tables ---
+
+export const userPointsHistory = pgTable("user_points_history", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  points: integer("points").notNull(),
+  activityType: text("activity_type").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reviewUpvotes = pgTable("review_upvotes", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reviewId: integer("review_id").notNull().references(() => tvShowReviews.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  unq: primaryKey({ columns: [table.userId, table.reviewId] }),
+}));
+
+export const researchSummaries = pgTable("research_summaries", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  summary: text("summary").notNull(),
+  fullText: text("full_text"),
+  source: text("source"),
+  publishedDate: timestamp("published_date"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const userReadResearch = pgTable("user_read_research", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  researchId: integer("research_id").notNull().references(() => researchSummaries.id, { onDelete: 'cascade' }),
+  readAt: timestamp("read_at").notNull().defaultNow(),
+}, (table) => ({
+  unq: primaryKey({ columns: [table.userId, table.researchId] }),
+}));
+
+export const showSubmissions = pgTable("show_submissions", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  showName: text("show_name").notNull(),
+  description: text("description"),
+  suggestedAgeRange: text("suggested_age_range"),
+  suggestedThemes: text("suggested_themes").array(),
+  status: text("status").notNull().default("pending"),
+  adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// --- Schemas for creating/inserting data ---
+
+export const insertUserPointsHistorySchema = createInsertSchema(userPointsHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReviewUpvoteSchema = createInsertSchema(reviewUpvotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertResearchSummarySchema = createInsertSchema(researchSummaries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserReadResearchSchema = createInsertSchema(userReadResearch).omit({
+  id: true,
+  readAt: true,
+});
+
+export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // --- Core TV Shows Schema ---
 
 export const tvShows = pgTable("tv_shows", {
