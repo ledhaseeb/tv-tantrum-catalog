@@ -1755,10 +1755,7 @@ function getDefaultImageUrl(title: string | undefined, image_filename: string | 
   return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${formattedTitle}.jpg`;
 }
 
-  // Gamification methods
-  
-  // Points and activities
-  async awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<any> {
+export const storage = new DatabaseStorage();
     try {
       const client = await pool.connect();
       
