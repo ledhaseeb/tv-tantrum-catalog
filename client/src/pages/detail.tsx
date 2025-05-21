@@ -1000,18 +1000,21 @@ export default function Detail({ id }: DetailProps) {
                   <div className="flex-shrink-0 mr-4">
                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
                       <span className="font-medium text-primary-600">
-                        {review.userName.split(' ').map(name => name[0]).join('')}
+                        {review.userName && review.userName.split(' ').map(name => name[0]).join('')}
                       </span>
                     </div>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center mb-1">
-                      <h4 className="font-medium">{review.userName}</h4>
+                      <h4 className="font-medium">{review.userName || "Anonymous"}</h4>
                       <div className="ml-2 flex">
                         {[...Array(5)].map((_, i) => (
-                          <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
+                          <i key={i} className={`${i < (review.rating || 0) ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
                         ))}
                       </div>
+                      <span className="ml-2 text-xs text-gray-500">
+                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
+                      </span>
                     </div>
                     <p className="text-gray-700">{review.review}</p>
                   </div>
