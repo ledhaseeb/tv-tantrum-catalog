@@ -621,50 +621,64 @@ export class DatabaseStorage implements IStorage {
           hasYoutubeData: row.has_youtube_data || false
         }));
         
-        // Enhance with data from junction tables
+        // Fall back to legacy approach if junction tables have issues
         try {
-          // Get themes from junction table
-          const themesResult = await client.query(`
-            SELECT tv_show_id, t.name 
-            FROM tv_show_themes tst
-            JOIN themes t ON tst.theme_id = t.id
+          // First check if junction tables exist
+          const checkThemesTable = await client.query(`
+            SELECT EXISTS (
+              SELECT FROM information_schema.tables 
+              WHERE table_name = 'tv_show_themes'
+            );
           `);
           
-          // Group themes by TV show ID
-          const themesByShowId = new Map();
-          for (const row of themesResult.rows) {
-            const showId = row.tv_show_id;
-            if (!themesByShowId.has(showId)) {
-              themesByShowId.set(showId, []);
-            }
-            themesByShowId.get(showId).push(row.name);
-          }
+          const junctionTablesExist = checkThemesTable.rows[0].exists;
           
-          // Get platforms from junction table
-          const platformsResult = await client.query(`
-            SELECT tv_show_id, p.name 
-            FROM tv_show_platforms tsp
-            JOIN platforms p ON tsp.platform_id = p.id
-          `);
-          
-          // Group platforms by TV show ID
-          const platformsByShowId = new Map();
-          for (const row of platformsResult.rows) {
-            const showId = row.tv_show_id;
-            if (!platformsByShowId.has(showId)) {
-              platformsByShowId.set(showId, []);
+          if (junctionTablesExist) {
+            // Get themes from junction table
+            const themesResult = await client.query(`
+              SELECT tv_show_id, t.name 
+              FROM tv_show_themes tst
+              JOIN themes t ON tst.theme_id = t.id
+            `);
+            
+            // Group themes by TV show ID
+            const themesByShowId = new Map();
+            for (const row of themesResult.rows) {
+              const showId = row.tv_show_id;
+              if (!themesByShowId.has(showId)) {
+                themesByShowId.set(showId, []);
+              }
+              themesByShowId.get(showId).push(row.name);
             }
-            platformsByShowId.get(showId).push(row.name);
-          }
-          
-          // Update each show with its themes and platforms
-          for (const show of tvShows) {
-            if (themesByShowId.has(show.id)) {
-              show.themes = themesByShowId.get(show.id);
+            
+            // Get platforms from junction table
+            const platformsResult = await client.query(`
+              SELECT tv_show_id, p.name 
+              FROM tv_show_platforms tsp
+              JOIN platforms p ON tsp.platform_id = p.id
+            `);
+            
+            // Group platforms by TV show ID
+            const platformsByShowId = new Map();
+            for (const row of platformsResult.rows) {
+              const showId = row.tv_show_id;
+              if (!platformsByShowId.has(showId)) {
+                platformsByShowId.set(showId, []);
+              }
+              platformsByShowId.get(showId).push(row.name);
             }
-            if (platformsByShowId.has(show.id)) {
-              show.availableOn = platformsByShowId.get(show.id);
+            
+            // Update each show with its themes and platforms
+            for (const show of tvShows) {
+              if (themesByShowId.has(show.id)) {
+                show.themes = themesByShowId.get(show.id);
+              }
+              if (platformsByShowId.has(show.id)) {
+                show.availableOn = platformsByShowId.get(show.id);
+              }
             }
+          } else {
+            console.log("Junction tables not yet available, using legacy data format");
           }
         } catch (junctionError) {
           console.error("Error enhancing with junction table data:", junctionError);
