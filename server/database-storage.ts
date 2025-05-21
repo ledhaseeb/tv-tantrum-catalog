@@ -921,6 +921,59 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return newReview;
   }
+  
+  // Get all reviews for a specific user
+  async getUserReviews(userId: number): Promise<any[]> {
+    const client = await pool.connect();
+    try {
+      // Join the tv_show_reviews with tv_shows to get the show names
+      const result = await client.query(`
+        SELECT 
+          r.id, 
+          r.tv_show_id as "tvShowId", 
+          r.user_name as "userName", 
+          r.rating, 
+          r.review, 
+          r.created_at as "createdAt",
+          s.name as "showName",
+          COALESCE(s.image_url, '') as "showImageUrl",
+          (SELECT COUNT(*) FROM review_upvotes WHERE review_id = r.id) as "upvotes"
+        FROM tv_show_reviews r
+        JOIN tv_shows s ON r.tv_show_id = s.id
+        JOIN users u ON u.username = r.user_name
+        WHERE u.id = $1
+        ORDER BY r.created_at DESC
+      `, [userId]);
+      
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+  
+  // Check if a user has already reviewed a specific show
+  async getUserReviewForShow(userId: number, tvShowId: number): Promise<any> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT 
+          r.id, 
+          r.tv_show_id as "tvShowId", 
+          r.user_name as "userName", 
+          r.rating, 
+          r.review, 
+          r.created_at as "createdAt"
+        FROM tv_show_reviews r
+        JOIN users u ON u.username = r.user_name
+        WHERE u.id = $1 AND r.tv_show_id = $2
+        LIMIT 1
+      `, [userId, tvShowId]);
+      
+      return result.rows.length > 0 ? result.rows[0] : null;
+    } finally {
+      client.release();
+    }
+  }
 
   async trackShowSearch(tvShowId: number): Promise<void> {
     const now = new Date().toISOString();

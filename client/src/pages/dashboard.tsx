@@ -516,7 +516,7 @@ export default function DashboardPage() {
                               ))}
                             </div>
                           </div>
-                          <p className="text-sm text-gray-700">{review.comment}</p>
+                          <p className="text-sm text-gray-700">{review.review}</p>
                           <div className="flex justify-between items-center mt-2">
                             <span className="text-xs text-muted-foreground">{formatDate(review.createdAt)}</span>
                             <div className="flex items-center text-xs text-muted-foreground">

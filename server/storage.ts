@@ -86,13 +86,17 @@ export interface IStorage {
   updateShowSubmission(id: number, data: Partial<ShowSubmission>): Promise<ShowSubmission | undefined>;
   
   // Gamification - Reviews and upvotes methods
-  createReview(review: InsertReview): Promise<Review>;
+  createReview(tvShowId: number, userId: number, userName: string, rating: number, review: string): Promise<Review>;
   getReviewsByUserId(userId: number): Promise<Review[]>;
   getReviewsByShowId(showId: number, limit?: number): Promise<Review[]>;
   getReviewById(id: number): Promise<Review | undefined>;
+  getUserReviews(userId: number): Promise<any[]>;
+  getUserReviewForShow(userId: number, tvShowId: number): Promise<any>;
   upvoteReview(userId: number, reviewId: number): Promise<ReviewUpvote>;
   removeUpvote(userId: number, reviewId: number): Promise<boolean>;
   hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean>;
+  checkReviewUpvote(userId: number, reviewId: number): Promise<boolean>;
+  removeReviewUpvote(userId: number, reviewId: number): Promise<boolean>;
   
   // Referral system
   generateReferralCode(userId: number): Promise<string>;
