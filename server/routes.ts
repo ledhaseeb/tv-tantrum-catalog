@@ -37,6 +37,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(req.user);
   });
   
+  // Debug endpoint to check session info
+  app.get('/api/auth/session-debug', (req, res) => {
+    const sessionInfo = {
+      isAuthenticated: req.isAuthenticated(),
+      sessionID: req.sessionID || null,
+      user: req.user ? {
+        id: req.user.id,
+        username: req.user.username,
+        // Don't include sensitive data like passwords
+      } : null,
+      session: req.session ? {
+        cookie: req.session.cookie,
+        userId: req.session.userId,
+      } : null
+    };
+    
+    res.json(sessionInfo);
+  });
+  
   // Check if user is admin
   app.get('/api/user/is-admin', (req, res) => {
     if (!req.isAuthenticated()) {
@@ -2052,11 +2071,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
     try {
       const { reviewId } = req.params;
-      const userId = req.session?.userId;
       
-      if (!userId) {
+      if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: "You must be logged in to upvote reviews" });
       }
+      
+      // Get user ID from authenticated user
+      const userId = req.user.id;
+      console.log(`Upvote attempt by user ${userId} for review ${reviewId}`);
       
       // Convert userId to integer since database expects integer for userId column
       const parsedUserId = parseInt(userId);
@@ -2078,11 +2100,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
     try {
       const { reviewId } = req.params;
-      const userId = req.session?.userId;
       
-      if (!userId) {
+      if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: "You must be logged in to remove upvotes" });
       }
+      
+      // Get user ID from authenticated user
+      const userId = req.user.id;
+      console.log(`Remove upvote attempt by user ${userId} for review ${reviewId}`);
       
       // Convert userId to integer since database expects integer for userId column
       const parsedUserId = parseInt(userId);
