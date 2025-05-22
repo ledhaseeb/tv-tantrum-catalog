@@ -1676,6 +1676,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin-only API to delete a review
+  app.delete("/api/admin/reviews/:id", async (req: Request, res: Response) => {
+      const { db, tvShowReviews, userPointsHistory, users, eq, and } = await import("@shared/db");
+    
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const reviewId = parseInt(req.params.id);
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      // Get the review details before deleting
+      const review = await db.query.tvShowReviews.findFirst({
+        where: eq(tvShowReviews.id, reviewId)
+      });
+      
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      
+      console.log(`Admin deleting review ID ${reviewId} by user ${review.userId} for show "${review.showName}"`);
+      
+      // Find the points history entry for this review
+      const pointsEntry = await db.query.userPointsHistory.findFirst({
+        where: and(
+          eq(userPointsHistory.userId, review.userId),
+          eq(userPointsHistory.activityType, "review")
+        )
+      });
+      
+      let pointsDeducted = 0;
+      
+      // Delete the review first
+      await db.delete(tvShowReviews).where(eq(tvShowReviews.id, reviewId));
+      
+      // If we found matching points, deduct them
+      if (pointsEntry) {
+        pointsDeducted = pointsEntry.points;
+        console.log(`Found points entry: ${pointsDeducted} points for review. Will deduct.`);
+        
+        // Create negative points entry to balance it out
+        await db.insert(userPointsHistory).values({
+          userId: review.userId,
+          points: -pointsDeducted, // Negative points to deduct
+          activityType: "review_deleted_by_admin",
+          description: `Points deducted for review of ${review.showName || "a show"} removed by admin`
+        });
+        
+        // Update user's total points
+        const userRecord = await db.query.users.findFirst({
+          where: eq(users.id, review.userId)
+        });
+        
+        if (userRecord && userRecord.totalPoints) {
+          const newTotal = Math.max(0, userRecord.totalPoints - pointsDeducted);
+          console.log(`Updating user points from ${userRecord.totalPoints} to ${newTotal}`);
+          
+          await db.update(users)
+            .set({ totalPoints: newTotal })
+            .where(eq(users.id, review.userId));
+        }
+      } else {
+        // If we couldn't find the exact points entry, use default review points
+        pointsDeducted = 10; // Default points for a review
+        console.log(`No points entry found, using default deduction of ${pointsDeducted} points`);
+        
+        // Create negative points entry
+        await db.insert(userPointsHistory).values({
+          userId: review.userId,
+          points: -pointsDeducted,
+          activityType: "review_deleted_by_admin",
+          description: `Points deducted for review of ${review.showName || "a show"} removed by admin`
+        });
+        
+        // Update user's total points
+        const userRecord = await db.query.users.findFirst({
+          where: eq(users.id, review.userId)
+        });
+        
+        if (userRecord && userRecord.totalPoints) {
+          const newTotal = Math.max(0, userRecord.totalPoints - pointsDeducted);
+          console.log(`Updating user points from ${userRecord.totalPoints} to ${newTotal}`);
+          
+          await db.update(users)
+            .set({ totalPoints: newTotal })
+            .where(eq(users.id, review.userId));
+        }
+      }
+      
+      res.status(200).json({ 
+        message: "Review deleted successfully by admin",
+        pointsDeducted: pointsDeducted
+      });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+  
   // Admin-only API to standardize all sensory metrics to approved scale
   app.post("/api/admin/standardize-metrics", async (req: Request, res: Response) => {
     try {
