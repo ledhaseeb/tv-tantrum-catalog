@@ -346,6 +346,48 @@ export default function Detail({ id }: DetailProps) {
     },
   });
 
+  // Toggle favorite function
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or register to save shows to your favorites.",
+        variant: "default",
+      });
+      setLocation("/auth");
+      return;
+    }
+    
+    // Use the auth context toggle favorite function
+    try {
+      await toggleFav(parseInt(id));
+      // Update local state (optimistic update)
+      setIsFavorite(!isFavorite);
+      
+      toast({
+        title: isFavorite ? "Removed from favorites" : "Added to favorites",
+        description: isFavorite 
+          ? `${showDetail?.name} has been removed from your favorites.` 
+          : `${showDetail?.name} has been added to your favorites.`,
+        variant: "default",
+      });
+      
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/user/favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update favorites. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleBackClick = () => {
     setLocation("/");
   };
@@ -735,7 +777,7 @@ export default function Detail({ id }: DetailProps) {
                   variant="ghost" 
                   size="sm"
                   className={`ml-2 p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50`}
-                  onClick={toggleFavorite}
+                  onClick={(e) => toggleFavorite(e)}
                 >
                   <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} />
                 </Button>
