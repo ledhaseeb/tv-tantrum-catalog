@@ -154,7 +154,12 @@ export default function Detail({ id }: DetailProps) {
   // Upvote review mutation with optimistic updates
   const upvoteReviewMutation = useMutation({
     mutationFn: async (reviewId: number) => {
-      return await apiRequest("POST", `/api/reviews/${reviewId}/upvote`);
+      const response = await apiRequest("POST", `/api/reviews/${reviewId}/upvote`);
+      if (!response.ok) {
+        throw new Error("Failed to upvote review");
+      }
+      const data = await response.json();
+      return data;
     },
     onMutate: async (reviewId) => {
       // Cancel any outgoing refetches so they don't overwrite our optimistic update
@@ -184,11 +189,14 @@ export default function Detail({ id }: DetailProps) {
       // Return a context object with the snapshot
       return { previousData };
     },
-    onSuccess: () => {
-      toast({
-        title: "Upvoted",
-        description: "You've upvoted this review. Thank you for the feedback!",
-      });
+    onSuccess: (data) => {
+      // Only show toast if we actually upvoted (not if it was already upvoted)
+      if (!data.already_upvoted) {
+        toast({
+          title: "Upvoted",
+          description: "You've upvoted this review. Thank you for the feedback!",
+        });
+      }
       
       // Also update the user dashboard to reflect points earned
       queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
@@ -205,16 +213,18 @@ export default function Detail({ id }: DetailProps) {
         variant: "destructive",
       });
     },
-    onSettled: () => {
-      // Always refetch after error or success to make sure server state is correct
-      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
-    },
+    // Deliberately not refetching after success to preserve optimistic update
   });
   
   // Remove upvote mutation with optimistic updates
   const removeUpvoteMutation = useMutation({
     mutationFn: async (reviewId: number) => {
-      return await apiRequest("DELETE", `/api/reviews/${reviewId}/upvote`);
+      const response = await apiRequest("DELETE", `/api/reviews/${reviewId}/upvote`);
+      if (!response.ok) {
+        throw new Error("Failed to remove upvote");
+      }
+      const data = await response.json();
+      return data;
     },
     onMutate: async (reviewId) => {
       // Cancel any outgoing refetches so they don't overwrite our optimistic update
@@ -265,10 +275,7 @@ export default function Detail({ id }: DetailProps) {
         variant: "destructive",
       });
     },
-    onSettled: () => {
-      // Always refetch after error or success to make sure server state is correct
-      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
-    },
+    // Deliberately not refetching to preserve optimistic update
   });
   
   // Handle toggling upvote status
