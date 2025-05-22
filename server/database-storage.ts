@@ -1501,12 +1501,29 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
+    // Make absolutely sure we have a show name
+    if (!showName && review.tvShowId) {
+      try {
+        // One final direct query as a failsafe
+        const rows = await db.execute(sql`
+          SELECT name FROM tv_shows WHERE id = ${review.tvShowId}
+        `);
+        
+        if (rows && rows.rows && rows.rows.length > 0) {
+          showName = rows.rows[0].name;
+          console.log(`Final failsafe: Got show name: "${showName}"`);
+        }
+      } catch (e) {
+        console.error("Ultimate fallback for show name failed:", e);
+      }
+    }
+    
     // Let Postgres handle the timestamp with defaultNow()
     const [newReview] = await db
       .insert(tvShowReviews)
       .values({
         ...review,
-        showName: showName
+        showName: showName || "Unknown Show"  // Fallback to prevent nulls
       })
       .returning();
     
