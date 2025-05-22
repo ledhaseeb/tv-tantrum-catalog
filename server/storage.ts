@@ -55,6 +55,16 @@ export interface IStorage {
   // Reviews methods
   getReviewsByTvShowId(tvShowId: number): Promise<TvShowReview[]>;
   addReview(review: InsertTvShowReview): Promise<TvShowReview>;
+  getReviewById(reviewId: number): Promise<TvShowReview | undefined>;
+  getReviewsByUserId(userId: string): Promise<TvShowReview[]>;
+  
+  // Review upvotes methods
+  addUpvote(reviewId: number, userId: string): Promise<ReviewUpvote>;
+  removeUpvote(reviewId: number, userId: string): Promise<boolean>;
+  hasUserUpvotedReview(reviewId: number, userId: string): Promise<boolean>;
+  getReviewUpvotes(reviewId: number): Promise<ReviewUpvote[]>;
+  getUpvotesGivenByUser(userId: string): Promise<ReviewUpvote[]>;
+  getUpvotesReceivedByUser(userId: string): Promise<ReviewUpvote[]>;
   
   // Search/Popularity tracking methods
   trackShowSearch(tvShowId: number): Promise<void>;
