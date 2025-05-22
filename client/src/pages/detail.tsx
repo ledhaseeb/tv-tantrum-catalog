@@ -113,6 +113,38 @@ export default function Detail({ id }: DetailProps) {
   // Stars selection
   const [selectedRating, setSelectedRating] = useState(5);
   
+  // Delete review mutation
+  const deleteReviewMutation = useMutation({
+    mutationFn: async (reviewId: number) => {
+      return await apiRequest("DELETE", `/api/admin/reviews/${reviewId}`);
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Review deleted",
+        description: `Successfully removed review. ${data.pointsDeducted} points have been deducted.`,
+        variant: "destructive",
+      });
+      
+      // Refresh show data to update reviews
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
+    },
+    onError: (error) => {
+      console.error("Error deleting review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete review. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Handle delete review
+  const handleDeleteReview = (reviewId: number) => {
+    if (window.confirm("Are you sure you want to delete this review? This will also deduct the points awarded to the user.")) {
+      deleteReviewMutation.mutate(reviewId);
+    }
+  };
+  
   // Add review mutation
   const addReviewMutation = useMutation({
     mutationFn: async (data: ReviewFormValues) => {
@@ -1008,13 +1040,26 @@ export default function Detail({ id }: DetailProps) {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center mb-1">
-                      <h4 className="font-medium">{review.userName}</h4>
-                      <div className="ml-2 flex">
-                        {[...Array(5)].map((_, i) => (
-                          <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
-                        ))}
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center">
+                        <h4 className="font-medium">{review.userName}</h4>
+                        <div className="ml-2 flex">
+                          {[...Array(5)].map((_, i) => (
+                            <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
+                          ))}
+                        </div>
                       </div>
+                      {user?.isAdmin && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleDeleteReview(review.id)}
+                        >
+                          <i className="fas fa-trash-alt mr-1"></i>
+                          Delete
+                        </Button>
+                      )}
                     </div>
                     <p className="text-gray-700">{review.review}</p>
                   </div>
