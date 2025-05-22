@@ -85,8 +85,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert userId to integer for database operations
       const parsedUserId = parseInt(userId);
       
-      // Get user data
-      const user = await storage.getUser(userId);
+      // Get user data directly from database to ensure we have the correct total_points
+      const { pool } = await import('./db');
+      const userResult = await pool.query(
+        'SELECT * FROM users WHERE id = $1',
+        [parsedUserId]
+      );
+      
+      const user = userResult.rows[0];
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -335,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Compile dashboard data
       const dashboardData = {
         user,
-        points: pointsInfo.total || 0,
+        points: user.total_points || 0, // Use the database total_points directly
         pointsBreakdown: pointsInfo.breakdown || defaultPointsBreakdown,
         rank: user.rank || "TV Watcher",
         reviews,
