@@ -113,6 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         upvotesGiven: 0,
         upvotesReceived: 0,
         consecutiveLogins: 0,
+        loginRewards: 0,
         shares: 0,
         referrals: 0,
         showSubmissions: 0,
@@ -148,6 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           (pointsInfo.breakdown.upvotesGiven || 0) + 
                           (pointsInfo.breakdown.upvotesReceived || 0) + 
                           (pointsInfo.breakdown.consecutiveLogins || 0) +
+                          (pointsInfo.breakdown.loginRewards || 0) +
                           (pointsInfo.breakdown.shares || 0) + 
                           (pointsInfo.breakdown.referrals || 0) +
                           (pointsInfo.breakdown.showSubmissions || 0) + 

@@ -2048,6 +2048,21 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // Update a user's last login date for login reward tracking
+  async updateUserLastLoginDate(userId: string | number, date: Date): Promise<boolean> {
+    try {
+      await db
+        .update(users)
+        .set({ lastLoginDate: date })
+        .where(eq(users.id, userId.toString()));
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating user last login date:', error);
+      return false;
+    }
+  }
+  
   async updateUserLoginStreak(userId: string): Promise<number> {
     return await db.transaction(async (tx) => {
       try {

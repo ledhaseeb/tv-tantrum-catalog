@@ -257,7 +257,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: Error | null, user: Express.User | false, info: { message: string } | undefined) => {
+    passport.authenticate("local", async (err: Error | null, user: Express.User | false, info: { message: string } | undefined) => {
       console.log('Login attempt:', { err, user: !!user, info });
       
       if (err) return next(err);
@@ -278,12 +278,65 @@ export function setupAuth(app: Express) {
           isPendingApproval: false
         });
       }
-      req.login(user, (err) => {
+      
+      req.login(user, async (err) => {
         if (err) return next(err);
-        res.status(200).json(user);
+        
+        try {
+          // Award login points if eligible (once per day)
+          await awardLoginPoints(user.id);
+          res.status(200).json(user);
+        } catch (pointsError) {
+          // If points awarding fails, still complete login but log the error
+          console.error('Error awarding login points:', pointsError);
+          res.status(200).json(user);
+        }
       });
     })(req, res, next);
   });
+  
+  // Helper function to award login points (once per day)
+  async function awardLoginPoints(userId: number) {
+    try {
+      const dbStorage = storage as DatabaseStorage;
+      
+      // Get user data to check last login date
+      const user = await dbStorage.getUser(userId);
+      if (!user) return;
+      
+      const now = new Date();
+      let shouldAwardPoints = true;
+      
+      if (user.lastLoginDate) {
+        const lastLogin = new Date(user.lastLoginDate);
+        
+        // Check if last login was on a different day
+        const lastLoginDay = lastLogin.toDateString();
+        const todayDay = now.toDateString();
+        
+        if (lastLoginDay === todayDay) {
+          // Already logged in today, don't award additional points
+          shouldAwardPoints = false;
+        }
+      }
+      
+      // Update last login date regardless of points
+      await dbStorage.updateUserLastLoginDate(userId, now);
+      
+      // Award points if eligible
+      if (shouldAwardPoints) {
+        await dbStorage.awardPoints(
+          userId,
+          5, // 5 points for daily login
+          'login_reward',
+          'Daily login reward'
+        );
+        console.log(`Awarded 5 points to user ${userId} for daily login`);
+      }
+    } catch (error) {
+      console.error('Error in login points processing:', error);
+    }
+  }
 
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
