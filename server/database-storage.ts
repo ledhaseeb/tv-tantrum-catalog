@@ -1827,7 +1827,9 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           sql`${tvShows.stimulationScore} >= ${stimScoreRange.min} AND ${tvShows.stimulationScore} <= ${stimScoreRange.max}`,
-          sql`NOT (${tvShows.id} IN (${favoriteIds.join(',')}))`
+          favoriteIds.length > 0 
+            ? sql`NOT (${tvShows.id} IN (${sql.join(favoriteIds)}))`
+            : sql`1=1`
         )
       )
       .orderBy(desc(tvShows.stimulationScore)) // Sort by stimulation score for consistent results
@@ -2031,8 +2033,8 @@ export class DatabaseStorage implements IStorage {
           id: users.id,
           username: users.username,
           totalPoints: users.totalPoints,
-          rank: users.rank,
-          profileImageUrl: users.profileImageUrl
+          rank: users.rank
+          // Removed profileImageUrl as it doesn't exist in the schema
         })
         .from(users)
         .where(sql`${users.totalPoints} > 0`)
@@ -2417,9 +2419,15 @@ export class DatabaseStorage implements IStorage {
   
   async getUserReadResearch(userId: string): Promise<any[]> {
     try {
+      // Instead of selecting all fields from researchSummaries,
+      // we explicitly select only the fields that exist
       const result = await db
         .select({
-          research: researchSummaries,
+          id: researchSummaries.id,
+          title: researchSummaries.title,
+          summary: researchSummaries.summary,
+          source: researchSummaries.source,
+          createdAt: researchSummaries.createdAt,
           readAt: userReadResearch.readAt
         })
         .from(userReadResearch)
@@ -2427,10 +2435,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(userReadResearch.userId, userId))
         .orderBy(desc(userReadResearch.readAt));
       
-      return result.map(r => ({
-        ...r.research,
-        readAt: r.readAt
-      }));
+      return result;
     } catch (error) {
       console.error('Error getting user read research:', error);
       return [];
