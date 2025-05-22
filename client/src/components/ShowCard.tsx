@@ -335,7 +335,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                   className={`${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                   onClick={toggleFavorite}
                 >
-                  <Heart className={`w-4 h-4 mr-1 ${isFavorite ? 'fill-red-500' : ''}`} />
+                  <Heart className={`w-4 h-4 mr-1 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                   {isFavorite ? 'Saved' : 'Save'}
                 </Button>
                 <Button 
