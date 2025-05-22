@@ -21,6 +21,7 @@ import RegistrationPendingPage from "@/pages/registration-pending";
 import UserDashboard from "@/pages/user-dashboard";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
+import ResearchDetail from "@/pages/research-detail";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
@@ -288,19 +289,8 @@ function Router() {
 
         {/* Research Page - Accessible for logged in users */}
         {isDevMode ? (
-          <Route path="/research">
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <Research />
-              </div>
-              <Footer />
-            </div>
-          </Route>
-        ) : (
-          <ApprovedRoute 
-            path="/research" 
-            component={() => (
+          <>
+            <Route path="/research">
               <div className="flex-grow flex flex-col">
                 <Navbar />
                 <div className="flex-grow">
@@ -308,8 +298,50 @@ function Router() {
                 </div>
                 <Footer />
               </div>
-            )} 
-          />
+            </Route>
+            <Route path="/research/:id">
+              {(params) => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <ResearchDetail />
+                  </div>
+                  <Footer />
+                </div>
+              )}
+            </Route>
+          </>
+        ) : (
+          <>
+            <ApprovedRoute 
+              path="/research" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <Research />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+            <Route path="/research/:id">
+              {(params) => (
+                <ApprovedRoute 
+                  path={`/research/${params.id}`} 
+                  component={() => (
+                    <div className="flex-grow flex flex-col">
+                      <Navbar />
+                      <div className="flex-grow">
+                        <ResearchDetail />
+                      </div>
+                      <Footer />
+                    </div>
+                  )} 
+                />
+              )}
+            </Route>
+          </>
         )}
 
         {/* Admin route with approval and admin check */}
