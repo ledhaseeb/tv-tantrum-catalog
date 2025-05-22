@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
+import { Heart } from "lucide-react";
 import { 
   Carousel,
   CarouselContent,
@@ -702,14 +703,24 @@ export default function Detail({ id }: DetailProps) {
           {/* Right column - Title and content */}
           <div className="md:w-3/4">
             <div>
-              <h1 className="text-3xl font-bold text-teal-700 mb-1">
-                {showDetail.name}
-                {(showDetail.releaseYear || showDetail.endYear) && 
-                  <span className="text-gray-600 font-normal text-xl ml-2">
-                    ({showDetail.releaseYear || "Unknown"}-{showDetail.isOngoing ? "present" : (showDetail.endYear || "Unknown")})
-                  </span>
-                }
-              </h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-teal-700 mb-1">
+                  {showDetail.name}
+                  {(showDetail.releaseYear || showDetail.endYear) && 
+                    <span className="text-gray-600 font-normal text-xl ml-2">
+                      ({showDetail.releaseYear || "Unknown"}-{showDetail.isOngoing ? "present" : (showDetail.endYear || "Unknown")})
+                    </span>
+                  }
+                </h1>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className={`ml-2 p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50`}
+                  onClick={toggleFavorite}
+                >
+                  <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} />
+                </Button>
+              </div>
               
               {/* Sensory Details Section */}
               <div className="mt-8">
