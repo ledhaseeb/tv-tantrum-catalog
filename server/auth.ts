@@ -301,8 +301,11 @@ export function setupAuth(app: Express) {
     try {
       console.log(`Checking login rewards for user ID: ${userId}`);
       
+      // Import the database pool for direct access
+      const { pool } = await import('./db');
+      
       // DIRECT DATABASE ACCESS: For more reliable login rewards
-      const checkResult = await db.execute(
+      const checkResult = await pool.query(
         `SELECT last_login FROM users WHERE id = $1`,
         [userId]
       );
@@ -331,7 +334,7 @@ export function setupAuth(app: Express) {
       }
       
       // Update last login date
-      await db.execute(
+      await pool.query(
         `UPDATE users SET last_login = $1 WHERE id = $2`,
         [now, userId]
       );
@@ -341,14 +344,14 @@ export function setupAuth(app: Express) {
         console.log(`Directly awarding 5 login points to user ${userId}`);
         
         // 1. Add to points history
-        await db.execute(
+        await pool.query(
           `INSERT INTO user_points_history(user_id, points, activity_type, description, created_at)
            VALUES($1, $2, $3, $4, $5)`,
           [userId, 5, 'login_reward', 'Daily login reward', now]
         );
         
         // 2. Update user total points in a single operation
-        const updateResult = await db.execute(
+        const updateResult = await pool.query(
           `UPDATE users SET 
             total_points = COALESCE(total_points, 0) + 5
            WHERE id = $1
@@ -370,7 +373,7 @@ export function setupAuth(app: Express) {
           else if (newTotal >= 100) newRank = 'TV Viewer';
           
           // Update rank
-          await db.execute(
+          await pool.query(
             `UPDATE users SET rank = $1 WHERE id = $2`,
             [newRank, userId]
           );
