@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -7,12 +7,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen } from 'lucide-react';
+import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen, Heart, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const UserDashboard = () => {
-  const { user } = useAuth();
+  const { user, toggleFavorite } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: dashboardData, isLoading: isLoadingDashboard } = useQuery({
     queryKey: ['/api/user/dashboard'],
@@ -332,7 +336,7 @@ const UserDashboard = () => {
                   {favorites.map((show: any) => (
                     <div
                       key={show.id}
-                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg"
+                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg relative group"
                     >
                       <div className="w-12 h-12 rounded-md overflow-hidden">
                         <img
@@ -341,7 +345,7 @@ const UserDashboard = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-medium line-clamp-1">{show.name}</h3>
                         <p className="text-xs text-gray-500">
                           {show.releaseYear}
@@ -352,6 +356,30 @@ const UserDashboard = () => {
                             : ""}
                         </p>
                       </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="opacity-0 group-hover:opacity-100 absolute top-1 right-1 h-6 w-6"
+                        title="Remove from favorites"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          
+                          // Remove from favorites
+                          toggleFavorite(show.id).then(() => {
+                            // Invalidate dashboard data to refresh the favorites
+                            queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
+                            
+                            toast({
+                              title: "Removed from favorites",
+                              description: `${show.name} has been removed from your favorites.`,
+                              variant: "default",
+                            });
+                          });
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
