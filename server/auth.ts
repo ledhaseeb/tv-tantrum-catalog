@@ -302,7 +302,8 @@ export function setupAuth(app: Express) {
       
       console.log(`Checking login rewards for user ID: ${userId}`);
       
-      // Get user data to check last login date - use string ID format
+      // Get user data to check last login date
+      // Database functions expect string IDs for users
       const userIdStr = userId.toString();
       const user = await dbStorage.getUser(userIdStr);
       
@@ -336,8 +337,12 @@ export function setupAuth(app: Express) {
       // Award points if eligible
       if (shouldAwardPoints) {
         console.log(`Awarding 5 login points to user ${userId}`);
+        
+        // Convert userIdStr back to number for awardPoints which expects a number
+        const userIdNum = parseInt(userIdStr, 10);
+        
         await dbStorage.awardPoints(
-          userIdStr,
+          userIdNum, // Pass as number since awardPoints expects a number
           5, // 5 points for daily login
           'login_reward',
           'Daily login reward'

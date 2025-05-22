@@ -205,6 +205,14 @@ const UserDashboard = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
+                    <Timer className="w-4 h-4 mr-2 text-cyan-500" />
+                    <span>Login Rewards</span>
+                  </div>
+                  <span className="font-medium">{pointsBreakdown.loginRewards || 0} points</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
                     <Send className="w-4 h-4 mr-2 text-indigo-500" />
                     <span>Shares</span>
                   </div>
@@ -291,6 +299,7 @@ const UserDashboard = () => {
                           {item.activityType === 'upvote_given' && <LineChart className="w-4 h-4 text-blue-500" />}
                           {item.activityType === 'upvote_received' && <Award className="w-4 h-4 text-purple-500" />}
                           {item.activityType === 'login_streak' && <CalendarIcon className="w-4 h-4 text-green-500" />}
+                          {item.activityType === 'login_reward' && <Timer className="w-4 h-4 text-cyan-500" />}
                           {item.activityType === 'share' && <Send className="w-4 h-4 text-indigo-500" />}
                           {item.activityType === 'referral' && <UserPlus className="w-4 h-4 text-pink-500" />}
                           {item.activityType === 'show_submission' && <FilePlus2 className="w-4 h-4 text-orange-500" />}
