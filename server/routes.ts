@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user reviews
       let reviews = [];
       try {
-        reviews = await storage.getReviewsByUserId(userId);
+        reviews = await storage.getReviewsByUserId(parsedUserId);
       } catch (error) {
         console.error('Error getting user reviews:', error);
       }
@@ -83,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user favorites
       let favorites = [];
       try {
-        favorites = await storage.getUserFavorites(userId);
+        favorites = await storage.getUserFavorites(parsedUserId);
       } catch (error) {
         console.error('Error getting user favorites:', error);
       }
@@ -2130,15 +2130,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         readResearch,
         submissions
       ] = await Promise.all([
-        storage.getUserPointsHistory(userId),
-        storage.getUserFavorites(userId),
-        storage.getReviewsByTvShowId(userId), // Note: We need to create a getReviewsByUserId method
-        storage.getUserReadResearch(userId),
-        storage.getUserShowSubmissions(userId)
+        storage.getUserPointsHistory(parsedUserId),
+        storage.getUserFavorites(parsedUserId),
+        storage.getReviewsByTvShowId(parsedUserId), // Note: We need to create a getReviewsByUserId method
+        storage.getUserReadResearch(parsedUserId),
+        storage.getUserShowSubmissions(parsedUserId)
       ]);
       
       // Update login streak if the user just logged in
-      await storage.updateUserLoginStreak(userId);
+      await storage.updateUserLoginStreak(parsedUserId.toString());
       
       res.json({
         user: {
@@ -2204,13 +2204,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to upvote reviews" });
       }
       
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
+      
       const reviewId = parseInt(req.params.reviewId);
       
       if (isNaN(reviewId)) {
         return res.status(400).json({ message: "Invalid review ID" });
       }
       
-      const upvote = await storage.addReviewUpvote(userId, reviewId);
+      const upvote = await storage.addReviewUpvote(parsedUserId, reviewId);
       res.json(upvote);
     } catch (error) {
       console.error("Error upvoting review:", error);
@@ -2225,13 +2228,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to remove upvotes" });
       }
       
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
+      
       const reviewId = parseInt(req.params.reviewId);
       
       if (isNaN(reviewId)) {
         return res.status(400).json({ message: "Invalid review ID" });
       }
       
-      await storage.removeReviewUpvote(userId, reviewId);
+      await storage.removeReviewUpvote(parsedUserId, reviewId);
       res.json({ success: true });
     } catch (error) {
       console.error("Error removing upvote:", error);
