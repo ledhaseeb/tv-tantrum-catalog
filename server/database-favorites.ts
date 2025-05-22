@@ -38,34 +38,8 @@ export async function addFavorite(userId: number, tvShowId: number): Promise<any
       [userId, tvShowId, showName]
     );
     
-    // Get count of user's favorites
-    const countResult = await client.query(
-      'SELECT COUNT(*) FROM favorites WHERE user_id = $1',
-      [userId]
-    );
-    
-    const favoriteCount = parseInt(countResult.rows[0].count);
-    
-    // Award points for favorites (up to the first 10)
-    if (favoriteCount <= 10) {
-      // Add points to history
-      await client.query(
-        `INSERT INTO user_points_history 
-         (user_id, points, activity_type, description, created_at) 
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [userId, 2, 'add_favorite', `Added ${showName} to favorites`]
-      );
-      
-      // Update user total points
-      await client.query(
-        `UPDATE users 
-         SET total_points = COALESCE(total_points, 0) + $1 
-         WHERE id = $2`,
-        [2, userId]
-      );
-      
-      console.log(`Awarded 2 points to user ${userId} for adding ${showName} to favorites`);
-    }
+    // Log the favorite addition without awarding points
+    console.log(`User ${userId} adding ${showName} to favorites - no points awarded`)
     
     await client.query('COMMIT');
     console.log(`User ${userId} added show ${tvShowId} (${showName}) to favorites`);
