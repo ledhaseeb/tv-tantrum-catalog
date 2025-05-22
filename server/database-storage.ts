@@ -2110,7 +2110,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Review upvotes methods
-  async addReviewUpvote(userId: string, reviewId: number): Promise<any> {
+  async addReviewUpvote(userId: number, reviewId: number): Promise<any> {
     return await db.transaction(async (tx) => {
       try {
         // Check if already upvoted
@@ -2171,7 +2171,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
   
-  async removeReviewUpvote(userId: string, reviewId: number): Promise<boolean> {
+  async removeReviewUpvote(userId: number, reviewId: number): Promise<boolean> {
     try {
       const result = await db
         .delete(reviewUpvotes)
@@ -2211,7 +2211,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async hasUserUpvotedReview(userId: string, reviewId: number): Promise<boolean> {
+  async hasUserUpvotedReview(userId: number, reviewId: number): Promise<boolean> {
     try {
       const result = await db
         .select()

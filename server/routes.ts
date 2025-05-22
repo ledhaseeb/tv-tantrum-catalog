@@ -429,7 +429,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Check if the current user has upvoted this review
         let userHasUpvoted = false;
         if (req.isAuthenticated() && req.user) {
-          userHasUpvoted = await storage.hasUserUpvotedReview(req.user.id, review.id);
+          // Parse user ID to integer since database expects integer
+          const parsedUserId = parseInt(req.user.id);
+          userHasUpvoted = await storage.hasUserUpvotedReview(parsedUserId, review.id);
         }
         
         return {
@@ -2048,8 +2050,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to upvote reviews" });
       }
       
+      // Convert userId to integer since database expects integer for userId column
+      const parsedUserId = parseInt(userId);
+      
       // Add upvote and award points to the review author
-      const upvote = await storage.addReviewUpvote(userId, parseInt(reviewId));
+      const upvote = await storage.addReviewUpvote(parsedUserId, parseInt(reviewId));
       
       res.json({ success: true, upvote });
     } catch (error) {
@@ -2071,7 +2076,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to remove upvotes" });
       }
       
-      const removed = await storage.removeReviewUpvote(parseInt(reviewId), userId);
+      // Convert userId to integer since database expects integer for userId column
+      const parsedUserId = parseInt(userId);
+      
+      const removed = await storage.removeReviewUpvote(parsedUserId, parseInt(reviewId));
       res.json({ success: removed });
     } catch (error) {
       console.error('Error removing upvote:', error);
