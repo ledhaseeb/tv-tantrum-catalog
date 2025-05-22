@@ -19,7 +19,6 @@ import * as apiDataUpdater from "../api-data-updater.js";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import path from "path";
-import { pool } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add health check endpoint
@@ -35,101 +34,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
     res.json(req.user);
   });
   
-  // Use lookup router
-  app.use('/api/lookup', lookupRouter);
-
-  // TV show routes
-  app.get("/api/tv-shows", async (req: Request, res: Response) => {
+  // Debug endpoint to check session info
+  app.get('/api/auth/session-debug', (req, res) => {
+    const sessionInfo = {
+      isAuthenticated: req.isAuthenticated(),
+      sessionID: req.sessionID || null,
+      user: req.user ? {
+        id: req.user.id,
+        username: req.user.username,
+        // Don't include sensitive data like passwords
+      } : null,
+      session: req.session ? {
+        cookie: req.session.cookie,
+        userId: req.session.userId,
+      } : null
+    };
+    
+    res.json(sessionInfo);
+  });
+  
+  // Check if user is admin
+  app.get('/api/user/is-admin', (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     try {
-      const { 
-        search, 
-        age, 
-        themes, 
-        stimulation, 
-        sort, 
-        limit: limitStr, 
-        offset: offsetStr,
-        isYoutube
-      } = req.query;
-      
-      // Convert limit and offset to numbers with defaults
-      const limit = limitStr ? parseInt(limitStr as string) : 20;
-      const offset = offsetStr ? parseInt(offsetStr as string) : 0;
-      
-      // Get user ID if logged in
-      const userId = req.session?.userId;
-      const parsedUserId = userId ? parseInt(userId) : null;
-      
-      const tvShows = await storage.getTvShows({
-        search: search as string,
-        ageRange: age as string,
-        themes: themes as string,
-        stimulationScore: stimulation as string,
-        sortBy: sort as string,
-        limit,
-        offset,
-        isYoutube: isYoutube === 'true',
-        userId: parsedUserId
-      });
-      
-      res.json(tvShows);
+      res.json(req.user!.isAdmin || false);
     } catch (error) {
-      console.error("Error fetching TV shows:", error);
-      res.status(500).json({ message: "Failed to fetch TV shows" });
+      console.error("Error checking admin status:", error);
+      res.status(500).json({ message: "Failed to check admin status" });
     }
   });
   
-  // Get popular TV shows
-  app.get("/api/shows/popular", async (req, res) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
-      const popularShows = await storage.getPopularTvShows(limit);
-      res.json(popularShows);
-    } catch (error) {
-      console.error("Error fetching popular shows:", error);
-      res.status(500).json({ message: "Failed to fetch popular shows" });
-    }
-  });
+  // Add user authentication endpoints
   
-  // Get a single TV show
-  app.get("/api/shows/:id", async (req, res) => {
+  // Get current user - Already handled by custom auth
+  
+  // Get user dashboard data
+  app.get('/api/user/dashboard', async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const userId = req.session?.userId;
-      
-      // Convert userId to number for database operations
-      const parsedUserId = userId ? parseInt(userId) : null;
-      
-      const tvShow = await storage.getTvShowById(id, parsedUserId);
-      
-      if (!tvShow) {
-        return res.status(404).json({ message: "TV show not found" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
       }
       
-      res.json(tvShow);
-    } catch (error) {
-      console.error("Error fetching TV show:", error);
-      res.status(500).json({ message: "Failed to fetch TV show" });
-    }
-  });
-  
-  // User dashboard
-  app.get("/api/user/dashboard", async (req, res) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to view your dashboard" });
-      }
+      const userId = req.user!.id;
       
-      // Convert userId to integer since database expects integer
+      // Convert userId to integer for database operations
       const parsedUserId = parseInt(userId);
       
-      // Get user profile
-      const user = await storage.getUserById(parsedUserId);
+      // Get user data
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -173,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       try {
         if (typeof storage.getUserPoints === 'function') {
-          const dbPoints = await storage.getUserPoints(parsedUserId);
+          const dbPoints = await storage.getUserPoints(userId);
           if (dbPoints) {
             pointsInfo = dbPoints;
           }
@@ -183,21 +140,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Each review is worth 5 points (this value should match the points in INSERT statements)
         const reviewPoints = reviews.length * 5;
         
-        // Get upvotes received count
-        const upvotesReceivedQuery = await pool.query(
-          `SELECT COUNT(*) as count FROM review_upvotes 
-           JOIN tv_show_reviews ON review_upvotes.review_id = tv_show_reviews.id 
-           WHERE tv_show_reviews.user_id = $1`,
-          [parsedUserId]
-        );
-        
-        // Calculate upvotes received points (2 points per upvote)
-        const upvotesCount = parseInt(upvotesReceivedQuery.rows[0]?.count || '0');
-        const upvotesPoints = upvotesCount * 2;
-        
         // Update the breakdown
         pointsInfo.breakdown.reviews = reviewPoints;
-        pointsInfo.breakdown.upvotesReceived = upvotesPoints;
         
         // Recalculate total points
         pointsInfo.total = reviewPoints + 
@@ -214,6 +158,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (pointsInfo.total >= 500) pointsInfo.rank = 'TV Expert';
         if (pointsInfo.total >= 1000) pointsInfo.rank = 'TV Master';
         
+        // Import pool to use for direct queries
+        const { pool } = await import('./db');
+        
         // Ensure we have review points history records for each review
         try {
           // Let's directly create point history records for all reviews
@@ -221,6 +168,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Processing review points for review ID ${review.id}`);
             
             try {
+              // Convert userId to integer for database operations
+              const parsedUserId = parseInt(userId);
+              
               // First check if we already have a record for this review
               const existingRecords = await pool.query(
                 `SELECT id FROM user_points_history 
@@ -249,6 +199,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Force recalculation of points from the history records
+          const parsedUserId = parseInt(userId);
+          
           const pointsRecords = await pool.query(
             `SELECT SUM(points) as total FROM user_points_history WHERE user_id = $1 AND activity_type = 'review'`,
             [parsedUserId]
@@ -281,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let pointsHistory = [];
       try {
         if (typeof storage.getUserPointsHistory === 'function') {
-          pointsHistory = await storage.getUserPointsHistory(parsedUserId) || [];
+          pointsHistory = await storage.getUserPointsHistory(userId) || [];
         }
       } catch (error) {
         console.error('Error getting user points history:', error);
@@ -290,70 +242,2255 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get similar shows based on user preferences
       let recommendedShows = [];
       try {
-        recommendedShows = await storage.getSimilarShows(parsedUserId, 5) || [];
+        recommendedShows = await storage.getSimilarShows(userId, 5) || [];
       } catch (error) {
         console.error('Error getting recommended shows:', error);
       }
       
       // Get user login streak
-      let streak = 0;
+      let loginStreak = { currentStreak: 0, weeklyStreak: 0, monthlyStreak: 0 };
       try {
         if (typeof storage.getUserLoginStreak === 'function') {
-          streak = await storage.getUserLoginStreak(parsedUserId) || 0;
-        } else {
-          // Use the existing login streak functionality
-          streak = await storage.updateUserLoginStreak(parsedUserId.toString());
+          loginStreak = await storage.getUserLoginStreak(userId) || loginStreak;
         }
       } catch (error) {
         console.error('Error getting user login streak:', error);
       }
-      
-      // Get user's read research
-      let readResearch = [];
-      try {
-        readResearch = await storage.getUserReadResearch(parsedUserId) || [];
-      } catch (error) {
-        console.error('Error getting user read research:', error);
-      }
-      
-      // Get top users (leaderboard)
+
+      // Get leaderboard data (top 10 users)
       let topUsers = [];
       try {
-        topUsers = await storage.getTopUsers(5) || [];
+        if (typeof storage.getTopUsers === 'function') {
+          topUsers = await storage.getTopUsers(10) || [];
+        }
       } catch (error) {
         console.error('Error getting top users:', error);
       }
       
-      // Get user's show submissions
-      let submissions = [];
+      // Get read research summaries
+      let readResearch = [];
       try {
-        submissions = await storage.getUserShowSubmissions(parsedUserId) || [];
+        if (typeof storage.getUserReadResearch === 'function') {
+          readResearch = await storage.getUserReadResearch(userId) || [];
+        }
       } catch (error) {
-        console.error('Error getting user show submissions:', error);
+        console.error('Error getting read research:', error);
       }
       
-      res.json({
+      // Get show submissions - empty placeholder for now
+      let submissions = [];
+      
+      // Compile dashboard data
+      const dashboardData = {
         user,
-        points: pointsInfo.total,
-        pointsBreakdown: pointsInfo.breakdown,
-        rank: pointsInfo.rank,
+        points: pointsInfo.total || 0,
+        pointsBreakdown: pointsInfo.breakdown || defaultPointsBreakdown,
+        rank: user.rank || "TV Watcher",
         reviews,
         favorites,
         pointsHistory,
-        streak,
+        readResearch,
         submissions,
         recommendedShows,
+        streak: loginStreak?.currentStreak || 0,
+        weeklyStreak: loginStreak?.weeklyStreak || 0,
+        monthlyStreak: loginStreak?.monthlyStreak || 0,
+        leaderboard: topUsers
+      };
+      
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Error fetching user dashboard:", error);
+      res.status(500).json({ message: "Failed to fetch user dashboard" });
+    }
+  });
+  
+  // Serve static files from the public directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
+  
+  // Register the lookup API router
+  app.use('/api/lookup-show', lookupRouter);
+  
+  // Skip GitHub data import on server start to fix database errors
+  console.log("Skipping GitHub data import on startup to prevent database errors");
+  
+  // Skip custom data loading on startup for better performance
+  // Custom data is now applied directly to the database using the apply-custom-data.js script
+  console.log("Startup optimization: Custom data loading skipped for faster server startup.");
+  console.log("To apply custom data to the database, run: node apply-custom-data.js");
+  
+  // Helper function to clean up YouTube description text
+  const getCleanYouTubeDescription = (description: string): string => {
+    if (!description) return '';
+    
+    // Strip out common YouTube description elements
+    return description
+      .replace(/Follow us on social media:[\s\S]*?(?=\n\n|$)/, '')
+      .replace(/Subscribe to our channel:[\s\S]*?(?=\n\n|$)/, '')
+      .replace(/Visit our website:[\s\S]*?(?=\n\n|$)/, '')
+      .replace(/\bhttps?:\/\/\S+\b/g, '')  // Remove URLs
+      .replace(/\n{3,}/g, '\n\n')          // Normalize line breaks
+      .replace(/\s{2,}/g, ' ')             // Normalize spaces
+      .trim();
+  };
+  
+  // Extract year information and creator functions
+  function extractYearInfo(yearStr: string) {
+    if (!yearStr) return { releaseYear: null, endYear: null, isOngoing: null };
+    
+    const parts = yearStr.split('–');
+    const releaseYear = parts[0] ? parseInt(parts[0]) : null;
+    const endYear = parts[1] && parts[1].trim() !== '' ? parseInt(parts[1]) : null;
+    const isOngoing = parts.length > 1 && (parts[1].trim() === '' || !parts[1]);
+    
+    return { releaseYear, endYear, isOngoing };
+  }
+  
+  // Extract creator info from director and writer fields
+  function extractCreator(director: string, writer: string) {
+    if (director && director !== 'N/A') return director;
+    if (writer && writer !== 'N/A') return writer;
+    return null;
+  }
+
+  // Get all TV shows - using dedicated search service for reliability
+  app.get("/api/tv-shows", async (req: Request, res: Response) => {
+    try {
+      // For search queries, use the dedicated search service
+      if (req.query.search && typeof req.query.search === 'string' && req.query.search.trim()) {
+        const searchTerm = req.query.search.trim();
+        console.log(`Search service search for: "${searchTerm}"`);
+        
+        // Use our dedicated search service
+        const results = await searchService.searchShows(searchTerm);
+        
+        // Track search in the background if we have results
+        if (results.length > 0) {
+          const showId = results[0].id;
+          searchService.trackSearchHit(showId);
+        }
+        
+        return res.json(results);
+      }
+      
+      // For the admin page, get all shows without filtering
+      if (Object.keys(req.query).length === 0) {
+        console.log("Admin dashboard: Getting all TV shows without filters");
+        const allShows = await storage.getAllTvShows();
+        return res.json(allShows);
+      }
+      
+      // For any other filter combinations, use the search service
+      console.log("Filter query detected:", req.query);
+      
+      // Convert query params to the correct format for the search service
+      const filters: any = {};
+      
+      // Copy over direct string filters
+      if (req.query.ageGroup) filters.ageGroup = req.query.ageGroup;
+      if (req.query.tantrumFactor) filters.tantrumFactor = req.query.tantrumFactor;
+      if (req.query.interactionLevel) filters.interactionLevel = req.query.interactionLevel;
+      if (req.query.dialogueIntensity) filters.dialogueIntensity = req.query.dialogueIntensity;
+      if (req.query.soundFrequency) filters.soundFrequency = req.query.soundFrequency;
+      if (req.query.sortBy) filters.sortBy = req.query.sortBy;
+      if (req.query.themeMatchMode) filters.themeMatchMode = req.query.themeMatchMode;
+      if (req.query.search) filters.search = req.query.search;
+      
+      // Handle themes special case - convert from string or array
+      if (req.query.themes) {
+        filters.themes = typeof req.query.themes === 'string'
+          ? req.query.themes.split(',').map((theme: string) => theme.trim())
+          : (req.query.themes as string[]).map((theme: string) => theme.trim());
+      }
+      
+      // Use the search service for filtered search
+      const shows = await searchService.searchWithFilters(filters);
+      return res.json(shows);
+    } catch (error) {
+      console.error("Error in TV shows API:", error);
+      res.status(500).json({ message: "Failed to fetch TV shows" });
+    }
+  });
+
+  // Get popular TV shows
+  app.get("/api/shows/popular", async (req: Request, res: Response) => {
+    try {
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
+      
+      const shows = await storage.getPopularShows(limit);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching popular TV shows:", error);
+      res.status(500).json({ message: "Failed to fetch popular TV shows" });
+    }
+  });
+
+  // These functions have already been defined above, so we don't need to redefine them.
+
+// Get single TV show by ID
+  app.get("/api/shows/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "TV show not found" });
+      }
+      
+      // Get reviews for this show
+      const reviews = await storage.getReviewsByTvShowId(id);
+      console.log(`Found ${reviews?.length || 0} reviews for show ID ${id}`);
+      
+      // Track this view
+      await storage.trackShowView(id);
+      
+      // Enhance reviews with upvote information
+      const enhancedReviews = await Promise.all(reviews.map(async (review) => {
+        // Get upvotes for this review
+        const upvotes = await storage.getReviewUpvotes(review.id);
+        
+        // Check if the current user has upvoted this review
+        let userHasUpvoted = false;
+        if (req.isAuthenticated() && req.user) {
+          // Parse user ID to integer since database expects integer
+          const parsedUserId = parseInt(req.user.id);
+          userHasUpvoted = await storage.hasUserUpvotedReview(parsedUserId, review.id);
+        }
+        
+        return {
+          ...review,
+          upvoteCount: upvotes.length,
+          userHasUpvoted
+        };
+      }));
+      
+      // Attach enhanced reviews to the show object
+      show.reviews = enhancedReviews;
+      
+      // Check if this is a YouTube show
+      const isYouTubeShow = show.availableOn?.includes('YouTube');
+      
+      let externalData = {
+        omdb: null,
+        youtube: null
+      };
+      
+      try {
+        // For all shows, try to get OMDb data
+        const omdbData = await omdbService.getShowData(show.name);
+        console.log(`OMDb data for ${show.name}:`, omdbData ? 'Found' : 'Not found');
+        
+        if (omdbData) {
+          // If this is the first time we get OMDb data for this show, update the metadata
+          if (!show.creator || !show.releaseYear || show.description === 'A children\'s TV show') {
+            // Extract year information
+            const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+            
+            // Extract creator information
+            const creator = extractCreator(omdbData.director, omdbData.writer);
+            
+            // Update show with this additional metadata if it's not already set
+            const updateData: any = {};
+            
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            if (!show.endYear && endYear) {
+              updateData.endYear = endYear;
+            }
+            
+            // Only update isOngoing if we have valid year data
+            if (releaseYear && !show.isOngoing) {
+              updateData.isOngoing = isOngoing;
+            }
+            
+            // If we have a plot and the current description is generic, update it
+            if (omdbData.plot && omdbData.plot !== 'N/A' && 
+                (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = omdbData.plot;
+            }
+            
+            // Only update if we have new data
+            if (Object.keys(updateData).length > 0) {
+              console.log(`Updating metadata for "${show.name}" with OMDb data:`, updateData);
+              await storage.updateTvShow(id, updateData);
+            }
+          }
+          
+          // Only include OMDb data in the response if it has valid values (not empty or 'N/A')
+          if (omdbData) {
+            // Filter out any empty values or "N/A" values
+            const filteredOmdbData: any = {};
+            let hasValidData = false;
+            
+            for (const [key, value] of Object.entries(omdbData)) {
+              if (value && value !== 'N/A' && value !== '') {
+                filteredOmdbData[key] = value;
+                hasValidData = true;
+              }
+            }
+            
+            // Only include the data if there's at least one valid field
+            if (hasValidData) {
+              externalData.omdb = filteredOmdbData;
+            }
+          }
+        }
+        
+        // If this is a YouTube show, also get YouTube data
+        if (isYouTubeShow) {
+          // For YouTube shows, use YouTube API
+          const youtubeData = await youtubeService.getChannelData(show.name);
+          console.log(`YouTube data for ${show.name}:`, youtubeData ? 'Found' : 'Not found');
+          
+          if (youtubeData) {
+            // Extract release year from publishedAt date
+            const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
+            
+            // Set creator to channel name if no better info
+            const creator = youtubeData.title;
+            
+            // Update data object for database changes
+            const updateData: any = {};
+            
+            // Update metadata if not already set
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            // YouTube shows are typically ongoing
+            if (typeof show.isOngoing !== 'boolean') {
+              updateData.isOngoing = true;
+            }
+            
+            // Get a cleaned description from YouTube
+            const cleanDescription = getCleanDescription(youtubeData.description);
+            
+            // Update description if generic or missing
+            if (cleanDescription && (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = cleanDescription;
+            }
+            
+            // If show has no image, use YouTube thumbnail
+            if (!show.imageUrl && youtubeData.thumbnailUrl) {
+              updateData.imageUrl = youtubeData.thumbnailUrl;
+            }
+            
+            // Add YouTube-specific data
+            updateData.subscriberCount = youtubeData.subscriberCount;
+            updateData.videoCount = youtubeData.videoCount;
+            updateData.channelId = youtubeData.channelId;
+            updateData.isYouTubeChannel = true;
+            updateData.publishedAt = youtubeData.publishedAt;
+            
+            // Only update if we have new data
+            if (Object.keys(updateData).length > 0) {
+              console.log(`Updating metadata for "${show.name}" with YouTube data:`, updateData);
+              await storage.updateTvShow(id, updateData);
+            }
+          }
+          
+          // Only include YouTube data in the response if it has valid values
+          if (youtubeData) {
+            // Filter out any empty or null values
+            const filteredYouTubeData: any = {};
+            let hasValidData = false;
+            
+            for (const [key, value] of Object.entries(youtubeData)) {
+              if (value && value !== '') {
+                filteredYouTubeData[key] = value;
+                hasValidData = true;
+              }
+            }
+            
+            // Only include the data if there's at least one valid field
+            if (hasValidData) {
+              externalData.youtube = filteredYouTubeData;
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching external data for ${show.name}:`, error);
+        // Continue even if data fetch fails
+      }
+      
+      // Create a complete response that includes both stored and external data
+      const response = {
+        ...show,
+        reviews,
+        externalData
+      };
+      
+      // Make sure the YouTube data from the database is directly accessible
+      // by exposing it at the top level of the response
+      if (show.isYouTubeChannel || show.subscriberCount || show.videoCount) {
+        console.log(`Show ${show.name} has YouTube channel data`);
+        
+        // Make sure the YouTube specific fields are directly available in the response
+        response.isYouTubeChannel = true;
+        response.subscriberCount = show.subscriberCount;
+        response.videoCount = show.videoCount;
+        response.publishedAt = show.publishedAt;
+        response.channelId = show.channelId;
+      }
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching TV show:", error);
+      res.status(500).json({ message: "Failed to fetch TV show" });
+    }
+  });
+
+  // Add a new review for a TV show
+  app.post("/api/shows/:id/reviews", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to submit reviews" });
+      }
+      
+      // Convert user ID to a number if it's a string
+      const userId = typeof req.user!.id === 'string' ? parseInt(req.user!.id) : req.user!.id;
+      const userName = req.user!.username || "Anonymous";
+      
+      console.log("Submitting review as user:", userId, userName, "User ID type:", typeof userId);
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "TV show not found" });
+      }
+      
+      // Make sure we always have the show name
+      console.log("Review data:", {
+        ...req.body,
+        userId,
+        userName,
+        showName: show.name
+      });
+      
+      // Validate and prepare review data
+      const reviewData = {
+        ...req.body,
+        tvShowId: id,
+        userId: userId,
+        userName: userName,
+        showName: show.name
+      };
+      
+      // Double-check that show name is set
+      if (!reviewData.showName && show && show.name) {
+        reviewData.showName = show.name;
+        console.log("Fixed missing show name:", show.name);
+      }
+      
+      // Add review to storage
+      const newReview = await storage.addReview(reviewData);
+      console.log("New review created:", newReview);
+      
+      res.status(201).json(newReview);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid review data", 
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Error adding TV show review:", error);
+      res.status(500).json({ message: "Failed to add TV show review" });
+    }
+  });
+
+  // Manually refresh data from GitHub
+  app.post("/api/refresh-data", async (req: Request, res: Response) => {
+    try {
+      const showsData = await githubService.fetchTvShowsData();
+      const importedShows = await storage.importShowsFromGitHub(showsData);
+      
+      res.json({ 
+        message: "Data refreshed successfully", 
+        count: importedShows.length 
+      });
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      res.status(500).json({ message: "Failed to refresh data" });
+    }
+  });
+  
+  // Endpoint to optimize show images using OMDB posters
+  app.post("/api/optimize-images", async (req: Request, res: Response) => {
+    try {
+      // Temporarily removed admin check to run optimization directly
+      // if (!req.user?.isAdmin) {
+      //   return res.status(403).json({ message: "Unauthorized. Admin privileges required." });
+      // }
+      
+      console.log("Starting image optimization process...");
+      // Use our consolidated image optimizer utility instead
+      const shows = await storage.getAllTvShows();
+      const results = {
+        total: shows.length,
+        successful: [],
+        failed: []
+      };
+      
+      for (const show of shows) {
+        try {
+          if (show.imageUrl) {
+            const localImagePath = await imageOptimizer.getImage(show.imageUrl, show.id);
+            if (localImagePath) {
+              const optimizedUrl = await imageOptimizer.optimizeImage(localImagePath, show.id);
+              if (optimizedUrl) {
+                await imageOptimizer.updateShowImage(show.id, optimizedUrl);
+                results.successful.push(show.id);
+              } else {
+                results.failed.push(show.id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Error optimizing image for show ${show.id}:`, error);
+          results.failed.push(show.id);
+        }
+      }
+      
+      res.json({
+        message: `Processed ${results.total} shows. Updated ${results.successful.length} images successfully.`,
+        successful: results.successful.length,
+        failed: results.failed.length,
+        results
+      });
+    } catch (error) {
+      console.error("Error optimizing images:", error);
+      res.status(500).json({ message: "Failed to optimize images" });
+    }
+  });
+  
+  // Endpoint to update YouTube metadata for shows marked as available on YouTube
+  app.post("/api/update-youtube-metadata", async (req: Request, res: Response) => {
+    try {
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized. Admin privileges required." });
+      }
+      
+      console.log("Starting YouTube metadata update process...");
+      
+      // Get limit parameter with a default of 10 shows
+      const limit = req.body.limit || 10;
+      
+      // Get all shows marked as available on YouTube
+      const youtubeShows = await storage.getTvShowsByPlatform('YouTube', limit);
+      
+      console.log(`Processing ${youtubeShows.length} YouTube shows`);
+      
+      // Track results
+      const results = {
+        total: youtubeShows.length,
+        successful: [] as any[],
+        failed: [] as any[],
+        skipped: [] as any[]
+      };
+      
+      // Process each YouTube show
+      for (const show of youtubeShows) {
+        try {
+          // Skip shows that already have YouTube data
+          if (show.isYouTubeChannel && show.channelId) {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'Already has YouTube metadata'
+            });
+            continue;
+          }
+          
+          console.log(`Processing YouTube show: ${show.name}`);
+          
+          // Fetch YouTube data
+          const youtubeData = await youtubeService.getChannelData(show.name);
+          
+          if (!youtubeData) {
+            results.failed.push({
+              id: show.id,
+              name: show.name,
+              reason: 'No YouTube data found'
+            });
+            continue;
+          }
+          
+          // Build update data
+          const updateData: any = {
+            subscriberCount: youtubeData.subscriberCount,
+            videoCount: youtubeData.videoCount,
+            channelId: youtubeData.channelId,
+            isYouTubeChannel: true,
+            publishedAt: youtubeData.publishedAt
+          };
+          
+          // Extract release year from publishedAt date
+          const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
+          
+          // Add creator if missing
+          if (!show.creator) {
+            updateData.creator = youtubeData.title;
+          }
+          
+          // Add release year if missing
+          if (!show.releaseYear && releaseYear) {
+            updateData.releaseYear = releaseYear;
+          }
+          
+          // YouTube shows are typically ongoing
+          if (typeof show.isOngoing !== 'boolean') {
+            updateData.isOngoing = true;
+          }
+          
+          // Get a cleaned description
+          const cleanDescription = getCleanDescription(youtubeData.description);
+          
+          // Update description if generic or missing
+          if (cleanDescription && (show.description === 'A children\'s TV show' || !show.description)) {
+            updateData.description = cleanDescription;
+          }
+          
+          // If show has no image, use YouTube thumbnail
+          if (!show.imageUrl && youtubeData.thumbnailUrl) {
+            updateData.imageUrl = youtubeData.thumbnailUrl;
+          }
+          
+          // Update the show in the database
+          const updatedShow = await storage.updateTvShow(show.id, updateData);
+          
+          if (updatedShow) {
+            results.successful.push({
+              id: show.id,
+              name: show.name,
+              updates: updateData
+            });
+          } else {
+            results.failed.push({
+              id: show.id,
+              name: show.name,
+              reason: 'Failed to update in database'
+            });
+          }
+          
+          // Add a small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 250));
+        } catch (error) {
+          console.error(`Error processing YouTube show ${show.name}:`, error);
+          results.failed.push({
+            id: show.id,
+            name: show.name,
+            reason: 'Processing error'
+          });
+        }
+      }
+      
+      res.json({
+        message: `Processed ${results.total} YouTube shows. Updated ${results.successful.length} successfully.`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Error updating YouTube metadata:", error);
+      res.status(500).json({ message: "Failed to update YouTube metadata" });
+    }
+  });
+  
+  // Endpoint to update show metadata (creator, release_year, end_year, is_ongoing) from OMDb
+  app.post("/api/update-metadata", async (req: Request, res: Response) => {
+    try {
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized. Admin privileges required." });
+      }
+      
+      console.log("Starting metadata update process...");
+      
+      // Get all shows from the database
+      const shows = await storage.getAllTvShows();
+      
+      // Keep track of results
+      const results = {
+        total: shows.length,
+        successful: [] as any[],
+        failed: [] as any[],
+        skipped: [] as any[]
+      };
+      
+      // Process each show
+      for (const show of shows) {
+        try {
+          // Check if this is a YouTube show
+          const isYouTubeShow = show.availableOn?.includes('YouTube');
+          
+          // Skip shows that already have complete metadata
+          if (show.creator && show.releaseYear && (show.endYear || show.isOngoing) &&
+              show.description !== 'A children\'s TV show' && show.description) {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'Already has complete metadata'
+            });
+            continue;
+          }
+          
+          // Update data object for database changes
+          const updateData: any = {};
+          
+          if (isYouTubeShow) {
+            // For YouTube shows, try to get data from YouTube API
+            console.log(`Processing YouTube show: ${show.name}`);
+            
+            // Extract the channel name - usually it's just the show name
+            const channelName = show.name;
+            
+            // Fetch YouTube data
+            const youtubeData = await youtubeService.getChannelData(channelName);
+            
+            if (!youtubeData) {
+              results.failed.push({
+                id: show.id,
+                name: show.name,
+                reason: 'No YouTube data found'
+              });
+              continue;
+            }
+            
+            // Extract release year from publishedAt date
+            const releaseYear = extractYouTubeReleaseYear(youtubeData.publishedAt);
+            
+            // Set creator to channel name if no better info
+            const creator = youtubeData.title;
+            
+            // Update metadata if not already set
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            // YouTube shows are typically ongoing
+            if (typeof show.isOngoing !== 'boolean') {
+              updateData.isOngoing = true;
+            }
+            
+            // Get a cleaned description from YouTube
+            const cleanDescription = getCleanDescription(youtubeData.description);
+            
+            // Update description if generic or missing
+            if (cleanDescription && (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = cleanDescription;
+            }
+            
+            // If show has no image, use YouTube thumbnail
+            if (!show.imageUrl && youtubeData.thumbnailUrl) {
+              updateData.imageUrl = youtubeData.thumbnailUrl;
+            }
+            
+            // Add YouTube-specific data
+            updateData.subscriberCount = youtubeData.subscriberCount;
+            updateData.videoCount = youtubeData.videoCount;
+            updateData.channelId = youtubeData.channelId;
+            updateData.isYouTubeChannel = true;
+            updateData.publishedAt = youtubeData.publishedAt;
+          } else {
+            // For regular TV shows, use OMDb
+            const omdbData = await omdbService.getShowData(show.name);
+            if (!omdbData) {
+              results.failed.push({
+                id: show.id,
+                name: show.name,
+                reason: 'No OMDb data found'
+              });
+              continue;
+            }
+            
+            // Extract year information
+            const { releaseYear, endYear, isOngoing } = extractYearInfo(omdbData.year);
+            
+            // Extract creator information
+            const creator = extractCreator(omdbData.director, omdbData.writer);
+            
+            // Update metadata if not already set
+            if (!show.creator && creator) {
+              updateData.creator = creator;
+            }
+            
+            if (!show.releaseYear && releaseYear) {
+              updateData.releaseYear = releaseYear;
+            }
+            
+            if (!show.endYear && endYear) {
+              updateData.endYear = endYear;
+            }
+            
+            // Only update isOngoing if we have valid year data
+            if (releaseYear && typeof show.isOngoing !== 'boolean') {
+              updateData.isOngoing = isOngoing;
+            }
+            
+            // If we have a plot and the current description is generic, update it
+            if (omdbData.plot && omdbData.plot !== 'N/A' && 
+                (show.description === 'A children\'s TV show' || !show.description)) {
+              updateData.description = omdbData.plot;
+            }
+          }
+          
+          // Only update if we have new data
+          if (Object.keys(updateData).length > 0) {
+            const dataSource = isYouTubeShow ? 'YouTube' : 'OMDb';
+            console.log(`Updating metadata for "${show.name}" with ${dataSource} data:`, updateData);
+            
+            const updatedShow = await storage.updateTvShow(show.id, updateData);
+            
+            if (updatedShow) {
+              results.successful.push({
+                id: show.id,
+                name: show.name,
+                source: dataSource,
+                updates: updateData
+              });
+            } else {
+              results.failed.push({
+                id: show.id,
+                name: show.name,
+                reason: `Failed to update in storage after ${dataSource} lookup`
+              });
+            }
+          } else {
+            results.skipped.push({
+              id: show.id,
+              name: show.name,
+              reason: 'No new metadata to update'
+            });
+          }
+          
+          // Add a small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 250));
+          
+        } catch (error) {
+          console.error(`Error updating metadata for show "${show.name}":`, error);
+          results.failed.push({
+            id: show.id,
+            name: show.name,
+            reason: 'Error during processing'
+          });
+        }
+      }
+      
+      res.json({
+        message: `Processed ${results.total} shows. Updated ${results.successful.length} successfully.`,
+        successful: results.successful.length,
+        failed: results.failed.length,
+        skipped: results.skipped.length,
+        results
+      });
+    } catch (error) {
+      console.error("Error updating metadata:", error);
+      res.status(500).json({ message: "Failed to update metadata" });
+    }
+  });
+
+  // Endpoint to update a specific show with OMDB image
+  app.post("/api/shows/:id/update-image", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "TV show not found" });
+      }
+      
+      // Check if this show has a custom image from customImageMap.json 
+      const customImageMap = imageManager.loadCustomImageMap();
+      const customImageUrl = customImageMap[id];
+      
+      // If the show already has a custom image or the current image is in the custom-images folder, don't overwrite it
+      if (customImageUrl || 
+          (show.imageUrl && (
+            show.imageUrl.includes('/custom-images/') || 
+            show.imageUrl.includes('client/public/custom-images/')
+          ))
+      ) {
+        console.log(`Preserving custom image for "${show.name}"`);
+        return res.json({
+          success: true,
+          message: `Kept existing custom image for "${show.name}"`,
+          show: show
+        });
+      }
+      
+      console.log(`Looking up OMDB poster for "${show.name}"`);
+      const omdbData = await omdbService.getShowData(show.name);
+      
+      if (omdbData && omdbData.poster && omdbData.poster !== 'N/A') {
+        console.log(`Found OMDB poster for "${show.name}": ${omdbData.poster}`);
+        
+        // Since this is not a custom image, we'll use OMDB's poster but won't add it to customImageMap.json
+        // This way it can be easily replaced by a custom image later
+        const updatedShow = await storage.updateTvShow(id, {
+          imageUrl: omdbData.poster
+        });
+        
+        if (updatedShow) {
+          res.json({
+            success: true,
+            message: `Updated "${show.name}" with OMDB poster`,
+            show: updatedShow
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            message: "Failed to update show in storage"
+          });
+        }
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "No OMDB poster found for this show"
+        });
+      }
+    } catch (error) {
+      console.error("Error updating show image:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to update show image",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+  
+  // Endpoint to update a show with a local image file
+  app.post("/api/shows/:id/update-with-local-image", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const { imageUrl } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+      
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "TV show not found" });
+      }
+      
+      // Save to our custom image map and update the show
+      imageManager.updateCustomImageMap(id, imageUrl);
+      
+      // Update the show with the local image URL
+      const updatedShow = await storage.updateTvShow(id, { imageUrl });
+      
+      if (updatedShow) {
+        res.json({
+          success: true,
+          message: `Updated "${show.name}" with local image`,
+          show: updatedShow
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Failed to update show in storage"
+        });
+      }
+    } catch (error) {
+      console.error("Error updating show with local image:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to update show with local image",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Import data from CSV file
+  app.post("/api/import-csv", async (req: Request, res: Response) => {
+    try {
+      // Check if CSV file exists
+      const csvFilePath = 'tvshow_sensory_data.csv';
+      if (!fs.existsSync(csvFilePath)) {
+        return res.status(404).json({ message: "CSV file not found" });
+      }
+
+      // Read and parse CSV file
+      const fileContent = fs.readFileSync(csvFilePath, 'utf8');
+      const records = parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true
+      });
+
+      console.log(`Parsed ${records.length} records from CSV`);
+      
+      // Transform CSV data to GitHub format
+      const transformedShows: TvShowGitHub[] = records.map((record: any, index: number) => {
+        // Split the themes into an array and trim each value
+        const themes = record['Themes, Teachings, Guidance'] 
+          ? record['Themes, Teachings, Guidance'].split(',').map((t: string) => t.trim())
+          : [];
+
+        // Convert string numbers to actual numbers
+        const stimulationScore = parseInt(record['Stimulation Score']) || 3;
+        
+        // Debug the CSV data for Arthur
+        if (record['Programs'] === 'Arthur') {
+          console.log('Arthur data in CSV:', {
+            title: record['Programs'],
+            sound_effects: record['Sound Effects'],
+            dialogue: record['Dialougue Intensity']
+          });
+        }
+
+        return {
+          title: record['Programs'] || `Show ${index + 1}`,
+          stimulation_score: stimulationScore,
+          platform: record['TV or YouTube'] || 'TV',
+          target_age_group: record['Target Age Group'] || '4-8',
+          seasons: record['Seasons'] || null,
+          avg_episode_length: record['Avg. Epsiode'] || null,
+          themes: themes,
+          interactivity_level: record['Interactivity Level'] || 'Moderate',
+          animation_style: record['Animation Styles'] || 'Traditional 2D',
+          dialogue_intensity: record['Dialougue Intensity'] || 'Moderate',
+          sound_effects_level: record['Sound Effects'] || 'Moderate',
+          music_tempo: record['Music Tempo'] || 'Moderate',
+          total_music_level: record['Total Music'] || 'Moderate',
+          total_sound_effect_time_level: record['Total Sound Effect Time'] || 'Moderate',
+          scene_frequency: record['Scene Frequency'] || 'Moderate',
+          image_filename: `${record['Programs']?.toLowerCase().replace(/[^a-z0-9]/g, '')}.jpg` || 'default.jpg',
+          id: index + 1,
+          // Add image URL based on the show title for GitHub repo format
+          imageUrl: `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${record['Programs']?.toLowerCase().replace(/[^a-z0-9]/g, '')}.jpg`
+        };
+      });
+
+      // Import processed data to storage
+      const importedShows = await storage.importShowsFromGitHub(transformedShows);
+      console.log(`Imported ${importedShows.length} TV shows from CSV`);
+      
+      res.json({ 
+        message: "CSV data imported successfully", 
+        count: importedShows.length 
+      });
+    } catch (error) {
+      console.error('Error importing CSV data:', error);
+      res.status(500).json({ 
+        message: "Failed to import CSV data", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Add favorite routes, protected by authentication
+  // Add a show to user's favorites
+  app.post("/api/favorites", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to use favorites" });
+    }
+
+    try {
+      const { tvShowId } = req.body;
+      if (!tvShowId || isNaN(parseInt(tvShowId))) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+
+      // Import favorites functions
+      const { addFavorite } = await import("./database-favorites");
+      
+      const userId = req.user!.id;
+      const favorite = await addFavorite(userId, parseInt(tvShowId));
+      
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      res.status(500).json({ message: "Failed to add favorite" });
+    }
+  });
+
+  // Remove a show from user's favorites
+  app.delete("/api/favorites/:tvShowId", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to use favorites" });
+    }
+
+    try {
+      const tvShowId = parseInt(req.params.tvShowId);
+      if (isNaN(tvShowId)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+
+      // Import favorites functions
+      const { removeFavorite } = await import("./database-favorites");
+      
+      const userId = req.user!.id;
+      const result = await removeFavorite(userId, tvShowId);
+      
+      if (result) {
+        res.status(200).json({ message: "Show removed from favorites" });
+      } else {
+        res.status(404).json({ message: "Show was not in favorites" });
+      }
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      res.status(500).json({ message: "Failed to remove favorite" });
+    }
+  });
+
+  // Get user's favorites
+  app.get("/api/favorites", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to view favorites" });
+    }
+
+    try {
+      // Import favorites functions
+      const { getUserFavorites } = await import("./database-favorites");
+      
+      const userId = req.user!.id;
+      const favorites = await getUserFavorites(userId);
+      
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ message: "Failed to fetch favorites" });
+    }
+  });
+
+  // Check if a show is in the user's favorites
+  app.get("/api/favorites/:tvShowId", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to check favorites" });
+    }
+
+    try {
+      const tvShowId = parseInt(req.params.tvShowId);
+      if (isNaN(tvShowId)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+
+      // Import favorites functions
+      const { isFavorite } = await import("./database-favorites");
+      
+      const userId = req.user!.id;
+      const isFav = await isFavorite(userId, tvShowId);
+      
+      res.json({ isFavorite: isFav });
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+      res.status(500).json({ message: "Failed to check favorite status" });
+    }
+  });
+
+  // Get similar shows based on user's favorites
+  app.get("/api/recommendations", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to get recommendations" });
+    }
+
+    try {
+      const userId = req.user!.id;
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 5;
+      
+      // Import favorites functions
+      const { getSimilarShows } = await import("./database-favorites");
+      
+      const recommendations = await getSimilarShows(userId, limit);
+      
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      res.status(500).json({ message: "Failed to fetch recommendations" });
+    }
+  });
+  
+  // Get similar shows for a specific show
+  app.get("/api/shows/:id/similar", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`Fetching similar shows for show ID: ${id}`);
+      
+      if (isNaN(id)) {
+        console.log("Invalid show ID provided");
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 4;
+      
+      // Since we don't have a showId-based similar function, use the user-based one instead
+      // Or get shows with similar themes/properties
+      const show = await storage.getTvShowById(id);
+      if (!show) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+      
+      // Get all shows and filter them manually by similar properties
+      const allShows = await storage.getAllTvShows();
+      const similarShows = allShows
+        .filter(s => s.id !== id) // Exclude current show
+        .map(s => {
+          // Calculate similarity score
+          let score = 0;
+          
+          // Similar age range
+          if (s.ageRange === show.ageRange) score += 3;
+          
+          // Similar stimulation score (within 10 points)
+          if (Math.abs((s.stimulationScore || 0) - (show.stimulationScore || 0)) <= 10) score += 4;
+          
+          // Similar themes
+          const showThemes = show.themes || [];
+          const otherThemes = s.themes || [];
+          const commonThemes = showThemes.filter(theme => otherThemes.includes(theme));
+          score += commonThemes.length * 2;
+          
+          // Similar dialogue intensity
+          if (s.dialogueIntensity === show.dialogueIntensity) score += 2;
+          
+          // Similar animation style
+          if (s.animationStyle === show.animationStyle) score += 2;
+          
+          return { show: s, score };
+        })
+        .sort((a, b) => b.score - a.score) // Sort by highest score
+        .slice(0, limit) // Get requested number
+        .map(item => item.show); // Return just the shows
+        
+      console.log(`Found ${similarShows.length} similar shows for show ID ${id}`);
+      
+      // Log some sample data
+      if (similarShows.length > 0) {
+        console.log("First similar show:", {
+          id: similarShows[0].id,
+          name: similarShows[0].name
+        });
+      }
+      
+      res.json(similarShows);
+    } catch (error) {
+      console.error("Error fetching similar shows:", error);
+      res.status(500).json({ message: "Failed to fetch similar shows" });
+    }
+  });
+
+  // Check if a user is admin (for color palette access)
+  app.get("/api/user/is-admin", async (req: Request, res: Response) => {
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in" });
+    }
+
+    try {
+      res.json({ isAdmin: req.user!.isAdmin });
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      res.status(500).json({ message: "Failed to check admin status" });
+    }
+  });
+  
+  // Check if username is available
+  app.get("/api/check-username", async (req: Request, res: Response) => {
+    try {
+      const username = req.query.username as string;
+      
+      if (!username || username.length < 2) {
+        return res.status(400).json({ available: false, message: "Username is too short" });
+      }
+      
+      const existingUser = await storage.getUserByUsername(username);
+      res.json({ available: !existingUser });
+    } catch (error) {
+      console.error("Error checking username:", error);
+      res.status(500).json({ available: false, message: "Server error" });
+    }
+  });
+  
+  // Check if email is available
+  app.get("/api/check-email", async (req: Request, res: Response) => {
+    try {
+      const email = req.query.email as string;
+      
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ available: false, message: "Invalid email format" });
+      }
+      
+      const existingUser = await storage.getUserByEmail(email);
+      res.json({ available: !existingUser });
+    } catch (error) {
+      console.error("Error checking email:", error);
+      res.status(500).json({ available: false, message: "Server error" });
+    }
+  });
+  
+  // Image upload endpoint for TV shows - used by both add and edit forms
+  app.post("/api/shows/upload-image", upload.single('image'), uploadErrorHandler, async (req: Request, res: Response) => {
+    // Check if user is authenticated and has admin privileges
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized: Admin access required" });
+    }
+    
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+      
+      // Optimize the uploaded image
+      const optimizedImagePath = await optimizeImage(req.file.path);
+      
+      // Return the path to the optimized image
+      res.json({
+        originalPath: `/uploads/${path.basename(req.file.path)}`,
+        optimizedPath: optimizedImagePath,
+        message: "Image uploaded and optimized successfully"
+      });
+    } catch (error) {
+      console.error("Error processing image upload:", error);
+      res.status(500).json({ 
+        message: "Failed to process image upload", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+  
+  // Add a new TV show (admin only)
+  app.post("/api/shows", async (req: Request, res: Response) => {
+    // Check if user is authenticated and has admin privileges
+    if (!req.isAuthenticated() || !req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized: Admin access required" });
+    }
+    
+    try {
+      // Validate that required fields are present
+      const { name, description } = req.body;
+      
+      if (!name || !name.trim()) {
+        return res.status(400).json({ message: "Show name is required" });
+      }
+      
+      // Process themes if they're provided as an array
+      if (req.body.themes && Array.isArray(req.body.themes)) {
+        // Filter out any empty themes
+        req.body.themes = req.body.themes.filter((theme: string) => theme.trim() !== '');
+      }
+      
+      // Ensure stimulation score is a whole number if provided
+      if (req.body.stimulationScore !== undefined) {
+        req.body.stimulationScore = Math.round(Number(req.body.stimulationScore));
+      }
+      
+      // Ensure all required fields have default values to avoid database constraint errors
+      const currentYear = new Date().getFullYear();
+      const showData = {
+        ...req.body,
+        // Set default values for any missing required fields
+        episodeLength: req.body.episodeLength || 15,
+        seasons: req.body.seasons || 1,
+        releaseYear: req.body.releaseYear || currentYear,
+        endYear: req.body.endYear || null,
+        isOngoing: req.body.isOngoing !== undefined ? req.body.isOngoing : true,
+        creator: req.body.creator || '',
+        availableOn: Array.isArray(req.body.availableOn) ? req.body.availableOn : [],
+        // Use stimulation score as the overall rating since they're the same
+        overallRating: req.body.stimulationScore || 3 // Using stimulation score for overall rating
+      };
+      
+      console.log("Adding show with data:", JSON.stringify({
+        name: showData.name,
+        episodeLength: showData.episodeLength,
+        seasons: showData.seasons
+      }, null, 2));
+      
+      // Add the show to the database
+      const newShow = await storage.addTvShow(showData);
+      
+      // If an image URL was provided, add it to our custom image map
+      if (showData.imageUrl) {
+        imageManager.updateCustomImageMap(newShow.id, showData.imageUrl);
+      }
+      
+      console.log(`Created new TV show: ${name} (ID: ${newShow.id})`);
+      
+      res.status(201).json(newShow);
+    } catch (error) {
+      console.error("Error adding new TV show:", error);
+      res.status(500).json({ 
+        message: "Failed to add new TV show", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+  
+  // Update a TV show (admin only)
+  app.patch("/api/shows/:id", async (req: Request, res: Response) => {
+    try {
+      // Parse ID once
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to update shows" });
+      }
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      // Validate the show exists
+      const existingShow = await storage.getTvShowById(id);
+      if (!existingShow) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+
+      console.log(`Updating show #${id} with data:`, JSON.stringify(req.body, null, 2));
+
+      // Update the show
+      const updatedShow = await storage.updateTvShow(id, req.body);
+      if (!updatedShow) {
+        console.error(`Failed to update show #${id}`);
+        return res.status(500).json({ message: "Failed to update show" });
+      }
+
+      console.log(`Show #${id} updated successfully:`, JSON.stringify(updatedShow, null, 2));
+      res.json(updatedShow);
+    } catch (error) {
+      console.error("Error updating TV show:", error);
+      res.status(500).json({ message: "Failed to update TV show" });
+    }
+  });
+
+  // Delete a TV show (admin only)
+  app.delete("/api/shows/:id", async (req: Request, res: Response) => {
+    try {
+      // Parse ID once
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to delete shows" });
+      }
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      // Validate the show exists
+      const existingShow = await storage.getTvShowById(id);
+      if (!existingShow) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+
+      console.log(`Attempting to delete TV show: ${existingShow.name} (ID: ${id})`);
+      
+      // Delete the show from the database
+      const deleteResult = await storage.deleteTvShow(id);
+      
+      if (!deleteResult) {
+        console.error(`Failed to delete show with ID ${id}`);
+        return res.status(500).json({ message: "Failed to delete TV show" });
+      }
+      
+      console.log(`Successfully deleted TV show: ${existingShow.name} (ID: ${id})`);
+      res.status(200).json({ message: "TV show deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting TV show:", error);
+      res.status(500).json({ message: "Failed to delete TV show" });
+    }
+  });
+  
+  // Admin-only API to delete a review
+  app.delete("/api/admin/reviews/:id", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const reviewId = parseInt(req.params.id);
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      // Import admin functions
+      const { deleteReview } = await import("./admin-functions");
+      
+      // Delete the review and handle points deduction
+      const result = await deleteReview(reviewId);
+      
+      if (!result.success) {
+        return res.status(404).json({ message: "Review not found or could not be deleted" });
+      }
+      
+      res.status(200).json({ 
+        message: "Review deleted successfully by admin",
+        pointsDeducted: result.pointsDeducted
+      });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+  
+  // Admin-only API to standardize all sensory metrics to approved scale
+  app.post("/api/admin/standardize-metrics", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Cast storage to DatabaseStorage to access the standardization method
+      const dbStorage = storage as DatabaseStorage;
+      if (typeof dbStorage.standardizeAllSensoryMetrics !== 'function') {
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Database storage required for this operation' 
+        });
+      }
+      
+      // Run the standardization
+      const result = await dbStorage.standardizeAllSensoryMetrics();
+      return res.json(result);
+    } catch (error) {
+      console.error('Error standardizing sensory metrics:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to standardize metrics' 
+      });
+    }
+  });
+  
+  // Admin-only API to optimize all custom images for SEO
+  app.post("/api/admin/optimize-custom-images", async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to optimize images" });
+      }
+      
+      // Get all shows with non-optimized images that need SEO optimization
+      const shows = await storage.getAllTvShows();
+      
+      // Filter shows that need image optimization (non-OMDB images that aren't already optimized)
+      const showsToOptimize = shows.filter(show => 
+        show.imageUrl && 
+        !show.imageUrl.includes('/uploads/optimized/') &&
+        !show.imageUrl.includes('m.media-amazon.com') &&
+        !show.imageUrl.includes('omdbapi.com')
+      );
+      
+      console.log(`Found ${showsToOptimize.length} custom images to optimize`);
+      
+      // Import modules are already available at the top of file
+      // We'll use the existing imports instead
+      
+      // Ensure temp directory exists
+      const tempDir = './tmp_images';
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Prepare results
+      const optimizationResults = [];
+      let optimizedCount = 0;
+      let errorCount = 0;
+      let skippedCount = 0;
+      
+      // Process each image
+      for (const show of showsToOptimize) {
+        try {
+          console.log(`Processing image for show ${show.id}: ${show.name}`);
+          
+          // Skip if URL is null or malformed
+          if (!show.imageUrl) {
+            console.log(`Skipping - null image URL for show ${show.id}`);
+            skippedCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "skipped",
+              reason: "Null image URL"
+            });
+            continue;
+          }
+          
+          // Download image if it's a remote URL
+          let localImagePath = null;
+          
+          if (show.imageUrl.startsWith('http')) {
+            try {
+              // Download the image
+              const response = await fetch(show.imageUrl);
+              if (!response.ok) {
+                throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+              }
+              
+              const buffer = await response.buffer();
+              
+              // Save image to temp location
+              const timestamp = Date.now();
+              const uniqueFilename = `show-${show.id}-${timestamp}.jpg`;
+              localImagePath = path.join(tempDir, uniqueFilename);
+              
+              fs.writeFileSync(localImagePath, buffer);
+              console.log(`Downloaded image to: ${localImagePath}`);
+            } catch (error) {
+              console.error(`Error downloading image for show ${show.id}:`, error);
+              errorCount++;
+              optimizationResults.push({
+                id: show.id,
+                name: show.name,
+                status: "error",
+                reason: `Download error: ${error instanceof Error ? error.message : "Unknown error"}`
+              });
+              continue;
+            }
+          } else if (show.imageUrl.startsWith('/')) {
+            // For local images, check if they exist
+            const possiblePaths = [
+              path.join('public', show.imageUrl),
+              path.join('public', 'uploads', path.basename(show.imageUrl)),
+              path.join('public', 'custom-images', path.basename(show.imageUrl)),
+              path.join('public', 'images', path.basename(show.imageUrl)),
+              path.join('attached_assets', path.basename(show.imageUrl)),
+              show.imageUrl.substring(1) // Try without leading slash
+            ];
+            
+            for (const checkPath of possiblePaths) {
+              if (fs.existsSync(checkPath)) {
+                localImagePath = checkPath;
+                console.log(`Found local image at ${localImagePath}`);
+                break;
+              }
+            }
+            
+            if (!localImagePath) {
+              console.log(`Could not find local image at any expected location: ${show.imageUrl}`);
+              skippedCount++;
+              optimizationResults.push({
+                id: show.id,
+                name: show.name,
+                status: "skipped",
+                reason: "Local image not found"
+              });
+              continue;
+            }
+          } else {
+            console.log(`Unsupported image URL format: ${show.imageUrl}`);
+            skippedCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "skipped",
+              reason: "Unsupported image URL format"
+            });
+            continue;
+          }
+          
+          // Now optimize the image
+          try {
+            // Use our existing image optimization function
+            const optimizedUrl = await optimizeImage(localImagePath);
+            
+            // Update the show in the database with the new optimized URL
+            await storage.updateTvShow(show.id, {
+              imageUrl: optimizedUrl
+            });
+            
+            // Update custom image map too
+            imageManager.updateCustomImageMap(show.id, optimizedUrl);
+            
+            console.log(`Optimized image for show ${show.id}: ${optimizedUrl}`);
+            optimizedCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "success",
+              oldImageUrl: show.imageUrl,
+              newImageUrl: optimizedUrl
+            });
+            
+            // Clean up temp file if we downloaded it
+            if (localImagePath.startsWith('./tmp_images')) {
+              try {
+                fs.unlinkSync(localImagePath);
+              } catch (e) {
+                // Ignore cleanup errors
+              }
+            }
+          } catch (error) {
+            console.error(`Error optimizing image for show ${show.id}:`, error);
+            errorCount++;
+            optimizationResults.push({
+              id: show.id,
+              name: show.name,
+              status: "error",
+              reason: `Optimization error: ${error instanceof Error ? error.message : "Unknown error"}`
+            });
+          }
+        } catch (error) {
+          console.error(`Error processing show ${show.id}:`, error);
+          errorCount++;
+          optimizationResults.push({
+            id: show.id,
+            name: show.name,
+            status: "error",
+            reason: `Processing error: ${error instanceof Error ? error.message : "Unknown error"}`
+          });
+        }
+      }
+      
+      // Return results
+      return res.json({
+        message: "Custom image optimization complete",
+        total: showsToOptimize.length,
+        optimized: optimizedCount,
+        skipped: skippedCount,
+        errors: errorCount,
+        results: optimizationResults
+      });
+    } catch (error) {
+      console.error('Error in optimize-custom-images:', error);
+      return res.status(500).json({ 
+        message: "Error during custom image optimization", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // Gamification API Routes
+  // -------------------------------------------------------------------------
+  
+  // Get user points
+  app.get("/api/user/points", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your points" });
+      }
+      
+      const points = await storage.getUserPoints(userId);
+      res.json(points);
+    } catch (error) {
+      console.error('Error getting user points:', error);
+      res.status(500).json({ 
+        message: "Error retrieving user points", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Get user points history
+  app.get("/api/user/points/history", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your points history" });
+      }
+      
+      const history = await storage.getUserPointsHistory(userId);
+      res.json(history);
+    } catch (error) {
+      console.error('Error getting user points history:', error);
+      res.status(500).json({ 
+        message: "Error retrieving points history", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const leaderboard = await storage.getTopUsers(limit);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error getting leaderboard:', error);
+      res.status(500).json({ 
+        message: "Error retrieving leaderboard", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Upvote a review (awards points to the review author)
+  app.post("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const { reviewId } = req.params;
+      
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "You must be logged in to upvote reviews" });
+      }
+      
+      // Get user ID from authenticated user
+      const userId = req.user.id;
+      console.log(`Upvote attempt by user ${userId} for review ${reviewId}`);
+      
+      // Convert userId to integer since database expects integer for userId column
+      const parsedUserId = parseInt(userId);
+      
+      // Add upvote and award points to the review author
+      const upvote = await storage.addReviewUpvote(parsedUserId, parseInt(reviewId));
+      
+      res.json({ success: true, upvote });
+    } catch (error) {
+      console.error('Error upvoting review:', error);
+      res.status(500).json({ 
+        message: "Error upvoting review", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Remove upvote from a review
+  app.delete("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const { reviewId } = req.params;
+      
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "You must be logged in to remove upvotes" });
+      }
+      
+      // Get user ID from authenticated user
+      const userId = req.user.id;
+      console.log(`Remove upvote attempt by user ${userId} for review ${reviewId}`);
+      
+      // Convert userId to integer since database expects integer for userId column
+      const parsedUserId = parseInt(userId);
+      
+      const removed = await storage.removeReviewUpvote(parsedUserId, parseInt(reviewId));
+      res.json({ success: removed });
+    } catch (error) {
+      console.error('Error removing upvote:', error);
+      res.status(500).json({ 
+        message: "Error removing upvote", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Get upvotes for a review
+  app.get("/api/reviews/:reviewId/upvotes", async (req: Request, res: Response) => {
+    try {
+      const { reviewId } = req.params;
+      const upvotes = await storage.getReviewUpvotes(parseInt(reviewId));
+      res.json(upvotes);
+    } catch (error) {
+      console.error('Error getting review upvotes:', error);
+      res.status(500).json({ 
+        message: "Error retrieving review upvotes", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // User Dashboard
+  app.get("/api/user/dashboard", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your dashboard" });
+      }
+      
+      // Get user data
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get all user dashboard data in parallel
+      const [
+        pointsHistory,
+        favorites,
+        reviews,
         readResearch,
-        topUsers
+        submissions
+      ] = await Promise.all([
+        storage.getUserPointsHistory(parsedUserId),
+        storage.getUserFavorites(parsedUserId),
+        storage.getReviewsByTvShowId(parsedUserId), // Note: We need to create a getReviewsByUserId method
+        storage.getUserReadResearch(parsedUserId),
+        storage.getUserShowSubmissions(parsedUserId)
+      ]);
+      
+      // Update login streak if the user just logged in
+      await storage.updateUserLoginStreak(parsedUserId.toString());
+      
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          totalPoints: user.totalPoints || 0,
+          profileBio: user.profileBio
+        },
+        pointsHistory,
+        favorites,
+        reviews,
+        readResearch,
+        submissions
       });
     } catch (error) {
       console.error("Error fetching user dashboard:", error);
       res.status(500).json({ message: "Failed to fetch user dashboard data" });
     }
   });
-
-  /* Rest of the routes go here - omitted for brevity */
+  
+  // User Points
+  app.get("/api/user/points", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view points" });
+      }
+      
+      // Convert userId to integer since database expects integer
+      const parsedUserId = parseInt(userId);
+      
+      const points = await storage.getUserPoints(parsedUserId);
+      res.json({ points });
+    } catch (error) {
+      console.error("Error fetching user points:", error);
+      res.status(500).json({ message: "Failed to fetch user points" });
+    }
+  });
+  
+  app.get("/api/user/points/history", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view points history" });
+      }
+      
+      // Convert userId to integer since database expects integer
+      const parsedUserId = parseInt(userId);
+      
+      const history = await storage.getUserPointsHistory(parsedUserId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching points history:", error);
+      res.status(500).json({ message: "Failed to fetch points history" });
+    }
+  });
+  
+  // Review Upvotes
+  app.post("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to upvote reviews" });
+      }
+      
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
+      
+      const reviewId = parseInt(req.params.reviewId);
+      
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      const upvote = await storage.addReviewUpvote(parsedUserId, reviewId);
+      res.json(upvote);
+    } catch (error) {
+      console.error("Error upvoting review:", error);
+      res.status(500).json({ message: "Failed to upvote review" });
+    }
+  });
+  
+  app.delete("/api/reviews/:reviewId/upvote", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to remove upvotes" });
+      }
+      
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
+      
+      const reviewId = parseInt(req.params.reviewId);
+      
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      await storage.removeReviewUpvote(parsedUserId, reviewId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing upvote:", error);
+      res.status(500).json({ message: "Failed to remove upvote" });
+    }
+  });
+  
+  app.get("/api/reviews/:reviewId/upvotes", async (req: Request, res: Response) => {
+    try {
+      const reviewId = parseInt(req.params.reviewId);
+      
+      if (isNaN(reviewId)) {
+        return res.status(400).json({ message: "Invalid review ID" });
+      }
+      
+      const upvotes = await storage.getReviewUpvotes(reviewId);
+      res.json(upvotes);
+    } catch (error) {
+      console.error("Error fetching upvotes:", error);
+      res.status(500).json({ message: "Failed to fetch upvotes" });
+    }
+  });
+  
+  // Research Summaries
+  app.get("/api/research", async (req: Request, res: Response) => {
+    try {
+      const summaries = await storage.getResearchSummaries();
+      
+      // Check if user is logged in to determine read status
+      const userId = req.session?.userId;
+      if (userId) {
+        const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
+        const summariesWithReadStatus = summaries.map(summary => ({
+          ...summary,
+          hasRead: userReadIds.includes(summary.id)
+        }));
+        res.json(summariesWithReadStatus);
+      } else {
+        res.json(summaries.map(summary => ({
+          ...summary,
+          hasRead: false
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching research summaries:", error);
+      res.status(500).json({ message: "Failed to fetch research summaries" });
+    }
+  });
+  
+  app.get("/api/research/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid research ID" });
+      }
+      
+      const summary = await storage.getResearchSummary(id);
+      
+      if (!summary) {
+        return res.status(404).json({ message: "Research summary not found" });
+      }
+      
+      // Check if user has read this research
+      const userId = req.session?.userId;
+      if (userId) {
+        const hasRead = await storage.hasUserReadResearch(userId, id);
+        res.json({
+          ...summary,
+          hasRead
+        });
+      } else {
+        res.json({
+          ...summary,
+          hasRead: false
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching research summary:", error);
+      res.status(500).json({ message: "Failed to fetch research summary" });
+    }
+  });
+  
+  app.post("/api/research/:id/mark-read", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to mark research as read" });
+      }
+      
+      const researchId = parseInt(req.params.id);
+      
+      if (isNaN(researchId)) {
+        return res.status(400).json({ message: "Invalid research ID" });
+      }
+      
+      const readRecord = await storage.markResearchAsRead(userId, researchId);
+      res.json(readRecord);
+    } catch (error) {
+      console.error("Error marking research as read:", error);
+      res.status(500).json({ message: "Failed to mark research as read" });
+    }
+  });
+  
+  // Admin only - add research summary
+  app.post("/api/research", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to add research summaries" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can add research summaries" });
+      }
+      
+      const summary = await storage.addResearchSummary(req.body);
+      res.json(summary);
+    } catch (error) {
+      console.error("Error adding research summary:", error);
+      res.status(500).json({ message: "Failed to add research summary" });
+    }
+  });
+  
+  // Show Submissions
+  app.post("/api/show-submissions", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to submit shows" });
+      }
+      
+      const submission = await storage.addShowSubmission({
+        ...req.body,
+        userId
+      });
+      res.json(submission);
+    } catch (error) {
+      console.error("Error submitting show:", error);
+      res.status(500).json({ message: "Failed to submit show" });
+    }
+  });
+  
+  app.get("/api/show-submissions", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view submissions" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      // Admin can see all pending submissions
+      if (user?.isAdmin) {
+        const submissions = await storage.getPendingShowSubmissions();
+        res.json(submissions);
+      } else {
+        // Regular users only see their own submissions
+        const submissions = await storage.getUserShowSubmissions(userId);
+        res.json(submissions);
+      }
+    } catch (error) {
+      console.error("Error fetching show submissions:", error);
+      res.status(500).json({ message: "Failed to fetch show submissions" });
+    }
+  });
+  
+  // Admin only - update submission status
+  app.put("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to update submission status" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can update submission status" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid submission ID" });
+      }
+      
+      if (!["pending", "approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', or 'rejected'" });
+      }
+      
+      const submission = await storage.updateShowSubmissionStatus(id, status);
+      res.json(submission);
+    } catch (error) {
+      console.error("Error updating submission status:", error);
+      res.status(500).json({ message: "Failed to update submission status" });
+    }
+  });
+  
+  // User Leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const topUsers = await storage.getTopUsers(limit);
+      
+      // Return only necessary user info (username, points)
+      const leaderboard = topUsers.map(user => ({
+        id: user.id,
+        username: user.username,
+        totalPoints: user.totalPoints || 0
+      }));
+      
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
 
   const httpServer = createServer(app);
+
   return httpServer;
 }
