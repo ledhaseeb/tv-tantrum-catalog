@@ -334,7 +334,7 @@ const UserDashboard = () => {
             </CardHeader>
             <CardContent>
               {favorites?.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {favorites.map((show: any) => (
                     <div key={show.id} className="rounded-lg">
                       <ShowCard 
@@ -344,7 +344,7 @@ const UserDashboard = () => {
                           // Navigate to show details
                           window.location.href = `/show/${show.id}`;
                         }}
-                        isMobile={false}
+                        isMobile={true}
                       />
                     </div>
                   ))}
