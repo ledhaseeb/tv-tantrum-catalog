@@ -2158,21 +2158,24 @@ export class DatabaseStorage implements IStorage {
         
         // Award points in a way that doesn't block the upvote operation
         try {
-          // Update user points (ignoring missing tables/columns)
-          await client.query(
-            `DO $$
-            BEGIN
-              IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_points_history') THEN
-                INSERT INTO user_points_history (user_id, points, activity_type, description)
-                VALUES ($1, 1, 'upvote_given', 'Upvoted a review');
-                
-                UPDATE users SET total_points = COALESCE(total_points, 0) + 1 WHERE id = $1;
-              END IF;
-            EXCEPTION WHEN OTHERS THEN
-              -- Ignore errors in points processing
-            END $$;`,
-            [userId]
+          // Award points to upvoter directly through separate statements
+          const historyExists = await client.query(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_points_history')"
           );
+          
+          if (historyExists.rows[0].exists) {
+            // Add points history
+            await client.query(
+              'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+              [userId, 1, 'upvote_given', 'Upvoted a review']
+            );
+            
+            // Update total points
+            await client.query(
+              'UPDATE users SET total_points = COALESCE(total_points, 0) + 1 WHERE id = $1',
+              [userId]
+            );
+          }
           
           // Get review author to award points
           const reviewResult = await client.query(
@@ -2185,18 +2188,16 @@ export class DatabaseStorage implements IStorage {
             
             // Only award points if not self-upvoting
             if (authorId && authorId !== userId) {
+              // Award points to the review author
+              // Add points history
               await client.query(
-                `DO $$
-                BEGIN
-                  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_points_history') THEN
-                    INSERT INTO user_points_history (user_id, points, activity_type, description)
-                    VALUES ($1, 5, 'upvote_received', 'Your review received an upvote');
-                    
-                    UPDATE users SET total_points = COALESCE(total_points, 0) + 5 WHERE id = $1;
-                  END IF;
-                EXCEPTION WHEN OTHERS THEN
-                  -- Ignore errors in points processing
-                END $$;`,
+                'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
+                [authorId, 5, 'upvote_received', 'Your review received an upvote']
+              );
+              
+              // Update total points
+              await client.query(
+                'UPDATE users SET total_points = COALESCE(total_points, 0) + 5 WHERE id = $1',
                 [authorId]
               );
             }
