@@ -50,8 +50,14 @@ interface YouTubeData {
   channelId: string;
 }
 
+// Enhanced review type with upvotes
+interface EnhancedReview extends TvShowReview {
+  upvoteCount?: number;
+  userHasUpvoted?: boolean;
+}
+
 type ShowDetailResponse = TvShow & { 
-  reviews: TvShowReview[];
+  reviews: EnhancedReview[];
   omdb?: OmdbData | null;
   youtube?: YouTubeData | null;
   externalData?: {
@@ -142,6 +148,76 @@ export default function Detail({ id }: DetailProps) {
   const handleDeleteReview = (reviewId: number) => {
     if (window.confirm("Are you sure you want to delete this review? This will also deduct the points awarded to the user.")) {
       deleteReviewMutation.mutate(reviewId);
+    }
+  };
+  
+  // Upvote review mutation
+  const upvoteReviewMutation = useMutation({
+    mutationFn: async (reviewId: number) => {
+      return await apiRequest("POST", `/api/reviews/${reviewId}/upvote`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Upvoted",
+        description: "You've upvoted this review. Thank you for the feedback!",
+      });
+      
+      // Refresh show data to update reviews
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
+      
+      // Also update the user dashboard to reflect points earned
+      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to upvote review. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Remove upvote mutation
+  const removeUpvoteMutation = useMutation({
+    mutationFn: async (reviewId: number) => {
+      return await apiRequest("DELETE", `/api/reviews/${reviewId}/upvote`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Upvote removed",
+        description: "Your upvote has been removed.",
+      });
+      
+      // Refresh show data to update reviews
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
+      
+      // Also update the user dashboard to reflect points changes
+      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to remove upvote. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Handle toggling upvote status
+  const handleToggleUpvote = (reviewId: number, hasUpvoted: boolean) => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "You need to be signed in to upvote reviews.",
+        variant: "default",
+      });
+      return;
+    }
+    
+    if (hasUpvoted) {
+      removeUpvoteMutation.mutate(reviewId);
+    } else {
+      upvoteReviewMutation.mutate(reviewId);
     }
   };
   
@@ -1049,17 +1125,41 @@ export default function Detail({ id }: DetailProps) {
                           ))}
                         </div>
                       </div>
-                      {user?.isAdmin && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDeleteReview(review.id)}
-                        >
-                          <i className="fas fa-trash-alt mr-1"></i>
-                          Delete
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {/* Only show upvote button if user is logged in and not the review author */}
+                        {user && user.id !== review.userId && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className={`${review.userHasUpvoted ? 'text-blue-600' : 'text-gray-500'} hover:text-blue-700 hover:bg-blue-50`}
+                            onClick={() => handleToggleUpvote(review.id, review.userHasUpvoted)}
+                          >
+                            <i className={`${review.userHasUpvoted ? 'fas' : 'far'} fa-thumbs-up mr-1`}></i>
+                            {review.upvoteCount || 0}
+                          </Button>
+                        )}
+                        
+                        {/* If user is the review author, show upvote count without button */}
+                        {user && user.id === review.userId && review.upvoteCount > 0 && (
+                          <div className="text-gray-500 text-sm flex items-center">
+                            <i className="fas fa-thumbs-up mr-1 text-blue-400"></i>
+                            {review.upvoteCount}
+                          </div>
+                        )}
+                        
+                        {/* Admin delete button */}
+                        {user?.isAdmin && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleDeleteReview(review.id)}
+                          >
+                            <i className="fas fa-trash-alt mr-1"></i>
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     <p className="text-gray-700">{review.review}</p>
                   </div>
