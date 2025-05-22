@@ -321,6 +321,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get show submissions - empty placeholder for now
       let submissions = [];
       
+      // Get most recent activity from points history for the activity feed
+      let recentActivity = [];
+      try {
+        // Get the 10 most recent activities from points history
+        recentActivity = pointsHistory.slice(0, 10);
+      } catch (error) {
+        console.error('Error getting recent activity:', error);
+      }
+      
       // Compile dashboard data
       const dashboardData = {
         user,
@@ -336,7 +345,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         streak: loginStreak?.currentStreak || 0,
         weeklyStreak: loginStreak?.weeklyStreak || 0,
         monthlyStreak: loginStreak?.monthlyStreak || 0,
-        leaderboard: topUsers
+        leaderboard: topUsers,
+        recentActivity  // Add the recent activity to the dashboard data
       };
       
       res.json(dashboardData);
