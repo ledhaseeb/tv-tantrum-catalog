@@ -11,6 +11,8 @@ import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calend
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import ShowCard from '@/components/ShowCard';
+import { useLocation } from 'wouter';
 
 const UserDashboard = () => {
   const { user, toggleFavorite } = useAuth();
@@ -332,54 +334,18 @@ const UserDashboard = () => {
             </CardHeader>
             <CardContent>
               {favorites?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {favorites.map((show: any) => (
-                    <div
-                      key={show.id}
-                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg relative group"
-                    >
-                      <div className="w-12 h-12 rounded-md overflow-hidden">
-                        <img
-                          src={show.imageUrl || "https://placehold.co/100x100?text=TV"}
-                          alt={show.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium line-clamp-1">{show.name}</h3>
-                        <p className="text-xs text-gray-500">
-                          {show.releaseYear}
-                          {show.endYear && show.endYear !== show.releaseYear
-                            ? ` - ${show.endYear}`
-                            : show.isOngoing
-                            ? " - Present"
-                            : ""}
-                        </p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="opacity-0 group-hover:opacity-100 absolute top-1 right-1 h-6 w-6"
-                        title="Remove from favorites"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          
-                          // Remove from favorites
-                          toggleFavorite(show.id).then(() => {
-                            // Invalidate dashboard data to refresh the favorites
-                            queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
-                            
-                            toast({
-                              title: "Removed from favorites",
-                              description: `${show.name} has been removed from your favorites.`,
-                              variant: "default",
-                            });
-                          });
+                    <div key={show.id} className="rounded-lg">
+                      <ShowCard 
+                        show={show} 
+                        viewMode="grid" 
+                        onClick={() => {
+                          // Navigate to show details
+                          window.location.href = `/show/${show.id}`;
                         }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                        isMobile={false}
+                      />
                     </div>
                   ))}
                 </div>
