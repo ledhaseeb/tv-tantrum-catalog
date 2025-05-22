@@ -81,9 +81,10 @@ type ReviewFormValues = z.infer<typeof reviewSchema>;
 
 export default function Detail({ id }: DetailProps) {
   const [_, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, toggleFavorite: toggleFav } = useAuth();
   const { toast } = useToast();
   const [isMobile, setIsMobile] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   
   // Check if device is mobile
   useEffect(() => {
@@ -103,6 +104,24 @@ export default function Detail({ id }: DetailProps) {
     // Clean up
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
+  
+  // Check if show is in favorites when component mounts or user changes
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (user && id) {
+        try {
+          const isFav = await fetch(`/api/favorites/${id}`)
+            .then(res => res.json())
+            .then(data => data.isFavorite);
+          setIsFavorite(isFav);
+        } catch (error) {
+          console.error("Failed to check favorite status:", error);
+        }
+      }
+    };
+    
+    checkFavoriteStatus();
+  }, [user, id]);
   
   const { data: showDetail, isLoading, error } = useQuery<ShowDetailResponse>({
     queryKey: [`/api/shows/${id}`],
