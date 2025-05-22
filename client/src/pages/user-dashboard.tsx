@@ -253,53 +253,65 @@ const UserDashboard = () => {
             <CardContent>
               {(reviews?.length > 0 || pointsHistory?.length > 0) ? (
                 <div className="space-y-4">
-                  {/* First show reviews */}
-                  {reviews.map((review: any) => (
-                    <div key={`review-${review.id}`} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
-                      <div className="bg-gray-100 p-2 rounded-full">
-                        <StarIcon className="w-4 h-4 text-yellow-500" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <p className="font-medium">
-                            {`Review of ${review.showName || review.tvShowName || "TV Show"}`}
-                          </p>
-                          <Badge variant="outline">+10 points</Badge>
+                  {/* Create a combined array of all activities */}
+                  {(() => {
+                    // Convert reviews to a standard format matching activities
+                    const reviewActivities = reviews.map((review: any) => ({
+                      id: `review-${review.id}`,
+                      type: 'review',
+                      review,
+                      description: `Review of ${review.showName || review.tvShowName || "TV Show"}`,
+                      points: 10,
+                      createdAt: new Date(review.createdAt),
+                      activityType: 'review'
+                    }));
+                    
+                    // Convert points history records
+                    const otherActivities = pointsHistory
+                      .filter((activity: any) => activity.activityType !== 'review') // Skip reviews as we handle them above
+                      .map((activity: any) => ({
+                        id: `activity-${activity.id}`,
+                        type: 'pointsHistory',
+                        activity,
+                        description: activity.description || formatActivityType(activity.activityType),
+                        points: activity.points,
+                        createdAt: new Date(activity.createdAt),
+                        activityType: activity.activityType
+                      }));
+                    
+                    // Combine and sort all activities by date (newest first)
+                    const allActivities = [...reviewActivities, ...otherActivities]
+                      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+                    
+                    // Return the sorted activities as JSX
+                    return allActivities.map((item) => (
+                      <div key={item.id} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
+                        <div className="bg-gray-100 p-2 rounded-full">
+                          {item.activityType === 'review' && <StarIcon className="w-4 h-4 text-yellow-500" />}
+                          {item.activityType === 'upvote_given' && <LineChart className="w-4 h-4 text-blue-500" />}
+                          {item.activityType === 'upvote_received' && <Award className="w-4 h-4 text-purple-500" />}
+                          {item.activityType === 'login_streak' && <CalendarIcon className="w-4 h-4 text-green-500" />}
+                          {item.activityType === 'share' && <Send className="w-4 h-4 text-indigo-500" />}
+                          {item.activityType === 'referral' && <UserPlus className="w-4 h-4 text-pink-500" />}
+                          {item.activityType === 'show_submission' && <FilePlus2 className="w-4 h-4 text-orange-500" />}
+                          {item.activityType === 'research_read' && <BookOpen className="w-4 h-4 text-teal-500" />}
+                          {item.activityType === 'favorite_added' && <Heart className="w-4 h-4 text-red-500" />}
+                          {item.activityType === 'points_deducted' && <X className="w-4 h-4 text-red-500" />}
                         </div>
-                        <p className="text-sm text-gray-500">
-                          {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Then show upvotes and other activities */}
-                  {pointsHistory
-                    .filter((activity: any) => activity.activityType !== 'review') // Skip reviews as we already displayed them above
-                    .map((activity: any) => (
-                    <div key={`activity-${activity.id}`} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
-                      <div className="bg-gray-100 p-2 rounded-full">
-                        {activity.activityType === 'upvote_given' && <LineChart className="w-4 h-4 text-blue-500" />}
-                        {activity.activityType === 'upvote_received' && <Award className="w-4 h-4 text-purple-500" />}
-                        {activity.activityType === 'login_streak' && <CalendarIcon className="w-4 h-4 text-green-500" />}
-                        {activity.activityType === 'share' && <Send className="w-4 h-4 text-indigo-500" />}
-                        {activity.activityType === 'referral' && <UserPlus className="w-4 h-4 text-pink-500" />}
-                        {activity.activityType === 'show_submission' && <FilePlus2 className="w-4 h-4 text-orange-500" />}
-                        {activity.activityType === 'research_read' && <BookOpen className="w-4 h-4 text-teal-500" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <p className="font-medium">
-                            {activity.description || formatActivityType(activity.activityType)}
+                        <div className="flex-1">
+                          <div className="flex justify-between">
+                            <p className="font-medium">
+                              {item.description}
+                            </p>
+                            <Badge variant="outline">{item.points > 0 ? `+${item.points}` : item.points} points</Badge>
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                           </p>
-                          <Badge variant="outline">+{activity.points} points</Badge>
                         </div>
-                        <p className="text-sm text-gray-500">
-                          {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               ) : (
                 <div className="text-center py-6 text-gray-500">
