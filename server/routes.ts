@@ -1275,8 +1275,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid show ID" });
       }
 
+      // Import favorites functions
+      const { addFavorite } = await import("./database-favorites");
+      
       const userId = req.user!.id;
-      const favorite = await storage.addFavorite(userId, parseInt(tvShowId));
+      const favorite = await addFavorite(userId, parseInt(tvShowId));
       
       res.status(201).json(favorite);
     } catch (error) {
@@ -1298,8 +1301,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid show ID" });
       }
 
+      // Import favorites functions
+      const { removeFavorite } = await import("./database-favorites");
+      
       const userId = req.user!.id;
-      const result = await storage.removeFavorite(userId, tvShowId);
+      const result = await removeFavorite(userId, tvShowId);
       
       if (result) {
         res.status(200).json({ message: "Show removed from favorites" });
@@ -1320,8 +1326,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      // Import favorites functions
+      const { getUserFavorites } = await import("./database-favorites");
+      
       const userId = req.user!.id;
-      const favorites = await storage.getUserFavorites(userId);
+      const favorites = await getUserFavorites(userId);
       
       res.json(favorites);
     } catch (error) {
@@ -1343,10 +1352,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid show ID" });
       }
 
-      const userId = req.user!.id;
-      const isFavorite = await storage.isFavorite(userId, tvShowId);
+      // Import favorites functions
+      const { isFavorite } = await import("./database-favorites");
       
-      res.json({ isFavorite });
+      const userId = req.user!.id;
+      const isFav = await isFavorite(userId, tvShowId);
+      
+      res.json({ isFavorite: isFav });
     } catch (error) {
       console.error("Error checking favorite status:", error);
       res.status(500).json({ message: "Failed to check favorite status" });
@@ -1365,7 +1377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limitStr = req.query.limit;
       const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 5;
       
-      const recommendations = await storage.getSimilarShows(userId, limit);
+      // Import favorites functions
+      const { getSimilarShows } = await import("./database-favorites");
+      
+      const recommendations = await getSimilarShows(userId, limit);
       
       res.json(recommendations);
     } catch (error) {
