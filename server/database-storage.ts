@@ -2192,12 +2192,12 @@ export class DatabaseStorage implements IStorage {
               // Add points history
               await client.query(
                 'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
-                [authorId, 5, 'upvote_received', 'Your review received an upvote']
+                [authorId, 2, 'upvote_received', 'Your review received an upvote']
               );
               
               // Update total points
               await client.query(
-                'UPDATE users SET total_points = COALESCE(total_points, 0) + 5 WHERE id = $1',
+                'UPDATE users SET total_points = COALESCE(total_points, 0) + 2 WHERE id = $1',
                 [authorId]
               );
             }

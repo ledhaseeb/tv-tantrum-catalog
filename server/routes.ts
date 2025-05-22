@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Always calculate points based on user activities in case db doesn't have updated information
-        // Each review is worth 5 points
+        // Each review is worth 5 points (this value should match the points in INSERT statements)
         const reviewPoints = reviews.length * 5;
         
         // Update the breakdown
