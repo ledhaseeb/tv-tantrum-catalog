@@ -8,6 +8,7 @@ import { storage, DatabaseStorage } from "./database-storage";
 import { users } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
+import { db } from "./db";
 
 // Database session store
 const PostgresSessionStore = connectPg(session);
@@ -298,25 +299,24 @@ export function setupAuth(app: Express) {
   // Helper function to award login points (once per day)
   async function awardLoginPoints(userId: number) {
     try {
-      const dbStorage = storage as DatabaseStorage;
-      
       console.log(`Checking login rewards for user ID: ${userId}`);
       
-      // Get user data to check last login date
-      // Database functions expect string IDs for users
-      const userIdStr = userId.toString();
-      const user = await dbStorage.getUser(userIdStr);
+      // DIRECT DATABASE ACCESS: For more reliable login rewards
+      const checkResult = await db.execute(
+        `SELECT last_login FROM users WHERE id = $1`,
+        [userId]
+      );
       
-      if (!user) {
-        console.log(`User not found for ID: ${userId}`);
+      if (checkResult.rows.length === 0) {
+        console.log(`User not found for ID: ${userId}, can't award login points`);
         return;
       }
       
       const now = new Date();
       let shouldAwardPoints = true;
       
-      if (user.lastLoginDate) {
-        const lastLogin = new Date(user.lastLoginDate);
+      if (checkResult.rows[0].last_login) {
+        const lastLogin = new Date(checkResult.rows[0].last_login);
         
         // Check if last login was on a different day
         const lastLoginDay = lastLogin.toDateString();
@@ -325,29 +325,58 @@ export function setupAuth(app: Express) {
         console.log(`Last login: ${lastLoginDay}, Today: ${todayDay}`);
         
         if (lastLoginDay === todayDay) {
-          // Already logged in today, don't award additional points
           console.log(`User ${userId} already logged in today, no additional points`);
           shouldAwardPoints = false;
         }
       }
       
-      // Update last login date regardless of points
-      await dbStorage.updateUserLastLoginDate(userIdStr, now);
+      // Update last login date
+      await db.execute(
+        `UPDATE users SET last_login = $1 WHERE id = $2`,
+        [now, userId]
+      );
       
-      // Award points if eligible
+      // Award points if eligible using direct SQL for maximum reliability
       if (shouldAwardPoints) {
-        console.log(`Awarding 5 login points to user ${userId}`);
+        console.log(`Directly awarding 5 login points to user ${userId}`);
         
-        // Convert userIdStr back to number for awardPoints which expects a number
-        const userIdNum = parseInt(userIdStr, 10);
-        
-        await dbStorage.awardPoints(
-          userIdNum, // Pass as number since awardPoints expects a number
-          5, // 5 points for daily login
-          'login_reward',
-          'Daily login reward'
+        // 1. Add to points history
+        await db.execute(
+          `INSERT INTO user_points_history(user_id, points, activity_type, description, created_at)
+           VALUES($1, $2, $3, $4, $5)`,
+          [userId, 5, 'login_reward', 'Daily login reward', now]
         );
-        console.log(`Successfully awarded 5 points to user ${userId} for daily login`);
+        
+        // 2. Update user total points in a single operation
+        const updateResult = await db.execute(
+          `UPDATE users SET 
+            total_points = COALESCE(total_points, 0) + 5
+           WHERE id = $1
+           RETURNING total_points`,
+          [userId]
+        );
+        
+        // 3. Update user rank based on new total
+        if (updateResult.rows.length > 0) {
+          const newTotal = parseInt(updateResult.rows[0].total_points || '0');
+          console.log(`User ${userId} now has ${newTotal} total points`);
+          
+          // Calculate new rank based on total points
+          let newRank = 'TV Watcher';
+          if (newTotal >= 10000) newRank = 'TV Guru';
+          else if (newTotal >= 5000) newRank = 'TV Expert';
+          else if (newTotal >= 1000) newRank = 'TV Enthusiast';
+          else if (newTotal >= 500) newRank = 'TV Fan';
+          else if (newTotal >= 100) newRank = 'TV Viewer';
+          
+          // Update rank
+          await db.execute(
+            `UPDATE users SET rank = $1 WHERE id = $2`,
+            [newRank, userId]
+          );
+          
+          console.log(`Successfully awarded 5 points to user ${userId} for daily login. New rank: ${newRank}`);
+        }
       }
     } catch (error) {
       console.error('Error in login points processing:', error);

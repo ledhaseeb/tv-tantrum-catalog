@@ -1983,9 +1983,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<any> {
+    console.log(`ATTEMPTING TO AWARD ${points} POINTS TO USER ${userId} FOR ${activityType}`);
+    
     // Using transaction for database integrity
     return await db.transaction(async (tx) => {
       try {
+        console.log(`Starting transaction to award points...`);
+        
         // Add to points history
         const [pointHistory] = await tx
           .insert(userPointsHistory)
@@ -1997,17 +2001,23 @@ export class DatabaseStorage implements IStorage {
           })
           .returning();
         
+        console.log(`Added entry to points history: ${JSON.stringify(pointHistory)}`);
+        
         // Use direct SQL query to update total points to avoid schema mismatches
         try {
-          // First get current points
-          const userResult = await tx.execute(
-            `SELECT total_points FROM users WHERE id = $1`,
-            [userId]
+          // DIRECT DB OPERATION: Update points using simplified approach
+          // This ensures we increment the points directly in the database
+          
+          const updateResult = await tx.execute(
+            `UPDATE users SET total_points = COALESCE(total_points, 0) + $1 WHERE id = $2 RETURNING total_points, id`,
+            [points, userId]
           );
           
-          if (userResult.rows.length > 0) {
-            const currentPoints = parseInt(userResult.rows[0]?.total_points || '0');
-            const newTotal = currentPoints + points;
+          console.log(`Update result: ${JSON.stringify(updateResult.rows)}`);
+          
+          if (updateResult.rows.length > 0) {
+            const newTotal = parseInt(updateResult.rows[0]?.total_points || '0');
+            console.log(`User ${userId} now has ${newTotal} total points`);
             
             // Update user rank based on total points
             let newRank = 'TV Watcher';
@@ -2017,21 +2027,28 @@ export class DatabaseStorage implements IStorage {
             else if (newTotal >= 500) newRank = 'TV Fan';
             else if (newTotal >= 100) newRank = 'TV Viewer';
             
-            // Update user with direct SQL (more reliable than ORM in this case)
+            // Update user rank
             await tx.execute(
-              `UPDATE users SET total_points = $1, rank = $2 WHERE id = $3`,
-              [newTotal, newRank, userId]
+              `UPDATE users SET rank = $1 WHERE id = $2`,
+              [newRank, userId]
             );
+            
+            console.log(`Updated user ${userId} rank to ${newRank}`);
+          } else {
+            console.log(`No user found with ID ${userId} - points not added`);
           }
         } catch (sqlError) {
           // If SQL update fails, log error but don't fail the transaction
           // Points history is still recorded
           console.error('Error updating user points total:', sqlError);
+          console.error(sqlError);
         }
         
+        console.log(`Points award complete for user ${userId}`);
         return pointHistory;
       } catch (error) {
         console.error('Error awarding points:', error);
+        console.error(error);
         throw error;
       }
     });
