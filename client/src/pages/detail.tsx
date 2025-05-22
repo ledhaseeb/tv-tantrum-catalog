@@ -776,10 +776,11 @@ export default function Detail({ id }: DetailProps) {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className={`ml-2 p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50`}
+                  className={`ml-2 p-2 ${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                   onClick={(e) => toggleFavorite(e)}
                 >
-                  <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} />
+                  <Heart className={`w-5 h-5 mr-1 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                  {isFavorite ? 'Saved' : 'Add to Favorites'}
                 </Button>
               </div>
               
