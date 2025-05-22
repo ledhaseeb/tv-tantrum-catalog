@@ -2144,30 +2144,56 @@ export class DatabaseStorage implements IStorage {
           })
           .returning();
         
-        // Award points to the upvoter
-        await this.awardPoints(
-          userId,
-          1,
-          'upvote_given',
-          'Upvoted a review'
-        );
+        // Award points to the upvoter using direct SQL to avoid schema mismatch
+        try {
+          // Add to points history
+          await tx.execute(
+            `INSERT INTO user_points_history (user_id, points, activity_type, description)
+            VALUES ($1, $2, $3, $4)`,
+            [userId, 1, 'upvote_given', 'Upvoted a review']
+          );
+          
+          // Update user's total points
+          await tx.execute(
+            `UPDATE users SET total_points = COALESCE(total_points, 0) + 1
+            WHERE id = $1`,
+            [userId]
+          );
+        } catch (pointsError) {
+          console.error('Error awarding points to upvoter:', pointsError);
+          // Continue with the transaction even if points fail
+        }
         
         // Get review author to award them points
-        const [review] = await tx
-          .select({ userId: tvShowReviews.userId })
-          .from(tvShowReviews)
-          .where(eq(tvShowReviews.id, reviewId));
+        const reviewResult = await tx.execute(
+          `SELECT user_id FROM tv_show_reviews WHERE id = $1`,
+          [reviewId]
+        );
         
-        const reviewAuthorId = review?.userId;
-        
-        // Award points to the review author (if not the same as upvoter)
-        if (reviewAuthorId && reviewAuthorId !== userId) {
-          await this.awardPoints(
-            reviewAuthorId,
-            5,
-            'upvote_received',
-            'Your review received an upvote'
-          );
+        if (reviewResult.rows.length > 0) {
+          const reviewAuthorId = reviewResult.rows[0].user_id;
+          
+          // Award points to the review author (if not the same as upvoter)
+          if (reviewAuthorId && reviewAuthorId !== userId) {
+            try {
+              // Add to points history
+              await tx.execute(
+                `INSERT INTO user_points_history (user_id, points, activity_type, description)
+                VALUES ($1, $2, $3, $4)`,
+                [reviewAuthorId, 5, 'upvote_received', 'Your review received an upvote']
+              );
+              
+              // Update user's total points
+              await tx.execute(
+                `UPDATE users SET total_points = COALESCE(total_points, 0) + 5
+                WHERE id = $1`,
+                [reviewAuthorId]
+              );
+            } catch (authorPointsError) {
+              console.error('Error awarding points to review author:', authorPointsError);
+              // Continue with the transaction even if points fail
+            }
+          }
         }
         
         return upvote;
@@ -2179,21 +2205,38 @@ export class DatabaseStorage implements IStorage {
   }
   
   async removeReviewUpvote(userId: number, reviewId: number): Promise<boolean> {
-    try {
-      const result = await db
-        .delete(reviewUpvotes)
-        .where(
-          and(
-            eq(reviewUpvotes.userId, userId),
-            eq(reviewUpvotes.reviewId, reviewId)
-          )
-        );
-      
-      return result.rowCount > 0;
-    } catch (error) {
-      console.error('Error removing review upvote:', error);
-      return false;
-    }
+    return await db.transaction(async (tx) => {
+      try {
+        // Delete the upvote
+        const result = await tx
+          .delete(reviewUpvotes)
+          .where(
+            and(
+              eq(reviewUpvotes.userId, userId),
+              eq(reviewUpvotes.reviewId, reviewId)
+            )
+          );
+        
+        if (result.rowCount > 0) {
+          // Log upvote removal in points history
+          try {
+            await tx.execute(
+              `INSERT INTO user_points_history (user_id, points, activity_type, description)
+              VALUES ($1, $2, $3, $4)`,
+              [userId, 0, 'upvote_removed', 'Removed upvote from a review']
+            );
+          } catch (historyError) {
+            console.error('Error logging upvote removal in history:', historyError);
+            // Continue with transaction even if history update fails
+          }
+        }
+        
+        return result.rowCount > 0;
+      } catch (error) {
+        console.error('Error removing review upvote:', error);
+        return false;
+      }
+    });
   }
   
   async getReviewUpvotes(reviewId: number): Promise<any[]> {
