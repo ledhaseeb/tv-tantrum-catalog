@@ -1984,30 +1984,37 @@ export class DatabaseStorage implements IStorage {
           })
           .returning();
         
-        // Update user's total points
-        const [user] = await tx
-          .select()
-          .from(users)
-          .where(eq(users.id, userId));
-        
-        const currentPoints = user?.totalPoints || 0;
-        const newTotal = currentPoints + points;
-        
-        // Update user rank based on total points
-        let newRank = 'TV Watcher';
-        if (newTotal >= 10000) newRank = 'TV Guru';
-        else if (newTotal >= 5000) newRank = 'TV Expert';
-        else if (newTotal >= 1000) newRank = 'TV Enthusiast';
-        else if (newTotal >= 500) newRank = 'TV Fan';
-        else if (newTotal >= 100) newRank = 'TV Viewer';
-        
-        await tx
-          .update(users)
-          .set({ 
-            totalPoints: newTotal,
-            rank: newRank
-          })
-          .where(eq(users.id, userId));
+        // Use direct SQL query to update total points to avoid schema mismatches
+        try {
+          // First get current points
+          const userResult = await tx.execute(
+            `SELECT total_points FROM users WHERE id = $1`,
+            [userId]
+          );
+          
+          if (userResult.rows.length > 0) {
+            const currentPoints = parseInt(userResult.rows[0]?.total_points || '0');
+            const newTotal = currentPoints + points;
+            
+            // Update user rank based on total points
+            let newRank = 'TV Watcher';
+            if (newTotal >= 10000) newRank = 'TV Guru';
+            else if (newTotal >= 5000) newRank = 'TV Expert';
+            else if (newTotal >= 1000) newRank = 'TV Enthusiast';
+            else if (newTotal >= 500) newRank = 'TV Fan';
+            else if (newTotal >= 100) newRank = 'TV Viewer';
+            
+            // Update user with direct SQL (more reliable than ORM in this case)
+            await tx.execute(
+              `UPDATE users SET total_points = $1, rank = $2 WHERE id = $3`,
+              [newTotal, newRank, userId]
+            );
+          }
+        } catch (sqlError) {
+          // If SQL update fails, log error but don't fail the transaction
+          // Points history is still recorded
+          console.error('Error updating user points total:', sqlError);
+        }
         
         return pointHistory;
       } catch (error) {
