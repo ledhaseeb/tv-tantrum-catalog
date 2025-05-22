@@ -163,6 +163,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Ensure we have review points history records for each review
         try {
+          // First clear out any bad "Review of null" entries
+          try {
+            const parsedUserId = parseInt(userId);
+            await pool.query(
+              `DELETE FROM user_points_history 
+               WHERE user_id = $1 
+               AND activity_type = 'review' 
+               AND description = 'Review of null'`,
+              [parsedUserId]
+            );
+          } catch (clearError) {
+            console.error("Error clearing old null reviews:", clearError);
+          }
+
           // Let's directly create point history records for all reviews
           for (const review of reviews) {
             console.log(`Processing review points for review ID ${review.id}`);
@@ -171,43 +185,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Convert userId to integer for database operations
               const parsedUserId = parseInt(userId);
               
-              // First check if we already have a record for this review
+              // Get the proper show name from the TV shows table
+              let showName = review.tvShowName || review.showName;
+              if (!showName && review.tvShowId) {
+                try {
+                  const showResult = await pool.query(
+                    `SELECT name FROM tv_shows WHERE id = $1`,
+                    [review.tvShowId]
+                  );
+                  if (showResult.rows.length > 0) {
+                    showName = showResult.rows[0].name;
+                  }
+                } catch (err) {
+                  console.error("Error getting show name for points:", err);
+                }
+              }
+              
+              if (!showName) {
+                showName = "a TV show";
+              }
+              
+              // First check if we already have a record for this specific review ID
               const existingRecords = await pool.query(
                 `SELECT id FROM user_points_history 
                  WHERE user_id = $1 
-                 AND activity_type = 'review' 
-                 AND description LIKE $2`,
-                [parsedUserId, `%${review.showName}%`]
+                 AND activity_type = 'review'
+                 AND reference_id = $2`,
+                [parsedUserId, review.id]
               );
               
-              // Only add if no record exists
+              // Only add if no record exists for this specific review
               if (existingRecords.rowCount === 0) {
-                // Fix: Get the actual show name from the TV shows table
-                let showName = review.showName;
-                if (!showName) {
-                  try {
-                    const showResult = await pool.query(
-                      `SELECT name FROM tv_shows WHERE id = $1`,
-                      [review.tvShowId]
-                    );
-                    if (showResult.rows.length > 0) {
-                      showName = showResult.rows[0].name;
-                    }
-                  } catch (err) {
-                    console.error("Error getting show name for points:", err);
-                  }
-                }
-                
-                // Add points with the correct show name
+                // Add points with the correct show name and reference to the review
                 await pool.query(
-                  `INSERT INTO user_points_history (user_id, points, activity_type, description)
-                   VALUES ($1, $2, $3, $4)`,
-                  [parsedUserId, 5, 'review', `Review of ${showName || 'a TV show'}`]
+                  `INSERT INTO user_points_history (user_id, points, activity_type, description, reference_id)
+                   VALUES ($1, $2, $3, $4, $5)`,
+                  [parsedUserId, 5, 'review', `Review of ${showName}`, review.id]
                 );
                 
-                console.log(`Successfully added points for review of ${review.showName}`);
+                console.log(`Successfully added points for review of ${showName}`);
               } else {
-                console.log(`Points already recorded for review of ${review.showName}`);
+                // Update the description to make sure it's correct
+                await pool.query(
+                  `UPDATE user_points_history 
+                   SET description = $1 
+                   WHERE user_id = $2 AND activity_type = 'review' AND reference_id = $3`,
+                  [`Review of ${showName}`, parsedUserId, review.id]
+                );
+                console.log(`Updated points record for review of ${showName}`);
               }
             } catch (reviewPointsError) {
               console.error(`Error recording points for review ${review.id}:`, reviewPointsError);
