@@ -421,8 +421,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Track this view
       await storage.trackShowView(id);
       
-      // Attach reviews to the show object
-      show.reviews = reviews;
+      // Enhance reviews with upvote information
+      const enhancedReviews = await Promise.all(reviews.map(async (review) => {
+        // Get upvotes for this review
+        const upvotes = await storage.getReviewUpvotes(review.id);
+        
+        // Check if the current user has upvoted this review
+        let userHasUpvoted = false;
+        if (req.isAuthenticated() && req.user) {
+          userHasUpvoted = await storage.hasUserUpvotedReview(req.user.id, review.id);
+        }
+        
+        return {
+          ...review,
+          upvoteCount: upvotes.length,
+          userHasUpvoted
+        };
+      }));
+      
+      // Attach enhanced reviews to the show object
+      show.reviews = enhancedReviews;
       
       // Check if this is a YouTube show
       const isYouTubeShow = show.availableOn?.includes('YouTube');
