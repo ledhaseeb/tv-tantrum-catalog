@@ -327,20 +327,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get most recent activity from points history for the activity feed
       let recentActivity = [];
       try {
-        // Create enhanced review activities
+        console.log("Building recent activity for dashboard. Reviews:", reviews.length, "Points history:", pointsHistory.length);
+        
+        // Create enhanced review activities with required fields
         const reviewActivities = reviews.map((review) => {
-          return {
-            id: `review-${review.id}`,
+          const activity = {
+            id: review.id,
             userId: review.userId,
             points: 10, // Points for a review
             activityType: 'review',
             description: `Review of ${review.tvShowName || review.showName || "TV Show"}`,
-            createdAt: new Date(review.createdAt).toISOString()
+            createdAt: review.createdAt
+          };
+          console.log("Created review activity:", activity);
+          return activity;
+        });
+        
+        // Process the points history to ensure proper format
+        const processedPointsHistory = pointsHistory.map(activity => {
+          // Ensure the activity has a proper description
+          if (!activity.description && activity.activityType === 'login_reward') {
+            activity.description = 'Daily login reward';
+          } else if (!activity.description && activity.activityType === 'upvote_given') {
+            activity.description = 'Upvoted a review';
+          } else if (!activity.description && activity.activityType === 'upvote_received') {
+            activity.description = 'Your review received an upvote';
+          }
+          
+          // Return a consistent format
+          return {
+            id: activity.id,
+            userId: activity.userId,
+            points: activity.points,
+            activityType: activity.activityType,
+            description: activity.description || activity.activityType.replace(/_/g, ' '),
+            createdAt: activity.createdAt
           };
         });
         
-        // Combine with points history and sort by date
-        const combinedActivities = [...pointsHistory, ...reviewActivities];
+        // Combine activities from both sources
+        const combinedActivities = [...processedPointsHistory, ...reviewActivities];
+        console.log("Combined activities count:", combinedActivities.length);
         
         // Sort by creation date (newest first)
         combinedActivities.sort((a, b) => {
@@ -351,6 +378,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Get the 10 most recent activities
         recentActivity = combinedActivities.slice(0, 10);
+        console.log("Final recent activity count:", recentActivity.length);
+        
+        if (recentActivity.length > 0) {
+          console.log("Most recent activity:", recentActivity[0]);
+        }
       } catch (error) {
         console.error('Error getting recent activity:', error);
       }
