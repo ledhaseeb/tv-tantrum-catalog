@@ -631,6 +631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "TV show not found" });
       }
       
+      // Make sure we always have the show name
       console.log("Review data:", {
         ...req.body,
         userId,
@@ -646,6 +647,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userName: userName,
         showName: show.name
       };
+      
+      // Double-check that show name is set
+      if (!reviewData.showName && show && show.name) {
+        reviewData.showName = show.name;
+        console.log("Fixed missing show name:", show.name);
+      }
       
       // Add review to storage
       const newReview = await storage.addReview(reviewData);
