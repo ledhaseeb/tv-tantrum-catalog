@@ -327,8 +327,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get most recent activity from points history for the activity feed
       let recentActivity = [];
       try {
-        // Get the 10 most recent activities from points history
-        recentActivity = pointsHistory.slice(0, 10);
+        // Create enhanced review activities
+        const reviewActivities = reviews.map((review) => {
+          return {
+            id: `review-${review.id}`,
+            userId: review.userId,
+            points: 10, // Points for a review
+            activityType: 'review',
+            description: `Review of ${review.tvShowName || review.showName || "TV Show"}`,
+            createdAt: new Date(review.createdAt).toISOString()
+          };
+        });
+        
+        // Combine with points history and sort by date
+        const combinedActivities = [...pointsHistory, ...reviewActivities];
+        
+        // Sort by creation date (newest first)
+        combinedActivities.sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        // Get the 10 most recent activities
+        recentActivity = combinedActivities.slice(0, 10);
       } catch (error) {
         console.error('Error getting recent activity:', error);
       }
