@@ -24,19 +24,19 @@ export async function addFavorite(userId: number, tvShowId: number): Promise<any
       return checkResult.rows[0];
     }
     
-    // Add to favorites
-    const result = await client.query(
-      'INSERT INTO favorites (user_id, tv_show_id, created_at) VALUES ($1, $2, NOW()) RETURNING *',
-      [userId, tvShowId]
-    );
-    
-    // Get show name for points description
+    // Get show name for reference
     const showResult = await client.query(
       'SELECT name FROM tv_shows WHERE id = $1',
       [tvShowId]
     );
     
-    const showName = showResult.rows[0]?.name || 'a show';
+    const showName = showResult.rows[0]?.name || 'Unknown show';
+    
+    // Add to favorites with show name
+    const result = await client.query(
+      'INSERT INTO favorites (user_id, tv_show_id, show_name, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *',
+      [userId, tvShowId, showName]
+    );
     
     // Get count of user's favorites
     const countResult = await client.query(
