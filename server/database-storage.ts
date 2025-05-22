@@ -2363,7 +2363,18 @@ export class DatabaseStorage implements IStorage {
   async getResearchSummaries(): Promise<any[]> {
     try {
       const summaries = await db
-        .select()
+        .select({
+          id: researchSummaries.id,
+          title: researchSummaries.title,
+          summary: researchSummaries.summary,
+          fullText: researchSummaries.fullText,
+          category: researchSummaries.category,
+          imageUrl: researchSummaries.imageUrl,
+          source: researchSummaries.source,
+          publishedDate: researchSummaries.publishedDate,
+          createdAt: researchSummaries.createdAt,
+          updatedAt: researchSummaries.updatedAt
+        })
         .from(researchSummaries)
         .orderBy(desc(researchSummaries.createdAt));
       
@@ -2377,7 +2388,18 @@ export class DatabaseStorage implements IStorage {
   async getResearchSummary(id: number): Promise<any | undefined> {
     try {
       const [summary] = await db
-        .select()
+        .select({
+          id: researchSummaries.id,
+          title: researchSummaries.title,
+          summary: researchSummaries.summary,
+          fullText: researchSummaries.fullText,
+          category: researchSummaries.category,
+          imageUrl: researchSummaries.imageUrl,
+          source: researchSummaries.source,
+          publishedDate: researchSummaries.publishedDate,
+          createdAt: researchSummaries.createdAt,
+          updatedAt: researchSummaries.updatedAt
+        })
         .from(researchSummaries)
         .where(eq(researchSummaries.id, id));
       
@@ -2444,15 +2466,19 @@ export class DatabaseStorage implements IStorage {
   
   async getUserReadResearch(userId: string): Promise<any[]> {
     try {
-      // Instead of selecting all fields from researchSummaries,
-      // we explicitly select only the fields that exist
+      // Explicitly select only the fields that exist
       const result = await db
         .select({
           id: researchSummaries.id,
           title: researchSummaries.title,
           summary: researchSummaries.summary,
+          fullText: researchSummaries.fullText,
+          category: researchSummaries.category,
+          imageUrl: researchSummaries.imageUrl,
           source: researchSummaries.source,
+          publishedDate: researchSummaries.publishedDate,
           createdAt: researchSummaries.createdAt,
+          updatedAt: researchSummaries.updatedAt,
           readAt: userReadResearch.readAt
         })
         .from(userReadResearch)
@@ -2475,6 +2501,8 @@ export class DatabaseStorage implements IStorage {
           title: data.title,
           summary: data.summary,
           fullText: data.fullText || null,
+          category: data.category || null,
+          imageUrl: data.imageUrl || null,
           source: data.source || null,
           publishedDate: data.publishedDate ? new Date(data.publishedDate) : null
         })

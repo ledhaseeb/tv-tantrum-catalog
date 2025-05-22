@@ -163,24 +163,57 @@ interface ResearchCardProps {
 }
 
 const ResearchCard = ({ summary, onReadMore }: ResearchCardProps) => {
+  // Format category name for display
+  const formatCategoryName = (category: string) => {
+    if (!category) return 'General';
+    return category.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+  
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }).format(date);
+  };
+
   return (
     <Card className="h-full flex flex-col">
+      {summary.imageUrl && (
+        <div className="relative w-full h-40 overflow-hidden">
+          <img 
+            src={summary.imageUrl} 
+            alt={summary.title}
+            className="w-full h-full object-cover transition-transform hover:scale-105"
+          />
+        </div>
+      )}
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
           <Badge variant="outline" className="mb-2">
-            {summary.category || 'General'}
+            {formatCategoryName(summary.category)}
           </Badge>
-          {summary.read && (
+          {summary.hasRead && (
             <Badge variant="secondary" className="bg-green-50 text-green-600 border-green-200">
               Read
             </Badge>
           )}
         </div>
         <CardTitle className="text-xl">{summary.title}</CardTitle>
+        {summary.publishedDate && (
+          <CardDescription className="mt-1 text-sm text-gray-500">
+            {formatDate(summary.publishedDate)}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent className="flex-grow">
         <p className="text-gray-500 line-clamp-3">
-          {summary.content.substring(0, 150)}...
+          {summary.summary}
         </p>
       </CardContent>
       <CardFooter>
