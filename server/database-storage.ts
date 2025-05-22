@@ -2157,18 +2157,33 @@ export class DatabaseStorage implements IStorage {
         
         const upvoteId = insertResult.rows[0].id;
         
-        // Get review information for more detailed activity descriptions
-        const reviewInfoQuery = await client.query(
-          'SELECT r.user_id as author_id, s.name as show_name FROM tv_show_reviews r JOIN tv_shows s ON r.tv_show_id = s.id WHERE r.id = $1',
+        // First get the review details - using a safer approach that won't fail if there's a schema mismatch
+        const reviewDetailsQuery = await client.query(
+          'SELECT user_id as author_id, tv_show_id FROM tv_show_reviews WHERE id = $1',
           [reviewId]
         );
         
         let authorId = null;
         let showName = "a TV Show";
         
-        if (reviewInfoQuery.rowCount > 0) {
-          authorId = reviewInfoQuery.rows[0].author_id;
-          showName = reviewInfoQuery.rows[0].show_name || "a TV Show";
+        // Only proceed with show name lookup if we found the review
+        if (reviewDetailsQuery.rowCount > 0) {
+          authorId = reviewDetailsQuery.rows[0].author_id;
+          const tvShowId = reviewDetailsQuery.rows[0].tv_show_id;
+          
+          // Get show name in a separate query to avoid join failures
+          try {
+            const showQuery = await client.query(
+              'SELECT name FROM tv_shows WHERE id = $1',
+              [tvShowId]
+            );
+            
+            if (showQuery.rowCount > 0) {
+              showName = showQuery.rows[0].name || "a TV Show";
+            }
+          } catch (showError) {
+            console.log("Could not get show name, using default:", showError.message);
+          }
         }
         
         // Award points and track activity
