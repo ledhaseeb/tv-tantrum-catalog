@@ -125,11 +125,14 @@ export default function Detail({ id }: DetailProps) {
     onSuccess: () => {
       toast({
         title: "Review added",
-        description: "Your review has been added successfully!",
+        description: "Your review has been added successfully! You earned 5 points for your review.",
       });
       reviewForm.reset();
       setSelectedRating(5);
+      
+      // Refresh both the show details and the user dashboard
       queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
     },
     onError: (error) => {
       toast({

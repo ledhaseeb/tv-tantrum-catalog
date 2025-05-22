@@ -136,6 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (pointsInfo.total >= 500) pointsInfo.rank = 'TV Expert';
         if (pointsInfo.total >= 1000) pointsInfo.rank = 'TV Master';
         
+        // Import pool to use for direct queries
+        const { pool } = require('./db');
+        
         // Ensure we have review points history records for each review
         try {
           // Let's directly create point history records for all reviews
