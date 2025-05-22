@@ -2157,55 +2157,66 @@ export class DatabaseStorage implements IStorage {
         
         const upvoteId = insertResult.rows[0].id;
         
-        // Award points in a way that doesn't block the upvote operation
+        // Get review information for more detailed activity descriptions
+        const reviewInfoQuery = await client.query(
+          'SELECT r.user_id as author_id, s.name as show_name FROM tv_show_reviews r JOIN tv_shows s ON r.tv_show_id = s.id WHERE r.id = $1',
+          [reviewId]
+        );
+        
+        let authorId = null;
+        let showName = "a TV Show";
+        
+        if (reviewInfoQuery.rowCount > 0) {
+          authorId = reviewInfoQuery.rows[0].author_id;
+          showName = reviewInfoQuery.rows[0].show_name || "a TV Show";
+        }
+        
+        // Award points and track activity
         try {
-          // Award points to upvoter directly through separate statements
+          // First make sure the points history table exists
           const historyExists = await client.query(
             "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_points_history')"
           );
           
           if (historyExists.rows[0].exists) {
-            // Add points history
+            // 1. Add upvote given to points history with better description
+            const upvoteDescription = `Upvoted a review of ${showName}`;
             await client.query(
               'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
-              [userId, 1, 'upvote_given', 'Upvoted a review']
+              [userId, 1, 'upvote_given', upvoteDescription]
             );
             
-            // Update total points
+            // 2. Update total points for the upvoter
             await client.query(
-              'UPDATE users SET total_points = COALESCE(total_points, 0) + 1 WHERE id = $1',
+              'UPDATE users SET total_points = COALESCE(total_points, 0) + 1 WHERE id = $1 RETURNING total_points',
               [userId]
             );
-          }
-          
-          // Get review author to award points
-          const reviewResult = await client.query(
-            'SELECT user_id FROM tv_show_reviews WHERE id = $1',
-            [reviewId]
-          );
-          
-          if (reviewResult.rowCount > 0) {
-            const authorId = reviewResult.rows[0].user_id;
             
-            // Only award points if not self-upvoting
+            console.log(`Updated upvoter's (${userId}) total points with +1 point`);
+            
+            // Only award points to author if not self-upvoting
             if (authorId && authorId !== userId) {
-              // Award points to the review author
-              // Add points history
+              // 3. Add points to history for the review author
+              const receivedDescription = `Your review of ${showName} received an upvote`;
               await client.query(
                 'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
-                [authorId, 2, 'upvote_received', 'Your review received an upvote']
+                [authorId, 2, 'upvote_received', receivedDescription]
               );
               
-              // Update total points
-              await client.query(
-                'UPDATE users SET total_points = COALESCE(total_points, 0) + 2 WHERE id = $1',
+              // 4. Update total points for the author
+              const authorPointsResult = await client.query(
+                'UPDATE users SET total_points = COALESCE(total_points, 0) + 2 WHERE id = $1 RETURNING total_points',
                 [authorId]
               );
+              
+              if (authorPointsResult.rowCount > 0) {
+                console.log(`Updated author's (${authorId}) total points with +2 points. New total: ${authorPointsResult.rows[0].total_points}`);
+              }
             }
           }
         } catch (pointsError) {
-          // Ignore points errors - just log them
-          console.log('Points awarding encountered an error:', pointsError.message);
+          // Log the error but don't fail the transaction
+          console.error('Points awarding encountered an error:', pointsError);
         }
         
         // Commit transaction
