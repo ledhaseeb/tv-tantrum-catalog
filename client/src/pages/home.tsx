@@ -23,7 +23,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const { user, toggleFavorite } = useAuth();
+  const { user, toggleFavorite, isFavorite } = useAuth();
   const { toast } = useToast();
   
   // Hide results when clicking outside
@@ -70,6 +70,25 @@ export default function Home() {
     show.name.includes("Brambly") || 
     (show.themes?.includes("Adventure") && show.themes?.includes("Fantasy"))
   ) || allShows?.[0];
+  
+  // Track the favorite status of the featured show
+  const [isFeaturedShowFavorite, setIsFeaturedShowFavorite] = useState(false);
+  
+  // Check favorite status when featured show is loaded and user is logged in
+  useEffect(() => {
+    if (featuredShow && user) {
+      const checkFavoriteStatus = async () => {
+        try {
+          const isFav = await isFavorite(featuredShow.id);
+          setIsFeaturedShowFavorite(isFav);
+        } catch (error) {
+          console.error("Error checking favorite status:", error);
+        }
+      };
+      
+      checkFavoriteStatus();
+    }
+  }, [featuredShow, user]);
   
   // Helper function to check if property exists with different case formats
   const getShowProperty = (show: any, propertyNames: string[]) => {
@@ -402,11 +421,22 @@ export default function Home() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-gray-400 hover:text-red-500"
+                  className={`${isFeaturedShowFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     if (user) {
-                      toggleFavorite(featuredShow.id);
+                      toggleFavorite(featuredShow.id).then(() => {
+                        // Toggle the local state (optimistic update)
+                        setIsFeaturedShowFavorite(!isFeaturedShowFavorite);
+                        
+                        toast({
+                          title: isFeaturedShowFavorite ? "Removed from favorites" : "Added to favorites",
+                          description: isFeaturedShowFavorite 
+                            ? `${featuredShow.name} has been removed from your favorites.` 
+                            : `${featuredShow.name} has been added to your favorites.`,
+                          variant: "default",
+                        });
+                      });
                     } else {
                       toast({
                         title: "Authentication required",
@@ -417,8 +447,8 @@ export default function Home() {
                     }
                   }}
                 >
-                  <Heart className="w-5 h-5 mr-1" />
-                  Add to Favorites
+                  <Heart className={`w-5 h-5 mr-1 ${isFeaturedShowFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                  {isFeaturedShowFavorite ? 'Saved' : 'Add to Favorites'}
                 </Button>
                 <Button 
                   className="mt-2" 
