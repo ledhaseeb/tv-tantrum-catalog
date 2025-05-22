@@ -4,7 +4,7 @@ import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./database-storage";
+import { storage, DatabaseStorage } from "./database-storage";
 import { users } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -300,9 +300,16 @@ export function setupAuth(app: Express) {
     try {
       const dbStorage = storage as DatabaseStorage;
       
-      // Get user data to check last login date
-      const user = await dbStorage.getUser(userId);
-      if (!user) return;
+      console.log(`Checking login rewards for user ID: ${userId}`);
+      
+      // Get user data to check last login date - use string ID format
+      const userIdStr = userId.toString();
+      const user = await dbStorage.getUser(userIdStr);
+      
+      if (!user) {
+        console.log(`User not found for ID: ${userId}`);
+        return;
+      }
       
       const now = new Date();
       let shouldAwardPoints = true;
@@ -314,27 +321,32 @@ export function setupAuth(app: Express) {
         const lastLoginDay = lastLogin.toDateString();
         const todayDay = now.toDateString();
         
+        console.log(`Last login: ${lastLoginDay}, Today: ${todayDay}`);
+        
         if (lastLoginDay === todayDay) {
           // Already logged in today, don't award additional points
+          console.log(`User ${userId} already logged in today, no additional points`);
           shouldAwardPoints = false;
         }
       }
       
       // Update last login date regardless of points
-      await dbStorage.updateUserLastLoginDate(userId, now);
+      await dbStorage.updateUserLastLoginDate(userIdStr, now);
       
       // Award points if eligible
       if (shouldAwardPoints) {
+        console.log(`Awarding 5 login points to user ${userId}`);
         await dbStorage.awardPoints(
-          userId,
+          userIdStr,
           5, // 5 points for daily login
           'login_reward',
           'Daily login reward'
         );
-        console.log(`Awarded 5 points to user ${userId} for daily login`);
+        console.log(`Successfully awarded 5 points to user ${userId} for daily login`);
       }
     } catch (error) {
       console.error('Error in login points processing:', error);
+      console.error(error);
     }
   }
 
