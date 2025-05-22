@@ -284,6 +284,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Invalidate relevant queries
     queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
+    
+    // Also invalidate the dashboard query to update the favorites list in real-time
+    queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
   };
 
   // Check if the user has admin privileges
