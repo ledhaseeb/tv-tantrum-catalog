@@ -182,11 +182,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Only add if no record exists
               if (existingRecords.rowCount === 0) {
-                // Add points directly using pool query for better compatibility
+                // Fix: Get the actual show name from the TV shows table
+                let showName = review.showName;
+                if (!showName) {
+                  try {
+                    const showResult = await pool.query(
+                      `SELECT name FROM tv_shows WHERE id = $1`,
+                      [review.tvShowId]
+                    );
+                    if (showResult.rows.length > 0) {
+                      showName = showResult.rows[0].name;
+                    }
+                  } catch (err) {
+                    console.error("Error getting show name for points:", err);
+                  }
+                }
+                
+                // Add points with the correct show name
                 await pool.query(
                   `INSERT INTO user_points_history (user_id, points, activity_type, description)
                    VALUES ($1, $2, $3, $4)`,
-                  [parsedUserId, 5, 'review', `Review of ${review.showName}`]
+                  [parsedUserId, 5, 'review', `Review of ${showName || 'a TV show'}`]
                 );
                 
                 console.log(`Successfully added points for review of ${review.showName}`);
