@@ -35,8 +35,6 @@ const UserDashboard = () => {
   const readResearch = dashboardData?.readResearch || [];
   const topUsers = dashboardData?.topUsers || [];
   const recentActivity = dashboardData?.recentActivity || [];
-  const reviews = dashboardData?.reviews || [];
-  const favorites = dashboardData?.favorites || [];
   
   // Calculate next milestone and progress
   const nextMilestone = Math.ceil(totalPoints / 100) * 100 + 100;
