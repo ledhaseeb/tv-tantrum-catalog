@@ -251,10 +251,11 @@ const UserDashboard = () => {
               <CardDescription>Your latest actions on TV Tantrum</CardDescription>
             </CardHeader>
             <CardContent>
-              {reviews?.length > 0 ? (
+              {(reviews?.length > 0 || pointsHistory?.length > 0) ? (
                 <div className="space-y-4">
+                  {/* First show reviews */}
                   {reviews.map((review: any) => (
-                    <div key={review.id} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
+                    <div key={`review-${review.id}`} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
                       <div className="bg-gray-100 p-2 rounded-full">
                         <StarIcon className="w-4 h-4 text-yellow-500" />
                       </div>
@@ -267,6 +268,34 @@ const UserDashboard = () => {
                         </div>
                         <p className="text-sm text-gray-500">
                           {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Then show upvotes and other activities */}
+                  {pointsHistory
+                    .filter((activity: any) => activity.activityType !== 'review') // Skip reviews as we already displayed them above
+                    .map((activity: any) => (
+                    <div key={`activity-${activity.id}`} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
+                      <div className="bg-gray-100 p-2 rounded-full">
+                        {activity.activityType === 'upvote_given' && <LineChart className="w-4 h-4 text-blue-500" />}
+                        {activity.activityType === 'upvote_received' && <Award className="w-4 h-4 text-purple-500" />}
+                        {activity.activityType === 'login_streak' && <CalendarIcon className="w-4 h-4 text-green-500" />}
+                        {activity.activityType === 'share' && <Send className="w-4 h-4 text-indigo-500" />}
+                        {activity.activityType === 'referral' && <UserPlus className="w-4 h-4 text-pink-500" />}
+                        {activity.activityType === 'show_submission' && <FilePlus2 className="w-4 h-4 text-orange-500" />}
+                        {activity.activityType === 'research_read' && <BookOpen className="w-4 h-4 text-teal-500" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <p className="font-medium">
+                            {activity.description || formatActivityType(activity.activityType)}
+                          </p>
+                          <Badge variant="outline">+{activity.points} points</Badge>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
