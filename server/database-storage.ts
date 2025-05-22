@@ -2118,109 +2118,110 @@ export class DatabaseStorage implements IStorage {
   
   // Review upvotes methods
   async addReviewUpvote(userId: number, reviewId: number): Promise<any> {
+    let client = null;
+    
     try {
-      // Get direct access to database
-      const client = await pool.connect();
+      // First check if the upvote already exists using a simple query
+      const checkQuery = await pool.query(
+        'SELECT id FROM review_upvotes WHERE user_id = $1 AND review_id = $2 LIMIT 1',
+        [userId, reviewId]
+      );
+      
+      // If already upvoted, return early
+      if (checkQuery.rowCount > 0) {
+        console.log(`User ${userId} already upvoted review ${reviewId}`);
+        return { 
+          success: true, 
+          already_upvoted: true,
+          upvoteId: checkQuery.rows[0].id
+        };
+      }
+      
+      // Acquire a new client for the transaction
+      client = await pool.connect();
+      
+      // Begin transaction
+      await client.query('BEGIN');
       
       try {
-        // Check if already upvoted first - more reliable than ORM
-        const checkResult = await client.query(
-          'SELECT id FROM review_upvotes WHERE user_id = $1 AND review_id = $2 LIMIT 1',
+        // Add the upvote using direct SQL
+        const insertResult = await client.query(
+          'INSERT INTO review_upvotes (user_id, review_id) VALUES ($1, $2) RETURNING id',
           [userId, reviewId]
         );
         
-        if (checkResult.rowCount > 0) {
-          client.release();
-          return { already_upvoted: true };
+        if (insertResult.rowCount === 0) {
+          throw new Error('Failed to insert upvote record');
         }
         
-        // Begin transaction
-        await client.query('BEGIN');
+        const upvoteId = insertResult.rows[0].id;
         
-        let upvote;
+        // Award points in a way that doesn't block the upvote operation
         try {
-          // Add the upvote using direct SQL
-          const insertResult = await client.query(
-            'INSERT INTO review_upvotes (user_id, review_id) VALUES ($1, $2) RETURNING id',
-            [userId, reviewId]
-          );
-          upvote = insertResult.rows[0];
-          
-          // Points for the upvoter - wrapped in try/catch so it won't block the upvote
-          try {
-            // First check if points history table exists
-            const tableCheckResult = await client.query(
-              "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_points_history')"
-            );
-            
-            if (tableCheckResult.rows[0].exists) {
-              // Add points history for upvoter if table exists
-              await client.query(
-                'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
-                [userId, 1, 'upvote_given', 'Upvoted a review']
-              );
-              
-              // Update total points
-              await client.query(
-                'UPDATE users SET total_points = COALESCE(total_points, 0) + 1 WHERE id = $1',
-                [userId]
-              );
-            }
-          } catch (pointsError) {
-            console.log('Points tracking skipped, continuing with upvote:', pointsError.message);
-            // Continue with the transaction, points are secondary
-          }
-          
-          // Now handle awarding points to the review author
-          try {
-            // Get review author ID
-            const reviewResult = await client.query(
-              'SELECT user_id FROM tv_show_reviews WHERE id = $1',
-              [reviewId]
-            );
-            
-            if (reviewResult.rowCount > 0) {
-              const reviewAuthorId = reviewResult.rows[0].user_id;
-              
-              // Only award points if not self-upvoting
-              if (reviewAuthorId && reviewAuthorId !== userId) {
-                const tableCheckResult = await client.query(
-                  "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_points_history')"
-                );
+          // Update user points (ignoring missing tables/columns)
+          await client.query(
+            `DO $$
+            BEGIN
+              IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_points_history') THEN
+                INSERT INTO user_points_history (user_id, points, activity_type, description)
+                VALUES ($1, 1, 'upvote_given', 'Upvoted a review');
                 
-                if (tableCheckResult.rows[0].exists) {
-                  // Add points history for author
-                  await client.query(
-                    'INSERT INTO user_points_history (user_id, points, activity_type, description) VALUES ($1, $2, $3, $4)',
-                    [reviewAuthorId, 5, 'upvote_received', 'Your review received an upvote']
-                  );
-                  
-                  // Update author points total
-                  await client.query(
-                    'UPDATE users SET total_points = COALESCE(total_points, 0) + 5 WHERE id = $1',
-                    [reviewAuthorId]
-                  );
-                }
-              }
+                UPDATE users SET total_points = COALESCE(total_points, 0) + 1 WHERE id = $1;
+              END IF;
+            EXCEPTION WHEN OTHERS THEN
+              -- Ignore errors in points processing
+            END $$;`,
+            [userId]
+          );
+          
+          // Get review author to award points
+          const reviewResult = await client.query(
+            'SELECT user_id FROM tv_show_reviews WHERE id = $1',
+            [reviewId]
+          );
+          
+          if (reviewResult.rowCount > 0) {
+            const authorId = reviewResult.rows[0].user_id;
+            
+            // Only award points if not self-upvoting
+            if (authorId && authorId !== userId) {
+              await client.query(
+                `DO $$
+                BEGIN
+                  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_points_history') THEN
+                    INSERT INTO user_points_history (user_id, points, activity_type, description)
+                    VALUES ($1, 5, 'upvote_received', 'Your review received an upvote');
+                    
+                    UPDATE users SET total_points = COALESCE(total_points, 0) + 5 WHERE id = $1;
+                  END IF;
+                EXCEPTION WHEN OTHERS THEN
+                  -- Ignore errors in points processing
+                END $$;`,
+                [authorId]
+              );
             }
-          } catch (authorPointsError) {
-            console.log('Author points tracking skipped:', authorPointsError.message);
-            // Continue with transaction, points are secondary
           }
-          
-          // Commit transaction
-          await client.query('COMMIT');
-          
-          return { success: true, upvoteId: upvote.id };
-        } catch (upvoteError) {
-          // Rollback on error
-          await client.query('ROLLBACK');
-          console.error('Failed to add upvote:', upvoteError);
-          throw upvoteError;
+        } catch (pointsError) {
+          // Ignore points errors - just log them
+          console.log('Points awarding encountered an error:', pointsError.message);
         }
+        
+        // Commit transaction
+        await client.query('COMMIT');
+        
+        return { success: true, upvoteId: upvoteId };
+      } catch (upvoteError) {
+        // Rollback transaction on error
+        if (client) {
+          await client.query('ROLLBACK').catch(() => {});
+        }
+        console.error('Transaction error in addReviewUpvote:', upvoteError);
+        throw upvoteError;
       } finally {
-        // Always release the client
-        client.release();
+        // Release the client in finally block
+        if (client) {
+          client.release();
+        }
       }
     } catch (error) {
       console.error('Error in addReviewUpvote:', error);
