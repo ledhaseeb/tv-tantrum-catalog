@@ -151,10 +151,38 @@ export default function Detail({ id }: DetailProps) {
     }
   };
   
-  // Upvote review mutation
+  // Upvote review mutation with optimistic updates
   const upvoteReviewMutation = useMutation({
     mutationFn: async (reviewId: number) => {
       return await apiRequest("POST", `/api/reviews/${reviewId}/upvote`);
+    },
+    onMutate: async (reviewId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: [`/api/shows/${id}`] });
+      
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData([`/api/shows/${id}`]);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData([`/api/shows/${id}`], (old: any) => {
+        if (!old) return old;
+        
+        return {
+          ...old,
+          reviews: old.reviews.map((review: any) => 
+            review.id === reviewId
+              ? { 
+                  ...review, 
+                  upvoteCount: (review.upvoteCount || 0) + 1,
+                  userHasUpvoted: true
+                }
+              : review
+          )
+        };
+      });
+      
+      // Return a context object with the snapshot
+      return { previousData };
     },
     onSuccess: () => {
       toast({
@@ -162,25 +190,59 @@ export default function Detail({ id }: DetailProps) {
         description: "You've upvoted this review. Thank you for the feedback!",
       });
       
-      // Refresh show data to update reviews
-      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
-      
       // Also update the user dashboard to reflect points earned
       queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
     },
-    onError: (error: any) => {
+    onError: (error: any, _, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousData) {
+        queryClient.setQueryData([`/api/shows/${id}`], context.previousData);
+      }
+      
       toast({
         title: "Error",
         description: error?.message || "Failed to upvote review. Please try again.",
         variant: "destructive",
       });
     },
+    onSettled: () => {
+      // Always refetch after error or success to make sure server state is correct
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
+    },
   });
   
-  // Remove upvote mutation
+  // Remove upvote mutation with optimistic updates
   const removeUpvoteMutation = useMutation({
     mutationFn: async (reviewId: number) => {
       return await apiRequest("DELETE", `/api/reviews/${reviewId}/upvote`);
+    },
+    onMutate: async (reviewId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: [`/api/shows/${id}`] });
+      
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData([`/api/shows/${id}`]);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData([`/api/shows/${id}`], (old: any) => {
+        if (!old) return old;
+        
+        return {
+          ...old,
+          reviews: old.reviews.map((review: any) => 
+            review.id === reviewId
+              ? { 
+                  ...review, 
+                  upvoteCount: Math.max((review.upvoteCount || 0) - 1, 0),
+                  userHasUpvoted: false
+                }
+              : review
+          )
+        };
+      });
+      
+      // Return a context object with the snapshot
+      return { previousData };
     },
     onSuccess: () => {
       toast({
@@ -188,18 +250,24 @@ export default function Detail({ id }: DetailProps) {
         description: "Your upvote has been removed.",
       });
       
-      // Refresh show data to update reviews
-      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
-      
       // Also update the user dashboard to reflect points changes
       queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
     },
-    onError: () => {
+    onError: (error, _, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousData) {
+        queryClient.setQueryData([`/api/shows/${id}`], context.previousData);
+      }
+      
       toast({
         title: "Error",
         description: "Failed to remove upvote. Please try again.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to make sure server state is correct
+      queryClient.invalidateQueries({ queryKey: [`/api/shows/${id}`] });
     },
   });
   

@@ -2049,7 +2049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Add upvote and award points to the review author
-      const upvote = await storage.addReviewUpvote(parseInt(reviewId), userId);
+      const upvote = await storage.addReviewUpvote(userId, parseInt(reviewId));
       
       res.json({ success: true, upvote });
     } catch (error) {
