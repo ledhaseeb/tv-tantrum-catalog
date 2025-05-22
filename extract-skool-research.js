@@ -5,9 +5,14 @@
  * into a JSON file for review before database import.
  */
 
-const puppeteer = require('puppeteer');
-const fs = require('fs');
-const path = require('path');
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuration
 const SKOOL_URL = 'https://www.skool.com/screen-time-community/classroom/e5da82d5?md=869d5a30cf1144e29cdbf7ec0ed6ca30';
@@ -282,8 +287,8 @@ async function main() {
 }
 
 // Execute the script when run directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = { extractResearchFromSkool };
+export { extractResearchFromSkool };
