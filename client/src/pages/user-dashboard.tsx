@@ -31,7 +31,7 @@ const UserDashboard = () => {
   const pointsBreakdown = dashboardData?.pointsBreakdown || {};
   const pointsHistory = dashboardData?.pointsHistory || [];
   const recommendations = dashboardData?.recommendedShows || [];
-  const loginStreak = dashboardData?.streak || 0;
+  // Removed login streak since we're using login rewards instead
   const readResearch = dashboardData?.readResearch || [];
   const topUsers = dashboardData?.topUsers || [];
   const recentActivity = dashboardData?.recentActivity || [];
@@ -195,13 +195,7 @@ const UserDashboard = () => {
                   <span className="font-medium">{pointsBreakdown.upvotesGiven} points</span>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
-                    <span>Login Streaks</span>
-                  </div>
-                  <span className="font-medium">{pointsBreakdown.consecutiveLogins} points</span>
-                </div>
+                {/* Removed login streaks since we're using login rewards instead */}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">

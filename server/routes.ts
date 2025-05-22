@@ -350,9 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         readResearch,
         submissions,
         recommendedShows,
-        streak: loginStreak?.currentStreak || 0,
-        weeklyStreak: loginStreak?.weeklyStreak || 0,
-        monthlyStreak: loginStreak?.monthlyStreak || 0,
+        // Remove login streak features since we're using login rewards instead
         leaderboard: topUsers,
         recentActivity  // Add the recent activity to the dashboard data
       };
