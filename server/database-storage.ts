@@ -2092,70 +2092,26 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateUserLoginStreak(userId: string): Promise<number> {
+    // DISABLED: Login streak feature is disabled in favor of login rewards
+    console.log('Login streak feature is disabled, only updating last login date');
+    
     return await db.transaction(async (tx) => {
       try {
-        // Get user's current login streak info
-        const [user] = await tx
-          .select({
-            loginStreak: users.loginStreak,
-            lastLoginDate: users.lastLoginDate
-          })
-          .from(users)
-          .where(eq(users.id, userId));
-        
         const now = new Date();
-        let newStreak = 1;
-        let streakPoints = 0;
         
-        if (user?.lastLoginDate) {
-          const lastLogin = new Date(user.lastLoginDate);
-          const currentStreak = user.loginStreak || 0;
-          
-          // Check if last login was within 24-48 hours
-          const hoursSinceLastLogin = (now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60);
-          
-          if (hoursSinceLastLogin < 48 && hoursSinceLastLogin > 12) {
-            // Continuing streak
-            newStreak = currentStreak + 1;
-            
-            // Award points for streak milestones
-            if (newStreak % 7 === 0) { // Weekly milestone
-              streakPoints = 25;
-            } else if (newStreak % 30 === 0) { // Monthly milestone
-              streakPoints = 100;
-            } else if (newStreak >= 3) { // 3+ day streak
-              streakPoints = 5;
-            } else { // Regular streak continuation
-              streakPoints = 2;
-            }
-          } else if (hoursSinceLastLogin > 48) {
-            // Streak broken
-            newStreak = 1;
-          }
-        }
-        
-        // Update user's login streak and last login date
+        // Only update the last login date, but keep login streak as is
         await tx
           .update(users)
           .set({ 
-            loginStreak: newStreak,
             lastLoginDate: now
           })
           .where(eq(users.id, userId));
         
-        // Award points if eligible
-        if (streakPoints > 0) {
-          await this.awardPoints(
-            userId,
-            streakPoints,
-            'login_streak',
-            `${newStreak} day login streak bonus`
-          );
-        }
-        
-        return newStreak;
+        // Return 1 to indicate the function executed successfully
+        // But no streak was actually updated
+        return 1;
       } catch (error) {
-        console.error('Error updating login streak:', error);
+        console.error('Error updating last login date:', error);
         return 1;
       }
     });

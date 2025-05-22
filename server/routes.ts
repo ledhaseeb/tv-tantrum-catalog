@@ -297,14 +297,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get user login streak
+      // Login streak feature is disabled in favor of login rewards
+      // Default to zero values for backward compatibility
       let loginStreak = { currentStreak: 0, weeklyStreak: 0, monthlyStreak: 0 };
-      try {
-        if (typeof storage.getUserLoginStreak === 'function') {
-          loginStreak = await storage.getUserLoginStreak(userId) || loginStreak;
-        }
-      } catch (error) {
-        console.error('Error getting user login streak:', error);
-      }
 
       // Get leaderboard data (top 10 users)
       let topUsers = [];
