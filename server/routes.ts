@@ -2197,7 +2197,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Removed duplicate dashboard endpoint
+  // User Dashboard
+  app.get("/api/user/dashboard", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view your dashboard" });
+      }
+      
+      // Get user data
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get all user dashboard data in parallel
+      const [
+        pointsHistory,
+        favorites,
+        reviews,
+        readResearch,
+        submissions
+      ] = await Promise.all([
+        storage.getUserPointsHistory(parsedUserId),
+        storage.getUserFavorites(parsedUserId),
+        storage.getReviewsByTvShowId(parsedUserId), // Note: We need to create a getReviewsByUserId method
+        storage.getUserReadResearch(parsedUserId),
+        storage.getUserShowSubmissions(parsedUserId)
+      ]);
+      
+      // Update login streak if the user just logged in
+      await storage.updateUserLoginStreak(parsedUserId.toString());
+      
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          totalPoints: user.totalPoints || 0,
+          profileBio: user.profileBio
+        },
+        pointsHistory,
+        favorites,
+        reviews,
+        readResearch,
+        submissions
+      });
+    } catch (error) {
+      console.error("Error fetching user dashboard:", error);
+      res.status(500).json({ message: "Failed to fetch user dashboard data" });
+    }
+  });
   
   // User Points
   app.get("/api/user/points", async (req: Request, res: Response) => {
