@@ -149,13 +149,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Processing review points for review ID ${review.id}`);
             
             try {
+              // Convert userId to integer for database operations
+              const parsedUserId = parseInt(userId);
+              
               // First check if we already have a record for this review
               const existingRecords = await pool.query(
                 `SELECT id FROM user_points_history 
                  WHERE user_id = $1 
                  AND activity_type = 'review' 
                  AND description LIKE $2`,
-                [numericUserId, `%${review.showName}%`]
+                [parsedUserId, `%${review.showName}%`]
               );
               
               // Only add if no record exists
@@ -164,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 await pool.query(
                   `INSERT INTO user_points_history (user_id, points, activity_type, description)
                    VALUES ($1, $2, $3, $4)`,
-                  [numericUserId, 5, 'review', `Review of ${review.showName}`]
+                  [parsedUserId, 5, 'review', `Review of ${review.showName}`]
                 );
                 
                 console.log(`Successfully added points for review of ${review.showName}`);
@@ -177,9 +180,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Force recalculation of points from the history records
+          const parsedUserId = parseInt(userId);
+          
           const pointsRecords = await pool.query(
             `SELECT SUM(points) as total FROM user_points_history WHERE user_id = $1 AND activity_type = 'review'`,
-            [numericUserId]
+            [parsedUserId]
           );
           
           if (pointsRecords.rows.length > 0) {
