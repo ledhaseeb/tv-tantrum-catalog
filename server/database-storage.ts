@@ -1869,7 +1869,7 @@ export class DatabaseStorage implements IStorage {
   // Gamification Methods
   // -------------------------------------------------------------------------
   
-  async getUserPoints(userId: string): Promise<{ 
+  async getUserPoints(userId: number): Promise<{ 
     total: number; 
     breakdown: {
       reviews: number;
@@ -1933,7 +1933,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Helper method to get points by activity type
-  private async getPointsByActivityType(userId: string, activityType: string): Promise<number> {
+  private async getPointsByActivityType(userId: number, activityType: string): Promise<number> {
     try {
       const result = await db
         .select({ 
@@ -1954,7 +1954,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async getUserPointsHistory(userId: string): Promise<any[]> {
+  async getUserPointsHistory(userId: number): Promise<any[]> {
     try {
       const history = await db
         .select()
@@ -1969,7 +1969,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<any> {
+  async awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<any> {
     // Using transaction for database integrity
     return await db.transaction(async (tx) => {
       try {

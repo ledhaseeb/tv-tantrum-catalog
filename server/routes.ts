@@ -63,6 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user!.id;
       
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
+      
       // Get user data
       const user = await storage.getUser(userId);
       if (!user) {
@@ -2164,7 +2167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to view points" });
       }
       
-      const points = await storage.getUserPoints(userId);
+      // Convert userId to integer since database expects integer
+      const parsedUserId = parseInt(userId);
+      
+      const points = await storage.getUserPoints(parsedUserId);
       res.json({ points });
     } catch (error) {
       console.error("Error fetching user points:", error);
@@ -2179,7 +2185,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "You must be logged in to view points history" });
       }
       
-      const history = await storage.getUserPointsHistory(userId);
+      // Convert userId to integer since database expects integer
+      const parsedUserId = parseInt(userId);
+      
+      const history = await storage.getUserPointsHistory(parsedUserId);
       res.json(history);
     } catch (error) {
       console.error("Error fetching points history:", error);
