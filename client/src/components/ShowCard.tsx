@@ -398,7 +398,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             toggleFavorite(e);
           }}
         >
-          <Heart className={`w-3 h-3 ${isFavorite ? 'fill-white' : ''}`} />
+          <Heart className={`w-3 h-3 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
         </Button>
       </div>
       
