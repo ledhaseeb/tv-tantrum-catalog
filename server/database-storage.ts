@@ -1878,26 +1878,33 @@ export class DatabaseStorage implements IStorage {
       upvotesGiven: number;
       upvotesReceived: number;
       consecutiveLogins: number;
+      loginRewards: number;
       shares: number;
       referrals: number;
       showSubmissions: number;
       researchRead: number;
-    }
+    },
+    rank: string;
   }> {
     try {
-      // Get user's total points
+      // Get user's total points and rank
       const [userResult] = await db
-        .select({ totalPoints: users.totalPoints })
+        .select({ 
+          totalPoints: users.totalPoints,
+          rank: users.rank
+        })
         .from(users)
         .where(eq(users.id, userId));
       
       const totalPoints = userResult?.totalPoints || 0;
+      const userRank = userResult?.rank || 'TV Watcher';
       
       // Get point breakdowns by category
       const reviewPoints = await this.getPointsByActivityType(userId, 'review');
       const upvotesGivenPoints = await this.getPointsByActivityType(userId, 'upvote_given');
       const upvotesReceivedPoints = await this.getPointsByActivityType(userId, 'upvote_received');
       const loginStreakPoints = await this.getPointsByActivityType(userId, 'login_streak');
+      const loginRewardPoints = await this.getPointsByActivityType(userId, 'login_reward');
       const sharePoints = await this.getPointsByActivityType(userId, 'share');
       const referralPoints = await this.getPointsByActivityType(userId, 'referral');
       const submissionPoints = await this.getPointsByActivityType(userId, 'show_submission');
@@ -1910,11 +1917,13 @@ export class DatabaseStorage implements IStorage {
           upvotesGiven: upvotesGivenPoints,
           upvotesReceived: upvotesReceivedPoints,
           consecutiveLogins: loginStreakPoints,
+          loginRewards: loginRewardPoints,
           shares: sharePoints,
           referrals: referralPoints,
           showSubmissions: submissionPoints,
           researchRead: researchPoints
-        }
+        },
+        rank: userRank
       };
     } catch (error) {
       console.error('Error getting user points:', error);
@@ -1925,11 +1934,13 @@ export class DatabaseStorage implements IStorage {
           upvotesGiven: 0,
           upvotesReceived: 0,
           consecutiveLogins: 0,
+          loginRewards: 0,
           shares: 0,
           referrals: 0,
           showSubmissions: 0,
           researchRead: 0
-        }
+        },
+        rank: 'TV Watcher'
       };
     }
   }
