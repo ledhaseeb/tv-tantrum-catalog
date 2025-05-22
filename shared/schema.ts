@@ -179,8 +179,12 @@ export const reviewUpvotes = pgTable("review_upvotes", {
 export const researchSummaries = pgTable("research_summaries", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  content: text("content").notNull(),
+  summary: text("summary").notNull(),
+  fullText: text("full_text"),
+  category: text("category"),
   imageUrl: text("image_url"),
+  source: text("source"),
+  publishedDate: timestamp("published_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
