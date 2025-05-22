@@ -297,6 +297,8 @@ const UserDashboard = () => {
                           {item.activityType === 'research_read' && <BookOpen className="w-4 h-4 text-teal-500" />}
                           {item.activityType === 'favorite_added' && <Heart className="w-4 h-4 text-red-500" />}
                           {item.activityType === 'points_deducted' && <X className="w-4 h-4 text-red-500" />}
+                          {/* Check description for favorite activities */}
+                          {item.description && item.description.includes('to favorites') && <Heart className="w-4 h-4 text-red-500" />}
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between">
