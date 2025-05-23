@@ -45,14 +45,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const originalName = req.file.originalname.replace(/\s+/g, '-');
       const filename = `${timestamp}-${originalName}`;
       
-      // Ensure directory exists
-      const uploadDir = path.join(__dirname, '../public/research');
+      // Ensure directory exists - use relative path instead of __dirname
+      const uploadDir = './public/research';
       if (!fs.existsSync(uploadDir)) {
+        console.log(`Creating directory: ${uploadDir}`);
         fs.mkdirSync(uploadDir, { recursive: true });
       }
       
       // Save file
-      const filePath = path.join(uploadDir, filename);
+      const filePath = `${uploadDir}/${filename}`;
+      console.log(`Saving file to: ${filePath}`);
       fs.writeFileSync(filePath, req.file.buffer);
       
       // Return URL
