@@ -2492,16 +2492,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Attempting to delete research entry: ${existingEntry.title} (ID: ${id})`);
       
-      // Delete the research entry from the database
-      const deleteResult = await storage.deleteResearchSummary(id);
-      
-      if (!deleteResult) {
-        console.error(`Failed to delete research entry with ID ${id}`);
-        return res.status(500).json({ message: "Failed to delete research entry" });
+      // Use direct SQL to delete the research entry
+      try {
+        // First delete any associated read records
+        await pool.query('DELETE FROM user_read_research WHERE research_id = $1', [id]);
+        
+        // Then delete the research summary
+        const result = await pool.query('DELETE FROM research_summaries WHERE id = $1', [id]);
+        
+        if (result.rowCount === 0) {
+          console.error(`No rows deleted for research entry with ID ${id}`);
+          return res.status(500).json({ message: "Failed to delete research entry" });
+        }
+        
+        console.log(`Successfully deleted research entry: ${existingEntry.title} (ID: ${id})`);
+        res.status(200).json({ message: "Research entry deleted successfully" });
+      } catch (sqlError) {
+        console.error("SQL error deleting research entry:", sqlError);
+        return res.status(500).json({ message: "Database error when deleting research entry" });
       }
-      
-      console.log(`Successfully deleted research entry: ${existingEntry.title} (ID: ${id})`);
-      res.status(200).json({ message: "Research entry deleted successfully" });
     } catch (error) {
       console.error("Error deleting research entry:", error);
       res.status(500).json({ message: "Failed to delete research entry" });
@@ -2535,15 +2544,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Updating research entry #${id} with data:`, JSON.stringify(req.body, null, 2));
 
-      // Update the research entry
-      const updatedEntry = await storage.updateResearchSummary(id, req.body);
-      if (!updatedEntry) {
-        console.error(`Failed to update research entry #${id}`);
-        return res.status(500).json({ message: "Failed to update research entry" });
+      // Use direct SQL to update the research entry
+      try {
+        // Convert camelCase to snake_case for database columns
+        const updateData = {
+          title: req.body.title,
+          summary: req.body.summary,
+          full_text: req.body.fullText,
+          category: req.body.category,
+          image_url: req.body.imageUrl,
+          source: req.body.source,
+          original_url: req.body.originalUrl,
+          published_date: req.body.publishedDate,
+          headline: req.body.headline,
+          sub_headline: req.body.subHeadline,
+          key_findings: req.body.keyFindings,
+          updated_at: new Date()
+        };
+        
+        // Build SQL query dynamically based on provided fields
+        const updates = [];
+        const values = [];
+        let paramCount = 1;
+        
+        for (const [key, value] of Object.entries(updateData)) {
+          if (value !== undefined) {
+            updates.push(`${key} = $${paramCount}`);
+            values.push(value);
+            paramCount++;
+          }
+        }
+        
+        if (updates.length === 0) {
+          return res.status(400).json({ message: "No fields to update" });
+        }
+        
+        // Add ID as the last parameter
+        values.push(id);
+        
+        const query = `
+          UPDATE research_summaries 
+          SET ${updates.join(', ')} 
+          WHERE id = $${paramCount}
+          RETURNING *
+        `;
+        
+        const result = await pool.query(query, values);
+        
+        if (result.rowCount === 0) {
+          console.error(`No rows updated for research entry with ID ${id}`);
+          return res.status(500).json({ message: "Failed to update research entry" });
+        }
+        
+        // Convert snake_case to camelCase for response
+        const updatedEntry = {
+          id: result.rows[0].id,
+          title: result.rows[0].title,
+          summary: result.rows[0].summary,
+          fullText: result.rows[0].full_text,
+          category: result.rows[0].category,
+          imageUrl: result.rows[0].image_url,
+          source: result.rows[0].source,
+          originalUrl: result.rows[0].original_url,
+          publishedDate: result.rows[0].published_date,
+          headline: result.rows[0].headline,
+          subHeadline: result.rows[0].sub_headline,
+          keyFindings: result.rows[0].key_findings,
+          createdAt: result.rows[0].created_at,
+          updatedAt: result.rows[0].updated_at
+        };
+        
+        console.log(`Research entry #${id} updated successfully`);
+        res.json(updatedEntry);
+      } catch (sqlError) {
+        console.error("SQL error updating research entry:", sqlError);
+        return res.status(500).json({ message: "Database error when updating research entry" });
       }
-
-      console.log(`Research entry #${id} updated successfully`);
-      res.json(updatedEntry);
     } catch (error) {
       console.error("Error updating research entry:", error);
       res.status(500).json({ message: "Failed to update research entry" });
