@@ -162,21 +162,21 @@ const AdminResearchManager: React.FC = () => {
     mutationFn: async (data: z.infer<typeof researchSchema>) => {
       // Format the fullText from the form fields
       const fullText = `
-${data.subHeadline}
+${data.subHeadline || ''}
 
-Key Findings:
+${data.keyFindings ? `Key Findings:
 ${data.keyFindings}
 
-Study Details:
+` : ''}${data.studyDetails ? `Study Details:
 ${data.studyDetails}
 
-${data.graphExplanation ? `Graph Explanation:
+` : ''}${data.graphExplanation ? `Graph Explanation:
 ${data.graphExplanation}
 
-` : ''}Implications:
+` : ''}${data.implications ? `Implications:
 ${data.implications}
 
-For the full study click here: ${data.source}
+` : ''}${data.source ? `For the full study click here: ${data.source}` : ''}
 `.trim();
 
       // Create FormData for image upload
@@ -185,8 +185,14 @@ For the full study click here: ${data.source}
       formData.append("summary", data.summary);
       formData.append("fullText", fullText);
       formData.append("category", data.category);
-      formData.append("source", data.source);
-      formData.append("originalUrl", data.fullStudyLink);
+      
+      if (data.source) {
+        formData.append("source", data.source);
+      }
+      
+      if (data.fullStudyLink) {
+        formData.append("originalUrl", data.fullStudyLink);
+      }
       
       if (data.publishedDate) {
         formData.append("publishedDate", data.publishedDate);
@@ -196,13 +202,16 @@ For the full study click here: ${data.source}
         formData.append("image", imageFile);
       }
 
-      return apiRequest("/api/research", {
+      const response = await fetch("/api/research", {
         method: "POST",
         body: formData,
-        headers: {
-          // Don't set Content-Type with FormData, browser will set it with boundary
-        },
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to create research summary");
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/research"] });
@@ -226,21 +235,21 @@ For the full study click here: ${data.source}
     mutationFn: async (data: { id: number; formData: z.infer<typeof researchSchema> }) => {
       // Format the fullText from the form fields
       const fullText = `
-${data.formData.subHeadline}
+${data.formData.subHeadline || ''}
 
-Key Findings:
+${data.formData.keyFindings ? `Key Findings:
 ${data.formData.keyFindings}
 
-Study Details:
+` : ''}${data.formData.studyDetails ? `Study Details:
 ${data.formData.studyDetails}
 
-${data.formData.graphExplanation ? `Graph Explanation:
+` : ''}${data.formData.graphExplanation ? `Graph Explanation:
 ${data.formData.graphExplanation}
 
-` : ''}Implications:
+` : ''}${data.formData.implications ? `Implications:
 ${data.formData.implications}
 
-For the full study click here: ${data.formData.source}
+` : ''}${data.formData.source ? `For the full study click here: ${data.formData.source}` : ''}
 `.trim();
 
       // Create FormData for image upload
@@ -249,8 +258,14 @@ For the full study click here: ${data.formData.source}
       formData.append("summary", data.formData.summary);
       formData.append("fullText", fullText);
       formData.append("category", data.formData.category);
-      formData.append("source", data.formData.source);
-      formData.append("originalUrl", data.formData.fullStudyLink);
+      
+      if (data.formData.source) {
+        formData.append("source", data.formData.source);
+      }
+      
+      if (data.formData.fullStudyLink) {
+        formData.append("originalUrl", data.formData.fullStudyLink);
+      }
       
       if (data.formData.publishedDate) {
         formData.append("publishedDate", data.formData.publishedDate);
@@ -260,13 +275,16 @@ For the full study click here: ${data.formData.source}
         formData.append("image", imageFile);
       }
 
-      return apiRequest(`/api/research/${data.id}`, {
+      const response = await fetch(`/api/research/${data.id}`, {
         method: "PUT",
         body: formData,
-        headers: {
-          // Don't set Content-Type with FormData, browser will set it with boundary
-        },
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to update research summary");
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/research"] });
@@ -288,9 +306,15 @@ For the full study click here: ${data.formData.source}
   // Delete research
   const deleteResearchMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/research/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/research/${id}`, {
+        method: "DELETE"
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to delete research summary");
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/research"] });
