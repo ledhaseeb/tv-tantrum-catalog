@@ -22,10 +22,17 @@ const Research = () => {
   // Define categories
   const categories = [
     { id: 'all', name: 'All Research' },
-    { id: 'sensory', name: 'Sensory Impact' },
-    { id: 'development', name: 'Child Development' },
-    { id: 'parenting', name: 'Parenting Tips' },
-    { id: 'education', name: 'Educational Content' },
+    { id: 'Television Exposure and Its Effects', name: 'Television Exposure and Its Effects' },
+    { id: 'Digital Media and Language Development', name: 'Digital Media and Language Development' },
+    { id: 'Learning and Cognitive Development', name: 'Learning and Cognitive Development' },
+    { id: 'Digital Media and Cognitive Development', name: 'Digital Media and Cognitive Development' },
+    { id: 'Social and Emotional Development', name: 'Social and Emotional Development' },
+    { id: 'Screen Time and Behavioral Impacts', name: 'Screen Time and Behavioral Impacts' },
+    { id: 'Health and Developmental Impacts', name: 'Health and Developmental Impacts' },
+    { id: 'Systematic Reviews and Broad Studies', name: 'Systematic Reviews and Broad Studies' },
+    { id: 'Sensory Impact', name: 'Sensory Impact' },
+    { id: 'Parenting Tips', name: 'Parenting Tips' },
+    { id: 'Child Development', name: 'Child Development' },
   ];
 
   if (isLoadingAuth) {
@@ -89,6 +96,18 @@ const Research = () => {
     return acc;
   }, {});
 
+  // Count items per category
+  const categoryCounts = {};
+  if (summaries) {
+    categories.forEach(category => {
+      if (category.id === 'all') {
+        categoryCounts[category.id] = summaries.length;
+      } else {
+        categoryCounts[category.id] = categorizedSummaries?.[category.id]?.length || 0;
+      }
+    });
+  }
+
   // Get all unique categories from the data
   const dataCategories = new Set(summaries?.map((summary: any) => summary.category || 'uncategorized'));
 
@@ -129,7 +148,11 @@ const Research = () => {
               value={category.id}
               className="min-w-[120px] flex-shrink-0"
             >
-              {category.name}
+              {category.name} {categoryCounts && categoryCounts[category.id] > 0 && 
+                <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
+                  {categoryCounts[category.id]}
+                </span>
+              }
             </TabsTrigger>
           ))}
         </TabsList>
