@@ -2,6 +2,7 @@ import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 // Use database storage
 import { storage } from "./database-storage";
+import { db, pool } from "./db";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
@@ -2440,14 +2441,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Use direct SQL query to make sure we get all fields
-      const [row] = await db.execute(
+      const result = await pool.query(
         `SELECT * FROM research_summaries WHERE id = $1`,
         [id]
       );
       
-      if (!row) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ message: "Research summary not found" });
       }
+      
+      const row = result.rows[0];
       
       // Convert snake_case to camelCase for consistent API response
       const summary = {
@@ -2514,13 +2517,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Attempting to delete research entry: ${existingEntry.title} (ID: ${id})`);
       
-      // Use direct database queries to delete the research entry
+      // Use the imported pool to delete the records
       try {
         // First delete any associated read records
-        await db.execute(`DELETE FROM user_read_research WHERE research_id = $1`, [id]);
+        await pool.query('DELETE FROM user_read_research WHERE research_id = $1', [id]);
         
         // Then delete the research summary
-        await db.execute(`DELETE FROM research_summaries WHERE id = $1`, [id]);
+        await pool.query('DELETE FROM research_summaries WHERE id = $1', [id]);
         
         console.log(`Successfully deleted research entry: ${existingEntry.title} (ID: ${id})`);
         res.status(200).json({ message: "Research entry deleted successfully" });
@@ -2554,10 +2557,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate the research entry exists
-      const existingEntry = await storage.getResearchSummary(id);
-      if (!existingEntry) {
+      const existingEntryResult = await pool.query(
+        `SELECT * FROM research_summaries WHERE id = $1`,
+        [id]
+      );
+      
+      if (existingEntryResult.rows.length === 0) {
         return res.status(404).json({ message: "Research entry not found" });
       }
+      
+      const existingEntry = existingEntryResult.rows[0];
+      
+      // Convert the database snake_case to camelCase for processing
+      const existingEntryFormatted = {
+        id: existingEntry.id,
+        title: existingEntry.title,
+        summary: existingEntry.summary,
+        fullText: existingEntry.full_text,
+        category: existingEntry.category,
+        imageUrl: existingEntry.image_url,
+        source: existingEntry.source,
+        originalUrl: existingEntry.original_url,
+        publishedDate: existingEntry.published_date,
+        headline: existingEntry.headline,
+        subHeadline: existingEntry.sub_headline,
+        keyFindings: existingEntry.key_findings,
+        createdAt: existingEntry.created_at,
+        updatedAt: existingEntry.updated_at
+      };
 
       console.log(`Updating research entry #${id} with data:`, JSON.stringify(req.body, null, 2));
 
@@ -2565,17 +2592,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Convert camelCase to snake_case for database columns
         const updateData = {
-          title: req.body.title,
-          summary: req.body.summary,
-          full_text: req.body.fullText,
-          category: req.body.category,
-          image_url: req.body.imageUrl,
-          source: req.body.source,
-          original_url: req.body.originalUrl,
-          published_date: req.body.publishedDate,
-          headline: req.body.headline,
-          sub_headline: req.body.subHeadline,
-          key_findings: req.body.keyFindings,
+          title: req.body.title || existingEntry.title,
+          summary: req.body.summary || existingEntry.summary,
+          full_text: req.body.fullText || existingEntry.full_text,
+          category: req.body.category || existingEntry.category,
+          image_url: req.body.imageUrl || existingEntry.image_url,
+          source: req.body.source || existingEntry.source,
+          original_url: req.body.originalUrl || existingEntry.original_url,
+          published_date: req.body.publishedDate || existingEntry.published_date,
+          headline: req.body.headline || existingEntry.headline,
+          sub_headline: req.body.subHeadline || existingEntry.sub_headline,
+          key_findings: req.body.keyFindings || existingEntry.key_findings,
           updated_at: new Date()
         };
         
@@ -2606,24 +2633,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           RETURNING *
         `;
         
-        const result = await db.execute(query, values);
+        const result = await pool.query(query, values);
         
         // Convert snake_case to camelCase for response
         const updatedEntry = {
-          id: existingEntry.id,
-          title: req.body.title || existingEntry.title,
-          summary: req.body.summary || existingEntry.summary,
-          fullText: req.body.fullText || existingEntry.fullText,
-          category: req.body.category || existingEntry.category,
-          imageUrl: req.body.imageUrl || existingEntry.imageUrl,
-          source: req.body.source || existingEntry.source,
-          originalUrl: req.body.originalUrl || existingEntry.originalUrl,
-          publishedDate: req.body.publishedDate || existingEntry.publishedDate,
-          headline: req.body.headline || existingEntry.headline,
-          subHeadline: req.body.subHeadline || existingEntry.subHeadline,
-          keyFindings: req.body.keyFindings || existingEntry.keyFindings,
-          createdAt: existingEntry.createdAt,
-          updatedAt: new Date()
+          id: existingEntryFormatted.id,
+          title: updateData.title,
+          summary: updateData.summary,
+          fullText: updateData.full_text,
+          category: updateData.category,
+          imageUrl: updateData.image_url,
+          source: updateData.source,
+          originalUrl: updateData.original_url,
+          publishedDate: updateData.published_date,
+          headline: updateData.headline,
+          subHeadline: updateData.sub_headline,
+          keyFindings: updateData.key_findings,
+          createdAt: existingEntryFormatted.createdAt,
+          updatedAt: updateData.updated_at
         };
         
         console.log(`Research entry #${id} updated successfully`);
