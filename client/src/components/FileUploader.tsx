@@ -26,7 +26,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [statusMessage, setStatusMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -57,40 +57,47 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     formData.append('file', file);
     formData.append('folder', folder);
 
-    try {
-      // Use fetch API instead of XMLHttpRequest for better error handling
-      setUploadProgress(10); // Show initial progress
-      
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      setUploadProgress(90); // Almost done
-      
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
+    // Use XMLHttpRequest for better progress tracking
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(progress);
       }
-      
-      const data = await response.json();
-      console.log('Upload response:', data);
-      
-      if (data.url) {
-        setUploadStatus('success');
-        setStatusMessage('File uploaded successfully');
-        setUploadProgress(100);
-        onUploadComplete(data.url);
-      } else {
-        throw new Error('Server did not return a file URL');
+    });
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            console.log('Upload response:', response);
+            if (response.url) {
+              setUploadStatus('success');
+              setStatusMessage('File uploaded successfully');
+              onUploadComplete(response.url);
+            } else {
+              throw new Error('No URL in response');
+            }
+          } catch (error) {
+            console.error('Error parsing response:', error);
+            setUploadStatus('error');
+            setStatusMessage('Failed to parse server response');
+            if (onUploadError) onUploadError('Failed to parse server response');
+          }
+        } else {
+          console.error('Upload failed:', xhr.status, xhr.statusText);
+          setUploadStatus('error');
+          setStatusMessage(`Upload failed: ${xhr.statusText || 'Server error'}`);
+          if (onUploadError) onUploadError(`Upload failed: ${xhr.statusText || 'Server error'}`);
+        }
+        setIsUploading(false);
       }
-      
-      setIsUploading(false);
-    } catch (error) {
-      setIsUploading(false);
-      setUploadStatus('error');
-      setStatusMessage(`Upload error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      if (onUploadError) onUploadError(`Upload error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    };
+
+    xhr.open('POST', '/api/upload', true);
+    xhr.send(formData);
   };
 
   const triggerFileInput = () => {
