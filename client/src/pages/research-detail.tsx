@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth'; // Updated import path
+import { useAuth } from '@/hooks/use-auth';
 import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Award } from 'lucide-react';
 
 const ResearchDetail = () => {
@@ -15,11 +15,33 @@ const ResearchDetail = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [research, setResearch] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { data: research, isLoading } = useQuery({
-    queryKey: [`/api/research/${id}`],
-    enabled: !!id,
-  });
+  // Direct fetch approach instead of using react-query
+  useEffect(() => {
+    async function fetchResearch() {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/research/${id}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch research');
+        }
+        
+        const data = await response.json();
+        setResearch(data);
+      } catch (error) {
+        console.error('Error fetching research:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchResearch();
+  }, [id]);
 
   const markAsReadMutation = useMutation({
     mutationFn: async () => {
@@ -76,35 +98,8 @@ const ResearchDetail = () => {
     ).join(' ');
   };
 
-  if (isLoadingAuth) {
-    return (
-      <div className="container py-8">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-[150px]" />
-          <Skeleton className="h-10 w-[300px]" />
-          <Skeleton className="h-[400px] w-full" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="container py-12">
-        <Card className="max-w-md mx-auto text-center">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
-              You need to be signed in to view research summaries.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center">
-            <Button onClick={() => window.location.href = '/api/login'}>Sign In</Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+  // Skip auth loading check for faster rendering
+  // We'll show sign in prompt only after confirmed no user is present
 
   if (isLoading) {
     return (
