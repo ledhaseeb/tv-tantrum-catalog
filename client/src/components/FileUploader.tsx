@@ -58,39 +58,33 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     formData.append('folder', folder);
 
     try {
-      const xhr = new XMLHttpRequest();
+      // Use fetch API instead of XMLHttpRequest for better error handling
+      setUploadProgress(10); // Show initial progress
       
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(progress);
-        }
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       });
-
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              setUploadStatus('success');
-              setStatusMessage('File uploaded successfully');
-              onUploadComplete(response.url);
-            } catch (error) {
-              setUploadStatus('error');
-              setStatusMessage('Failed to parse server response');
-              if (onUploadError) onUploadError('Failed to parse server response');
-            }
-          } else {
-            setUploadStatus('error');
-            setStatusMessage(`Upload failed: ${xhr.statusText}`);
-            if (onUploadError) onUploadError(`Upload failed: ${xhr.statusText}`);
-          }
-          setIsUploading(false);
-        }
-      };
-
-      xhr.open('POST', '/api/upload', true);
-      xhr.send(formData);
+      
+      setUploadProgress(90); // Almost done
+      
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Upload response:', data);
+      
+      if (data.url) {
+        setUploadStatus('success');
+        setStatusMessage('File uploaded successfully');
+        setUploadProgress(100);
+        onUploadComplete(data.url);
+      } else {
+        throw new Error('Server did not return a file URL');
+      }
+      
+      setIsUploading(false);
     } catch (error) {
       setIsUploading(false);
       setUploadStatus('error');
