@@ -2439,11 +2439,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid research ID" });
       }
       
-      const summary = await storage.getResearchSummary(id);
+      // Use direct SQL query to make sure we get all fields
+      const [row] = await db.execute(
+        `SELECT * FROM research_summaries WHERE id = $1`,
+        [id]
+      );
       
-      if (!summary) {
+      if (!row) {
         return res.status(404).json({ message: "Research summary not found" });
       }
+      
+      // Convert snake_case to camelCase for consistent API response
+      const summary = {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        fullText: row.full_text,
+        category: row.category,
+        imageUrl: row.image_url,
+        source: row.source,
+        originalUrl: row.original_url,
+        publishedDate: row.published_date,
+        headline: row.headline,
+        subHeadline: row.sub_headline,
+        keyFindings: row.key_findings,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
       
       // Check if user has read this research
       const userId = req.session?.userId;
@@ -2492,18 +2514,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Attempting to delete research entry: ${existingEntry.title} (ID: ${id})`);
       
-      // Use direct SQL to delete the research entry
+      // Use direct database queries to delete the research entry
       try {
         // First delete any associated read records
-        await pool.query('DELETE FROM user_read_research WHERE research_id = $1', [id]);
+        await db.execute(`DELETE FROM user_read_research WHERE research_id = $1`, [id]);
         
         // Then delete the research summary
-        const result = await pool.query('DELETE FROM research_summaries WHERE id = $1', [id]);
-        
-        if (result.rowCount === 0) {
-          console.error(`No rows deleted for research entry with ID ${id}`);
-          return res.status(500).json({ message: "Failed to delete research entry" });
-        }
+        await db.execute(`DELETE FROM research_summaries WHERE id = $1`, [id]);
         
         console.log(`Successfully deleted research entry: ${existingEntry.title} (ID: ${id})`);
         res.status(200).json({ message: "Research entry deleted successfully" });
@@ -2589,29 +2606,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           RETURNING *
         `;
         
-        const result = await pool.query(query, values);
-        
-        if (result.rowCount === 0) {
-          console.error(`No rows updated for research entry with ID ${id}`);
-          return res.status(500).json({ message: "Failed to update research entry" });
-        }
+        const result = await db.execute(query, values);
         
         // Convert snake_case to camelCase for response
         const updatedEntry = {
-          id: result.rows[0].id,
-          title: result.rows[0].title,
-          summary: result.rows[0].summary,
-          fullText: result.rows[0].full_text,
-          category: result.rows[0].category,
-          imageUrl: result.rows[0].image_url,
-          source: result.rows[0].source,
-          originalUrl: result.rows[0].original_url,
-          publishedDate: result.rows[0].published_date,
-          headline: result.rows[0].headline,
-          subHeadline: result.rows[0].sub_headline,
-          keyFindings: result.rows[0].key_findings,
-          createdAt: result.rows[0].created_at,
-          updatedAt: result.rows[0].updated_at
+          id: existingEntry.id,
+          title: req.body.title || existingEntry.title,
+          summary: req.body.summary || existingEntry.summary,
+          fullText: req.body.fullText || existingEntry.fullText,
+          category: req.body.category || existingEntry.category,
+          imageUrl: req.body.imageUrl || existingEntry.imageUrl,
+          source: req.body.source || existingEntry.source,
+          originalUrl: req.body.originalUrl || existingEntry.originalUrl,
+          publishedDate: req.body.publishedDate || existingEntry.publishedDate,
+          headline: req.body.headline || existingEntry.headline,
+          subHeadline: req.body.subHeadline || existingEntry.subHeadline,
+          keyFindings: req.body.keyFindings || existingEntry.keyFindings,
+          createdAt: existingEntry.createdAt,
+          updatedAt: new Date()
         };
         
         console.log(`Research entry #${id} updated successfully`);
