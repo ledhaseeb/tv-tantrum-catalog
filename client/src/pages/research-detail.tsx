@@ -167,7 +167,7 @@ const ResearchDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-8 px-4">
           <div className="mb-6">
             {research.category && (
               <Badge variant="outline" className="mb-2">
@@ -230,7 +230,7 @@ const ResearchDetail = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 px-4">
           <div className="sticky top-8">
             <Card>
               <CardHeader>
@@ -257,6 +257,19 @@ const ResearchDetail = () => {
                     <p className="text-sm text-gray-600">{formatCategoryName(research.category)}</p>
                   </div>
                 )}
+
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Full Study</h4>
+                  <a 
+                    href={`https://scholar.google.com/scholar?q=${encodeURIComponent(research.title)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm flex items-center text-blue-600 hover:text-blue-800"
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" /> 
+                    View original research
+                  </a>
+                </div>
 
                 <Separator />
 
