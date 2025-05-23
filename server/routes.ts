@@ -55,6 +55,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save file
       const filePath = `${uploadDir}/${filename}`;
       console.log(`Saving file to: ${filePath}`);
+      
+      // Make sure we have a buffer to write
+      if (!req.file.buffer) {
+        console.error('No buffer data in the uploaded file');
+        return res.status(400).json({ error: 'Invalid file data' });
+      }
+      
+      // Create a disk storage version of multer to handle the file saving
+      const diskStorage = multer.diskStorage({
+        destination: function (req, file, cb) {
+          cb(null, uploadDir);
+        },
+        filename: function (req, file, cb) {
+          cb(null, filename);
+        }
+      });
+      
+      // Create a simple file on disk
       fs.writeFileSync(filePath, req.file.buffer);
       
       // Return URL
