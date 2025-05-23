@@ -22,6 +22,7 @@ import UserDashboard from "@/pages/user-dashboard";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
+import ResearchView from "@/pages/research-view";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
@@ -327,18 +328,13 @@ function Router() {
             />
             <Route path="/research/:id">
               {(params) => (
-                <ApprovedRoute 
-                  path={`/research/${params.id}`} 
-                  component={() => (
-                    <div className="flex-grow flex flex-col">
-                      <Navbar />
-                      <div className="flex-grow">
-                        <ResearchDetail />
-                      </div>
-                      <Footer />
-                    </div>
-                  )} 
-                />
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <ResearchDetail />
+                  </div>
+                  <Footer />
+                </div>
               )}
             </Route>
           </>
