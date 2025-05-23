@@ -93,15 +93,17 @@ export default function AdminResearchManager() {
   
   // Check if we're in edit mode by parsing the URL
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.split('?')[1]);
-    const editParam = searchParams.get('edit');
-    
-    if (editParam) {
-      const id = parseInt(editParam, 10);
-      if (!isNaN(id)) {
-        setIsEditMode(true);
-        setEditId(id);
-        fetchResearchEntry(id);
+    if (location.includes('?')) {
+      const searchParams = new URLSearchParams(location.split('?')[1]);
+      const editParam = searchParams.get('edit');
+      
+      if (editParam) {
+        const id = parseInt(editParam, 10);
+        if (!isNaN(id)) {
+          setIsEditMode(true);
+          setEditId(id);
+          fetchResearchEntry(id);
+        }
       }
     }
   }, [location]);
