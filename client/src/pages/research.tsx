@@ -136,9 +136,9 @@ const Research = () => {
         defaultValue="all" 
         value={activeCategory} 
         onValueChange={setActiveCategory} 
-        className="mb-8"
+        className="mb-14"
       >
-        <TabsList className="flex flex-wrap mb-6 px-1 justify-center gap-2">
+        <TabsList className="flex flex-wrap mb-10 px-1 justify-center gap-2">
           {categories.map((category) => (
             <TabsTrigger 
               key={category.id}
