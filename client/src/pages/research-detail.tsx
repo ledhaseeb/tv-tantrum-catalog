@@ -18,7 +18,7 @@ const ResearchDetail = () => {
   
   const { data: research, isLoading } = useQuery({
     queryKey: [`/api/research/${id}`],
-    enabled: !!id && !!user,
+    enabled: !!id,
   });
 
   const markAsReadMutation = useMutation({
