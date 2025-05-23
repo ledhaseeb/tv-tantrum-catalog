@@ -48,6 +48,7 @@ import {
   ImageIcon, 
   User, 
   CheckCircle,
+  Trash,
   Database, 
   XCircle, 
   Clock,
@@ -309,6 +310,41 @@ export default function AdminPage() {
   const handleEditResearch = (id: number) => {
     console.log('Editing research entry with ID:', id);
     setLocation(`/admin/research?edit=${id}`);
+  };
+  
+  // Handle deleting a research entry
+  const handleDeleteResearch = (id: number, title: string) => {
+    // Show confirmation dialog
+    if (window.confirm(`Are you sure you want to delete the research entry "${title}"? This action cannot be undone.`)) {
+      // Perform the delete operation
+      fetch(`/api/research/${id}`, {
+        method: 'DELETE',
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to delete research entry');
+        }
+        // Update the research entries list
+        setResearchEntries(prev => prev.filter(entry => entry.id !== id));
+        setFilteredResearch(prev => prev.filter(entry => entry.id !== id));
+        
+        // Invalidate queries to ensure data consistency
+        queryClient.invalidateQueries({ queryKey: ['/api/research'] });
+        
+        toast({
+          title: "Research Entry Deleted",
+          description: `Successfully deleted "${title}"`,
+        });
+      })
+      .catch(error => {
+        console.error('Error deleting research entry:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete research entry. Please try again.",
+          variant: "destructive"
+        });
+      });
+    }
   };
 
   // Load all shows
@@ -1116,13 +1152,23 @@ export default function AdminPage() {
                           <TableCell>{entry.source || 'N/A'}</TableCell>
                           <TableCell>{entry.publishedDate || 'N/A'}</TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleEditResearch(entry.id)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <div className="flex justify-end space-x-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditResearch(entry.id)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteResearch(entry.id, entry.title)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
