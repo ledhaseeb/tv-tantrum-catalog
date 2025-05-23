@@ -30,9 +30,6 @@ const Research = () => {
     { id: 'Screen Time and Behavioral Impacts', name: 'Screen Time and Behavioral Impacts' },
     { id: 'Health and Developmental Impacts', name: 'Health and Developmental Impacts' },
     { id: 'Systematic Reviews and Broad Studies', name: 'Systematic Reviews and Broad Studies' },
-    { id: 'Sensory Impact', name: 'Sensory Impact' },
-    { id: 'Parenting Tips', name: 'Parenting Tips' },
-    { id: 'Child Development', name: 'Child Development' },
   ];
 
   if (isLoadingAuth) {
