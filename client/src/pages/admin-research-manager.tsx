@@ -118,19 +118,43 @@ export default function AdminResearchManager() {
       const data = await response.json();
       console.log('Fetched research entry:', data);
       
-      // Pre-fill the form with the fetched data
-      form.reset({
+      // Make sure we have a valid date format for the published date field
+      let formattedDate = '';
+      if (data.publishedDate) {
+        try {
+          // If it's a valid date string, format it as YYYY-MM-DD for the input field
+          const date = new Date(data.publishedDate);
+          if (!isNaN(date.getTime())) {
+            formattedDate = date.toISOString().split('T')[0];
+          }
+        } catch (e) {
+          console.error('Error formatting date:', e);
+        }
+      }
+      
+      // Pre-fill the form with the fetched data - ensure all fields are properly populated
+      const formData = {
         title: data.title || '',
         category: data.category || '',
         source: data.source || '',
         originalUrl: data.originalUrl || '',
-        publishedDate: data.publishedDate || '',
+        publishedDate: formattedDate,
         summary: data.summary || '',
         fullText: data.fullText || '',
         headline: data.headline || '',
         subHeadline: data.subHeadline || '',
         keyFindings: data.keyFindings || '',
         imageUrl: data.imageUrl || ''
+      };
+      
+      console.log('Setting form data:', formData);
+      
+      // Update form values and trigger validation
+      form.reset(formData);
+      
+      // Set each field value individually to ensure the form is updated
+      Object.entries(formData).forEach(([key, value]) => {
+        form.setValue(key as keyof ResearchFormValues, value);
       });
       
       // If there's an image URL, set it in state
@@ -290,7 +314,7 @@ export default function AdminResearchManager() {
                           <FormLabel>Category *</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
