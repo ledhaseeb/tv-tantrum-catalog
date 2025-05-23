@@ -184,6 +184,7 @@ export const researchSummaries = pgTable("research_summaries", {
   category: text("category"),
   imageUrl: text("image_url"),
   source: text("source"),
+  originalUrl: text("original_url"),
   publishedDate: timestamp("published_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
