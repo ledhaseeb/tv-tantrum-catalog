@@ -236,13 +236,14 @@ export default function AdminPage() {
     }
   };
     
-  // Load all users (admin only)
+  // Load all users and research entries (admin only)
   useEffect(() => {
     // Only attempt to fetch users when we know for sure the user is an admin
     if (isAdmin && user?.id) {
-      console.log("Admin user detected, fetching all users...");
+      console.log("Admin user detected, fetching all users and research entries...");
       setTimeout(() => {
         fetchUsers();
+        fetchResearch();
       }, 500); // Small delay to ensure session is fully established
     }
   }, [isAdmin, user?.id]);
@@ -260,6 +261,55 @@ export default function AdminPage() {
       setFilteredUsers(filtered);
     }
   }, [userSearchTerm, users]);
+  
+  // Filter research entries based on search term
+  useEffect(() => {
+    if (researchSearchTerm.trim() === '') {
+      setFilteredResearch(researchEntries);
+    } else {
+      const term = researchSearchTerm.toLowerCase();
+      const filtered = researchEntries.filter(entry => 
+        entry.title?.toLowerCase().includes(term) || 
+        entry.category?.toLowerCase().includes(term) ||
+        entry.source?.toLowerCase().includes(term) ||
+        entry.summary?.toLowerCase().includes(term)
+      );
+      setFilteredResearch(filtered);
+    }
+  }, [researchSearchTerm, researchEntries]);
+  
+  // Function to fetch research entries
+  const fetchResearch = async () => {
+    console.log("Fetching all research entries...");
+    setIsLoadingResearch(true);
+    try {
+      const response = await fetch('/api/research');
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log(`Successfully fetched ${data.length} research entries from database`);
+      setResearchEntries(data);
+      setFilteredResearch(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching research entries:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load research entries. Please try again.",
+        variant: "destructive"
+      });
+      return [];
+    } finally {
+      setIsLoadingResearch(false);
+    }
+  };
+  
+  // Handle editing a research entry
+  const handleEditResearch = (id: number) => {
+    console.log('Editing research entry with ID:', id);
+    setLocation(`/admin/research?edit=${id}`);
+  };
 
   // Load all shows
   useEffect(() => {
