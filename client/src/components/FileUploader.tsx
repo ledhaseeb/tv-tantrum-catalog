@@ -1,150 +1,182 @@
-import React, { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import React, { useState, useRef } from 'react';
+import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 interface FileUploaderProps {
-  accept?: string;
-  maxSize?: number; // size in bytes
-  onChange?: (files: FileList | null) => void;
-  multiple?: boolean;
+  onUploadComplete: (url: string) => void;
+  onUploadStart?: () => void;
+  onUploadError?: (error: string) => void;
+  folder?: string;
+  allowedTypes?: string[];
+  maxSizeMB?: number;
 }
 
-export const FileUploader: React.FC<FileUploaderProps> = ({
-  accept = "*",
-  maxSize = 10 * 1024 * 1024, // Default 10MB
-  onChange,
-  multiple = false,
+const FileUploader: React.FC<FileUploaderProps> = ({
+  onUploadComplete,
+  onUploadStart,
+  onUploadError,
+  folder = 'uploads',
+  allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  maxSizeMB = 5
 }) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    
-    if (!files || files.length === 0) {
-      onChange?.(null);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+      setUploadStatus('error');
+      setStatusMessage(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
+      if (onUploadError) onUploadError(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
       return;
     }
 
-    // Check file size
-    for (let i = 0; i < files.length; i++) {
-      if (files[i].size > maxSize) {
-        setError(`File "${files[i].name}" is too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB.`);
-        e.target.value = "";
-        onChange?.(null);
-        return;
-      }
+    // Validate file size
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setUploadStatus('error');
+      setStatusMessage(`File too large. Maximum size: ${maxSizeMB}MB`);
+      if (onUploadError) onUploadError(`File too large. Maximum size: ${maxSizeMB}MB`);
+      return;
     }
 
-    setError(null);
-    onChange?.(files);
-  };
+    // Start upload
+    setIsUploading(true);
+    setUploadStatus('uploading');
+    setUploadProgress(0);
+    if (onUploadStart) onUploadStart();
 
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    const files = e.dataTransfer.files;
-    if (!files || files.length === 0) return;
-    
-    // Check if file type is acceptable
-    if (accept !== "*") {
-      const acceptedTypes = accept.split(",");
-      for (let i = 0; i < files.length; i++) {
-        const fileType = files[i].type;
-        if (!acceptedTypes.some(type => {
-          if (type.endsWith('/*')) {
-            const mainType = type.split('/')[0];
-            return fileType.startsWith(`${mainType}/`);
-          }
-          return type === fileType;
-        })) {
-          setError(`File "${files[i].name}" is not an accepted file type.`);
-          return;
+    try {
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
         }
-      }
+      });
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              setUploadStatus('success');
+              setStatusMessage('File uploaded successfully');
+              onUploadComplete(response.url);
+            } catch (error) {
+              setUploadStatus('error');
+              setStatusMessage('Failed to parse server response');
+              if (onUploadError) onUploadError('Failed to parse server response');
+            }
+          } else {
+            setUploadStatus('error');
+            setStatusMessage(`Upload failed: ${xhr.statusText}`);
+            if (onUploadError) onUploadError(`Upload failed: ${xhr.statusText}`);
+          }
+          setIsUploading(false);
+        }
+      };
+
+      xhr.open('POST', '/api/upload', true);
+      xhr.send(formData);
+    } catch (error) {
+      setIsUploading(false);
+      setUploadStatus('error');
+      setStatusMessage(`Upload error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (onUploadError) onUploadError(`Upload error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    
-    // Check file size
-    for (let i = 0; i < files.length; i++) {
-      if (files[i].size > maxSize) {
-        setError(`File "${files[i].name}" is too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB.`);
-        return;
-      }
-    }
-    
-    setError(null);
-    onChange?.(files);
-    
-    // Update the file input
-    if (fileInputRef.current) {
-      // Create a new DataTransfer object
-      const dataTransfer = new DataTransfer();
-      
-      // Use only the first file if multiple is false
-      const filesToAdd = multiple ? files : [files[0]];
-      
-      // Add the files to the DataTransfer object
-      for (let i = 0; i < filesToAdd.length; i++) {
-        dataTransfer.items.add(filesToAdd[i]);
-      }
-      
-      // Set the files of the file input
-      fileInputRef.current.files = dataTransfer.files;
-    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
     <div className="w-full">
-      <div
-        className={`border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
-          isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
-        }`}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept={accept}
-          onChange={handleFileChange}
-          multiple={multiple}
-        />
-        <Upload className="h-10 w-10 text-gray-400 mb-2" />
-        <p className="text-sm text-gray-600 mb-1">
-          Drag and drop your {multiple ? "files" : "file"} here or click to browse
-        </p>
-        <p className="text-xs text-gray-500">
-          {accept === "*"
-            ? "All file types accepted"
-            : `Accepted: ${accept.replace(/\*/g, "any")}`}
-          , max size: {Math.round(maxSize / 1024 / 1024)}MB
-        </p>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept={allowedTypes.join(',')}
+        className="hidden"
+      />
+      
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition cursor-pointer" onClick={triggerFileInput}>
+        {uploadStatus === 'idle' && (
+          <>
+            <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+            <div className="mt-2 text-sm text-gray-600">
+              <p className="font-medium">Click to upload or drag and drop</p>
+              <p className="text-xs">
+                {allowedTypes.map(type => type.replace('image/', '.')).join(', ')} up to {maxSizeMB}MB
+              </p>
+            </div>
+          </>
+        )}
+        
+        {uploadStatus === 'uploading' && (
+          <div className="space-y-2">
+            <div className="animate-pulse flex justify-center">
+              <UploadCloud className="h-12 w-12 text-primary" />
+            </div>
+            <p className="text-sm text-gray-600">Uploading file...</p>
+            <Progress value={uploadProgress} className="h-2 w-full" />
+            <p className="text-xs text-gray-500">{uploadProgress}%</p>
+          </div>
+        )}
+        
+        {uploadStatus === 'success' && (
+          <div className="space-y-2">
+            <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
+            <p className="text-sm text-green-600">{statusMessage}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setUploadStatus('idle');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
+            >
+              Upload another
+            </Button>
+          </div>
+        )}
+        
+        {uploadStatus === 'error' && (
+          <div className="space-y-2">
+            <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
+            <p className="text-sm text-red-600">{statusMessage}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setUploadStatus('idle');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
+            >
+              Try again
+            </Button>
+          </div>
+        )}
       </div>
-      {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
     </div>
   );
 };
+
+export default FileUploader;
