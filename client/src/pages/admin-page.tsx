@@ -998,7 +998,7 @@ export default function AdminPage() {
                   </CardDescription>
                 </div>
                 <Button 
-                  onClick={() => window.location.href = '/admin/research'}
+                  onClick={() => setLocation('/admin/research')}
                   className="flex items-center"
                 >
                   <PlusCircle className="h-4 w-4 mr-2" />
