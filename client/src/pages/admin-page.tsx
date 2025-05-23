@@ -922,6 +922,14 @@ export default function AdminPage() {
             </div>
             <div className="flex space-x-2">
               <Button 
+                onClick={() => navigate('/admin/research')}
+                variant="default"
+                className="whitespace-nowrap"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Manage Research
+              </Button>
+              <Button 
                 onClick={handleUpdateMetadata} 
                 disabled={isUpdatingMetadata}
                 variant="outline"
@@ -934,7 +942,7 @@ export default function AdminPage() {
                   </>
                 ) : (
                   <>
-                    <FileText className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-4 w-4 mr-2" />
                     Update Show Metadata
                   </>
                 )}

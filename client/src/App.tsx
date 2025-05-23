@@ -24,6 +24,7 @@ import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
 import ResearchView from "@/pages/research-view";
 import AdminResearchLinks from "@/pages/admin-research-links";
+import AdminResearchManager from "@/pages/admin-research-manager";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
@@ -343,19 +344,8 @@ function Router() {
 
         {/* Admin route with approval and admin check */}
         {isDevMode ? (
-          <Route path="/admin">
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <AdminPage />
-              </div>
-              <Footer />
-            </div>
-          </Route>
-        ) : (
-          <AdminRoute 
-            path="/admin" 
-            component={() => (
+          <>
+            <Route path="/admin">
               <div className="flex-grow flex flex-col">
                 <Navbar />
                 <div className="flex-grow">
@@ -363,8 +353,44 @@ function Router() {
                 </div>
                 <Footer />
               </div>
-            )} 
-          />
+            </Route>
+            <Route path="/admin/research">
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <AdminResearchManager />
+                </div>
+                <Footer />
+              </div>
+            </Route>
+          </>
+        ) : (
+          <>
+            <AdminRoute 
+              path="/admin" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <AdminPage />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+            <AdminRoute 
+              path="/admin/research" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <AdminResearchManager />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+          </>
         )}
         <Route>
           <NotFound />
