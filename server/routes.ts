@@ -2465,6 +2465,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Delete a research entry (admin only)
+  app.delete("/api/research/:id", async (req: Request, res: Response) => {
+    try {
+      // Parse ID
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to delete research entries" });
+      }
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      // Validate the research entry exists
+      const existingEntry = await storage.getResearchSummary(id);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Research entry not found" });
+      }
+
+      console.log(`Attempting to delete research entry: ${existingEntry.title} (ID: ${id})`);
+      
+      // Delete the research entry from the database
+      const deleteResult = await storage.deleteResearchSummary(id);
+      
+      if (!deleteResult) {
+        console.error(`Failed to delete research entry with ID ${id}`);
+        return res.status(500).json({ message: "Failed to delete research entry" });
+      }
+      
+      console.log(`Successfully deleted research entry: ${existingEntry.title} (ID: ${id})`);
+      res.status(200).json({ message: "Research entry deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting research entry:", error);
+      res.status(500).json({ message: "Failed to delete research entry" });
+    }
+  });
+  
+  // Update a research entry (admin only)
+  app.patch("/api/research/:id", async (req: Request, res: Response) => {
+    try {
+      // Parse ID
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to update research entries" });
+      }
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      // Validate the research entry exists
+      const existingEntry = await storage.getResearchSummary(id);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Research entry not found" });
+      }
+
+      console.log(`Updating research entry #${id} with data:`, JSON.stringify(req.body, null, 2));
+
+      // Update the research entry
+      const updatedEntry = await storage.updateResearchSummary(id, req.body);
+      if (!updatedEntry) {
+        console.error(`Failed to update research entry #${id}`);
+        return res.status(500).json({ message: "Failed to update research entry" });
+      }
+
+      console.log(`Research entry #${id} updated successfully`);
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Error updating research entry:", error);
+      res.status(500).json({ message: "Failed to update research entry" });
+    }
+  });
+  
   app.post("/api/research/:id/mark-read", async (req: Request, res: Response) => {
     try {
       const userId = req.session?.userId;
