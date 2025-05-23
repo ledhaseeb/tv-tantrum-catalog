@@ -16,6 +16,20 @@ app.use('/media/tv-shows', express.static(path.join(process.cwd(), 'public/media
 app.use('/custom-images', express.static(path.join(process.cwd(), 'client/public/custom-images')));
 app.use('/custom-images', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
 
+// Serve research files
+app.use('/research', express.static(path.join(process.cwd(), 'public/research')));
+
+// Make sure research directory exists
+const researchDir = path.join(process.cwd(), 'public/research');
+const fs = require('fs');
+if (!fs.existsSync(researchDir)) {
+  fs.mkdirSync(researchDir, { recursive: true });
+}
+
+// Import the research upload handler
+const setupResearchUpload = require('./research-upload');
+setupResearchUpload(app);
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
