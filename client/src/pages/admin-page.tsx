@@ -53,12 +53,12 @@ import {
   Clock,
   Shield,
   Check,
+  FileText,
   X,
   PlusCircle,
   Upload,
   Image,
   Trash2,
-  FileText,
   Info,
   Video
 } from 'lucide-react';
@@ -918,17 +918,9 @@ export default function AdminPage() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Admin Dashboard</CardTitle>
-              <CardDescription>Manage TV shows and settings</CardDescription>
+              <CardDescription>Manage TV shows, research, and settings</CardDescription>
             </div>
             <div className="flex space-x-2">
-              <Button 
-                onClick={() => navigate('/admin/research')}
-                variant="default"
-                className="whitespace-nowrap"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Manage Research
-              </Button>
               <Button 
                 onClick={handleUpdateMetadata} 
                 disabled={isUpdatingMetadata}
@@ -990,9 +982,41 @@ export default function AdminPage() {
       <Tabs defaultValue="shows">
         <TabsList className="mb-4">
           <TabsTrigger value="shows">TV Shows</TabsTrigger>
+          <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="research">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Research Manager</CardTitle>
+                  <CardDescription>
+                    Manage research summaries and original study links
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => window.location.href = '/admin/research'}
+                  className="flex items-center"
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Research
+                </Button>
+              </div>
+              <div className="mt-4">
+                <Alert>
+                  <FileText className="h-4 w-4" />
+                  <AlertTitle>No research entries</AlertTitle>
+                  <AlertDescription>
+                    There are currently no research entries in the database. Click the "Add Research" button to create your first entry.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </CardHeader>
+          </Card>
+        </TabsContent>
         
         <TabsContent value="shows">
           <Card>
