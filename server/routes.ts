@@ -2451,6 +2451,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Update research original link - Admin only
+  app.post("/api/research/:id/update-link", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to update research links" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin && !user?.isApproved) {
+        return res.status(403).json({ message: "Only administrators or approved users can update research links" });
+      }
+      
+      const researchId = parseInt(req.params.id);
+      const { originalUrl } = req.body;
+      
+      if (isNaN(researchId)) {
+        return res.status(400).json({ message: "Invalid research ID" });
+      }
+      
+      if (!originalUrl) {
+        return res.status(400).json({ message: "Original URL is required" });
+      }
+      
+      // Update research with the original link
+      const { pool } = await import('./db');
+      await pool.query(
+        'UPDATE research_summaries SET original_url = $1 WHERE id = $2',
+        [originalUrl, researchId]
+      );
+      
+      res.json({ success: true, message: "Research link updated successfully" });
+    } catch (error) {
+      console.error("Error updating research link:", error);
+      res.status(500).json({ message: "Failed to update research link" });
+    }
+  });
+  
   // Show Submissions
   app.post("/api/show-submissions", async (req: Request, res: Response) => {
     try {
