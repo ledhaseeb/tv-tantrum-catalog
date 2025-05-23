@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/use-auth'; // Updated import path
 import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Award } from 'lucide-react';
 
 const ResearchDetail = () => {
