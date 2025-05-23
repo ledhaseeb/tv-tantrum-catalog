@@ -1,43 +1,46 @@
-import { Express, Request, Response } from 'express';
+import { Express } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
 
-// Set up storage for our uploads
-const storage = multer.memoryStorage();
-const upload = multer({ 
-  storage: storage,
+// Configure multer storage for research files
+const researchStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(process.cwd(), 'public', 'research');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const safeName = file.originalname.replace(/\s+/g, '-');
+    cb(null, `${timestamp}-${safeName}`);
+  }
+});
+
+// Create multer upload middleware
+const researchUpload = multer({ 
+  storage: researchStorage,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-export function setupDirectUpload(app: Express) {
-  // Make sure upload directory exists
-  const uploadDir = path.join(__dirname, '../public/research');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  // Simple file upload endpoint for research images
-  app.post('/api/upload', upload.single('file'), (req: Request, res: Response) => {
+// Setup upload routes
+export function setupUploadRoutes(app: Express) {
+  // Research image upload endpoint
+  app.post('/api/upload', researchUpload.single('file'), (req, res) => {
     try {
-      // Check if we got a file
+      console.log('Research file upload request received');
+      
       if (!req.file) {
+        console.log('No file in request');
         return res.status(400).json({ error: 'No file uploaded' });
       }
-
-      // Generate unique filename
-      const timestamp = Date.now();
-      const originalName = req.file.originalname.replace(/\s+/g, '-');
-      const filename = `${timestamp}-${originalName}`;
       
-      // Save to research directory
-      const filePath = path.join(uploadDir, filename);
-      fs.writeFileSync(filePath, req.file.buffer);
-
-      // Return URL to the file
-      const fileUrl = `/research/${filename}`;
+      // Return URL to uploaded file
+      const fileUrl = `/research/${req.file.filename}`;
+      console.log(`File uploaded successfully to ${fileUrl}`);
       
-      console.log(`File uploaded successfully: ${fileUrl}`);
       return res.json({ url: fileUrl });
     } catch (error) {
       console.error('Upload error:', error);

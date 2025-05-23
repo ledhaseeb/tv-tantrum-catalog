@@ -4,6 +4,8 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkDatabaseConnection } from "./db";
+import multer from 'multer';
+import * as fs from 'fs';
 
 const app = express();
 app.use(express.json());
@@ -21,14 +23,48 @@ app.use('/research', express.static(path.join(process.cwd(), 'public/research'))
 
 // Make sure research directory exists
 const researchDir = path.join(process.cwd(), 'public/research');
-const fs = require('fs');
 if (!fs.existsSync(researchDir)) {
   fs.mkdirSync(researchDir, { recursive: true });
 }
 
-// Import the research upload handler
-const setupResearchUpload = require('./research-upload');
-setupResearchUpload(app);
+// Configure file upload for research images
+const researchStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, researchDir);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const safeName = file.originalname.replace(/\s+/g, '-');
+    cb(null, `${timestamp}-${safeName}`);
+  }
+});
+
+// Create the upload middleware
+const researchUpload = multer({ 
+  storage: researchStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+// Setup direct file upload endpoint
+app.post('/api/upload', researchUpload.single('file'), (req, res) => {
+  try {
+    console.log('Research file upload request received');
+    
+    if (!req.file) {
+      console.log('No file in request');
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    // Return URL to uploaded file
+    const fileUrl = `/research/${req.file.filename}`;
+    console.log(`File uploaded successfully to ${fileUrl}`);
+    
+    return res.json({ url: fileUrl });
+  } catch (error) {
+    console.error('Upload error:', error);
+    return res.status(500).json({ error: 'Upload failed' });
+  }
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
