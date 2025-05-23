@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -65,7 +65,10 @@ export default function AdminResearchManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
 
   // Default values for form
   const defaultValues: Partial<ResearchFormValues> = {
@@ -88,15 +91,89 @@ export default function AdminResearchManager() {
     mode: 'onChange',
   });
   
-  const { mutate: createResearch, isPending } = useMutation({
+  // Check if we're in edit mode by parsing the URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.split('?')[1]);
+    const editParam = searchParams.get('edit');
+    
+    if (editParam) {
+      const id = parseInt(editParam, 10);
+      if (!isNaN(id)) {
+        setIsEditMode(true);
+        setEditId(id);
+        fetchResearchEntry(id);
+      }
+    }
+  }, [location]);
+  
+  // Fetch research entry data for editing
+  const fetchResearchEntry = async (id: number) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/research/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch research entry');
+      }
+      
+      const data = await response.json();
+      console.log('Fetched research entry:', data);
+      
+      // Pre-fill the form with the fetched data
+      form.reset({
+        title: data.title || '',
+        category: data.category || '',
+        source: data.source || '',
+        originalUrl: data.originalUrl || '',
+        publishedDate: data.publishedDate || '',
+        summary: data.summary || '',
+        fullText: data.fullText || '',
+        headline: data.headline || '',
+        subHeadline: data.subHeadline || '',
+        keyFindings: data.keyFindings || '',
+        imageUrl: data.imageUrl || ''
+      });
+      
+      // If there's an image URL, set it in state
+      if (data.imageUrl) {
+        setUploadedImageUrl(data.imageUrl);
+      }
+      
+      toast({
+        title: 'Research entry loaded',
+        description: 'You are now editing an existing research entry.',
+      });
+    } catch (error) {
+      console.error('Error fetching research entry:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load research entry data.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const { mutate: submitResearch, isPending } = useMutation({
     mutationFn: async (data: ResearchFormValues) => {
       // Include the uploaded image URL if available
       if (uploadedImageUrl) {
         data.imageUrl = uploadedImageUrl;
       }
       
-      const response = await fetch('/api/research', {
-        method: 'POST',
+      let url = '/api/research';
+      let method = 'POST';
+      
+      // If in edit mode, use PATCH method with the edit ID
+      if (isEditMode && editId) {
+        url = `/api/research/${editId}`;
+        method = 'PATCH';
+      }
+      
+      console.log(`${isEditMode ? 'Updating' : 'Creating'} research entry:`, data);
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -105,15 +182,15 @@ export default function AdminResearchManager() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create research entry');
+        throw new Error(errorData.message || `Failed to ${isEditMode ? 'update' : 'create'} research entry`);
       }
       
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: 'Research created',
-        description: 'The research entry has been created successfully.',
+        title: isEditMode ? 'Research updated' : 'Research created',
+        description: `The research entry has been ${isEditMode ? 'updated' : 'created'} successfully.`,
       });
       // Invalidate research query cache
       queryClient.invalidateQueries({ queryKey: ['/api/research'] });
@@ -130,7 +207,7 @@ export default function AdminResearchManager() {
   });
 
   function onSubmit(data: ResearchFormValues) {
-    createResearch(data);
+    submitResearch(data);
   }
 
   // Handle image upload
