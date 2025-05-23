@@ -2495,19 +2495,26 @@ export class DatabaseStorage implements IStorage {
   
   async addResearchSummary(data: any): Promise<any> {
     try {
+      console.log("Adding research summary with data:", data);
+      
       const [summary] = await db
         .insert(researchSummaries)
         .values({
           title: data.title,
-          summary: data.summary,
+          summary: data.summary || null,
           fullText: data.fullText || null,
-          category: data.category || null,
+          category: data.category,
           imageUrl: data.imageUrl || null,
           source: data.source || null,
-          publishedDate: data.publishedDate ? new Date(data.publishedDate) : null
+          originalUrl: data.originalUrl || null,
+          publishedDate: data.publishedDate || null,
+          headline: data.headline || null,
+          subHeadline: data.subHeadline || null,
+          keyFindings: data.keyFindings || null
         })
         .returning();
       
+      console.log("Research summary added successfully:", summary);
       return summary;
     } catch (error) {
       console.error('Error adding research summary:', error);

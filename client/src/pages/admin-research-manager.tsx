@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ArrowLeft, FileText, Loader2, Save } from 'lucide-react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 
@@ -65,7 +65,7 @@ export default function AdminResearchManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
 
   // Default values for form
   const defaultValues: Partial<ResearchFormValues> = {
@@ -118,7 +118,7 @@ export default function AdminResearchManager() {
       // Invalidate research query cache
       queryClient.invalidateQueries({ queryKey: ['/api/research'] });
       // Navigate back to admin dashboard
-      navigate('/admin');
+      setLocation('/admin');
     },
     onError: (error: Error) => {
       toast({
