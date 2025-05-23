@@ -162,7 +162,7 @@ export default function AdminResearchManager() {
               variant="ghost"
               size="sm"
               className="mr-2"
-              onClick={() => navigate('/admin')}
+              onClick={() => setLocation('/admin')}
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back
