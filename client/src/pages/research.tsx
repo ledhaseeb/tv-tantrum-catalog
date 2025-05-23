@@ -138,15 +138,24 @@ const Research = () => {
         onValueChange={setActiveCategory} 
         className="mb-8"
       >
-        <TabsList className="flex mb-6 overflow-x-auto pb-2 px-1">
+        <TabsList className="flex flex-wrap mb-6 px-1 justify-center gap-2">
           {categories.map((category) => (
             <TabsTrigger 
               key={category.id}
               value={category.id}
-              className="min-w-[120px] flex-shrink-0"
+              className={`flex flex-col items-center py-2 px-3 ${category.id === 'all' ? 'min-w-[100px]' : 'min-w-[150px]'} h-auto`}
             >
-              {category.name} {categoryCounts && categoryCounts[category.id] > 0 && 
-                <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
+              <span className="text-center">
+                {category.id === 'all' ? category.name : 
+                  category.name.split(' and ').map((part, i) => (
+                    <span key={i} className="block">
+                      {part}{i < category.name.split(' and ').length - 1 && ' &'}
+                    </span>
+                  ))
+                }
+              </span>
+              {categoryCounts && categoryCounts[category.id] > 0 && 
+                <span className="mt-1 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
                   {categoryCounts[category.id]}
                 </span>
               }
