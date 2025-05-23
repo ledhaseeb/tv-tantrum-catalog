@@ -309,7 +309,10 @@ export default function AdminPage() {
   // Handle editing a research entry
   const handleEditResearch = (id: number) => {
     console.log('Editing research entry with ID:', id);
-    setLocation(`/admin/research?edit=${id}`);
+    // Navigate to the research editor page with the ID parameter
+    // This approach ensures we don't have routing issues with React
+    localStorage.setItem('editResearchId', id.toString());
+    setLocation('/admin/research');
   };
   
   // Handle deleting a research entry

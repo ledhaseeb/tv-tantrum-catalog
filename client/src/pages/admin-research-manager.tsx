@@ -91,15 +91,39 @@ export default function AdminResearchManager() {
     mode: 'onChange',
   });
   
-  // Check if we're in edit mode by parsing the URL
+  // Check if we're in edit mode by checking localStorage
   useEffect(() => {
-    if (location.includes('?')) {
+    console.log("Current location: ", location);
+    
+    // Get the edit ID from localStorage if it exists
+    const storedEditId = localStorage.getItem('editResearchId');
+    console.log("Stored edit ID from localStorage: ", storedEditId);
+    
+    if (storedEditId) {
+      const id = parseInt(storedEditId, 10);
+      console.log("Parsed ID: ", id);
+      
+      if (!isNaN(id)) {
+        console.log("Setting edit mode for ID: ", id);
+        setIsEditMode(true);
+        setEditId(id);
+        fetchResearchEntry(id);
+        
+        // Clear the localStorage item after we've used it
+        localStorage.removeItem('editResearchId');
+      }
+    }
+    // Also check URL parameters for backward compatibility
+    else if (location.includes('?')) {
       const searchParams = new URLSearchParams(location.split('?')[1]);
       const editParam = searchParams.get('edit');
+      
+      console.log("Edit parameter from URL: ", editParam);
       
       if (editParam) {
         const id = parseInt(editParam, 10);
         if (!isNaN(id)) {
+          console.log("Setting edit mode for ID from URL: ", id);
           setIsEditMode(true);
           setEditId(id);
           fetchResearchEntry(id);
