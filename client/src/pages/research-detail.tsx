@@ -213,15 +213,43 @@ const ResearchDetail = () => {
           )}
 
           <div className="prose prose-p:text-base prose-headings:font-semibold max-w-none">
+            {/* Display headline and sub-headline if available */}
+            {(research.headline || research.subHeadline) && (
+              <div className="mb-8">
+                {research.headline && (
+                  <h2 className="text-2xl font-bold mb-2">{research.headline}</h2>
+                )}
+                {research.subHeadline && (
+                  <h3 className="text-xl text-gray-700 mb-4">{research.subHeadline}</h3>
+                )}
+              </div>
+            )}
+            
             {/* Display summary first */}
             <div className="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-100">
               <h3 className="text-xl font-semibold mb-4">Summary</h3>
               <p>{research.summary}</p>
             </div>
+            
+            {/* Display key findings if available */}
+            {research.keyFindings && (
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4">Key Findings</h3>
+                <div className="space-y-2">
+                  {research.keyFindings.split('\n').map((finding, index) => (
+                    <div key={index} className="flex items-start">
+                      <div className="flex-shrink-0 mt-1 text-primary">•</div>
+                      <p className="ml-2">{finding}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Display full text if available */}
             {research.fullText && (
               <div className="space-y-6">
+                <h3 className="text-xl font-semibold mb-4">Detailed Information</h3>
                 {research.fullText.split('\n\n').map((paragraph, index) => (
                   <p key={index}>{paragraph}</p>
                 ))}
