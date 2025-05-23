@@ -138,6 +138,12 @@ export default function AdminPage() {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<Array<Omit<UserType, 'password'>>>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  
+  // Research management state
+  const [researchEntries, setResearchEntries] = useState<any[]>([]);
+  const [filteredResearch, setFilteredResearch] = useState<any[]>([]);
+  const [researchSearchTerm, setResearchSearchTerm] = useState('');
+  const [isLoadingResearch, setIsLoadingResearch] = useState(true);
   const [isApprovingUser, setIsApprovingUser] = useState(false);
 
   // Form state
@@ -997,15 +1003,40 @@ export default function AdminPage() {
                     Manage research summaries and original study links
                   </CardDescription>
                 </div>
-                <Button 
-                  onClick={() => setLocation('/admin/research')}
-                  className="flex items-center"
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Research
-                </Button>
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={() => setLocation('/admin/research')}
+                    className="flex items-center"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Research
+                  </Button>
+                  <Button 
+                    onClick={() => setLocation('/admin/research-link-updater')}
+                    variant="outline"
+                    className="flex items-center"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Update Links
+                  </Button>
+                </div>
               </div>
-              <div className="mt-4">
+              <div className="relative mt-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  placeholder="Search research..."
+                  className="pl-10"
+                  value={researchSearchTerm}
+                  onChange={(e) => setResearchSearchTerm(e.target.value)}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoadingResearch ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : researchEntries.length === 0 ? (
                 <Alert>
                   <FileText className="h-4 w-4" />
                   <AlertTitle>No research entries</AlertTitle>
@@ -1013,8 +1044,43 @@ export default function AdminPage() {
                     There are currently no research entries in the database. Click the "Add Research" button to create your first entry.
                   </AlertDescription>
                 </Alert>
-              </div>
-            </CardHeader>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">ID</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredResearch.map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell>{entry.id}</TableCell>
+                          <TableCell className="font-medium">{entry.title}</TableCell>
+                          <TableCell>{entry.category || 'Uncategorized'}</TableCell>
+                          <TableCell>{entry.source || 'N/A'}</TableCell>
+                          <TableCell>{entry.publishedDate || 'N/A'}</TableCell>
+                          <TableCell className="text-right">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleEditResearch(entry.id)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </TabsContent>
         
