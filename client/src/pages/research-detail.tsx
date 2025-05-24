@@ -60,10 +60,12 @@ const ResearchDetail = () => {
     },
     onSuccess: (data) => {
       // Update the local research state to show it's been read
-      setResearch({
-        ...research,
-        hasRead: true
-      });
+      if (research) {
+        setResearch({
+          ...research,
+          hasRead: true
+        });
+      }
       
       // Show success toast
       toast({
