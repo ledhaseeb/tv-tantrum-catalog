@@ -183,6 +183,7 @@ export const researchSummaries = pgTable("research_summaries", {
   fullText: text("full_text"),
   category: text("category").notNull(),
   imageUrl: text("image_url"),
+  imageDescription: text("image_description"),
   source: text("source"),
   originalUrl: text("original_url"),
   publishedDate: text("published_date"),

@@ -57,6 +57,7 @@ const researchFormSchema = z.object({
   subHeadline: z.string().optional(),
   keyFindings: z.string().optional(),
   imageUrl: z.string().optional(),
+  imageDescription: z.string().optional(),
 });
 
 type ResearchFormValues = z.infer<typeof researchFormSchema>;
@@ -83,6 +84,7 @@ export default function AdminResearchManager() {
     subHeadline: '',
     keyFindings: '',
     imageUrl: '',
+    imageDescription: '',
   };
 
   const form = useForm<ResearchFormValues>({
@@ -569,6 +571,28 @@ export default function AdminResearchManager() {
                   />
                 </div>
               )}
+              
+              <FormField
+                control={form.control}
+                name="imageDescription"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>Image Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe the image for better accessibility and context"
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      This description will be displayed below the image on the research detail page
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
