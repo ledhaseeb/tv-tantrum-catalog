@@ -2458,41 +2458,25 @@ export class DatabaseStorage implements IStorage {
       console.log(`User ${numericUserId} marking research as read`);
       
       try {
-        // Award points - this creates an entry in user_points_history
-        await this.awardPoints(
-          numericUserId,
-          5,
-          'research_read',
-          `Read a research summary (ID: ${researchId})`
-        );
+        // Insert directly into user_points_history table
+        await db.execute(sql`
+          INSERT INTO user_points_history 
+          (user_id, points, activity_type, description, created_at, reference_id) 
+          VALUES 
+          (${numericUserId}, 5, 'research_read', ${`Read a research summary (ID: ${researchId})`}, NOW(), ${researchId})
+        `);
         
-        console.log(`Points award complete for user ${numericUserId}`);
-        
-        // Get all the points for this user to update the total correctly
-        const researchPoints = await this.getPointsByActivityType(numericUserId, 'research_read');
-        
-        // Get current user total points
-        const userResult = await db
-          .select({ totalPoints: users.totalPoints })
-          .from(users)
-          .where(eq(users.id, numericUserId));
-        
-        const currentTotal = userResult[0]?.totalPoints || 0;
-        
-        // Calculate new total by replacing the research_read component
-        const otherPoints = currentTotal - (await this.getPointsByActivityType(numericUserId, 'research_read') - 5);
-        const newTotal = otherPoints + researchPoints;
-        
-        // Update user total points to reflect the correct amount
+        // Update total points
         await db.execute(sql`
           UPDATE users 
-          SET total_points = ${newTotal}
+          SET total_points = COALESCE(total_points, 0) + 5
           WHERE id = ${numericUserId}
         `);
         
-        console.log(`Updated user ${numericUserId}'s total points to ${newTotal} (adding 5 research read points)`);
+        console.log(`Updated user ${numericUserId}'s total points to (adding 5 research read points)`);
       } catch (pointsError) {
         console.error('Error adding research read points:', pointsError);
+        console.error(pointsError);
         // Continue even if points award fails
       }
       
