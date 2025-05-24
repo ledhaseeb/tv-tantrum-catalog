@@ -112,7 +112,7 @@ const ResearchDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="container py-8">
+      <div className="container max-w-[1100px] py-8 px-6 md:px-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Skeleton className="h-8 w-8" />
