@@ -172,18 +172,19 @@ export default function AdminResearchManager() {
         headline: data.headline || '',
         subHeadline: data.subHeadline || '',
         keyFindings: data.keyFindings || '',
-        imageUrl: data.imageUrl || ''
+        imageUrl: data.imageUrl || '',
+        imageDescription: data.imageDescription || ''
       };
       
       console.log('Setting form data:', formData);
       
-      // Update form values and trigger validation
-      form.reset(formData);
-      
-      // Set each field value individually to ensure the form is updated
-      Object.entries(formData).forEach(([key, value]) => {
-        form.setValue(key as keyof ResearchFormValues, value);
-      });
+      // Update form with a small delay to ensure the form context is properly initialized
+      setTimeout(() => {
+        // Use setValue for each field instead of reset to avoid context issues
+        Object.entries(formData).forEach(([key, value]) => {
+          form.setValue(key as keyof ResearchFormValues, value);
+        });
+      }, 0);
       
       // If there's an image URL, set it in state
       if (data.imageUrl) {
