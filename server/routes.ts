@@ -369,14 +369,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error getting top users:', error);
       }
       
-      // Get read research summaries
+      // Get read research summaries and update research points
       let readResearch = [];
       try {
         if (typeof storage.getUserReadResearch === 'function') {
           readResearch = await storage.getUserReadResearch(userId) || [];
+          
+          // Explicitly fetch research points from history for accurate count
+          const researchPointsRecords = await pool.query(
+            `SELECT SUM(points) as total FROM user_points_history WHERE user_id = $1 AND activity_type = 'research_read'`,
+            [parsedUserId]
+          );
+          
+          if (researchPointsRecords.rows.length > 0) {
+            const researchPoints = parseInt(researchPointsRecords.rows[0].total || '0');
+            console.log(`Updated research read points from history: ${researchPoints}`);
+            pointsInfo.breakdown.researchRead = researchPoints;
+            
+            // Update total points to include research points
+            pointsInfo.total = (pointsInfo.breakdown.reviews || 0) + 
+                          (pointsInfo.breakdown.upvotesGiven || 0) + 
+                          (pointsInfo.breakdown.upvotesReceived || 0) + 
+                          (pointsInfo.breakdown.loginRewards || 0) +
+                          (pointsInfo.breakdown.shares || 0) + 
+                          (pointsInfo.breakdown.referrals || 0) +
+                          (pointsInfo.breakdown.showSubmissions || 0) + 
+                          researchPoints;
+          }
         }
       } catch (error) {
-        console.error('Error getting read research:', error);
+        console.error('Error getting read research or updating points:', error);
       }
       
       // Get show submissions - empty placeholder for now
