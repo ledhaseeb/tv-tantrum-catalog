@@ -226,18 +226,66 @@ const ResearchDetail = () => {
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-4">Key Findings</h3>
                 <div className="space-y-2">
-                  {research.keyFindings.split('\n').map((finding, index) => (
-                    <p key={index}>
-                      {finding.includes(':') ? (
-                        <>
-                          <span className="font-bold">{finding.split(':')[0]}:</span>
-                          {finding.split(':').slice(1).join(':')}
-                        </>
-                      ) : (
-                        finding
-                      )}
-                    </p>
-                  ))}
+                  {(() => {
+                    // Process key findings with proper spacing
+                    const processedFindings = [];
+                    const sections = research.keyFindings.split('\n\n');
+                    
+                    sections.forEach((section, sectionIndex) => {
+                      const lines = section.split('\n').filter(line => line.trim() !== '');
+                      
+                      lines.forEach((line, lineIndex) => {
+                        if (lineIndex === 0 && line.includes(':')) {
+                          // This is a heading with a colon - create a section with content
+                          const [heading, ...content] = lines;
+                          const headingText = heading.split(':')[0];
+                          const remainingText = heading.split(':').slice(1).join(':').trim();
+                          
+                          processedFindings.push(
+                            <div key={`section-${sectionIndex}`} className="mb-4">
+                              <p>
+                                <span className="font-bold">{headingText}:</span>
+                                {remainingText}
+                              </p>
+                              {content.map((contentLine, contentIndex) => (
+                                <p key={`content-${sectionIndex}-${contentIndex}`} className="mt-1">
+                                  {contentLine.includes(':') ? (
+                                    <>
+                                      <span className="font-bold">{contentLine.split(':')[0]}:</span>
+                                      {contentLine.split(':').slice(1).join(':')}
+                                    </>
+                                  ) : (
+                                    contentLine
+                                  )}
+                                </p>
+                              ))}
+                            </div>
+                          );
+                          return;
+                        }
+                        
+                        // Handle standalone lines
+                        if (lines.length === 1) {
+                          processedFindings.push(
+                            <div key={`line-${sectionIndex}`} className="mb-2">
+                              <p>
+                                {line.includes(':') ? (
+                                  <>
+                                    <span className="font-bold">{line.split(':')[0]}:</span>
+                                    {line.split(':').slice(1).join(':')}
+                                  </>
+                                ) : (
+                                  line
+                                )}
+                              </p>
+                            </div>
+                          );
+                        }
+                      });
+                    });
+                    
+                    return processedFindings;
+                  })()}
                 </div>
               </div>
             )}
