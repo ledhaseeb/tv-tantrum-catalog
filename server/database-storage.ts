@@ -2445,9 +2445,12 @@ export class DatabaseStorage implements IStorage {
             })
             .returning();
           
-          // Award points
+          // Parse userId to number for the points system
+          const numericUserId = parseInt(userId);
+          
+          // Award points - explicitly using the numeric user ID
           await this.awardPoints(
-            userId,
+            numericUserId,
             5,
             'research_read',
             'Read a research summary'

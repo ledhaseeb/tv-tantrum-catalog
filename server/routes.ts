@@ -381,21 +381,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
             [parsedUserId]
           );
           
-          if (researchPointsRecords.rows.length > 0) {
-            const researchPoints = parseInt(researchPointsRecords.rows[0].total || '0');
-            console.log(`Updated research read points from history: ${researchPoints}`);
-            pointsInfo.breakdown.researchRead = researchPoints;
-            
-            // Update total points to include research points
-            pointsInfo.total = (pointsInfo.breakdown.reviews || 0) + 
-                          (pointsInfo.breakdown.upvotesGiven || 0) + 
-                          (pointsInfo.breakdown.upvotesReceived || 0) + 
-                          (pointsInfo.breakdown.loginRewards || 0) +
-                          (pointsInfo.breakdown.shares || 0) + 
-                          (pointsInfo.breakdown.referrals || 0) +
-                          (pointsInfo.breakdown.showSubmissions || 0) + 
-                          researchPoints;
-          }
+          // Make sure we have a valid total, defaulting to 0 if null
+          const researchPoints = parseInt(researchPointsRecords.rows[0]?.total || '0');
+          console.log(`Updated research read points from history: ${researchPoints}`);
+          
+          // Important: Always update the points breakdown even if zero
+          pointsInfo.breakdown.researchRead = researchPoints;
+          
+          // Update total points to include research points
+          pointsInfo.total = (pointsInfo.breakdown.reviews || 0) + 
+                        (pointsInfo.breakdown.upvotesGiven || 0) + 
+                        (pointsInfo.breakdown.upvotesReceived || 0) + 
+                        (pointsInfo.breakdown.loginRewards || 0) +
+                        (pointsInfo.breakdown.shares || 0) + 
+                        (pointsInfo.breakdown.referrals || 0) +
+                        (pointsInfo.breakdown.showSubmissions || 0) + 
+                        researchPoints;
+                        
+          // Also update the user table directly to ensure all points are counted
+          await pool.query(
+            `UPDATE users SET total_points = $1 WHERE id = $2`,
+            [pointsInfo.total, parsedUserId]
+          );
+          console.log(`Updated user total points in database to: ${pointsInfo.total}`);
         }
       } catch (error) {
         console.error('Error getting read research or updating points:', error);
