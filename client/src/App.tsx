@@ -25,6 +25,7 @@ import ResearchDetail from "@/pages/research-detail";
 import ResearchView from "@/pages/research-view";
 import AdminResearchLinks from "@/pages/admin-research-links";
 import AdminResearchManager from "@/pages/admin-research-manager";
+import AdminResearchAddEdit from "@/pages/admin-research-add-edit";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
@@ -363,6 +364,15 @@ function Router() {
                 <Footer />
               </div>
             </Route>
+            <Route path="/admin/research/add-edit">
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <AdminResearchAddEdit />
+                </div>
+                <Footer />
+              </div>
+            </Route>
           </>
         ) : (
           <>
@@ -385,6 +395,18 @@ function Router() {
                   <Navbar />
                   <div className="flex-grow">
                     <AdminResearchManager />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+            <AdminRoute 
+              path="/admin/research/add-edit" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <AdminResearchAddEdit />
                   </div>
                   <Footer />
                 </div>
