@@ -237,10 +237,7 @@ const ResearchDetail = () => {
                 <h3 className="text-xl font-semibold mb-4">Key Findings</h3>
                 <div className="space-y-2">
                   {research.keyFindings.split('\n').map((finding, index) => (
-                    <div key={index} className="flex items-start">
-                      <div className="flex-shrink-0 mt-1 text-primary">•</div>
-                      <p className="ml-2">{finding}</p>
-                    </div>
+                    <p key={index}>{finding}</p>
                   ))}
                 </div>
               </div>
