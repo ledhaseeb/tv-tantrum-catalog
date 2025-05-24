@@ -84,34 +84,38 @@ const Research = () => {
   }
 
   // Group research by category
-  const categorizedSummaries = summaries?.reduce((acc: any, summary: any) => {
+  const categorizedSummaries = summaries && Array.isArray(summaries) ? summaries.reduce((acc: Record<string, any[]>, summary: any) => {
     const categoryId = summary.category || 'uncategorized';
     if (!acc[categoryId]) {
       acc[categoryId] = [];
     }
     acc[categoryId].push(summary);
     return acc;
-  }, {});
+  }, {} as Record<string, any[]>) : {};
 
   // Count items per category
-  const categoryCounts = {};
-  if (summaries) {
+  const categoryCounts: Record<string, number> = {};
+  if (summaries && Array.isArray(summaries)) {
     categories.forEach(category => {
       if (category.id === 'all') {
         categoryCounts[category.id] = summaries.length;
       } else {
-        categoryCounts[category.id] = categorizedSummaries?.[category.id]?.length || 0;
+        categoryCounts[category.id] = categorizedSummaries[category.id]?.length || 0;
       }
     });
   }
 
   // Get all unique categories from the data
-  const dataCategories = new Set(summaries?.map((summary: any) => summary.category || 'uncategorized'));
+  const dataCategories = new Set(
+    summaries && Array.isArray(summaries) 
+      ? summaries.map((summary: any) => summary.category || 'uncategorized')
+      : []
+  );
 
   // Filter summaries based on active category
   const filteredSummaries = activeCategory === 'all'
-    ? summaries
-    : categorizedSummaries?.[activeCategory] || [];
+    ? (summaries || [])
+    : (categorizedSummaries[activeCategory] || []);
 
   const handleReadMore = (summaryId: number) => {
     // Use window.location instead of navigate for consistent navigation approach
@@ -167,16 +171,19 @@ const Research = () => {
           <TabsContent key={category.id} value={category.id}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {category.id === 'all'
-                ? summaries?.map((summary: any) => (
+                ? (summaries && Array.isArray(summaries) ? summaries.map((summary: any) => (
                     <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
-                  ))
-                : categorizedSummaries?.[category.id]?.map((summary: any) => (
-                    <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
-                  )) || (
-                    <div className="col-span-full text-center py-12 text-gray-500">
-                      <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                      <p>No research summaries found in this category</p>
-                    </div>
+                  )) : null)
+                : (categorizedSummaries[category.id] && Array.isArray(categorizedSummaries[category.id]) 
+                    ? categorizedSummaries[category.id].map((summary: any) => (
+                        <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+                      ))
+                    : (
+                      <div className="col-span-full text-center py-12 text-gray-500">
+                        <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                        <p>No research summaries found in this category</p>
+                      </div>
+                    )
                   )}
             </div>
           </TabsContent>
