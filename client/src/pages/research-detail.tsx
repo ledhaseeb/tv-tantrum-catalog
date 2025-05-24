@@ -227,7 +227,16 @@ const ResearchDetail = () => {
                 <h3 className="text-xl font-semibold mb-4">Key Findings</h3>
                 <div className="space-y-2">
                   {research.keyFindings.split('\n').map((finding, index) => (
-                    <p key={index}>{finding}</p>
+                    <p key={index}>
+                      {finding.includes(':') ? (
+                        <>
+                          <span className="font-bold">{finding.split(':')[0]}:</span>
+                          {finding.split(':').slice(1).join(':')}
+                        </>
+                      ) : (
+                        finding
+                      )}
+                    </p>
                   ))}
                 </div>
               </div>
@@ -249,7 +258,16 @@ const ResearchDetail = () => {
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold mb-4">Detail</h3>
                 {research.fullText.split('\n\n').map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
+                  <p key={index}>
+                    {paragraph.includes(':') ? (
+                      <>
+                        <span className="font-bold">{paragraph.split(':')[0]}:</span>
+                        {paragraph.split(':').slice(1).join(':')}
+                      </>
+                    ) : (
+                      paragraph
+                    )}
+                  </p>
                 ))}
               </div>
             )}
