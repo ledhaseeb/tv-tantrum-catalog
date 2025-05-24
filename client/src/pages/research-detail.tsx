@@ -202,16 +202,6 @@ const ResearchDetail = () => {
             )}
           </div>
 
-          {research.imageUrl && (
-            <div className="mb-6 rounded-lg overflow-hidden">
-              <img
-                src={research.imageUrl}
-                alt={research.title}
-                className="w-full h-auto"
-              />
-            </div>
-          )}
-
           <div className="prose prose-p:text-base prose-headings:font-semibold max-w-none">
             {/* Display headline and sub-headline if available */}
             {(research.headline || research.subHeadline) && (
@@ -240,6 +230,17 @@ const ResearchDetail = () => {
                     <p key={index}>{finding}</p>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Display image between Key Findings and Detail sections */}
+            {research.imageUrl && (
+              <div className="mb-8 rounded-lg overflow-hidden">
+                <img
+                  src={research.imageUrl}
+                  alt={research.title}
+                  className="w-full h-auto"
+                />
               </div>
             )}
 
