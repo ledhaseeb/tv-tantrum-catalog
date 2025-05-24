@@ -2008,10 +2008,13 @@ export class DatabaseStorage implements IStorage {
           // DIRECT DB OPERATION: Update points using simplified approach
           // This ensures we increment the points directly in the database
           
-          const updateResult = await tx.execute(
-            `UPDATE users SET total_points = COALESCE(total_points, 0) + $1 WHERE id = $2 RETURNING total_points, id`,
-            [points, userId]
-          );
+          // Using sql template literal instead of raw query to ensure parameters are passed correctly
+          const updateResult = await tx.execute(sql`
+            UPDATE users 
+            SET total_points = COALESCE(total_points, 0) + ${points} 
+            WHERE id = ${userId} 
+            RETURNING total_points, id
+          `);
           
           console.log(`Update result: ${JSON.stringify(updateResult.rows)}`);
           
@@ -2465,10 +2468,11 @@ export class DatabaseStorage implements IStorage {
         
         console.log(`Points award complete for user ${numericUserId}`);
         
-        // Update total points directly with SQL
+        // Using sql template literal instead of parameterized query
+        // This ensures the parameters are properly passed to the database
         await db.execute(sql`
           UPDATE users 
-          SET total_points = total_points + 5 
+          SET total_points = COALESCE(total_points, 0) + 5 
           WHERE id = ${numericUserId}
         `);
         
