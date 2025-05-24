@@ -388,8 +388,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Important: Always update the points breakdown even if zero
           pointsInfo.breakdown.researchRead = researchPoints;
           
-          // Update total points to include research points
-          pointsInfo.total = (pointsInfo.breakdown.reviews || 0) + 
+          // Calculate a fresh total with all components
+          const totalPoints = (pointsInfo.breakdown.reviews || 0) + 
                         (pointsInfo.breakdown.upvotesGiven || 0) + 
                         (pointsInfo.breakdown.upvotesReceived || 0) + 
                         (pointsInfo.breakdown.loginRewards || 0) +
@@ -397,6 +397,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         (pointsInfo.breakdown.referrals || 0) +
                         (pointsInfo.breakdown.showSubmissions || 0) + 
                         researchPoints;
+          
+          // Update the total points
+          pointsInfo.total = totalPoints;
                         
           // Also update the user table directly to ensure all points are counted
           await pool.query(
