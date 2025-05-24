@@ -58,7 +58,13 @@ const ResearchDetail = () => {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Update the local research state to show it's been read
+      setResearch(prev => ({
+        ...prev,
+        hasRead: true
+      }));
+      
       toast({
         title: "Research marked as read",
         description: "You've earned 5 points!",

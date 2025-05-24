@@ -2430,39 +2430,42 @@ export class DatabaseStorage implements IStorage {
   }
   
   async markResearchAsRead(userId: string, researchId: number): Promise<any> {
-    return await db.transaction(async (tx) => {
-      try {
-        // Check if already read
-        const alreadyRead = await this.hasUserReadResearch(userId, researchId);
-        
-        if (!alreadyRead) {
-          // Mark as read
-          const [record] = await tx
-            .insert(userReadResearch)
-            .values({
-              userId: userId,
-              researchId: researchId
-            })
-            .returning();
-          
-          // Parse userId to number for the points system
-          const numericUserId = parseInt(userId);
-          
-          try {
-            // Award points - explicitly using the numeric user ID and include reference to research ID
-            await this.awardPoints(
-              numericUserId,
-              5,
-              'research_read',
-              `Read a research summary (ID: ${researchId})`
-            );
-            
-            // Directly update the user's total points in the database
-            await tx.execute(
-              `UPDATE users SET total_points = total_points + 5 WHERE id = $1`,
-              [numericUserId]
-            );
-            
+    // First check if already read outside the transaction
+    const alreadyRead = await this.hasUserReadResearch(userId, researchId);
+    
+    if (alreadyRead) {
+      console.log(`User ${userId} already read research ${researchId}`);
+      return { alreadyRead: true };
+    }
+    
+    // Parse userId to number for the points system
+    const numericUserId = parseInt(userId);
+    
+    try {
+      // Mark as read
+      const [record] = await db
+        .insert(userReadResearch)
+        .values({
+          userId: userId,
+          researchId: researchId
+        })
+        .returning();
+      
+      console.log(`User ${userId} marking research as read`);
+      
+      // Award points separately
+      await this.awardPoints(
+        numericUserId,
+        5,
+        'research_read',
+        `Read a research summary (ID: ${researchId})`
+      );
+      
+      // Update user's total points
+      await db.execute(
+        sql`UPDATE users SET total_points = total_points + 5 WHERE id = ${numericUserId}`
+      );
+      
             console.log(`Added 5 research read points to user ${numericUserId}'s total for reading article ${researchId}`);
           } catch (pointsError) {
             console.error('Error adding research read points:', pointsError);
