@@ -19,17 +19,15 @@ const Research = () => {
     enabled: !!user,
   });
 
-  // Define categories
+  // Define categories based on actual database categories
   const categories = [
     { id: 'all', name: 'All Research' },
-    { id: 'Television Exposure and Its Effects', name: 'Television Exposure and Its Effects' },
-    { id: 'Digital Media and Language Development', name: 'Digital Media and Language Development' },
-    { id: 'Learning and Cognitive Development', name: 'Learning and Cognitive Development' },
-    { id: 'Digital Media and Cognitive Development', name: 'Digital Media and Cognitive Development' },
-    { id: 'Social and Emotional Development', name: 'Social and Emotional Development' },
-    { id: 'Screen Time and Behavioral Impacts', name: 'Screen Time and Behavioral Impacts' },
-    { id: 'Health and Developmental Impacts', name: 'Health and Developmental Impacts' },
-    { id: 'Systematic Reviews and Broad Studies', name: 'Systematic Reviews and Broad Studies' },
+    { id: 'Child Psychology', name: 'Child Psychology' },
+    { id: 'Cognitive Development', name: 'Cognitive Development' },
+    { id: 'Learning Outcomes', name: 'Learning Outcomes' },
+    { id: 'Media Effects', name: 'Media Effects' },
+    { id: 'Parental Guidance', name: 'Parental Guidance' },
+    { id: 'Social Development', name: 'Social Development' },
   ];
 
   if (isLoadingAuth) {
