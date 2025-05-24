@@ -2501,8 +2501,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Check if user has read this research
-      const userId = req.session?.userId;
-      if (userId) {
+      if (req.isAuthenticated() && req.user) {
+        const userId = req.user.id.toString();
         const hasRead = await storage.hasUserReadResearch(userId, id);
         res.json({
           ...summary,
