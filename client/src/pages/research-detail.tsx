@@ -203,19 +203,12 @@ const ResearchDetail = () => {
           </div>
 
           {research.imageUrl && (
-            <div className="mb-6">
-              <div className="rounded-lg overflow-hidden">
-                <img
-                  src={research.imageUrl}
-                  alt={research.title}
-                  className="w-full h-auto"
-                />
-              </div>
-              {research.imageDescription && (
-                <p className="mt-2 text-sm text-gray-600 italic">
-                  {research.imageDescription}
-                </p>
-              )}
+            <div className="mb-6 rounded-lg overflow-hidden">
+              <img
+                src={research.imageUrl}
+                alt={research.title}
+                className="w-full h-auto"
+              />
             </div>
           )}
 

@@ -57,7 +57,6 @@ const researchFormSchema = z.object({
   subHeadline: z.string().optional(),
   keyFindings: z.string().optional(),
   imageUrl: z.string().optional(),
-  imageDescription: z.string().optional(),
 });
 
 type ResearchFormValues = z.infer<typeof researchFormSchema>;
@@ -84,7 +83,6 @@ export default function AdminResearchManager() {
     subHeadline: '',
     keyFindings: '',
     imageUrl: '',
-    imageDescription: '',
   };
 
   const form = useForm<ResearchFormValues>({
@@ -172,19 +170,18 @@ export default function AdminResearchManager() {
         headline: data.headline || '',
         subHeadline: data.subHeadline || '',
         keyFindings: data.keyFindings || '',
-        imageUrl: data.imageUrl || '',
-        imageDescription: data.imageDescription || ''
+        imageUrl: data.imageUrl || ''
       };
       
       console.log('Setting form data:', formData);
       
-      // Update form with a small delay to ensure the form context is properly initialized
-      setTimeout(() => {
-        // Use setValue for each field instead of reset to avoid context issues
-        Object.entries(formData).forEach(([key, value]) => {
-          form.setValue(key as keyof ResearchFormValues, value);
-        });
-      }, 0);
+      // Update form values and trigger validation
+      form.reset(formData);
+      
+      // Set each field value individually to ensure the form is updated
+      Object.entries(formData).forEach(([key, value]) => {
+        form.setValue(key as keyof ResearchFormValues, value);
+      });
       
       // If there's an image URL, set it in state
       if (data.imageUrl) {
@@ -572,28 +569,6 @@ export default function AdminResearchManager() {
                   />
                 </div>
               )}
-              
-              <FormField
-                control={form.control}
-                name="imageDescription"
-                render={({ field }) => (
-                  <FormItem className="mt-4">
-                    <FormLabel>Image Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe the image for better accessibility and context"
-                        className="resize-none"
-                        rows={3}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      This description will be displayed below the image on the research detail page
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
 

@@ -1094,7 +1094,7 @@ export default function AdminPage() {
                 </div>
                 <div className="flex space-x-2">
                   <Button 
-                    onClick={() => setLocation('/admin/research/add-edit')}
+                    onClick={() => setLocation('/admin/research')}
                     className="flex items-center"
                   >
                     <PlusCircle className="h-4 w-4 mr-2" />
