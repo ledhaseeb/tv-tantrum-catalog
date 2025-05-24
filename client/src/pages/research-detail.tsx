@@ -246,7 +246,7 @@ const ResearchDetail = () => {
             {/* Display full text if available */}
             {research.fullText && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold mb-4">Detailed Information</h3>
+                <h3 className="text-xl font-semibold mb-4">Detail</h3>
                 {research.fullText.split('\n\n').map((paragraph, index) => (
                   <p key={index}>{paragraph}</p>
                 ))}
