@@ -2667,10 +2667,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/research/:id/mark-read", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.userId;
-      if (!userId) {
+      // Check if user is authenticated - use req.user.id from passport
+      if (!req.isAuthenticated() || !req.user) {
+        console.log('User not authenticated for marking research as read');
         return res.status(401).json({ message: "You must be logged in to mark research as read" });
       }
+      
+      const userId = req.user.id.toString();
+      console.log(`User ${userId} marking research as read`);
       
       const researchId = parseInt(req.params.id);
       
