@@ -2448,13 +2448,26 @@ export class DatabaseStorage implements IStorage {
           // Parse userId to number for the points system
           const numericUserId = parseInt(userId);
           
-          // Award points - explicitly using the numeric user ID
-          await this.awardPoints(
-            numericUserId,
-            5,
-            'research_read',
-            'Read a research summary'
-          );
+          try {
+            // Award points - explicitly using the numeric user ID and include reference to research ID
+            await this.awardPoints(
+              numericUserId,
+              5,
+              'research_read',
+              `Read a research summary (ID: ${researchId})`
+            );
+            
+            // Directly update the user's total points in the database
+            await tx.execute(
+              `UPDATE users SET total_points = total_points + 5 WHERE id = $1`,
+              [numericUserId]
+            );
+            
+            console.log(`Added 5 research read points to user ${numericUserId}'s total for reading article ${researchId}`);
+          } catch (pointsError) {
+            console.error('Error adding research read points:', pointsError);
+            // Continue with the transaction even if points award fails
+          }
           
           return record;
         }
