@@ -214,11 +214,11 @@ const ResearchCard = ({ summary, onReadMore }: ResearchCardProps) => {
   return (
     <Card className="h-full flex flex-col">
       {summary.imageUrl && (
-        <div className="relative w-full h-40 overflow-hidden">
+        <div className="relative w-full h-48 overflow-hidden">
           <img 
             src={summary.imageUrl} 
             alt={summary.title}
-            className="w-full h-full object-cover transition-transform hover:scale-105"
+            className="w-full h-full object-contain bg-gray-50 transition-transform hover:scale-105"
           />
         </div>
       )}
