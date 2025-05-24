@@ -2430,7 +2430,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async markResearchAsRead(userId: string, researchId: number): Promise<any> {
-    // First check if already read outside the transaction
+    // First check if already read
     const alreadyRead = await this.hasUserReadResearch(userId, researchId);
     
     if (alreadyRead) {
@@ -2440,6 +2440,7 @@ export class DatabaseStorage implements IStorage {
     
     // Parse userId to number for the points system
     const numericUserId = parseInt(userId);
+    console.log(`ATTEMPTING TO AWARD 5 POINTS TO USER ${numericUserId} FOR research_read`);
     
     try {
       // Mark as read
@@ -2451,36 +2452,37 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      console.log(`User ${userId} marking research as read`);
+      console.log(`User ${numericUserId} marking research as read`);
       
-      // Award points separately
-      await this.awardPoints(
-        numericUserId,
-        5,
-        'research_read',
-        `Read a research summary (ID: ${researchId})`
-      );
-      
-      // Update user's total points
-      await db.execute(
-        sql`UPDATE users SET total_points = total_points + 5 WHERE id = ${numericUserId}`
-      );
-      
-            console.log(`Added 5 research read points to user ${numericUserId}'s total for reading article ${researchId}`);
-          } catch (pointsError) {
-            console.error('Error adding research read points:', pointsError);
-            // Continue with the transaction even if points award fails
-          }
-          
-          return record;
-        }
+      try {
+        // Award points
+        await this.awardPoints(
+          numericUserId,
+          5,
+          'research_read',
+          `Read a research summary (ID: ${researchId})`
+        );
         
-        return { already_read: true };
-      } catch (error) {
-        console.error('Error marking research as read:', error);
-        throw error;
+        console.log(`Points award complete for user ${numericUserId}`);
+        
+        // Update total points directly with SQL
+        await db.execute(sql`
+          UPDATE users 
+          SET total_points = total_points + 5 
+          WHERE id = ${numericUserId}
+        `);
+        
+        console.log(`Added 5 research read points to user ${numericUserId}'s total`);
+      } catch (pointsError) {
+        console.error('Error adding research read points:', pointsError);
+        // Continue even if points award fails
       }
-    });
+      
+      return record;
+    } catch (error) {
+      console.error('Error marking research as read:', error);
+      throw error;
+    }
   }
   
   async getUserReadResearch(userId: string): Promise<any[]> {

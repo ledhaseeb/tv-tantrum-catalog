@@ -15,7 +15,7 @@ const ResearchDetail = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [research, setResearch] = useState(null);
+  const [research, setResearch] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   // Direct fetch approach instead of using react-query
@@ -60,18 +60,19 @@ const ResearchDetail = () => {
     },
     onSuccess: (data) => {
       // Update the local research state to show it's been read
-      setResearch(prev => ({
-        ...prev,
+      setResearch({
+        ...research,
         hasRead: true
-      }));
+      });
       
+      // Show success toast
       toast({
         title: "Research marked as read",
         description: "You've earned 5 points!",
         variant: "default",
       });
       
-      // Invalidate the research query to update the UI
+      // Invalidate queries to update UI across the app
       queryClient.invalidateQueries({ queryKey: [`/api/research/${id}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/research'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
