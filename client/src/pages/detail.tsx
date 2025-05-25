@@ -14,7 +14,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
-import { Heart } from "lucide-react";
+import { Heart, Share2 } from "lucide-react";
+import ShareModal from "@/components/ShareModal";
 import { 
   Carousel,
   CarouselContent,
@@ -85,6 +86,7 @@ export default function Detail({ id }: DetailProps) {
   const { toast } = useToast();
   const [isMobile, setIsMobile] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   
   // Check if device is mobile
   useEffect(() => {

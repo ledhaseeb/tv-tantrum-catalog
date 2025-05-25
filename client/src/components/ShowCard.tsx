@@ -25,9 +25,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
     ...show,
-    imageUrl: show.imageUrl || show.image_url || '',
-    ageRange: show.ageRange || show.age_range || '',
-    stimulationScore: show.stimulationScore || show.stimulation_score || 0
+    // Type-safe normalization for field names that might come in different formats
+    imageUrl: show.imageUrl || '',
+    ageRange: show.ageRange || '',
+    stimulationScore: show.stimulationScore || 0
   };
   
   // Check if show is in favorites when component mounts or user changes
