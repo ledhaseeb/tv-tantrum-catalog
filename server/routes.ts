@@ -89,11 +89,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Auth routes - using original custom authentication system
-  app.get('/api/auth/user', (req, res) => {
+  app.get('/api/auth/user', async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    res.json(req.user);
+    
+    try {
+      // Get the full user data from database to ensure we have the most up-to-date information
+      const userId = req.user!.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Don't include sensitive data like password
+      const { password, ...safeUser } = user;
+      
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ message: "Failed to fetch user data" });
+    }
   });
   
   // Debug endpoint to check session info

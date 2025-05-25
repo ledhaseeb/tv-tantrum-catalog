@@ -300,7 +300,7 @@ export function setupAuth(app: Express) {
   });
   
   // Helper function to award login points (once per day)
-  async function awardLoginPoints(userId: number) {
+  async function awardLoginPoints(userId: string) {
     try {
       console.log(`Checking login rewards for user ID: ${userId}`);
       

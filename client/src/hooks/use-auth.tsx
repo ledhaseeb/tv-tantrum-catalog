@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     refetch
   } = useQuery<User | null, Error>({
-    queryKey: ["/api/user"],
+    queryKey: ["/api/auth/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     // This ensures we never have undefined, only null for unauthenticated users
     select: (data) => data ?? null,

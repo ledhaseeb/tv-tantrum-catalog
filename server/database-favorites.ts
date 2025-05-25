@@ -133,7 +133,7 @@ export async function isFavorite(userId: string, tvShowId: number): Promise<bool
 /**
  * Get similar shows based on user's favorites
  */
-export async function getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
+export async function getSimilarShows(userId: string, limit: number = 5): Promise<TvShow[]> {
   try {
     // First get user's favorite shows
     const favoritesResult = await pool.query(
