@@ -125,7 +125,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
       
       toast({
         title: "Image downloaded!",
-        description: "Share this image on social media with your referral link to earn points!",
+        description: "Share this image with your referral link - you earn points when people sign up through your link!",
       });
     } catch (err) {
       console.error("Image download failed:", err);
@@ -289,18 +289,18 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
         </div>
         
         <div className="text-center text-xs text-gray-500 px-2 mb-4">
-          Download this image to share on social media. Include your referral link in your post to earn points when others sign up!
+          Download this image to share on social media. You'll earn points when others sign up using your referral link!
         </div>
         
         {/* We've moved the share link input to the instruction section */}
         
         {/* Referral link explanation */}
         <div className="flex flex-col space-y-2 bg-gray-50 p-3 rounded-md">
-          <p className="text-center text-sm font-medium">How to share and earn points</p>
+          <p className="text-center text-sm font-medium">How to share and earn referral points</p>
           <ol className="text-xs text-gray-600 list-decimal pl-5">
             <li>Download the image above using the download button</li>
             <li>Share the image on your social media accounts</li>
-            <li>Copy and include your referral link in your post:</li>
+            <li>Include your referral link in your post - you earn points when people sign up:</li>
           </ol>
           <div className="flex mt-1 items-center">
             <Input

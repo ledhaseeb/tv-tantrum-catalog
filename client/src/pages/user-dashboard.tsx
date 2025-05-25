@@ -209,13 +209,7 @@ const UserDashboard = () => {
                   <span className="font-medium">{pointsBreakdown.loginRewards || 0} points</span>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Send className="w-4 h-4 mr-2 text-indigo-500" />
-                    <span>Shares</span>
-                  </div>
-                  <span className="font-medium">{pointsBreakdown.shares} points</span>
-                </div>
+                {/* Shares section removed - points only awarded for successful referrals */}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -298,7 +292,8 @@ const UserDashboard = () => {
                           {item.activityType === 'upvote_received' && <Award className="w-4 h-4 text-purple-500" />}
                           {item.activityType === 'login_streak' && <CalendarIcon className="w-4 h-4 text-green-500" />}
                           {item.activityType === 'login_reward' && <Timer className="w-4 h-4 text-cyan-500" />}
-                          {item.activityType === 'share' && <Send className="w-4 h-4 text-indigo-500" />}
+                          {/* Show icon for historical share activities, though they no longer earn points */}
+                          {item.activityType === 'share' && <Send className="w-4 h-4 text-gray-400" />}
                           {item.activityType === 'referral' && <UserPlus className="w-4 h-4 text-pink-500" />}
                           {item.activityType === 'show_submission' && <FilePlus2 className="w-4 h-4 text-orange-500" />}
                           {item.activityType === 'research_read' && <BookOpen className="w-4 h-4 text-teal-500" />}
