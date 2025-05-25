@@ -2825,7 +2825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Show Submissions
+  // Show Submissions API endpoint
   app.post("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
     try {
       const user = req.user;
@@ -2913,7 +2913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  /* This is a duplicate endpoint, removed */
+  // POST endpoint for show submissions is defined above
 
   // Get all show submissions for the current user
   app.get("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {

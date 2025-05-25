@@ -1722,6 +1722,80 @@ export class DatabaseStorage implements IStorage {
     return importedShows;
   }
 
+  // Show submission methods
+  async createShowSubmission(data: InsertShowSubmission): Promise<ShowSubmission> {
+    const [submission] = await db
+      .insert(showSubmissions)
+      .values({
+        ...data,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .returning();
+    
+    return submission;
+  }
+  
+  async getUserShowSubmissions(userId: string | number): Promise<ShowSubmission[]> {
+    return db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.userId, userId.toString()))
+      .orderBy(desc(showSubmissions.createdAt));
+  }
+  
+  async getAllShowSubmissions(): Promise<ShowSubmission[]> {
+    return db
+      .select()
+      .from(showSubmissions)
+      .orderBy(desc(showSubmissions.createdAt));
+  }
+  
+  async getPendingShowSubmissions(): Promise<ShowSubmission[]> {
+    return db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.status, "pending"))
+      .orderBy(desc(showSubmissions.createdAt));
+  }
+  
+  async getShowSubmissionById(id: number): Promise<ShowSubmission | undefined> {
+    const [submission] = await db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.id, id));
+    
+    return submission;
+  }
+  
+  async updateShowSubmissionStatus(id: number, status: string, adminNotes?: string): Promise<ShowSubmission | undefined> {
+    const [updatedSubmission] = await db
+      .update(showSubmissions)
+      .set({
+        status,
+        additionalNotes: adminNotes ? `${showSubmissions.additionalNotes || ""}\n\nAdmin Notes: ${adminNotes}` : showSubmissions.additionalNotes,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(showSubmissions.id, id))
+      .returning();
+    
+    return updatedSubmission;
+  }
+  
+  async searchShowSubmissions(query: string): Promise<ShowSubmission[]> {
+    return db
+      .select()
+      .from(showSubmissions)
+      .where(
+        or(
+          like(showSubmissions.name, `%${query}%`),
+          like(showSubmissions.description, `%${query}%`)
+        )
+      )
+      .limit(10);
+  }
+  
   // Favorites methods
   async addFavorite(userId: number, tvShowId: number): Promise<Favorite> {
     // Check if the favorite already exists
