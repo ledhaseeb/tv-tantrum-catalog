@@ -47,6 +47,7 @@ const formSchema = z.object({
   showName: z.string().min(2, "Show name must be at least 2 characters"),
   description: z.string().optional(),
   suggestedAgeRange: z.string().optional(),
+  suggestedThemes: z.array(z.string()).optional(),
 });
 
 type ShowSubmission = z.infer<typeof formSchema>;
@@ -65,6 +66,7 @@ export default function SubmitShowForm() {
       showName: "",
       description: "",
       suggestedAgeRange: "",
+      suggestedThemes: [],
     },
   });
 
@@ -288,6 +290,32 @@ export default function SubmitShowForm() {
                       placeholder="e.g., 3-5 years, 8+, teens, etc."
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="suggestedThemes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Suggested Themes (optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field}
+                      value={field.value?.join(', ') || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const themes = value.split(',').map(theme => theme.trim()).filter(Boolean);
+                        field.onChange(themes);
+                      }}
+                      placeholder="Enter themes separated by commas (e.g., learning, adventure, friendship)"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Themes help categorize shows and make them easier to find
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

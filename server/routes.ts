@@ -2843,6 +2843,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: user.id
       });
       
+      // Convert theme strings to array if needed
+      if (submissionData.suggestedThemes && !Array.isArray(submissionData.suggestedThemes)) {
+        submissionData.suggestedThemes = [submissionData.suggestedThemes];
+      }
+      
       // Create the submission using direct database access
       const [submission] = await db
         .insert(showSubmissions)
