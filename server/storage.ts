@@ -261,6 +261,124 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
   
+  // Alias for addShowSubmission to match the method name used in routes.ts
+  async createShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission> {
+    return this.addShowSubmission(submission);
+  }
+  
+  // Points and gamification system
+  async getUserPoints(userId: string): Promise<{ 
+    total: number; 
+    breakdown: {
+      reviews: number;
+      upvotesGiven: number;
+      upvotesReceived: number;
+      consecutiveLogins: number;
+      shares: number;
+      referrals: number;
+      showSubmissions: number;
+      researchRead: number;
+    },
+    rank: string
+  }> {
+    try {
+      // Get user data to get total points
+      const userResult = await pool.query(
+        'SELECT total_points FROM users WHERE id = $1',
+        [userId]
+      );
+      
+      const totalPoints = userResult.rows[0]?.total_points || 0;
+      
+      // Get point breakdown by activity type
+      const breakdownResult = await pool.query(
+        `SELECT 
+          activity_type, 
+          SUM(points) as total
+        FROM user_points_history 
+        WHERE user_id = $1
+        GROUP BY activity_type`,
+        [userId]
+      );
+      
+      // Create a map of activity types to points
+      const pointsMap = {};
+      breakdownResult.rows.forEach(row => {
+        pointsMap[row.activity_type] = parseInt(row.total);
+      });
+      
+      // Determine rank based on total points
+      let rank = 'TV Watcher';
+      if (totalPoints >= 100) rank = 'TV Enthusiast';
+      if (totalPoints >= 500) rank = 'TV Expert';
+      if (totalPoints >= 1000) rank = 'TV Master';
+      
+      return {
+        total: totalPoints,
+        breakdown: {
+          reviews: pointsMap['review'] || 0,
+          upvotesGiven: pointsMap['upvote_given'] || 0,
+          upvotesReceived: pointsMap['upvote_received'] || 0,
+          consecutiveLogins: pointsMap['login_streak'] || 0,
+          shares: pointsMap['share'] || 0,
+          referrals: pointsMap['referral'] || 0,
+          showSubmissions: pointsMap['show_submission'] || 0,
+          researchRead: pointsMap['research_read'] || 0
+        },
+        rank
+      };
+    } catch (error) {
+      console.error('Error getting user points:', error);
+      // Return default values if there's an error
+      return {
+        total: 0,
+        breakdown: {
+          reviews: 0,
+          upvotesGiven: 0,
+          upvotesReceived: 0,
+          consecutiveLogins: 0,
+          shares: 0,
+          referrals: 0,
+          showSubmissions: 0,
+          researchRead: 0
+        },
+        rank: 'TV Watcher'
+      };
+    }
+  }
+  
+  // Award points for user activities
+  async awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<any> {
+    try {
+      // Using direct SQL for this since we haven't defined the user_points_history table in Drizzle yet
+      const result = await pool.query(
+        `INSERT INTO user_points_history (user_id, points, activity_type, description) 
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [userId, points, activityType, description || null]
+      );
+      
+      // Update the user's total points in the database
+      await pool.query(
+        `UPDATE users SET total_points = total_points + $1 WHERE id = $2`,
+        [points, userId]
+      );
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error awarding points:', error);
+      // Return a placeholder object if there's an error
+      return {
+        id: 0,
+        userId: userId,
+        points: points,
+        activityType: activityType,
+        description: description,
+        createdAt: new Date()
+      };
+    }
+  }
+  
   async getUserShowSubmissions(userId: string): Promise<ShowSubmission[]> {
     return await db
       .select()

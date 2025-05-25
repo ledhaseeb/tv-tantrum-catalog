@@ -115,17 +115,21 @@ export default function SubmitShowForm() {
       // Create a properly formatted submission object with required fields
       const submission = {
         name: data.name,
-        platform: data.platform,
-        additionalNotes: data.additionalNotes || null,
+        platform: data.platform || "Unknown",
+        additionalNotes: data.additionalNotes || "",
         userId: user?.id,
-        status: 'pending',
-        createdAt: new Date()
+        status: 'pending'
       };
+      
+      console.log("Submitting show:", submission);
       
       // Use the correct endpoint with the correct format
       return apiRequest("/api/show-submissions", {
         method: "POST",
-        data: submission,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submission),
       });
     },
     onSuccess: () => {
