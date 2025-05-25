@@ -70,11 +70,11 @@ export interface IStorage {
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
 
   // Favorites methods
-  addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
-  removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
-  getUserFavorites(userId: number): Promise<TvShow[]>;
-  isFavorite(userId: number, tvShowId: number): Promise<boolean>;
-  getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
+  addFavorite(userId: string, tvShowId: number): Promise<Favorite>;
+  removeFavorite(userId: string, tvShowId: number): Promise<boolean>;
+  getUserFavorites(userId: string): Promise<TvShow[]>;
+  isFavorite(userId: string, tvShowId: number): Promise<boolean>;
+  getSimilarShows(userId: string, limit?: number): Promise<TvShow[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1723,7 +1723,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Favorites methods
-  async addFavorite(userId: number, tvShowId: number): Promise<Favorite> {
+  async addFavorite(userId: string, tvShowId: number): Promise<Favorite> {
     // Check if the favorite already exists
     const [existingFavorite] = await db
       .select()
@@ -1751,7 +1751,7 @@ export class DatabaseStorage implements IStorage {
     return favorite;
   }
 
-  async removeFavorite(userId: number, tvShowId: number): Promise<boolean> {
+  async removeFavorite(userId: string, tvShowId: number): Promise<boolean> {
     const result = await db
       .delete(favorites)
       .where(and(
@@ -1787,7 +1787,7 @@ export class DatabaseStorage implements IStorage {
     return !!favorite;
   }
 
-  async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
+  async getSimilarShows(userId: string, limit: number = 5): Promise<TvShow[]> {
     // Get user's favorite shows
     const userFavorites = await this.getUserFavorites(userId);
     
@@ -1871,7 +1871,7 @@ export class DatabaseStorage implements IStorage {
   // Gamification Methods
   // -------------------------------------------------------------------------
   
-  async getUserPoints(userId: number): Promise<{ 
+  async getUserPoints(userId: string): Promise<{ 
     total: number; 
     breakdown: {
       reviews: number;

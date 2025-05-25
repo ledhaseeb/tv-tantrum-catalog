@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user!.id;
       
-      // Use userId directly as string for database operations
+      // Use userId directly as a string without parsing to number
       // The schema defines it as text type
       const parsedUserId = userId;
       
