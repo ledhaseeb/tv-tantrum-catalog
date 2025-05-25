@@ -2490,17 +2490,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const summaries = await storage.getResearchSummaries();
       
+      // Make sure summaries is an array
+      const summariesArray = Array.isArray(summaries) ? summaries : [];
+      
       // Check if user is logged in to determine read status
       const userId = req.session?.userId;
       if (userId) {
         const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
-        const summariesWithReadStatus = summaries.map(summary => ({
+        const summariesWithReadStatus = summariesArray.map(summary => ({
           ...summary,
           hasRead: userReadIds.includes(summary.id)
         }));
         res.json(summariesWithReadStatus);
       } else {
-        res.json(summaries.map(summary => ({
+        // Make sure to handle if summaries is not an array
+        res.json(summariesArray.map(summary => ({
           ...summary,
           hasRead: false
         })));
