@@ -12,7 +12,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ShowCard from '@/components/ShowCard';
-import SubmitShowForm from '@/components/SubmitShowForm';
 import { useLocation } from 'wouter';
 
 const UserDashboard = () => {
@@ -91,27 +90,16 @@ const UserDashboard = () => {
             {user?.username?.slice(0, 1).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-grow">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between w-full">
-            <div>
-              <h1 className="text-3xl font-bold">{user?.username || "User"}'s Dashboard</h1>
-              <p className="text-gray-500">{user?.email}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="bg-orange-50 text-orange-500 border-orange-200">
-                  <Trophy className="w-3 h-3 mr-1" /> {userRank}
-                </Badge>
-                <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
-                  <Award className="w-3 h-3 mr-1" /> {totalPoints} Points
-                </Badge>
-              </div>
-            </div>
-            <Button 
-              className="mt-4 md:mt-0 bg-orange-500 hover:bg-orange-600" 
-              onClick={() => setActiveTab('content')}
-            >
-              <FilePlus2 className="w-4 h-4 mr-2" />
-              Submit Show Request
-            </Button>
+        <div>
+          <h1 className="text-3xl font-bold">{user?.username || "User"}'s Dashboard</h1>
+          <p className="text-gray-500">{user?.email}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="outline" className="bg-orange-50 text-orange-500 border-orange-200">
+              <Trophy className="w-3 h-3 mr-1" /> {userRank}
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
+              <Award className="w-3 h-3 mr-1" /> {totalPoints} Points
+            </Badge>
           </div>
         </div>
       </div>
@@ -339,9 +327,6 @@ const UserDashboard = () => {
         </TabsContent>
 
         <TabsContent value="content" className="space-y-6">
-          {/* Show Submission Form */}
-          <SubmitShowForm />
-          
           <Card>
             <CardHeader>
               <CardTitle>Your Reviews</CardTitle>

@@ -1,19 +1,14 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 // Use database storage
-import { storage } from "./storage";
+import { storage } from "./database-storage";
 import { db, pool } from "./db";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
-import { 
-  insertTvShowReviewSchema, 
-  insertFavoriteSchema, 
-  insertShowSubmissionSchema,
-  TvShowGitHub 
-} from "@shared/schema";
+import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
 import { trackReferral, getUserReferrals } from "./referral-system";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
@@ -28,46 +23,6 @@ import { lookupRouter } from "./lookup-api";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware functions
-  const requireLogin = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.session?.userId) {
-      return res.status(401).json({ message: "You must be logged in to access this resource" });
-    }
-    // Add user to request
-    if (!req.user) {
-      storage.getUser(req.session.userId)
-        .then(user => {
-          req.user = user || undefined;
-          next();
-        })
-        .catch(err => {
-          console.error("Error fetching user in middleware:", err);
-          return res.status(500).json({ message: "Internal server error" });
-        });
-    } else {
-      next();
-    }
-  };
-  
-  const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.session?.userId) {
-      return res.status(401).json({ message: "You must be logged in to access this resource" });
-    }
-    
-    storage.getUser(req.session.userId)
-      .then(user => {
-        if (!user?.isAdmin) {
-          return res.status(403).json({ message: "Admin access required" });
-        }
-        req.user = user;
-        next();
-      })
-      .catch(err => {
-        console.error("Error fetching user in admin middleware:", err);
-        return res.status(500).json({ message: "Internal server error" });
-      });
-  };
-  
   // Add health check endpoint
   app.get('/api/health', (_req, res) => {
     res.status(200).send('OK');
@@ -2490,21 +2445,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const summaries = await storage.getResearchSummaries();
       
-      // Make sure summaries is an array
-      const summariesArray = Array.isArray(summaries) ? summaries : [];
-      
       // Check if user is logged in to determine read status
       const userId = req.session?.userId;
       if (userId) {
         const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
-        const summariesWithReadStatus = summariesArray.map(summary => ({
+        const summariesWithReadStatus = summaries.map(summary => ({
           ...summary,
           hasRead: userReadIds.includes(summary.id)
         }));
         res.json(summariesWithReadStatus);
       } else {
-        // Make sure to handle if summaries is not an array
-        res.json(summariesArray.map(summary => ({
+        res.json(summaries.map(summary => ({
           ...summary,
           hasRead: false
         })));
@@ -2829,46 +2780,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Show Submissions API endpoint
-  app.post("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
+  // Show Submissions
+  app.post("/api/show-submissions", async (req: Request, res: Response) => {
     try {
-      const user = req.user;
-      
-      if (!user) {
-        return res.status(401).json({ message: "User not authenticated" });
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to submit shows" });
       }
       
-      // Validate the submission data
-      const submissionData = insertShowSubmissionSchema.parse({
+      const submission = await storage.addShowSubmission({
         ...req.body,
-        userId: user.id
+        userId
       });
-      
-      // Create the submission
-      const submission = await storage.createShowSubmission(submissionData);
-      
-      // Award points for the submission
-      await storage.awardPoints(user.id, 5, 'show_submission', `Submitted show: ${submission.name}`);
-      
-      res.status(201).json(submission);
+      res.json(submission);
     } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid submission data", 
-          errors: error.errors 
-        });
+      console.error("Error submitting show:", error);
+      res.status(500).json({ message: "Failed to submit show" });
+    }
+  });
+  
+  app.get("/api/show-submissions", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view submissions" });
       }
       
-      console.error("Error creating show submission:", error);
-      res.status(500).json({ message: "Failed to create show submission" });
+      const user = await storage.getUser(userId);
+      
+      // Admin can see all pending submissions
+      if (user?.isAdmin) {
+        const submissions = await storage.getPendingShowSubmissions();
+        res.json(submissions);
+      } else {
+        // Regular users only see their own submissions
+        const submissions = await storage.getUserShowSubmissions(userId);
+        res.json(submissions);
+      }
+    } catch (error) {
+      console.error("Error fetching show submissions:", error);
+      res.status(500).json({ message: "Failed to fetch show submissions" });
     }
   });
   
   // Admin only - update submission status
-  app.put("/api/show-submissions/:id/status", requireAdmin, async (req: Request, res: Response) => {
+  app.put("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
     try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to update submission status" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can update submission status" });
+      }
+      
       const id = parseInt(req.params.id);
-      const { status, adminNotes } = req.body;
+      const { status } = req.body;
       
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid submission ID" });
@@ -2878,18 +2848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', or 'rejected'" });
       }
       
-      const submission = await storage.updateShowSubmissionStatus(id, status, adminNotes);
-      
-      // If approved, award extra points to the user who submitted it
-      if (status === "approved" && submission) {
-        await storage.awardPoints(
-          submission.userId,
-          10,
-          'show_approval',
-          `Your show submission "${submission.name}" was approved!`
-        );
-      }
-      
+      const submission = await storage.updateShowSubmissionStatus(id, status);
       res.json(submission);
     } catch (error) {
       console.error("Error updating submission status:", error);
@@ -2914,146 +2873,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ message: "Failed to fetch leaderboard" });
-    }
-  });
-  
-  // POST endpoint for show submissions is defined above
-
-  // Get all show submissions for the current user
-  app.get("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
-    try {
-      const user = req.user;
-      
-      if (!user) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-
-      // If admin, get all submissions. Otherwise, only get the user's submissions
-      const submissions = user.isAdmin 
-        ? await storage.getAllShowSubmissions()
-        : await storage.getUserShowSubmissions(user.id);
-      
-      res.json(submissions);
-    } catch (error) {
-      console.error("Error fetching show submissions:", error);
-      res.status(500).json({ message: "Failed to fetch show submissions" });
-    }
-  });
-
-  // Get similar show submissions for autocomplete
-  app.get("/api/show-submissions/search", requireLogin, async (req: Request, res: Response) => {
-    try {
-      const query = req.query.q as string;
-      
-      if (!query || query.length < 2) {
-        return res.json([]);
-      }
-      
-      const submissions = await storage.searchShowSubmissions(query);
-      res.json(submissions);
-    } catch (error) {
-      console.error("Error searching show submissions:", error);
-      res.status(500).json({ message: "Failed to search show submissions" });
-    }
-  });
-
-  // Search our database and external APIs (YouTube and OMDB)
-  app.get("/api/lookup/show", requireLogin, async (req: Request, res: Response) => {
-    try {
-      const query = req.query.q as string;
-      const source = req.query.source as string;
-      
-      if (!query || query.length < 2) {
-        return res.json([]);
-      }
-      
-      let results = [];
-      
-      // Always search our TV show database first
-      try {
-        const dbShows = await db
-          .select({
-            id: tvShows.id,
-            name: tvShows.name,
-            description: tvShows.description,
-            imageUrl: tvShows.imageUrl,
-            releaseYear: tvShows.releaseYear
-          })
-          .from(tvShows)
-          .where(like(tvShows.name, `%${query}%`))
-          .limit(5);
-        
-        if (dbShows.length > 0) {
-          results = [...results, ...dbShows.map(show => ({
-            id: show.id.toString(),
-            name: show.name,
-            description: show.description,
-            imageUrl: show.imageUrl,
-            source: 'database',
-            releaseYear: show.releaseYear ? show.releaseYear.toString() : null,
-            status: 'In Database'
-          }))];
-        }
-      } catch (dbError) {
-        console.error("Error searching TV shows database:", dbError);
-      }
-      
-      // Then search show submissions
-      try {
-        const submittedShows = await db
-          .select({
-            id: showSubmissions.id,
-            name: showSubmissions.name,
-            status: showSubmissions.status
-          })
-          .from(showSubmissions)
-          .where(like(showSubmissions.name, `%${query}%`))
-          .limit(5);
-        
-        if (submittedShows.length > 0) {
-          results = [...results, ...submittedShows.map(submission => ({
-            id: `submission-${submission.id.toString()}`,
-            name: submission.name,
-            description: "Previously submitted show",
-            source: 'submission',
-            status: submission.status === 'pending' ? 'Already Submitted (Pending)' : 
-                   submission.status === 'approved' ? 'Already Submitted (Approved)' : 
-                   'Already Submitted (Rejected)'
-          }))];
-        }
-      } catch (submissionError) {
-        console.error("Error searching show submissions:", submissionError);
-      }
-      
-      // Then search external APIs if requested
-      if (source === 'youtube' || !source) {
-        const youtubeResults = await youtubeService.searchChannels(query);
-        results = [...results, ...youtubeResults.map(channel => ({
-          id: channel.id,
-          name: channel.snippet.title,
-          description: channel.snippet.description,
-          imageUrl: channel.snippet.thumbnails.default.url,
-          source: 'youtube'
-        }))];
-      }
-      
-      if (source === 'omdb' || !source) {
-        const omdbResults = await omdbService.search(query);
-        if (omdbResults.Search) {
-          results = [...results, ...omdbResults.Search.map(show => ({
-            id: show.imdbID,
-            name: show.Title,
-            releaseYear: show.Year,
-            imageUrl: show.Poster !== 'N/A' ? show.Poster : null,
-            source: 'omdb'
-          }))];
-        }
-      }
-      
-      res.json(results);
-    } catch (error) {
-      console.error("Error searching shows:", error);
-      res.status(500).json({ message: "Failed to search for shows" });
     }
   });
 
