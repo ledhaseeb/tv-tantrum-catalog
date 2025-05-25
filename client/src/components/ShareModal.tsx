@@ -10,7 +10,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Share2, Check, Facebook, Twitter, Mail, Linkedin } from "lucide-react";
+import { 
+  Copy, 
+  Share2, 
+  Check, 
+  Facebook, 
+  Twitter, 
+  Mail, 
+  Linkedin, 
+  Instagram, 
+  Camera
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -41,6 +51,11 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
   const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
   const emailShareUrl = `mailto:?subject=${encodeURIComponent(`Check out ${show.name} on TV Tantrum`)}&body=${encodeURIComponent(`I thought you might be interested in this show: ${show.name} on TV Tantrum. It has a stimulation score of ${show.stimulationScore}/5.\n\nCheck it out here: ${shareUrl}`)}`;
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5. ${shareUrl}`)}`;
+  
+  // Additional social platform share URLs
+  const instagramShareText = `Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5.\n\n${shareUrl}`;
+  const snapchatShareUrl = `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(shareUrl)}`;
+  const tiktokShareText = `#TVTantrum #KidsShows #${show.name.replace(/\s+/g, '')} ${shareUrl}`;
   
   // Handle copy to clipboard
   const handleCopy = async () => {
@@ -203,6 +218,8 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
         {/* Social Media Sharing Buttons */}
         <div className="flex flex-col space-y-4">
           <p className="text-center text-sm font-medium">Share on social media</p>
+          
+          {/* First row of sharing buttons */}
           <div className="flex justify-center space-x-3">
             <Button 
               variant="outline" 
@@ -239,6 +256,49 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               title="Share on WhatsApp"
             >
               <i className="fab fa-whatsapp text-green-600 text-lg"></i>
+            </Button>
+          </div>
+          
+          {/* Second row of sharing buttons - new platforms */}
+          <div className="flex justify-center space-x-3">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full"
+              onClick={() => {
+                navigator.clipboard.writeText(instagramShareText);
+                toast({
+                  title: "Instagram text copied!",
+                  description: "Paste this in your Instagram post or story",
+                });
+              }}
+              title="Copy for Instagram"
+            >
+              <Instagram className="h-5 w-5 text-white" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-black hover:bg-gray-900 rounded-full"
+              onClick={() => {
+                navigator.clipboard.writeText(tiktokShareText);
+                toast({
+                  title: "TikTok text copied!",
+                  description: "Paste this in your TikTok caption",
+                });
+              }}
+              title="Copy for TikTok"
+            >
+              <i className="fas fa-music text-white text-lg"></i>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-yellow-300 hover:bg-yellow-400 rounded-full"
+              onClick={() => openShareWindow(snapchatShareUrl)}
+              title="Share on Snapchat"
+            >
+              <Camera className="h-5 w-5 text-white" />
             </Button>
             <Button 
               variant="outline" 
