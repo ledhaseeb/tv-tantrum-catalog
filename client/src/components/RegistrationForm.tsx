@@ -385,8 +385,21 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
     
-    registerMutation.mutate(values, {
+    // Check for any stored referral information in localStorage
+    const referrerId = localStorage.getItem('referrer_id');
+    
+    // Add referral information to registration data if available
+    const registrationData = {
+      ...values,
+      referrerId: referrerId || undefined
+    };
+    
+    registerMutation.mutate(registrationData, {
       onSuccess: () => {
+        // Clear referral data after successful registration
+        localStorage.removeItem('referrer_id');
+        localStorage.removeItem('referral_show_id');
+        
         if (onSuccess) {
           onSuccess();
         }
