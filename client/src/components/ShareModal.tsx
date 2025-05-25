@@ -289,7 +289,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
         </div>
         
         <div className="text-center text-xs text-gray-500 px-2 mb-4">
-          Download this image to share on social media. You'll earn points when others sign up using your referral link!
+          Download this image to share on social media. You'll earn points when others sign up using your referral link, not just for sharing!
         </div>
         
         {/* We've moved the share link input to the instruction section */}
@@ -300,7 +300,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           <ol className="text-xs text-gray-600 list-decimal pl-5">
             <li>Download the image above using the download button</li>
             <li>Share the image on your social media accounts</li>
-            <li>Include your referral link in your post - you earn points when people sign up:</li>
+            <li>Include your referral link in your post - you only earn points when new users register using your link:</li>
           </ol>
           <div className="flex mt-1 items-center">
             <Input
