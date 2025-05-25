@@ -131,7 +131,7 @@ export interface IStorage {
 }
 
 // Database Storage Implementation
-import { db } from "./db";
+import { db, pool } from "./db";
 import { 
   users, 
   tvShows, 
@@ -269,10 +269,9 @@ export class DatabaseStorage implements IStorage {
   // Research summaries methods
   async getResearchSummaries(): Promise<any[]> {
     try {
-      const result = await pool.query(
-        `SELECT * FROM research_summaries ORDER BY created_at DESC`
-      );
-      return result.rows;
+      // Use db from drizzle instead of direct pool
+      const result = await db.execute(sql`SELECT * FROM research_summaries ORDER BY created_at DESC`);
+      return result;
     } catch (error) {
       console.error("Error getting research summaries:", error);
       return [];
@@ -281,11 +280,8 @@ export class DatabaseStorage implements IStorage {
   
   async getResearchSummary(id: number): Promise<any | undefined> {
     try {
-      const result = await pool.query(
-        `SELECT * FROM research_summaries WHERE id = $1`,
-        [id]
-      );
-      return result.rows[0] || undefined;
+      const result = await db.execute(sql`SELECT * FROM research_summaries WHERE id = ${id}`);
+      return result[0] || undefined;
     } catch (error) {
       console.error("Error getting research summary:", error);
       return undefined;
@@ -294,16 +290,15 @@ export class DatabaseStorage implements IStorage {
   
   async markResearchAsRead(userId: string, researchId: number): Promise<any> {
     try {
-      const result = await pool.query(
-        `INSERT INTO user_read_research (user_id, research_id)
-         VALUES ($1, $2)
-         ON CONFLICT (user_id, research_id) DO NOTHING
-         RETURNING *`,
-        [userId, researchId]
+      const result = await db.execute(
+        sql`INSERT INTO user_read_research (user_id, research_id)
+            VALUES (${userId}, ${researchId})
+            ON CONFLICT (user_id, research_id) DO NOTHING
+            RETURNING *`
       );
       
       // Award points if this is the first time reading this research
-      if (result.rowCount > 0) {
+      if (result.length > 0) {
         await this.awardPoints(
           userId, 
           5, 
@@ -312,7 +307,7 @@ export class DatabaseStorage implements IStorage {
         );
       }
       
-      return result.rows[0];
+      return result[0];
     } catch (error) {
       console.error("Error marking research as read:", error);
       return null;
@@ -321,12 +316,11 @@ export class DatabaseStorage implements IStorage {
   
   async hasUserReadResearch(userId: string, researchId: number): Promise<boolean> {
     try {
-      const result = await pool.query(
-        `SELECT * FROM user_read_research 
-         WHERE user_id = $1 AND research_id = $2`,
-        [userId, researchId]
+      const result = await db.execute(
+        sql`SELECT * FROM user_read_research 
+            WHERE user_id = ${userId} AND research_id = ${researchId}`
       );
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       console.error("Error checking if user read research:", error);
       return false;
@@ -350,29 +344,27 @@ export class DatabaseStorage implements IStorage {
   }> {
     try {
       // Get user data to get total points
-      const userResult = await pool.query(
-        'SELECT total_points FROM users WHERE id = $1',
-        [userId]
+      const userResult = await db.execute(
+        sql`SELECT total_points FROM users WHERE id = ${userId}`
       );
       
-      const totalPoints = userResult.rows[0]?.total_points || 0;
+      const totalPoints = userResult[0]?.total_points || 0;
       
       // Get point breakdown by activity type
-      const breakdownResult = await pool.query(
-        `SELECT 
+      const breakdownResult = await db.execute(
+        sql`SELECT 
           activity_type, 
           SUM(points) as total
         FROM user_points_history 
-        WHERE user_id = $1
-        GROUP BY activity_type`,
-        [userId]
+        WHERE user_id = ${userId}
+        GROUP BY activity_type`
       );
       
       // Create a map of activity types to points
       const pointsMap = {};
-      breakdownResult.rows.forEach(row => {
+      for (const row of breakdownResult) {
         pointsMap[row.activity_type] = parseInt(row.total);
-      });
+      }
       
       // Determine rank based on total points
       let rank = 'TV Watcher';
@@ -418,20 +410,18 @@ export class DatabaseStorage implements IStorage {
   async awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<any> {
     try {
       // Using direct SQL for this since we haven't defined the user_points_history table in Drizzle yet
-      const result = await pool.query(
-        `INSERT INTO user_points_history (user_id, points, activity_type, description) 
-         VALUES ($1, $2, $3, $4)
-         RETURNING *`,
-        [userId, points, activityType, description || null]
+      const result = await db.execute(
+        sql`INSERT INTO user_points_history (user_id, points, activity_type, description) 
+            VALUES (${userId}, ${points}, ${activityType}, ${description || null})
+            RETURNING *`
       );
       
       // Update the user's total points in the database
-      await pool.query(
-        `UPDATE users SET total_points = total_points + $1 WHERE id = $2`,
-        [points, userId]
+      await db.execute(
+        sql`UPDATE users SET total_points = total_points + ${points} WHERE id = ${userId}`
       );
       
-      return result.rows[0];
+      return result[0];
     } catch (error) {
       console.error('Error awarding points:', error);
       // Return a placeholder object if there's an error
