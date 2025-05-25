@@ -202,7 +202,7 @@ export const userReadResearch = pgTable("user_read_research", {
 
 export const showSubmissions = pgTable("show_submissions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   showName: varchar("show_name").notNull(),
   description: text("description"),
   suggestedAgeRange: varchar("suggested_age_range"),

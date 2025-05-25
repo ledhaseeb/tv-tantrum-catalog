@@ -310,6 +310,154 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+  
+  // Other methods required by IStorage interface will be implemented later
+  
+  async getAllTvShows(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getTvShowsByFilter(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addTvShow(): Promise<TvShow> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async updateTvShow(): Promise<TvShow | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async deleteTvShow(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  // Add remaining method stubs to satisfy interface
+  async getReviewsByTvShowId(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addReview(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getReviewById(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addUpvote(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async removeUpvote(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getReviewUpvotes(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUpvotesGivenByUser(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUpvotesReceivedByUser(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async trackShowSearch(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async trackShowView(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getPopularShows(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async importShowsFromGitHub(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addFavorite(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async removeFavorite(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUserFavorites(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async isFavorite(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getSimilarShows(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getSimilarShowsByShowId(): Promise<TvShow[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUserPoints(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async awardPoints(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUserPointsHistory(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async updateUserLoginStreak(): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addReviewUpvote(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async removeReviewUpvote(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getResearchSummaries(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getResearchSummary(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addResearchSummary(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async markResearchAsRead(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getTopUsers(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async addUserReferral(): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUserReferrals(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+}
 
 // Using an existing MemStorage implementation or creating one if needed
 export class MemStorage implements IStorage {

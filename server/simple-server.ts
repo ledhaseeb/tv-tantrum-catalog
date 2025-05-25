@@ -57,8 +57,10 @@ app.post("/api/show-submissions", async (req: Request, res: Response) => {
       showName: req.body.showName,
       description: req.body.description || null,
       suggestedAgeRange: req.body.suggestedAgeRange || null,
-      suggestedThemes: Array.isArray(req.body.suggestedThemes) ? req.body.suggestedThemes : [],
-      userId: Number(user.id), // Convert to number for database
+      suggestedThemes: Array.isArray(req.body.suggestedThemes) 
+        ? req.body.suggestedThemes 
+        : (req.body.suggestedThemes ? [req.body.suggestedThemes] : []),
+      userId: user.id, // Use string ID to match updated schema
       status: "pending" // Always set initial status to pending
     };
     
@@ -72,18 +74,7 @@ app.post("/api/show-submissions", async (req: Request, res: Response) => {
     
     console.log("Submission created:", submission);
     
-    // Award points for the submission
-    try {
-      // Directly update the user's points in the database
-      await db
-        .update(users)
-        .set({
-          points: sql`COALESCE(${users.points}, 0) + 10`
-        })
-        .where(eq(users.id, user.id));
-    } catch (pointsError) {
-      console.log("Could not award points:", pointsError);
-    }
+    // Award points feature will be implemented later when we have the user points table
     
     res.status(201).json({
       message: "Show submission created successfully",
@@ -110,7 +101,7 @@ app.get("/api/show-submissions/user", async (req: Request, res: Response) => {
     const userSubmissions = await db
       .select()
       .from(showSubmissions)
-      .where(eq(showSubmissions.userId, Number(user.id)))
+      .where(eq(showSubmissions.userId, user.id))
       .orderBy(sql`${showSubmissions.createdAt} DESC`);
     
     res.json(userSubmissions);
