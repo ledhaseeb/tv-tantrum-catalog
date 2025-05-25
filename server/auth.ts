@@ -22,7 +22,7 @@ declare global {
   namespace Express {
     // Define what fields from the User schema should be available in req.user
     interface User {
-      id: number;
+      id: string;
       email: string;
       username: string | null;
       isAdmin: boolean | null;
@@ -146,9 +146,12 @@ export function setupAuth(app: Express) {
     done(null, user.id);
   });
 
-  passport.deserializeUser(async (id: number, done) => {
+  passport.deserializeUser(async (id: string | number, done) => {
     try {
-      const user = await storage.getUser(id);
+      // Convert id to string if it's a number to match database schema
+      const userId = typeof id === 'number' ? id.toString() : id;
+      
+      const user = await storage.getUser(userId);
       if (!user) {
         return done(null, false);
       }

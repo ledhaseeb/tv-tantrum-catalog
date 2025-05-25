@@ -141,8 +141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user!.id;
       
-      // Convert userId to integer for database operations
-      const parsedUserId = parseInt(userId);
+      // Use userId directly as string for database operations
+      // The schema defines it as text type
+      const parsedUserId = userId;
       
       // Get user data directly from database to ensure we have the correct total_points
       const { pool } = await import('./db');
