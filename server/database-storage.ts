@@ -29,12 +29,12 @@ import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-pr
 
 export interface IStorage {
   // User methods
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
-  updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined>;
+  updateUserApproval(userId: string, isApproved: boolean): Promise<User | undefined>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -441,7 +441,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(tvShows.id, tvShowId));
     }
   }
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     try {
       const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
       
@@ -640,7 +640,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined> {
+  async updateUserApproval(userId: string, isApproved: boolean): Promise<User | undefined> {
     const client = await pool.connect();
     
     try {
@@ -1762,7 +1762,7 @@ export class DatabaseStorage implements IStorage {
     return result.count > 0;
   }
 
-  async getUserFavorites(userId: number): Promise<TvShow[]> {
+  async getUserFavorites(userId: string): Promise<TvShow[]> {
     const favoriteShows = await db
       .select({
         show: tvShows,
@@ -1775,7 +1775,7 @@ export class DatabaseStorage implements IStorage {
     return favoriteShows.map(item => item.show);
   }
 
-  async isFavorite(userId: number, tvShowId: number): Promise<boolean> {
+  async isFavorite(userId: string, tvShowId: number): Promise<boolean> {
     const [favorite] = await db
       .select()
       .from(favorites)
