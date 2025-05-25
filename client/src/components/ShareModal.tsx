@@ -227,24 +227,49 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               </div>
             )}
             
-            <div className="mt-2 w-full flex flex-col items-center">
-              <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-3 py-1 text-sm mx-auto inline-flex items-center justify-center rounded-full`}>
+            <div className="mt-2 w-full flex flex-col items-center" style={{ minWidth: '280px' }}>
+              <div
+                className={`${getStimulationLevelColor(show.stimulationScore)} mx-auto`}
+                style={{
+                  padding: '4px 16px',
+                  borderRadius: '9999px',
+                  fontSize: '14px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '500',
+                  lineHeight: '1.25'
+                }}
+              >
                 {getStimulationLevelName(show.stimulationScore)} Stimulation
-              </Badge>
+              </div>
               
-              <div className="h-2 w-full max-w-56 bg-gray-200 rounded-full overflow-hidden flex mt-3">
+              <div style={{
+                height: '8px',
+                width: '100%',
+                maxWidth: '224px',
+                background: '#e5e7eb',
+                borderRadius: '9999px',
+                overflow: 'hidden',
+                display: 'flex',
+                marginTop: '12px'
+              }}>
                 {[1, 2, 3, 4, 5].map((segment) => {
                   const color = 
-                    segment === 1 ? 'bg-green-500' : 
-                    segment === 2 ? 'bg-lime-500' : 
-                    segment === 3 ? 'bg-yellow-500' : 
-                    segment === 4 ? 'bg-orange-500' : 
-                    'bg-red-500';
+                    segment === 1 ? '#22c55e' : 
+                    segment === 2 ? '#84cc16' : 
+                    segment === 3 ? '#eab308' : 
+                    segment === 4 ? '#f97316' : 
+                    '#ef4444';
                   
                   return (
                     <div
                       key={segment}
-                      className={`h-full w-1/5 ${segment <= show.stimulationScore ? color : 'bg-gray-200'}`}
+                      style={{
+                        height: '100%',
+                        width: '20%',
+                        backgroundColor: segment <= show.stimulationScore ? color : '#e5e7eb'
+                      }}
                     />
                   );
                 })}
