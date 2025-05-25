@@ -40,20 +40,13 @@ const UserDashboard = () => {
   const nextMilestone = Math.ceil(totalPoints / 100) * 100 + 100;
   const progress = (totalPoints % 100) / 100 * 100;
 
-  if (!user) {
-    return (
-      <div className="container max-w-4xl py-8">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Please Log In</h2>
-          <p className="text-gray-500">You need to be logged in to view your dashboard.</p>
-        </div>
-      </div>
-    );
-  }
-
   if (isLoadingDashboard) {
     return (
       <div className="container max-w-4xl py-8">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold mb-2">Please wait while your dashboard loads</h2>
+          <p className="text-gray-500">We're gathering your latest activity and points...</p>
+        </div>
         <div className="space-y-4">
           <Skeleton className="h-12 w-[250px]" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -62,6 +55,17 @@ const UserDashboard = () => {
             <Skeleton className="h-[200px] w-full" />
           </div>
           <Skeleton className="h-[400px] w-full" />
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-2">Please Log In</h2>
+          <p className="text-gray-500">You need to be logged in to view your dashboard.</p>
         </div>
       </div>
     );
