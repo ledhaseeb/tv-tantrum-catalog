@@ -231,7 +231,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               <div
                 className={`${getStimulationLevelColor(show.stimulationScore)} mx-auto`}
                 style={{
-                  padding: '8px 16px',
+                  padding: '16px 16px',
                   borderRadius: '9999px',
                   fontSize: '14px',
                   display: 'inline-flex',
