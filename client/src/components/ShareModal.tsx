@@ -251,8 +251,8 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               </div>
             </div>
             
-            <div className="w-full text-center">
-              <p className="text-sm text-gray-600 max-w-full px-2 mx-auto">
+            <div className="w-full text-center flex justify-center mt-4">
+              <p className="text-sm text-gray-600 max-w-md px-4 leading-relaxed">
                 {getStimulationLevelText(show.stimulationScore)}
               </p>
             </div>
