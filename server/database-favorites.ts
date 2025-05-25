@@ -80,7 +80,7 @@ export async function removeFavorite(userId: string, tvShowId: number): Promise<
 /**
  * Get all shows favorited by a user
  */
-export async function getUserFavorites(userId: number): Promise<TvShow[]> {
+export async function getUserFavorites(userId: string): Promise<TvShow[]> {
   try {
     const result = await pool.query(`
       SELECT t.* 
@@ -116,7 +116,7 @@ export async function getUserFavorites(userId: number): Promise<TvShow[]> {
 /**
  * Check if a show is in user's favorites
  */
-export async function isFavorite(userId: number, tvShowId: number): Promise<boolean> {
+export async function isFavorite(userId: string, tvShowId: number): Promise<boolean> {
   try {
     const result = await pool.query(
       'SELECT * FROM favorites WHERE user_id = $1 AND tv_show_id = $2',
