@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Share2, Check } from "lucide-react";
+import { Copy, Share2, Check, Facebook, Twitter, Mail, Linkedin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -35,6 +35,13 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
     ? `${window.location.origin}/share/${show.id}?ref=${user.id}` 
     : `${window.location.origin}/share/${show.id}`;
   
+  // Social media share URLs
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation Score: ${show.stimulationScore}/5`)}&url=${encodeURIComponent(shareUrl)}`;
+  const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const emailShareUrl = `mailto:?subject=${encodeURIComponent(`Check out ${show.name} on TV Tantrum`)}&body=${encodeURIComponent(`I thought you might be interested in this show: ${show.name} on TV Tantrum. It has a stimulation score of ${show.stimulationScore}/5.\n\nCheck it out here: ${shareUrl}`)}`;
+  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5. ${shareUrl}`)}`;
+  
   // Handle copy to clipboard
   const handleCopy = async () => {
     try {
@@ -58,13 +65,23 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
     }
   };
   
-  // Handle social media sharing
-  const handleShare = async () => {
+  // Open social media share in new window
+  const openShareWindow = (url: string) => {
+    window.open(url, '_blank', 'width=600,height=600');
+    
+    toast({
+      title: "Opening share window",
+      description: "Share window opened in a new tab",
+    });
+  };
+  
+  // Handle native device sharing
+  const handleNativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Check out ${show.name} on TV Tantrum`,
-          text: `Learn about ${show.name} and its stimulation level for kids on TV Tantrum!`,
+          text: `Learn about ${show.name} and its stimulation level (${show.stimulationScore}/5) for kids on TV Tantrum!`,
           url: shareUrl,
         });
         
@@ -183,11 +200,63 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           </div>
         </div>
         
-        <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
+        {/* Social Media Sharing Buttons */}
+        <div className="flex flex-col space-y-4">
+          <p className="text-center text-sm font-medium">Share on social media</p>
+          <div className="flex justify-center space-x-3">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-blue-100 hover:bg-blue-200 rounded-full"
+              onClick={() => openShareWindow(facebookShareUrl)}
+              title="Share on Facebook"
+            >
+              <Facebook className="h-5 w-5 text-blue-600" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-sky-100 hover:bg-sky-200 rounded-full"
+              onClick={() => openShareWindow(twitterShareUrl)}
+              title="Share on Twitter"
+            >
+              <Twitter className="h-5 w-5 text-sky-500" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-blue-100 hover:bg-blue-200 rounded-full"
+              onClick={() => openShareWindow(linkedinShareUrl)}
+              title="Share on LinkedIn"
+            >
+              <Linkedin className="h-5 w-5 text-blue-800" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-green-100 hover:bg-green-200 rounded-full"
+              onClick={() => openShareWindow(whatsappShareUrl)}
+              title="Share on WhatsApp"
+            >
+              <i className="fab fa-whatsapp text-green-600 text-lg"></i>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="bg-gray-100 hover:bg-gray-200 rounded-full"
+              onClick={() => openShareWindow(emailShareUrl)}
+              title="Share via Email"
+            >
+              <Mail className="h-5 w-5 text-gray-600" />
+            </Button>
+          </div>
+        </div>
+
+        <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2 mt-2">
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button onClick={handleShare} className="mt-2 sm:mt-0">
+          <Button onClick={handleNativeShare} className="mt-2 sm:mt-0">
             <Share2 className="mr-2 h-4 w-4" />
             Share
           </Button>

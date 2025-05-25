@@ -79,9 +79,9 @@ async function awardReferralPoints(referrerId: string, referredId: string) {
       await tx
         .insert(userPointsHistory)
         .values({
-          user_id: referrerId,
+          userId: referrerId,
           points: REFERRAL_POINTS,
-          activity_type: "referral",
+          activityType: "referral",
           description: "Points earned for referring a new user"
         });
       
@@ -97,9 +97,9 @@ async function awardReferralPoints(referrerId: string, referredId: string) {
       await tx
         .insert(userPointsHistory)
         .values({
-          user_id: referredId,
+          userId: referredId,
           points: REFERRAL_POINTS,
-          activity_type: "signup",
+          activityType: "signup",
           description: "Welcome bonus for signing up via referral"
         });
     });
