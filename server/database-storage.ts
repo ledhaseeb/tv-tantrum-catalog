@@ -1967,7 +1967,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async getUserPointsHistory(userId: number): Promise<any[]> {
+  async getUserPointsHistory(userId: string): Promise<any[]> {
     try {
       const history = await db
         .select()

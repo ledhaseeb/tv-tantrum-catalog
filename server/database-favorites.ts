@@ -6,7 +6,7 @@ import type { Favorite, TvShow } from "@shared/schema";
 /**
  * Add a show to user's favorites
  */
-export async function addFavorite(userId: number, tvShowId: number): Promise<any> {
+export async function addFavorite(userId: string, tvShowId: number): Promise<any> {
   const client = await pool.connect();
   
   try {
@@ -56,7 +56,7 @@ export async function addFavorite(userId: number, tvShowId: number): Promise<any
 /**
  * Remove a show from user's favorites
  */
-export async function removeFavorite(userId: number, tvShowId: number): Promise<boolean> {
+export async function removeFavorite(userId: string, tvShowId: number): Promise<boolean> {
   try {
     const result = await pool.query(
       'DELETE FROM favorites WHERE user_id = $1 AND tv_show_id = $2',

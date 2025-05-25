@@ -250,8 +250,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Processing review points for review ID ${review.id}`);
             
             try {
-              // Convert userId to integer for database operations
-              const parsedUserId = parseInt(userId);
+              // Use userId directly as a string
+              const parsedUserId = userId;
               
               // Get the proper show name from the TV shows table
               let showName = review.tvShowName || review.showName;
