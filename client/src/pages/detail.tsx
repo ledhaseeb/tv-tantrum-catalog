@@ -774,7 +774,7 @@ export default function Detail({ id }: DetailProps) {
                   </span>
                 }
               </h1>
-              <div className="mb-4">
+              <div className="mb-4 flex space-x-2">
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -783,6 +783,16 @@ export default function Detail({ id }: DetailProps) {
                 >
                   <Heart className={`w-5 h-5 mr-1 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                   {isFavorite ? 'Saved' : 'Add to Favorites'}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-2 py-1 text-blue-500"
+                  onClick={() => setShareModalOpen(true)}
+                >
+                  <Share2 className="w-5 h-5 mr-1" />
+                  Share
                 </Button>
               </div>
               
@@ -1336,6 +1346,20 @@ export default function Detail({ id }: DetailProps) {
       <div className="text-center text-xs text-gray-500 mt-8">
         © 2025 Sensory Screen Time Guide. All rights reserved.
       </div>
+      
+      {/* Share Modal */}
+      {showDetail && (
+        <ShareModal
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          show={{
+            id: showDetail.id,
+            name: showDetail.name,
+            imageUrl: showDetail.imageUrl || showDetail.omdb?.poster,
+            stimulationScore: showDetail.stimulationScore || 3,
+          }}
+        />
+      )}
     </main>
   );
 }
