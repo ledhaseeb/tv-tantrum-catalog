@@ -2875,6 +2875,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch leaderboard" });
     }
   });
+  
+  // Show submission endpoints
+  // Create a new show submission
+  app.post("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
+    try {
+      const user = req.user;
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // Validate the submission data
+      const submissionData = insertShowSubmissionSchema.parse({
+        ...req.body,
+        userId: user.id
+      });
+      
+      // Create the submission
+      const submission = await storage.createShowSubmission(submissionData);
+      
+      // Award points for the submission
+      await storage.awardPoints(user.id, 5, 'show_submission', `Submitted show: ${submission.name}`);
+      
+      res.status(201).json(submission);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid submission data", 
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Error creating show submission:", error);
+      res.status(500).json({ message: "Failed to create show submission" });
+    }
+  });
+
+  // Get all show submissions for the current user
+  app.get("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
+    try {
+      const user = req.user;
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      // If admin, get all submissions. Otherwise, only get the user's submissions
+      const submissions = user.isAdmin 
+        ? await storage.getAllShowSubmissions()
+        : await storage.getUserShowSubmissions(user.id);
+      
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching show submissions:", error);
+      res.status(500).json({ message: "Failed to fetch show submissions" });
+    }
+  });
+
+  // Get similar show submissions for autocomplete
+  app.get("/api/show-submissions/search", requireLogin, async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+      
+      const submissions = await storage.searchShowSubmissions(query);
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error searching show submissions:", error);
+      res.status(500).json({ message: "Failed to search show submissions" });
+    }
+  });
+
+  // Search external APIs (YouTube and OMDB)
+  app.get("/api/lookup/show", requireLogin, async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      const source = req.query.source as string;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+      
+      let results = [];
+      
+      if (source === 'youtube' || !source) {
+        const youtubeResults = await youtubeService.searchChannels(query);
+        results = [...results, ...youtubeResults.map(channel => ({
+          id: channel.id,
+          name: channel.snippet.title,
+          description: channel.snippet.description,
+          imageUrl: channel.snippet.thumbnails.default.url,
+          source: 'youtube'
+        }))];
+      }
+      
+      if (source === 'omdb' || !source) {
+        const omdbResults = await omdbService.search(query);
+        if (omdbResults.Search) {
+          results = [...results, ...omdbResults.Search.map(show => ({
+            id: show.imdbID,
+            name: show.Title,
+            releaseYear: show.Year,
+            imageUrl: show.Poster !== 'N/A' ? show.Poster : null,
+            source: 'omdb'
+          }))];
+        }
+      }
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching external APIs:", error);
+      res.status(500).json({ message: "Failed to search external APIs" });
+    }
+  });
 
   const httpServer = createServer(app);
 

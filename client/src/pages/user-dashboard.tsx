@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ShowCard from '@/components/ShowCard';
+import SubmitShowForm from '@/components/SubmitShowForm';
 import { useLocation } from 'wouter';
 
 const UserDashboard = () => {

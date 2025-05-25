@@ -2633,6 +2633,96 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+  
+  async createShowSubmission(submissionData: any): Promise<any> {
+    try {
+      const [submission] = await db
+        .insert(showSubmissions)
+        .values({
+          ...submissionData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: 'pending'
+        })
+        .returning();
+        
+      return submission;
+    } catch (error) {
+      console.error('Error creating show submission:', error);
+      throw error;
+    }
+  }
+  
+  async getUserShowSubmissions(userId: string): Promise<any> {
+    try {
+      const submissions = await db
+        .select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.userId, userId))
+        .orderBy(desc(showSubmissions.createdAt));
+        
+      return submissions;
+    } catch (error) {
+      console.error('Error getting user show submissions:', error);
+      return [];
+    }
+  }
+  
+  async getAllShowSubmissions(): Promise<any> {
+    try {
+      const submissions = await db
+        .select({
+          submission: showSubmissions,
+          username: users.username
+        })
+        .from(showSubmissions)
+        .innerJoin(users, eq(showSubmissions.userId, users.id))
+        .orderBy(desc(showSubmissions.createdAt));
+        
+      return submissions.map(r => ({
+        ...r.submission,
+        username: r.username
+      }));
+    } catch (error) {
+      console.error('Error getting all show submissions:', error);
+      return [];
+    }
+  }
+  
+  async getShowSubmissionById(id: number): Promise<any> {
+    try {
+      const [submission] = await db
+        .select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.id, id));
+        
+      return submission;
+    } catch (error) {
+      console.error('Error getting show submission by ID:', error);
+      return null;
+    }
+  }
+  
+  async searchShowSubmissions(query: string): Promise<any> {
+    try {
+      const submissions = await db
+        .select({
+          id: showSubmissions.id,
+          name: showSubmissions.name,
+          count: sql<number>`count(${showSubmissions.id})`.as('count')
+        })
+        .from(showSubmissions)
+        .where(like(showSubmissions.name, `%${query}%`))
+        .groupBy(showSubmissions.id, showSubmissions.name)
+        .orderBy(desc(sql`count`), asc(showSubmissions.name))
+        .limit(10);
+        
+      return submissions;
+    } catch (error) {
+      console.error('Error searching show submissions:', error);
+      return [];
+    }
+  }
 }
 
 // Helper function to build a default image URL
