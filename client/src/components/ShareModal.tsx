@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -19,10 +19,13 @@ import {
   Mail, 
   Linkedin, 
   Instagram, 
-  Camera
+  Camera,
+  Download,
+  Image
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import html2canvas from "html2canvas";
 
 interface ShareModalProps {
   open: boolean;
@@ -37,6 +40,8 @@ interface ShareModalProps {
 
 export default function ShareModal({ open, onOpenChange, show }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
+  const [imageDownloading, setImageDownloading] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   // Generate the share URL with referral parameter if user is logged in
@@ -44,6 +49,9 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
   const shareUrl = user 
     ? `${window.location.origin}/share/${show.id}?ref=${user.id}` 
     : `${window.location.origin}/share/${show.id}`;
+    
+  // Short version of the URL for display in the image
+  const shortShareUrl = `tvtantrum.app/s/${show.id}${user ? `?r=${user.id}` : ''}`;
   
   // Social media share URLs
   const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -88,6 +96,47 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
       title: "Opening share window",
       description: "Share window opened in a new tab",
     });
+  };
+  
+  // Create and download share card image
+  const handleDownloadImage = async () => {
+    if (!shareCardRef.current) return;
+    
+    try {
+      setImageDownloading(true);
+      
+      const canvas = await html2canvas(shareCardRef.current, {
+        scale: 2, // Higher resolution
+        useCORS: true, // Allow cross-origin images
+        backgroundColor: "#ffffff", // White background
+        logging: false
+      });
+      
+      // Convert the canvas to a data URL
+      const imageData = canvas.toDataURL("image/png");
+      
+      // Create a link element to download the image
+      const link = document.createElement("a");
+      link.href = imageData;
+      link.download = `${show.name.replace(/\s+/g, '_')}_TVTantrum.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Image downloaded!",
+        description: "Share this image on social media with your referral link to earn points!",
+      });
+    } catch (err) {
+      console.error("Image download failed:", err);
+      toast({
+        title: "Download failed",
+        description: "Could not create image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setImageDownloading(false);
+    }
   };
   
   // Handle native device sharing
@@ -156,63 +205,86 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           <DialogTitle>Share "{show.name}"</DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-col space-y-4 py-4">
-          {/* Show image */}
-          {show.imageUrl ? (
-            <div className="flex justify-center">
-              <img 
-                src={show.imageUrl} 
-                alt={show.name} 
-                className="h-48 object-contain rounded-md" 
-              />
-            </div>
-          ) : (
-            <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-md">
-              <i className="fas fa-tv text-gray-400 text-4xl"></i>
-            </div>
-          )}
-          
-          {/* Stimulation score */}
-          <div className="flex flex-col items-center space-y-2">
+        {/* Shareable image card - This will be captured for sharing */}
+        <div 
+          ref={shareCardRef} 
+          className="border rounded-lg p-5 bg-white mb-4 mt-2"
+        >
+          <div className="flex flex-col items-center space-y-3">
+            <h3 className="text-xl font-semibold text-center">{show.name}</h3>
+            
+            {show.imageUrl ? (
+              <div className="relative">
+                <img 
+                  src={show.imageUrl} 
+                  alt={show.name} 
+                  className="w-40 h-40 object-cover rounded-md" 
+                />
+                <div className="absolute bottom-2 right-2">
+                  <div className="bg-white rounded-full p-1 shadow-sm">
+                    <span className="text-xs font-bold text-primary">TV Tantrum</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded-md">
+                <i className="fas fa-tv text-gray-400 text-4xl"></i>
+              </div>
+            )}
+            
             <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-3 py-1 text-sm`}>
               {getStimulationLevelName(show.stimulationScore)} Stimulation
             </Badge>
             
-            <div className="h-2 w-full max-w-56 bg-gray-200 rounded-full overflow-hidden flex mt-1">
-              {[1, 2, 3, 4, 5].map((segment) => {
-                const color = 
-                  segment === 1 ? 'bg-green-500' : 
-                  segment === 2 ? 'bg-lime-500' : 
-                  segment === 3 ? 'bg-yellow-500' : 
-                  segment === 4 ? 'bg-orange-500' : 
-                  'bg-red-500';
-                
-                return (
-                  <div
-                    key={segment}
-                    className={`h-full w-1/5 ${segment <= show.stimulationScore ? color : 'bg-gray-200'}`}
-                  />
-                );
-              })}
+            <p className="text-sm text-center text-gray-600 max-w-full">
+              {getStimulationLevelText(show.stimulationScore).slice(0, 120)}...
+            </p>
+            
+            <div className="text-xs text-gray-500 font-medium mt-1">
+              {shortShareUrl}
             </div>
           </div>
-          
-          {/* Stimulation description */}
-          <p className="text-sm text-gray-600 text-center">
-            {getStimulationLevelText(show.stimulationScore)}
-          </p>
-          
-          {/* Share link input */}
-          <div className="flex items-center space-x-2">
-            <Input
-              value={shareUrl}
-              readOnly
-              className="flex-1"
-            />
-            <Button size="icon" onClick={handleCopy} variant="outline">
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
+        </div>
+        
+        {/* Download shareable image button */}
+        <div className="flex justify-center mb-4">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={handleDownloadImage}
+            disabled={imageDownloading}
+          >
+            {imageDownloading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Image...
+              </span>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Download Image for Social Media
+              </>
+            )}
+          </Button>
+        </div>
+        
+        <div className="text-center text-xs text-gray-500 px-2 mb-4">
+          Download this image to share on social media. Include your referral link in your post to earn points when others sign up!
+        </div>
+        
+        {/* Share link input */}
+        <div className="flex items-center space-x-2 mb-4">
+          <Input
+            value={shareUrl}
+            readOnly
+            className="flex-1"
+          />
+          <Button size="icon" onClick={handleCopy} variant="outline">
+            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          </Button>
         </div>
         
         {/* Social Media Sharing Buttons */}
