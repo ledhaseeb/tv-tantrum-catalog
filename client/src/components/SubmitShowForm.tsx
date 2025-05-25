@@ -71,15 +71,22 @@ export default function SubmitShowForm() {
   // API lookup for show name
   const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ['/api/lookup/show', searchQuery, searchSource],
-    queryFn: () => {
+    queryFn: async () => {
       if (!searchQuery || searchQuery.length < 2) return [];
       
+      // Use the correctly implemented endpoint in the backend
       let url = `/api/lookup/show?q=${encodeURIComponent(searchQuery)}`;
       if (searchSource) {
         url += `&source=${searchSource}`;
       }
       
-      return apiRequest<SearchResult[]>(url);
+      try {
+        const results = await apiRequest<SearchResult[]>(url);
+        return results || [];
+      } catch (error) {
+        console.error("Error searching for shows:", error);
+        return [];
+      }
     },
     enabled: searchQuery.length >= 2,
   });

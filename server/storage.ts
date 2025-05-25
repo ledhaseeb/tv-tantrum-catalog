@@ -130,6 +130,33 @@ export interface IStorage {
   getTopUsers(limit?: number): Promise<User[]>;
 }
 
+// Database Storage Implementation
+import { db } from "./db";
+import { users, type User, type InsertUser } from "@shared/schema";
+import { eq } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+  
+  // The rest of the database methods will be implemented as needed
+
+// Keep the MemStorage implementation for backward compatibility
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private tvShows: Map<number, TvShow>;
