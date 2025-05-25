@@ -411,6 +411,7 @@ export class DatabaseStorage implements IStorage {
       .where(like(showSubmissions.name, `%${query}%`))
       .limit(5);
   }
+}
 
 // Keep the MemStorage implementation for backward compatibility
 export class MemStorage implements IStorage {
