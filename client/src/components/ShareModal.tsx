@@ -46,12 +46,12 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
   
   // Generate the share URL with referral parameter if user is logged in
   const { user } = useAuth();
-  const shareUrl = user 
+  const shareUrl = user && user.id
     ? `${window.location.origin}/share/${show.id}?ref=${user.id}` 
     : `${window.location.origin}/share/${show.id}`;
     
   // Short version of the URL for display in the image
-  const shortShareUrl = `tvtantrum.app/s/${show.id}${user ? `?r=${user.id}` : ''}`;
+  const shortShareUrl = `tvtantrum.app/s/${show.id}${user && user.id ? `?r=${user.id}` : ''}`;
   
   // Social media share URLs
   const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
