@@ -132,12 +132,62 @@ export interface IStorage {
 
 // Database Storage Implementation
 import { db } from "./db";
-import { users, type User, type InsertUser } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { 
+  users, 
+  tvShows, 
+  tvShowReviews, 
+  showSubmissions,
+  type User, 
+  type InsertUser,
+  type ShowSubmission,
+  type InsertShowSubmission,
+  type TvShow
+} from "@shared/schema";
+import { eq, like, and, desc, sql } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
+  // Required methods to implement the IStorage interface
+  // These will help ensure the show submission form works properly
+  
+  // TV Shows methods
+  async getAllTvShows(): Promise<TvShow[]> {
+    return await db.select().from(tvShows);
+  }
+  
+  async getTvShowsByFilter(filters: any): Promise<TvShow[]> {
+    // Basic implementation for required interface method
+    let query = db.select().from(tvShows);
+    
+    // Add search filter if provided
+    if (filters.search) {
+      query = query.where(like(tvShows.name, `%${filters.search}%`));
+    }
+    
+    return await query;
+  }
+  
+  async addTvShow(show: any): Promise<TvShow> {
+    const [result] = await db.insert(tvShows).values(show).returning();
+    return result;
+  }
+  
+  async updateTvShow(id: number, show: any): Promise<TvShow | undefined> {
+    const [result] = await db.update(tvShows).set(show).where(eq(tvShows.id, id)).returning();
+    return result;
+  }
+  
+  async deleteTvShow(id: number): Promise<boolean> {
+    const result = await db.delete(tvShows).where(eq(tvShows.id, id));
+    return result.rowCount > 0;
+  }
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
   }
 
@@ -154,7 +204,95 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
-  // The rest of the database methods will be implemented as needed
+  async upsertUser(userData: Partial<User>): Promise<User> {
+    if (!userData.id) {
+      throw new Error("User ID is required for upsert operation");
+    }
+    
+    const existingUser = await this.getUser(userData.id);
+    
+    if (existingUser) {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          ...userData,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userData.id))
+        .returning();
+      return updatedUser;
+    } else {
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          id: userData.id,
+          email: userData.email || null,
+          firstName: userData.firstName || null,
+          lastName: userData.lastName || null,
+          profileImageUrl: userData.profileImageUrl || null,
+          username: userData.username || null,
+          isAdmin: userData.isAdmin || false,
+          country: userData.country || null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isApproved: userData.isApproved || false,
+          totalPoints: userData.totalPoints || 0,
+          lastLoginDate: userData.lastLoginDate || null,
+          profileBio: userData.profileBio || null,
+          referralCode: userData.referralCode || null
+        })
+        .returning();
+      return newUser;
+    }
+  }
+  
+  // TV Shows methods - implementing required methods
+  async getTvShowById(id: number): Promise<TvShow | undefined> {
+    const [show] = await db.select().from(tvShows).where(eq(tvShows.id, id));
+    return show || undefined;
+  }
+  
+  // Show submission methods
+  async addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission> {
+    const [result] = await db
+      .insert(showSubmissions)
+      .values(submission)
+      .returning();
+    return result;
+  }
+  
+  async getUserShowSubmissions(userId: string): Promise<ShowSubmission[]> {
+    return await db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.userId, userId))
+      .orderBy(desc(showSubmissions.createdAt));
+  }
+  
+  async getPendingShowSubmissions(): Promise<ShowSubmission[]> {
+    return await db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.status, 'pending'))
+      .orderBy(desc(showSubmissions.createdAt));
+  }
+  
+  async updateShowSubmissionStatus(id: number, status: string): Promise<ShowSubmission> {
+    const [result] = await db
+      .update(showSubmissions)
+      .set({ status })
+      .where(eq(showSubmissions.id, id))
+      .returning();
+    return result;
+  }
+  
+  async searchShowSubmissions(query: string): Promise<ShowSubmission[]> {
+    return await db
+      .select()
+      .from(showSubmissions)
+      .where(like(showSubmissions.name, `%${query}%`))
+      .limit(5);
+  }
 
 // Keep the MemStorage implementation for backward compatibility
 export class MemStorage implements IStorage {
@@ -1349,9 +1487,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-// For now, we're keeping the memory storage to maintain all current functionality
-// We'll implement the database storage once we've fixed the schema issues
-// import { DatabaseStorage } from './database-storage';
-
-// Using in-memory storage for development
-export const storage = new MemStorage();
+// Create an instance of the DatabaseStorage class to use with the database
+export const storage = new DatabaseStorage();

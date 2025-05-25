@@ -1,7 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 // Use database storage
-import { storage } from "./database-storage";
+import { storage } from "./storage";
 import { db, pool } from "./db";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";

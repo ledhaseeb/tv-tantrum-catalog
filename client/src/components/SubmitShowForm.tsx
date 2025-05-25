@@ -70,19 +70,38 @@ export default function SubmitShowForm() {
 
   // API lookup for show name
   const { data: searchResults, isLoading: searchLoading } = useQuery({
-    queryKey: ['/api/lookup/show', searchQuery, searchSource],
+    queryKey: ['/api/shows/search', searchQuery],
     queryFn: async () => {
       if (!searchQuery || searchQuery.length < 2) return [];
       
-      // Use the correctly implemented endpoint in the backend
-      let url = `/api/lookup/show?q=${encodeURIComponent(searchQuery)}`;
-      if (searchSource) {
-        url += `&source=${searchSource}`;
-      }
-      
       try {
-        const results = await apiRequest<SearchResult[]>(url);
-        return results || [];
+        // Search both shows in database and show submissions
+        const [dbShows, submissions] = await Promise.all([
+          // Search existing shows in database
+          apiRequest<SearchResult[]>(`/api/shows?search=${encodeURIComponent(searchQuery)}&limit=5`).then(shows => 
+            shows.map(show => ({
+              id: show.id.toString(),
+              name: show.name,
+              description: show.description,
+              imageUrl: show.imageUrl,
+              source: 'database',
+              releaseYear: show.releaseYear ? show.releaseYear.toString() : undefined
+            }))
+          ).catch(() => []),
+          
+          // Search existing show submissions
+          apiRequest<SearchResult[]>(`/api/show-submissions/search?q=${encodeURIComponent(searchQuery)}`).then(results => 
+            results.map(submission => ({
+              id: submission.id.toString(),
+              name: submission.name,
+              source: 'submission',
+              status: submission.status
+            }))
+          ).catch(() => [])
+        ]);
+        
+        // Combine results
+        return [...dbShows, ...submissions];
       } catch (error) {
         console.error("Error searching for shows:", error);
         return [];
@@ -92,10 +111,23 @@ export default function SubmitShowForm() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: (data: ShowSubmission) => apiRequest("/api/show-submissions", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: ShowSubmission) => {
+      // Create a properly formatted submission object with required fields
+      const submission = {
+        name: data.name,
+        platform: data.platform,
+        additionalNotes: data.additionalNotes || null,
+        userId: user?.id,
+        status: 'pending',
+        createdAt: new Date()
+      };
+      
+      // Use the correct endpoint with the correct format
+      return apiRequest("/api/show-submissions", {
+        method: "POST",
+        data: submission,
+      });
+    },
     onSuccess: () => {
       toast({
         title: "Show Submitted!",
