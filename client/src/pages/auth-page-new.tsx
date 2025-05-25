@@ -48,15 +48,22 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   const onSubmit = (data: LoginFormValues) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: (user) => {
         toast({
           title: "Login successful!",
           description: "Welcome back to TV Tantrum",
         });
         
-        // Manually redirect to dashboard after successful login
+        // Update localStorage with authentication data
+        localStorage.setItem('tvtantrum_auth', JSON.stringify({
+          isLoggedIn: true,
+          userId: user.id,
+          timestamp: new Date().toISOString()
+        }));
+        
+        // Force direct navigation to dashboard
         setTimeout(() => {
-          window.location.href = '/user-dashboard';
+          window.location.replace('/user-dashboard');
         }, 300);
         
         onSuccess();

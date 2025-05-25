@@ -41,7 +41,19 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Pre-Launch Routes */}
+        {/* Auth Page Route - Accessible even when not logged in */}
+        <Route path="/login">
+          <AuthPage />
+        </Route>
+        
+        {/* User Dashboard - Requires authentication */}
+        <Route path="/user-dashboard">
+          <ApprovedRoute>
+            <UserDashboard />
+          </ApprovedRoute>
+        </Route>
+        
+        {/* Main Application Routes */}
         <Route path="/">
           <LandingPage />
         </Route>
