@@ -54,6 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
   
+  // Check for stored authentication on mount
+  useEffect(() => {
+    if (hasStoredAuth()) {
+      console.log("Detected stored auth but no user, trying to refetch...");
+    } else {
+      console.log("Landing page loaded, cleared authentication data from localStorage");
+      localStorage.removeItem('tvtantrum_auth');
+    }
+  }, []);
+
   // Fetch current user data
   const {
     data: user,
@@ -63,9 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery<User | null, Error>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
+      if (hasStoredAuth()) {
+        console.log("Found valid stored auth, waiting for user data...");
+      }
+      
       try {
         const res = await fetch("/api/auth/user", {
-          credentials: "include"
+          credentials: "include",
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
         
         if (!res.ok) {
@@ -92,7 +110,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Refresh user data every 5 minutes
     refetchInterval: 5 * 60 * 1000,
     // Use credentials in fetch
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    // Don't refetch on mount
+    refetchOnMount: true
   });
   
   // Effect to manage authentication state
@@ -146,17 +166,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: (user: User) => {
+      console.log('Login successful, user:', user.id);
+      
       // Store authentication state in localStorage to maintain login across page refreshes
       localStorage.setItem('tvtantrum_auth', JSON.stringify({
         isLoggedIn: true,
+        userId: user.id,
         timestamp: new Date().toISOString()
       }));
       
       // Update React Query cache with user data
       queryClient.setQueryData(["/api/auth/user"], user);
       
-      // Always refetch to ensure we have the latest user data
-      refetch();
+      // Force a hard page reload to ensure session cookie is properly applied
+      window.location.href = '/'; 
     },
     onError: (error: Error) => {
       // Clear any stale auth data

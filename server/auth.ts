@@ -77,15 +77,16 @@ export function setupAuth(app: Express) {
   }
 
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'tv-tantrum-development-secret',
     resave: true,
     saveUninitialized: true,
     store: sessionStore,
     cookie: {
-      secure: false, // Set to false for development environment
+      secure: false, // Set to false to work in development environment
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      path: '/'
     }
   };
 
