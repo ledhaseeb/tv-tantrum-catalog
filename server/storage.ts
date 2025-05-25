@@ -266,6 +266,73 @@ export class DatabaseStorage implements IStorage {
     return this.addShowSubmission(submission);
   }
   
+  // Research summaries methods
+  async getResearchSummaries(): Promise<any[]> {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM research_summaries ORDER BY created_at DESC`
+      );
+      return result.rows;
+    } catch (error) {
+      console.error("Error getting research summaries:", error);
+      return [];
+    }
+  }
+  
+  async getResearchSummary(id: number): Promise<any | undefined> {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM research_summaries WHERE id = $1`,
+        [id]
+      );
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error("Error getting research summary:", error);
+      return undefined;
+    }
+  }
+  
+  async markResearchAsRead(userId: string, researchId: number): Promise<any> {
+    try {
+      const result = await pool.query(
+        `INSERT INTO user_read_research (user_id, research_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, research_id) DO NOTHING
+         RETURNING *`,
+        [userId, researchId]
+      );
+      
+      // Award points if this is the first time reading this research
+      if (result.rowCount > 0) {
+        await this.awardPoints(
+          userId, 
+          5, 
+          'research_read', 
+          `Read a research summary (ID: ${researchId})`
+        );
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error marking research as read:", error);
+      return null;
+    }
+  }
+  
+  async hasUserReadResearch(userId: string, researchId: number): Promise<boolean> {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM user_read_research 
+         WHERE user_id = $1 AND research_id = $2`,
+        [userId, researchId]
+      );
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error checking if user read research:", error);
+      return false;
+    }
+  }
+  
   // Points and gamification system
   async getUserPoints(userId: string): Promise<{ 
     total: number; 
