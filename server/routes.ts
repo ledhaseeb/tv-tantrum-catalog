@@ -9,6 +9,7 @@ import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
+import { trackReferral, getUserReferrals } from "./referral-system";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";

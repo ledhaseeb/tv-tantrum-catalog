@@ -1,20 +1,19 @@
 import { db } from "./db";
 import { userReferrals, users, userPointsHistory } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 const REFERRAL_POINTS = 10; // Points awarded for successful referrals
 
 /**
  * Track a referral when a user registers via a shared link
  * @param referrerId The ID of the user who shared the link
- * @param referredUserId The ID of the newly registered user
- * @param tvShowId The ID of the show that was shared
+ * @param referredId The ID of the newly registered user
  */
-export async function trackReferral(referrerId: string, referredUserId: string, tvShowId: number) {
+export async function trackReferral(referrerId: string, referredId: string) {
   try {
     // Verify both users exist
     const [referrer] = await db.select().from(users).where(eq(users.id, referrerId));
-    const [referred] = await db.select().from(users).where(eq(users.id, referredUserId));
+    const [referred] = await db.select().from(users).where(eq(users.id, referredId));
     
     if (!referrer || !referred) {
       console.error("Referral failed: One or both users not found");
@@ -28,7 +27,7 @@ export async function trackReferral(referrerId: string, referredUserId: string, 
       .where(
         and(
           eq(userReferrals.referrerId, referrerId),
-          eq(userReferrals.referredUserId, referredUserId)
+          eq(userReferrals.referredId, referredId)
         )
       );
     
@@ -42,9 +41,7 @@ export async function trackReferral(referrerId: string, referredUserId: string, 
       .insert(userReferrals)
       .values({
         referrerId,
-        referredUserId,
-        tvShowId,
-        status: "completed",
+        referredId
       })
       .returning();
     
@@ -54,7 +51,7 @@ export async function trackReferral(referrerId: string, referredUserId: string, 
     }
     
     // Award points to both users
-    await awardReferralPoints(referrerId, referredUserId);
+    await awardReferralPoints(referrerId, referredId);
     
     return referral;
   } catch (error) {
@@ -66,15 +63,15 @@ export async function trackReferral(referrerId: string, referredUserId: string, 
 /**
  * Award points to both the referrer and the referred user
  */
-async function awardReferralPoints(referrerId: string, referredUserId: string) {
+async function awardReferralPoints(referrerId: string, referredId: string) {
   try {
     // Award points to referrer
     await db.transaction(async (tx) => {
-      // Add points to referrer's total
+      // Add points to referrer's total using SQL expression
       await tx
         .update(users)
         .set({
-          totalPoints: users.totalPoints + REFERRAL_POINTS,
+          totalPoints: sql`${users.totalPoints} + ${REFERRAL_POINTS}`
         })
         .where(eq(users.id, referrerId));
       
@@ -82,28 +79,28 @@ async function awardReferralPoints(referrerId: string, referredUserId: string) {
       await tx
         .insert(userPointsHistory)
         .values({
-          userId: referrerId,
+          user_id: referrerId,
           points: REFERRAL_POINTS,
-          activity: "referral",
-          description: "Points earned for referring a new user",
+          activity_type: "referral",
+          description: "Points earned for referring a new user"
         });
       
       // Add points to referred user's total
       await tx
         .update(users)
         .set({
-          totalPoints: users.totalPoints + REFERRAL_POINTS,
+          totalPoints: sql`${users.totalPoints} + ${REFERRAL_POINTS}`
         })
-        .where(eq(users.id, referredUserId));
+        .where(eq(users.id, referredId));
       
       // Record points history for referred user
       await tx
         .insert(userPointsHistory)
         .values({
-          userId: referredUserId,
+          user_id: referredId,
           points: REFERRAL_POINTS,
-          activity: "signup",
-          description: "Welcome bonus for signing up via referral",
+          activity_type: "signup",
+          description: "Welcome bonus for signing up via referral"
         });
     });
     
@@ -123,18 +120,16 @@ export async function getUserReferrals(userId: string) {
     const referrals = await db
       .select({
         id: userReferrals.id,
-        referredUserId: userReferrals.referredUserId,
-        tvShowId: userReferrals.tvShowId,
+        referredId: userReferrals.referredId,
         createdAt: userReferrals.createdAt,
-        status: userReferrals.status,
         // Join to get referred user details
         referredUser: {
           username: users.username,
-          profileImageUrl: users.profileImageUrl,
-        },
+          profileImageUrl: users.profileImageUrl
+        }
       })
       .from(userReferrals)
-      .leftJoin(users, eq(userReferrals.referredUserId, users.id))
+      .leftJoin(users, eq(userReferrals.referredId, users.id))
       .where(eq(userReferrals.referrerId, userId));
     
     return referrals;
