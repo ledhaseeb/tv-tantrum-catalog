@@ -314,14 +314,10 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           </div>
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2 mt-2">
+        <DialogFooter className="flex justify-center mt-2">
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button onClick={handleNativeShare} className="mt-2 sm:mt-0">
-            <Share2 className="mr-2 h-4 w-4" />
-            Share
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
