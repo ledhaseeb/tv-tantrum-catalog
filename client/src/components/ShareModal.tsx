@@ -228,7 +228,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
             )}
             
             <div className="mt-2 w-full flex flex-col items-center">
-              <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-2 py-0.5 text-sm mx-auto inline-flex items-center justify-center rounded-full`}>
+              <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-3 py-1 text-sm mx-auto inline-flex items-center justify-center rounded-full`}>
                 {getStimulationLevelName(show.stimulationScore)} Stimulation
               </Badge>
               
