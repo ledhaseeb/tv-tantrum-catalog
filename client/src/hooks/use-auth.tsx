@@ -178,8 +178,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Update React Query cache with user data
       queryClient.setQueryData(["/api/auth/user"], user);
       
-      // Force a hard page reload to ensure session cookie is properly applied
-      window.location.href = '/'; 
+      // Navigate to user dashboard without refreshing the page
+      setTimeout(() => {
+        window.location.href = '/user-dashboard';
+      }, 500);
     },
     onError: (error: Error) => {
       // Clear any stale auth data
