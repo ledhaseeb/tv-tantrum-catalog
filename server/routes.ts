@@ -1,7 +1,8 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-// Use database storage
-import { storage } from "./database-storage";
+// Use storage implementation
+import { storage } from "./storage";
+import * as showSubmissionDB from "./database-storage";
 import { db, pool } from "./db";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
@@ -12,8 +13,10 @@ import {
   insertTvShowReviewSchema, 
   insertFavoriteSchema, 
   insertShowSubmissionSchema,
-  TvShowGitHub 
+  TvShowGitHub,
+  showSubmissions
 } from "@shared/schema";
+import { and, desc, eq, like, sql } from "drizzle-orm";
 import { trackReferral, getUserReferrals } from "./referral-system";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
@@ -2837,14 +2840,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate the submission data
       const submissionData = insertShowSubmissionSchema.parse({
         ...req.body,
-        userId: user.id
+        userId: user.id,
+        createdBy: user.username || 'Anonymous User'
       });
       
-      // Create the submission
-      const submission = await storage.createShowSubmission(submissionData);
+      // Create the submission using direct database access
+      const [submission] = await db
+        .insert(showSubmissions)
+        .values(submissionData)
+        .returning();
       
-      // Award points for the submission
-      await storage.awardPoints(user.id, 5, 'show_submission', `Submitted show: ${submission.name}`);
+      // Award points for the submission if available
+      if (storage.awardPoints) {
+        await storage.awardPoints(
+          user.id, 
+          5, 
+          'show_submission', 
+          `Submitted show: ${submission.name}`
+        );
+      }
       
       res.status(201).json(submission);
     } catch (error) {
@@ -2863,8 +2877,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin only - update submission status
   app.put("/api/show-submissions/:id/status", requireAdmin, async (req: Request, res: Response) => {
     try {
+      const user = req.user;
       const id = parseInt(req.params.id);
-      const { status, adminNotes } = req.body;
+      const { status, adminNotes, approvedToTvShowId } = req.body;
       
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid submission ID" });
@@ -2874,10 +2889,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', or 'rejected'" });
       }
       
-      const submission = await storage.updateShowSubmissionStatus(id, status, adminNotes);
+      // Get the submission first to check if it exists
+      const [existingSubmission] = await db
+        .select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.id, id));
+        
+      if (!existingSubmission) {
+        return res.status(404).json({ message: "Show submission not found" });
+      }
+      
+      // Update the submission status
+      const updateData: any = {
+        status,
+        updatedAt: new Date(),
+        reviewedAt: new Date(),
+        reviewedBy: user?.username
+      };
+      
+      // Add admin notes if provided
+      if (adminNotes) {
+        updateData.additionalNotes = adminNotes;
+      }
+      
+      // If approved and we have a TV show ID to link to, add it
+      if (status === "approved" && approvedToTvShowId) {
+        updateData.approvedToTvShowId = approvedToTvShowId;
+      }
+      
+      const [submission] = await db
+        .update(showSubmissions)
+        .set(updateData)
+        .where(eq(showSubmissions.id, id))
+        .returning();
       
       // If approved, award extra points to the user who submitted it
-      if (status === "approved" && submission) {
+      if (status === "approved" && submission && storage.awardPoints) {
         await storage.awardPoints(
           submission.userId,
           10,
@@ -2925,9 +2972,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // If admin, get all submissions. Otherwise, only get the user's submissions
-      const submissions = user.isAdmin 
-        ? await storage.getAllShowSubmissions()
-        : await storage.getUserShowSubmissions(user.id);
+      let submissions;
+      if (user.isAdmin) {
+        submissions = await db
+          .select()
+          .from(showSubmissions)
+          .orderBy(desc(showSubmissions.createdAt));
+      } else {
+        submissions = await db
+          .select()
+          .from(showSubmissions)
+          .where(eq(showSubmissions.userId, user.id))
+          .orderBy(desc(showSubmissions.createdAt));
+      }
       
       res.json(submissions);
     } catch (error) {
@@ -2945,7 +3002,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      const submissions = await storage.searchShowSubmissions(query);
+      // Search directly using database
+      const submissions = await db
+        .select()
+        .from(showSubmissions)
+        .where(like(showSubmissions.name, `%${query}%`))
+        .limit(5);
+      
       res.json(submissions);
     } catch (error) {
       console.error("Error searching show submissions:", error);
