@@ -2840,8 +2840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate the submission data
       const submissionData = insertShowSubmissionSchema.parse({
         ...req.body,
-        userId: user.id,
-        createdBy: user.username || 'Anonymous User'
+        userId: user.id
       });
       
       // Create the submission using direct database access
@@ -2856,7 +2855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           user.id, 
           5, 
           'show_submission', 
-          `Submitted show: ${submission.name}`
+          `Submitted show: ${submission.showName}`
         );
       }
       

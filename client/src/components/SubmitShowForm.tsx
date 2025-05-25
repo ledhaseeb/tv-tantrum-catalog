@@ -47,7 +47,6 @@ const formSchema = z.object({
   showName: z.string().min(2, "Show name must be at least 2 characters"),
   description: z.string().optional(),
   suggestedAgeRange: z.string().optional(),
-  adminNotes: z.string().optional(),
 });
 
 type ShowSubmission = z.infer<typeof formSchema>;
@@ -66,7 +65,6 @@ export default function SubmitShowForm() {
       showName: "",
       description: "",
       suggestedAgeRange: "",
-      adminNotes: "",
     },
   });
 
@@ -249,7 +247,7 @@ export default function SubmitShowForm() {
             {/* Form Fields */}
             <FormField
               control={form.control}
-              name="name"
+              name="showName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Show Name</FormLabel>
@@ -263,12 +261,15 @@ export default function SubmitShowForm() {
 
             <FormField
               control={form.control}
-              name="platform"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Where to Watch</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Netflix, YouTube, PBS Kids, etc." />
+                    <Textarea 
+                      {...field} 
+                      placeholder="Describe the show and where to watch it (Netflix, YouTube, PBS Kids, etc.)"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -277,14 +278,14 @@ export default function SubmitShowForm() {
 
             <FormField
               control={form.control}
-              name="additionalNotes"
+              name="suggestedAgeRange"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Additional Notes (optional)</FormLabel>
+                  <FormLabel>Suggested Age Range (optional)</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Input 
                       {...field} 
-                      placeholder="Any other information like video sample links or reasons you'd like to see this show added"
+                      placeholder="e.g., 3-5 years, 8+, teens, etc."
                     />
                   </FormControl>
                   <FormMessage />
