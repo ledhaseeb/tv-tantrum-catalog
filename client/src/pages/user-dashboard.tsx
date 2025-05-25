@@ -328,6 +328,9 @@ const UserDashboard = () => {
         </TabsContent>
 
         <TabsContent value="content" className="space-y-6">
+          {/* Show Submission Form */}
+          <SubmitShowForm />
+          
           <Card>
             <CardHeader>
               <CardTitle>Your Reviews</CardTitle>

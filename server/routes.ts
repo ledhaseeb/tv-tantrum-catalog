@@ -8,7 +8,12 @@ import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
+import { 
+  insertTvShowReviewSchema, 
+  insertFavoriteSchema, 
+  insertShowSubmissionSchema,
+  TvShowGitHub 
+} from "@shared/schema";
 import { trackReferral, getUserReferrals } from "./referral-system";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
@@ -23,6 +28,46 @@ import { lookupRouter } from "./lookup-api";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware functions
+  const requireLogin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "You must be logged in to access this resource" });
+    }
+    // Add user to request
+    if (!req.user) {
+      storage.getUser(req.session.userId)
+        .then(user => {
+          req.user = user || undefined;
+          next();
+        })
+        .catch(err => {
+          console.error("Error fetching user in middleware:", err);
+          return res.status(500).json({ message: "Internal server error" });
+        });
+    } else {
+      next();
+    }
+  };
+  
+  const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "You must be logged in to access this resource" });
+    }
+    
+    storage.getUser(req.session.userId)
+      .then(user => {
+        if (!user?.isAdmin) {
+          return res.status(403).json({ message: "Admin access required" });
+        }
+        req.user = user;
+        next();
+      })
+      .catch(err => {
+        console.error("Error fetching user in admin middleware:", err);
+        return res.status(500).json({ message: "Internal server error" });
+      });
+  };
+  
   // Add health check endpoint
   app.get('/api/health', (_req, res) => {
     res.status(200).send('OK');
@@ -2781,103 +2826,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Show Submissions
-  app.post("/api/show-submissions", async (req: Request, res: Response) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to submit shows" });
-      }
-      
-      const submission = await storage.addShowSubmission({
-        ...req.body,
-        userId
-      });
-      res.json(submission);
-    } catch (error) {
-      console.error("Error submitting show:", error);
-      res.status(500).json({ message: "Failed to submit show" });
-    }
-  });
-  
-  app.get("/api/show-submissions", async (req: Request, res: Response) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to view submissions" });
-      }
-      
-      const user = await storage.getUser(userId);
-      
-      // Admin can see all pending submissions
-      if (user?.isAdmin) {
-        const submissions = await storage.getPendingShowSubmissions();
-        res.json(submissions);
-      } else {
-        // Regular users only see their own submissions
-        const submissions = await storage.getUserShowSubmissions(userId);
-        res.json(submissions);
-      }
-    } catch (error) {
-      console.error("Error fetching show submissions:", error);
-      res.status(500).json({ message: "Failed to fetch show submissions" });
-    }
-  });
-  
-  // Admin only - update submission status
-  app.put("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to update submission status" });
-      }
-      
-      const user = await storage.getUser(userId);
-      
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Only administrators can update submission status" });
-      }
-      
-      const id = parseInt(req.params.id);
-      const { status } = req.body;
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid submission ID" });
-      }
-      
-      if (!["pending", "approved", "rejected"].includes(status)) {
-        return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', or 'rejected'" });
-      }
-      
-      const submission = await storage.updateShowSubmissionStatus(id, status);
-      res.json(submission);
-    } catch (error) {
-      console.error("Error updating submission status:", error);
-      res.status(500).json({ message: "Failed to update submission status" });
-    }
-  });
-  
-  // User Leaderboard
-  app.get("/api/leaderboard", async (req: Request, res: Response) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      const topUsers = await storage.getTopUsers(limit);
-      
-      // Return only necessary user info (username, points)
-      const leaderboard = topUsers.map(user => ({
-        id: user.id,
-        username: user.username,
-        totalPoints: user.totalPoints || 0
-      }));
-      
-      res.json(leaderboard);
-    } catch (error) {
-      console.error("Error fetching leaderboard:", error);
-      res.status(500).json({ message: "Failed to fetch leaderboard" });
-    }
-  });
-  
-  // Show submission endpoints
-  // Create a new show submission
   app.post("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
     try {
       const user = req.user;
@@ -2911,6 +2859,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create show submission" });
     }
   });
+  
+  // Admin only - update submission status
+  app.put("/api/show-submissions/:id/status", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, adminNotes } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid submission ID" });
+      }
+      
+      if (!["pending", "approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'pending', 'approved', or 'rejected'" });
+      }
+      
+      const submission = await storage.updateShowSubmissionStatus(id, status, adminNotes);
+      
+      // If approved, award extra points to the user who submitted it
+      if (status === "approved" && submission) {
+        await storage.awardPoints(
+          submission.userId,
+          10,
+          'show_approval',
+          `Your show submission "${submission.name}" was approved!`
+        );
+      }
+      
+      res.json(submission);
+    } catch (error) {
+      console.error("Error updating submission status:", error);
+      res.status(500).json({ message: "Failed to update submission status" });
+    }
+  });
+  
+  // User Leaderboard
+  app.get("/api/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const topUsers = await storage.getTopUsers(limit);
+      
+      // Return only necessary user info (username, points)
+      const leaderboard = topUsers.map(user => ({
+        id: user.id,
+        username: user.username,
+        totalPoints: user.totalPoints || 0
+      }));
+      
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+  
+  /* This is a duplicate endpoint, removed */
 
   // Get all show submissions for the current user
   app.get("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
