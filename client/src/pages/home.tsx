@@ -76,19 +76,31 @@ export default function Home() {
   
   // Check favorite status when featured show is loaded and user is logged in
   useEffect(() => {
+    // Reset favorite status when user logs out
+    if (!user) {
+      setIsFeaturedShowFavorite(false);
+      return;
+    }
+    
+    // Only check favorite status if featured show exists and user is logged in
     if (featuredShow && user) {
       const checkFavoriteStatus = async () => {
         try {
+          // Safe check to ensure featuredShow.id exists
+          if (!featuredShow.id) return;
+          
           const isFav = await isFavorite(featuredShow.id);
           setIsFeaturedShowFavorite(isFav);
         } catch (error) {
           console.error("Error checking favorite status:", error);
+          // Set to false on error to be safe
+          setIsFeaturedShowFavorite(false);
         }
       };
       
       checkFavoriteStatus();
     }
-  }, [featuredShow, user]);
+  }, [featuredShow, user, isFavorite]);
   
   // Helper function to check if property exists with different case formats
   const getShowProperty = (show: any, propertyNames: string[]) => {

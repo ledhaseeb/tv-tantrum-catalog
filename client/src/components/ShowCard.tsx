@@ -32,16 +32,34 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   
   // Check if show is in favorites when component mounts or user changes
   useEffect(() => {
+    // Reset favorite status when user logs out
+    if (!user) {
+      setIsFavorite(false);
+      return;
+    }
+    
     const checkFavoriteStatus = async () => {
       if (user && show.id) {
         try {
-          const isFav = await fetch(`/api/favorites/${show.id}`)
-            .then(res => res.json())
-            .then(data => data.isFavorite);
-          setIsFavorite(isFav);
+          const res = await fetch(`/api/favorites/${show.id}`, {
+            credentials: "include" // Ensure cookies are sent for authentication
+          });
+          
+          if (!res.ok) {
+            // If request failed, set to false and return
+            setIsFavorite(false);
+            return;
+          }
+          
+          const data = await res.json();
+          setIsFavorite(!!data.isFavorite); // Convert to boolean with !!
         } catch (error) {
           console.error("Failed to check favorite status:", error);
+          setIsFavorite(false); // Set to false on error to be safe
         }
+      } else {
+        // If no user or no show.id, ensure favorite is false
+        setIsFavorite(false);
       }
     };
     
