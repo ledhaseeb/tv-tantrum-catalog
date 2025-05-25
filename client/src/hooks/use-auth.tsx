@@ -153,7 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }));
       
       // Update React Query cache with user data
-      queryClient.setQueryData(["/api/user"], user);
+      queryClient.setQueryData(["/api/auth/user"], user);
+      
+      // Always refetch to ensure we have the latest user data
+      refetch();
     },
     onError: (error: Error) => {
       // Clear any stale auth data
@@ -195,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }));
       
       // Update React Query cache with user data
-      queryClient.setQueryData(["/api/user"], user);
+      queryClient.setQueryData(["/api/auth/user"], user);
       
       // Trigger a refetch to ensure we have the latest user data
       refetch();
@@ -230,7 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('tvtantrum_auth');
       
       // Update React Query cache
-      queryClient.setQueryData(["/api/user"], null);
+      queryClient.setQueryData(["/api/auth/user"], null);
       
       // Invalidate any query keys that depend on user authentication
       queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
