@@ -29,12 +29,12 @@ import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-pr
 
 export interface IStorage {
   // User methods
-  getUser(id: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
-  updateUserApproval(userId: string, isApproved: boolean): Promise<User | undefined>;
+  updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined>;
   
   // TV Shows methods
   getAllTvShows(): Promise<TvShow[]>;
@@ -70,11 +70,11 @@ export interface IStorage {
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
 
   // Favorites methods
-  addFavorite(userId: string, tvShowId: number): Promise<Favorite>;
-  removeFavorite(userId: string, tvShowId: number): Promise<boolean>;
-  getUserFavorites(userId: string): Promise<TvShow[]>;
-  isFavorite(userId: string, tvShowId: number): Promise<boolean>;
-  getSimilarShows(userId: string, limit?: number): Promise<TvShow[]>;
+  addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
+  removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
+  getUserFavorites(userId: number): Promise<TvShow[]>;
+  isFavorite(userId: number, tvShowId: number): Promise<boolean>;
+  getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -441,7 +441,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(tvShows.id, tvShowId));
     }
   }
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     try {
       const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
       
@@ -640,7 +640,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async updateUserApproval(userId: string, isApproved: boolean): Promise<User | undefined> {
+  async updateUserApproval(userId: number, isApproved: boolean): Promise<User | undefined> {
     const client = await pool.connect();
     
     try {
@@ -1723,7 +1723,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Favorites methods
-  async addFavorite(userId: string, tvShowId: number): Promise<Favorite> {
+  async addFavorite(userId: number, tvShowId: number): Promise<Favorite> {
     // Check if the favorite already exists
     const [existingFavorite] = await db
       .select()
@@ -1751,7 +1751,7 @@ export class DatabaseStorage implements IStorage {
     return favorite;
   }
 
-  async removeFavorite(userId: string, tvShowId: number): Promise<boolean> {
+  async removeFavorite(userId: number, tvShowId: number): Promise<boolean> {
     const result = await db
       .delete(favorites)
       .where(and(
@@ -1762,7 +1762,7 @@ export class DatabaseStorage implements IStorage {
     return result.count > 0;
   }
 
-  async getUserFavorites(userId: string): Promise<TvShow[]> {
+  async getUserFavorites(userId: number): Promise<TvShow[]> {
     const favoriteShows = await db
       .select({
         show: tvShows,
@@ -1775,7 +1775,7 @@ export class DatabaseStorage implements IStorage {
     return favoriteShows.map(item => item.show);
   }
 
-  async isFavorite(userId: string, tvShowId: number): Promise<boolean> {
+  async isFavorite(userId: number, tvShowId: number): Promise<boolean> {
     const [favorite] = await db
       .select()
       .from(favorites)
@@ -1787,7 +1787,7 @@ export class DatabaseStorage implements IStorage {
     return !!favorite;
   }
 
-  async getSimilarShows(userId: string, limit: number = 5): Promise<TvShow[]> {
+  async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
     // Get user's favorite shows
     const userFavorites = await this.getUserFavorites(userId);
     
@@ -1871,7 +1871,7 @@ export class DatabaseStorage implements IStorage {
   // Gamification Methods
   // -------------------------------------------------------------------------
   
-  async getUserPoints(userId: string): Promise<{ 
+  async getUserPoints(userId: number): Promise<{ 
     total: number; 
     breakdown: {
       reviews: number;
@@ -1967,7 +1967,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async getUserPointsHistory(userId: string): Promise<any[]> {
+  async getUserPointsHistory(userId: number): Promise<any[]> {
     try {
       const history = await db
         .select()

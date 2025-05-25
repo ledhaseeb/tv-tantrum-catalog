@@ -89,28 +89,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Auth routes - using original custom authentication system
-  app.get('/api/auth/user', async (req, res) => {
+  app.get('/api/auth/user', (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
-    try {
-      // Get the full user data from database to ensure we have the most up-to-date information
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
-      }
-      
-      // Don't include sensitive data like password
-      const { password, ...safeUser } = user;
-      
-      res.json(safeUser);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ message: "Failed to fetch user data" });
-    }
+    res.json(req.user);
   });
   
   // Debug endpoint to check session info
@@ -158,9 +141,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user!.id;
       
-      // Use userId directly as a string without parsing to number
-      // The schema defines it as text type
-      const parsedUserId = userId;
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
       
       // Get user data directly from database to ensure we have the correct total_points
       const { pool } = await import('./db');
@@ -267,8 +249,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Processing review points for review ID ${review.id}`);
             
             try {
-              // Use userId directly as a string
-              const parsedUserId = userId;
+              // Convert userId to integer for database operations
+              const parsedUserId = parseInt(userId);
               
               // Get the proper show name from the TV shows table
               let showName = review.tvShowName || review.showName;

@@ -48,22 +48,11 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   const onSubmit = (data: LoginFormValues) => {
     loginMutation.mutate(data, {
-      onSuccess: (user) => {
+      onSuccess: () => {
         toast({
           title: "Login successful!",
           description: "Welcome back to TV Tantrum",
         });
-        
-        // Update localStorage with authentication data
-        localStorage.setItem('tvtantrum_auth', JSON.stringify({
-          isLoggedIn: true,
-          userId: user.id,
-          timestamp: new Date().toISOString()
-        }));
-        
-        // The actual navigation will be handled by the useAuth hook
-        // No need to redirect here as it would cause a conflict
-        
         onSuccess();
       },
     });

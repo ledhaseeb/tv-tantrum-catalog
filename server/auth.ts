@@ -22,7 +22,7 @@ declare global {
   namespace Express {
     // Define what fields from the User schema should be available in req.user
     interface User {
-      id: string;
+      id: number;
       email: string;
       username: string | null;
       isAdmin: boolean | null;
@@ -77,17 +77,14 @@ export function setupAuth(app: Express) {
   }
 
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || 'tv-tantrum-development-secret',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    name: 'tvtantrum_session',
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Only secure in production
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/'
+      httpOnly: true
     }
   };
 
@@ -149,12 +146,9 @@ export function setupAuth(app: Express) {
     done(null, user.id);
   });
 
-  passport.deserializeUser(async (id: string | number, done) => {
+  passport.deserializeUser(async (id: number, done) => {
     try {
-      // Convert id to string if it's a number to match database schema
-      const userId = typeof id === 'number' ? id.toString() : id;
-      
-      const user = await storage.getUser(userId);
+      const user = await storage.getUser(id);
       if (!user) {
         return done(null, false);
       }
@@ -303,7 +297,7 @@ export function setupAuth(app: Express) {
   });
   
   // Helper function to award login points (once per day)
-  async function awardLoginPoints(userId: string) {
+  async function awardLoginPoints(userId: number) {
     try {
       console.log(`Checking login rewards for user ID: ${userId}`);
       
@@ -400,17 +394,10 @@ export function setupAuth(app: Express) {
     });
   });
 
-  // Fixed API endpoint to get current user's information
-  app.get("/api/auth/user", (req, res) => {
-    console.log("Checking auth - Session ID:", req.sessionID);
-    console.log("Checking auth - isAuthenticated:", req.isAuthenticated());
-    console.log("Checking auth - User:", req.user ? `ID: ${req.user.id}` : "No user in session");
-    
+  app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
-    // Return the authenticated user
     res.json(req.user);
   });
   

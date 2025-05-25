@@ -19,7 +19,6 @@ import PreLaunchFAQ from "@/pages/pre-launch-faq";
 import TokenEntryPage from "@/pages/token-entry";
 import RegistrationPendingPage from "@/pages/registration-pending";
 import UserDashboard from "@/pages/user-dashboard";
-
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
@@ -42,21 +41,7 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Auth Page Route - Accessible even when not logged in */}
-        <Route path="/login">
-          <AuthPage />
-        </Route>
-        
-        {/* User Dashboard - Requires authentication */}
-        <Route path="/user-dashboard">
-          <ApprovedRoute>
-            <UserDashboard />
-          </ApprovedRoute>
-        </Route>
-        
-
-        
-        {/* Main Application Routes */}
+        {/* Pre-Launch Routes */}
         <Route path="/">
           <LandingPage />
         </Route>

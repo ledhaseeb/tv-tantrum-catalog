@@ -54,16 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  // Check for stored authentication on mount
-  useEffect(() => {
-    if (hasStoredAuth()) {
-      console.log("Detected stored auth but no user, trying to refetch...");
-    } else {
-      console.log("Landing page loaded, cleared authentication data from localStorage");
-      localStorage.removeItem('tvtantrum_auth');
-    }
-  }, []);
-
   // Fetch current user data
   const {
     data: user,
@@ -71,34 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     refetch
   } = useQuery<User | null, Error>({
-    queryKey: ["/api/auth/user"],
-    queryFn: async () => {
-      if (hasStoredAuth()) {
-        console.log("Found valid stored auth, waiting for user data...");
-      }
-      
-      try {
-        const res = await fetch("/api/auth/user", {
-          credentials: "include",
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (!res.ok) {
-          if (res.status === 401) {
-            return null;
-          }
-          throw new Error("Failed to fetch user");
-        }
-        
-        return await res.json();
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        return null;
-      }
-    },
+    queryKey: ["/api/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     // This ensures we never have undefined, only null for unauthenticated users
     select: (data) => data ?? null,
     // Initialize with null (not authenticated)
@@ -110,9 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Refresh user data every 5 minutes
     refetchInterval: 5 * 60 * 1000,
     // Use credentials in fetch
-    refetchOnWindowFocus: true,
-    // Don't refetch on mount
-    refetchOnMount: true
+    refetchOnWindowFocus: true
   });
   
   // Effect to manage authentication state
@@ -166,22 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: (user: User) => {
-      console.log('Login successful, user:', user.id);
-      
       // Store authentication state in localStorage to maintain login across page refreshes
       localStorage.setItem('tvtantrum_auth', JSON.stringify({
         isLoggedIn: true,
-        userId: user.id,
         timestamp: new Date().toISOString()
       }));
       
       // Update React Query cache with user data
-      queryClient.setQueryData(["/api/auth/user"], user);
-      
-      // Navigate to home page after login success
-      setTimeout(() => {
-        window.location.href = '/home';
-      }, 500);
+      queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
       // Clear any stale auth data
@@ -223,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }));
       
       // Update React Query cache with user data
-      queryClient.setQueryData(["/api/auth/user"], user);
+      queryClient.setQueryData(["/api/user"], user);
       
       // Trigger a refetch to ensure we have the latest user data
       refetch();
@@ -258,7 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('tvtantrum_auth');
       
       // Update React Query cache
-      queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.setQueryData(["/api/user"], null);
       
       // Invalidate any query keys that depend on user authentication
       queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
