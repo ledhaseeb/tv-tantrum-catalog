@@ -210,38 +210,35 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           ref={shareCardRef} 
           className="border rounded-lg p-5 bg-white mb-4 mt-2"
         >
-          <div className="flex flex-col items-center space-y-3">
-            <h3 className="text-xl font-semibold text-center">{show.name}</h3>
+          <div className="flex flex-col items-center space-y-4">
+            <h3 className="text-2xl font-semibold text-center">{show.name}</h3>
             
             {show.imageUrl ? (
-              <div className="relative">
+              <div>
                 <img 
                   src={show.imageUrl} 
                   alt={show.name} 
-                  className="w-40 h-40 object-cover rounded-md" 
+                  className="w-64 object-contain rounded-md" 
                 />
-                <div className="absolute bottom-2 right-2">
-                  <div className="bg-white rounded-full p-1 shadow-sm">
-                    <span className="text-xs font-bold text-primary">TV Tantrum</span>
-                  </div>
-                </div>
               </div>
             ) : (
-              <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded-md">
+              <div className="w-64 h-64 bg-gray-200 flex items-center justify-center rounded-md">
                 <i className="fas fa-tv text-gray-400 text-4xl"></i>
               </div>
             )}
             
-            <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-3 py-1 text-sm`}>
-              {getStimulationLevelName(show.stimulationScore)} Stimulation
-            </Badge>
+            <div className="mt-2 w-full">
+              <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-4 py-1.5 text-base mx-auto flex justify-center`}>
+                {getStimulationLevelName(show.stimulationScore)} Stimulation
+              </Badge>
+            </div>
             
-            <p className="text-sm text-center text-gray-600 max-w-full">
-              {getStimulationLevelText(show.stimulationScore).slice(0, 120)}...
+            <p className="text-sm text-center text-gray-600 max-w-full px-2">
+              {getStimulationLevelText(show.stimulationScore)}
             </p>
             
             <div className="text-xs text-gray-500 font-medium mt-1">
-              {shortShareUrl}
+              tvtantrum.com
             </div>
           </div>
         </div>
