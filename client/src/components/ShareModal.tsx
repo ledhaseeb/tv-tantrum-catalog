@@ -251,9 +251,11 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               </div>
             </div>
             
-            <p className="text-sm text-center text-gray-600 max-w-full px-2">
-              {getStimulationLevelText(show.stimulationScore)}
-            </p>
+            <div className="w-full text-center">
+              <p className="text-sm text-gray-600 max-w-full px-2 mx-auto">
+                {getStimulationLevelText(show.stimulationScore)}
+              </p>
+            </div>
             
             <div className="text-xs text-gray-500 font-medium mt-1">
               tvtantrum.com
@@ -290,17 +292,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           Download this image to share on social media. Include your referral link in your post to earn points when others sign up!
         </div>
         
-        {/* Share link input */}
-        <div className="flex items-center space-x-2 mb-4">
-          <Input
-            value={shareUrl}
-            readOnly
-            className="flex-1"
-          />
-          <Button size="icon" onClick={handleCopy} variant="outline">
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </Button>
-        </div>
+        {/* We've moved the share link input to the instruction section */}
         
         {/* Referral link explanation */}
         <div className="flex flex-col space-y-2 bg-gray-50 p-3 rounded-md">
@@ -308,9 +300,18 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           <ol className="text-xs text-gray-600 list-decimal pl-5">
             <li>Download the image above using the download button</li>
             <li>Share the image on your social media accounts</li>
-            <li>Include your referral link in your post: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{shareUrl}</span></li>
-            <li>You'll earn 10 points each time someone signs up through your link!</li>
+            <li>Copy and include your referral link in your post:</li>
           </ol>
+          <div className="flex mt-1 items-center">
+            <Input
+              value={shareUrl}
+              readOnly
+              className="text-xs h-8"
+            />
+            <Button size="sm" className="ml-2 h-8" onClick={handleCopy}>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2 mt-2">
