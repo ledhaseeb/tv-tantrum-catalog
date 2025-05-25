@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Heart } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ShowCardProps {
   show: TvShow;
