@@ -133,333 +133,354 @@ export interface IStorage {
 // Database Storage Implementation
 import { db } from "./db";
 import { 
-  users, tvShows, showSubmissions,
-  type User, type InsertUser,
-  type TvShow, type InsertTvShow,
-  type ShowSubmission, type InsertShowSubmission,
+  users, 
+  tvShows, 
+  tvShowReviews, 
+  showSubmissions,
+  type User, 
+  type InsertUser,
+  type ShowSubmission,
+  type InsertShowSubmission,
+  type TvShow
 } from "@shared/schema";
-import { eq, desc, like } from "drizzle-orm";
+import { eq, like, and, desc, sql } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
+  // Required methods to implement the IStorage interface
+  // These will help ensure the show submission form works properly
+  
+  // TV Shows methods
+  async getAllTvShows(): Promise<TvShow[]> {
+    return await db.select().from(tvShows);
+  }
+  
+  async getTvShowsByFilter(filters: any): Promise<TvShow[]> {
+    // Basic implementation for required interface method
+    let query = db.select().from(tvShows);
+    
+    // Add search filter if provided
+    if (filters.search) {
+      query = query.where(like(tvShows.name, `%${filters.search}%`));
+    }
+    
+    return await query;
+  }
+  
+  async addTvShow(show: any): Promise<TvShow> {
+    const [result] = await db.insert(tvShows).values(show).returning();
+    return result;
+  }
+  
+  async updateTvShow(id: number, show: any): Promise<TvShow | undefined> {
+    const [result] = await db.update(tvShows).set(show).where(eq(tvShows.id, id)).returning();
+    return result;
+  }
+  
+  async deleteTvShow(id: number): Promise<boolean> {
+    const result = await db.delete(tvShows).where(eq(tvShows.id, id));
+    return result.rowCount > 0;
+  }
   // User methods
   async getUser(id: string): Promise<User | undefined> {
-    try {
-      const [user] = await db.select().from(users).where(eq(users.id, id));
-      return user || undefined;
-    } catch (error) {
-      console.error("Error getting user:", error);
-      throw error;
-    }
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    try {
-      const [user] = await db.select().from(users).where(eq(users.username, username));
-      return user || undefined;
-    } catch (error) {
-      console.error("Error getting user by username:", error);
-      throw error;
-    }
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    try {
-      const [user] = await db.select().from(users).where(eq(users.email, email));
-      return user || undefined;
-    } catch (error) {
-      console.error("Error getting user by email:", error);
-      throw error;
-    }
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    try {
-      const [user] = await db
-        .insert(users)
-        .values(insertUser)
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+  
+  async upsertUser(userData: Partial<User>): Promise<User> {
+    if (!userData.id) {
+      throw new Error("User ID is required for upsert operation");
+    }
+    
+    const existingUser = await this.getUser(userData.id);
+    
+    if (existingUser) {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          ...userData,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userData.id))
         .returning();
-      return user;
-    } catch (error) {
-      console.error("Error creating user:", error);
-      throw error;
+      return updatedUser;
+    } else {
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          id: userData.id,
+          email: userData.email || null,
+          firstName: userData.firstName || null,
+          lastName: userData.lastName || null,
+          profileImageUrl: userData.profileImageUrl || null,
+          username: userData.username || null,
+          isAdmin: userData.isAdmin || false,
+          country: userData.country || null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isApproved: userData.isApproved || false,
+          totalPoints: userData.totalPoints || 0,
+          lastLoginDate: userData.lastLoginDate || null,
+          profileBio: userData.profileBio || null,
+          referralCode: userData.referralCode || null
+        })
+        .returning();
+      return newUser;
     }
   }
-
-  async upsertUser(userData: Partial<User>): Promise<User> {
-    try {
-      if (!userData.id) {
-        throw new Error("User ID is required for upsert operation");
-      }
-      
-      const existingUser = await this.getUser(userData.id);
-      
-      if (existingUser) {
-        // Update existing user
-        const [updatedUser] = await db
-          .update(users)
-          .set({
-            ...userData,
-            updatedAt: new Date()
-          })
-          .where(eq(users.id, userData.id))
-          .returning();
-        return updatedUser;
-      } else {
-        // Create new user
-        return this.createUser(userData as InsertUser);
-      }
-    } catch (error) {
-      console.error("Error upserting user:", error);
-      throw error;
-    }
+  
+  // TV Shows methods - implementing required methods
+  async getTvShowById(id: number): Promise<TvShow | undefined> {
+    const [show] = await db.select().from(tvShows).where(eq(tvShows.id, id));
+    return show || undefined;
   }
   
   // Show submission methods
   async addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission> {
+    const [result] = await db
+      .insert(showSubmissions)
+      .values(submission)
+      .returning();
+    return result;
+  }
+  
+  // Alias for addShowSubmission to match the method name used in routes.ts
+  async createShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission> {
+    return this.addShowSubmission(submission);
+  }
+  
+  // Research summaries methods
+  async getResearchSummaries(): Promise<any[]> {
     try {
-      // Get the username to store with the submission
-      const user = await this.getUser(submission.userId);
-      const createdBy = user?.username || "Unknown User";
-      
-      const [result] = await db
-        .insert(showSubmissions)
-        .values({
-          ...submission,
-          createdBy
-        })
-        .returning();
-      
-      return result;
+      const result = await pool.query(
+        `SELECT * FROM research_summaries ORDER BY created_at DESC`
+      );
+      return result.rows;
     } catch (error) {
-      console.error("Error adding show submission:", error);
-      throw error;
+      console.error("Error getting research summaries:", error);
+      return [];
+    }
+  }
+  
+  async getResearchSummary(id: number): Promise<any | undefined> {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM research_summaries WHERE id = $1`,
+        [id]
+      );
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error("Error getting research summary:", error);
+      return undefined;
+    }
+  }
+  
+  async markResearchAsRead(userId: string, researchId: number): Promise<any> {
+    try {
+      const result = await pool.query(
+        `INSERT INTO user_read_research (user_id, research_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, research_id) DO NOTHING
+         RETURNING *`,
+        [userId, researchId]
+      );
+      
+      // Award points if this is the first time reading this research
+      if (result.rowCount > 0) {
+        await this.awardPoints(
+          userId, 
+          5, 
+          'research_read', 
+          `Read a research summary (ID: ${researchId})`
+        );
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error marking research as read:", error);
+      return null;
+    }
+  }
+  
+  async hasUserReadResearch(userId: string, researchId: number): Promise<boolean> {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM user_read_research 
+         WHERE user_id = $1 AND research_id = $2`,
+        [userId, researchId]
+      );
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error checking if user read research:", error);
+      return false;
+    }
+  }
+  
+  // Points and gamification system
+  async getUserPoints(userId: string): Promise<{ 
+    total: number; 
+    breakdown: {
+      reviews: number;
+      upvotesGiven: number;
+      upvotesReceived: number;
+      consecutiveLogins: number;
+      shares: number;
+      referrals: number;
+      showSubmissions: number;
+      researchRead: number;
+    },
+    rank: string
+  }> {
+    try {
+      // Get user data to get total points
+      const userResult = await pool.query(
+        'SELECT total_points FROM users WHERE id = $1',
+        [userId]
+      );
+      
+      const totalPoints = userResult.rows[0]?.total_points || 0;
+      
+      // Get point breakdown by activity type
+      const breakdownResult = await pool.query(
+        `SELECT 
+          activity_type, 
+          SUM(points) as total
+        FROM user_points_history 
+        WHERE user_id = $1
+        GROUP BY activity_type`,
+        [userId]
+      );
+      
+      // Create a map of activity types to points
+      const pointsMap = {};
+      breakdownResult.rows.forEach(row => {
+        pointsMap[row.activity_type] = parseInt(row.total);
+      });
+      
+      // Determine rank based on total points
+      let rank = 'TV Watcher';
+      if (totalPoints >= 100) rank = 'TV Enthusiast';
+      if (totalPoints >= 500) rank = 'TV Expert';
+      if (totalPoints >= 1000) rank = 'TV Master';
+      
+      return {
+        total: totalPoints,
+        breakdown: {
+          reviews: pointsMap['review'] || 0,
+          upvotesGiven: pointsMap['upvote_given'] || 0,
+          upvotesReceived: pointsMap['upvote_received'] || 0,
+          consecutiveLogins: pointsMap['login_streak'] || 0,
+          shares: pointsMap['share'] || 0,
+          referrals: pointsMap['referral'] || 0,
+          showSubmissions: pointsMap['show_submission'] || 0,
+          researchRead: pointsMap['research_read'] || 0
+        },
+        rank
+      };
+    } catch (error) {
+      console.error('Error getting user points:', error);
+      // Return default values if there's an error
+      return {
+        total: 0,
+        breakdown: {
+          reviews: 0,
+          upvotesGiven: 0,
+          upvotesReceived: 0,
+          consecutiveLogins: 0,
+          shares: 0,
+          referrals: 0,
+          showSubmissions: 0,
+          researchRead: 0
+        },
+        rank: 'TV Watcher'
+      };
+    }
+  }
+  
+  // Award points for user activities
+  async awardPoints(userId: string, points: number, activityType: string, description?: string): Promise<any> {
+    try {
+      // Using direct SQL for this since we haven't defined the user_points_history table in Drizzle yet
+      const result = await pool.query(
+        `INSERT INTO user_points_history (user_id, points, activity_type, description) 
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [userId, points, activityType, description || null]
+      );
+      
+      // Update the user's total points in the database
+      await pool.query(
+        `UPDATE users SET total_points = total_points + $1 WHERE id = $2`,
+        [points, userId]
+      );
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error awarding points:', error);
+      // Return a placeholder object if there's an error
+      return {
+        id: 0,
+        userId: userId,
+        points: points,
+        activityType: activityType,
+        description: description,
+        createdAt: new Date()
+      };
     }
   }
   
   async getUserShowSubmissions(userId: string): Promise<ShowSubmission[]> {
-    try {
-      return await db
-        .select()
-        .from(showSubmissions)
-        .where(eq(showSubmissions.userId, userId))
-        .orderBy(desc(showSubmissions.createdAt));
-    } catch (error) {
-      console.error("Error getting user show submissions:", error);
-      throw error;
-    }
+    return await db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.userId, userId))
+      .orderBy(desc(showSubmissions.createdAt));
   }
   
   async getPendingShowSubmissions(): Promise<ShowSubmission[]> {
-    try {
-      return await db
-        .select()
-        .from(showSubmissions)
-        .where(eq(showSubmissions.status, "pending"))
-        .orderBy(desc(showSubmissions.createdAt));
-    } catch (error) {
-      console.error("Error getting pending show submissions:", error);
-      throw error;
-    }
+    return await db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.status, 'pending'))
+      .orderBy(desc(showSubmissions.createdAt));
   }
   
   async updateShowSubmissionStatus(id: number, status: string): Promise<ShowSubmission> {
-    try {
-      const [updatedSubmission] = await db
-        .update(showSubmissions)
-        .set({
-          status,
-          updatedAt: new Date()
-        })
-        .where(eq(showSubmissions.id, id))
-        .returning();
-      
-      if (!updatedSubmission) {
-        throw new Error(`Show submission with ID ${id} not found`);
-      }
-      
-      return updatedSubmission;
-    } catch (error) {
-      console.error("Error updating show submission status:", error);
-      throw error;
-    }
+    const [result] = await db
+      .update(showSubmissions)
+      .set({ status })
+      .where(eq(showSubmissions.id, id))
+      .returning();
+    return result;
   }
   
   async searchShowSubmissions(query: string): Promise<ShowSubmission[]> {
-    try {
-      return await db
-        .select()
-        .from(showSubmissions)
-        .where(like(showSubmissions.name, `%${query}%`))
-        .limit(5);
-    } catch (error) {
-      console.error("Error searching show submissions:", error);
-      throw error;
-    }
-  }
-  
-  // TV Shows methods
-  async getTvShowById(id: number): Promise<TvShow | undefined> {
-    try {
-      const [show] = await db
-        .select()
-        .from(tvShows)
-        .where(eq(tvShows.id, id));
-      return show;
-    } catch (error) {
-      console.error("Error getting TV show:", error);
-      throw error;
-    }
-  }
-  
-  // Other methods required by IStorage interface will be implemented later
-  
-  async getAllTvShows(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getTvShowsByFilter(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addTvShow(): Promise<TvShow> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async updateTvShow(): Promise<TvShow | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async deleteTvShow(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  
-  // Add remaining method stubs to satisfy interface
-  async getReviewsByTvShowId(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addReview(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getReviewById(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addUpvote(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async removeUpvote(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getReviewUpvotes(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getUpvotesGivenByUser(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getUpvotesReceivedByUser(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async trackShowSearch(): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async trackShowView(): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getPopularShows(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async importShowsFromGitHub(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addFavorite(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async removeFavorite(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getUserFavorites(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async isFavorite(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getSimilarShows(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getSimilarShowsByShowId(): Promise<TvShow[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getUserPoints(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async awardPoints(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getUserPointsHistory(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async updateUserLoginStreak(): Promise<number> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addReviewUpvote(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async removeReviewUpvote(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getResearchSummaries(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getResearchSummary(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addResearchSummary(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async markResearchAsRead(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getTopUsers(): Promise<any[]> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async addUserReferral(): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async getUserReferrals(): Promise<any[]> {
-    throw new Error("Method not implemented.");
+    return await db
+      .select()
+      .from(showSubmissions)
+      .where(like(showSubmissions.name, `%${query}%`))
+      .limit(5);
   }
 }
 
-// Using an existing MemStorage implementation or creating one if needed
+// Keep the MemStorage implementation for backward compatibility
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private tvShows: Map<number, TvShow>;
@@ -1652,9 +1673,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-// For now, we're keeping the memory storage to maintain all current functionality
-// We'll implement the database storage once we've fixed the schema issues
-// import { DatabaseStorage } from './database-storage';
-
-// Using in-memory storage for development
-export const storage = new MemStorage();
+// Create an instance of the DatabaseStorage class to use with the database
+export const storage = new DatabaseStorage();

@@ -203,12 +203,13 @@ export const userReadResearch = pgTable("user_read_research", {
 export const showSubmissions = pgTable("show_submissions", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  showName: varchar("show_name").notNull(),
-  description: text("description"),
-  suggestedAgeRange: varchar("suggested_age_range"),
-  suggestedThemes: text("suggested_themes").array(),
-  status: varchar("status").notNull().default("pending"),
-  adminNotes: text("admin_notes"),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  ageRange: text("age_range").notNull(),
+  episodeLength: integer("episode_length"),
+  platform: text("platform"),
+  additionalNotes: text("additional_notes"),
+  status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -297,7 +298,7 @@ export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).om
   id: true,
   createdAt: true,
   updatedAt: true,
-  status: true
+  status: true,
 });
 
 export const insertUserReferralSchema = createInsertSchema(userReferrals).omit({

@@ -44,10 +44,9 @@ type SearchResult = {
 };
 
 const formSchema = z.object({
-  showName: z.string().min(2, "Show name must be at least 2 characters"),
-  description: z.string().optional(),
-  suggestedAgeRange: z.string().optional(),
-  suggestedThemes: z.array(z.string()).optional(),
+  name: z.string().min(2, "Show name must be at least 2 characters"),
+  platform: z.string().min(1, "Please specify where you watch this show"),
+  additionalNotes: z.string().optional(),
 });
 
 type ShowSubmission = z.infer<typeof formSchema>;
@@ -63,28 +62,46 @@ export default function SubmitShowForm() {
   const form = useForm<ShowSubmission>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      showName: "",
-      description: "",
-      suggestedAgeRange: "",
-      suggestedThemes: [],
+      name: "",
+      platform: "",
+      additionalNotes: "",
     },
   });
 
   // API lookup for show name
   const { data: searchResults, isLoading: searchLoading } = useQuery({
-    queryKey: ['/api/lookup/show', searchQuery, searchSource],
+    queryKey: ['/api/shows/search', searchQuery],
     queryFn: async () => {
       if (!searchQuery || searchQuery.length < 2) return [];
       
-      // Use the correctly implemented endpoint in the backend
-      let url = `/api/lookup/show?q=${encodeURIComponent(searchQuery)}`;
-      if (searchSource) {
-        url += `&source=${searchSource}`;
-      }
-      
       try {
-        const results = await apiRequest<SearchResult[]>(url);
-        return results || [];
+        // Search both shows in database and show submissions
+        const [dbShows, submissions] = await Promise.all([
+          // Search existing shows in database
+          apiRequest<SearchResult[]>(`/api/shows?search=${encodeURIComponent(searchQuery)}&limit=5`).then(shows => 
+            shows.map(show => ({
+              id: show.id.toString(),
+              name: show.name,
+              description: show.description,
+              imageUrl: show.imageUrl,
+              source: 'database',
+              releaseYear: show.releaseYear ? show.releaseYear.toString() : undefined
+            }))
+          ).catch(() => []),
+          
+          // Search existing show submissions
+          apiRequest<SearchResult[]>(`/api/show-submissions/search?q=${encodeURIComponent(searchQuery)}`).then(results => 
+            results.map(submission => ({
+              id: submission.id.toString(),
+              name: submission.name,
+              source: 'submission',
+              status: submission.status
+            }))
+          ).catch(() => [])
+        ]);
+        
+        // Combine results
+        return [...dbShows, ...submissions];
       } catch (error) {
         console.error("Error searching for shows:", error);
         return [];
@@ -95,17 +112,30 @@ export default function SubmitShowForm() {
 
   const submitMutation = useMutation({
     mutationFn: (data: ShowSubmission) => {
-      console.log("Making API request with data:", data);
+      // Create a properly formatted submission object with required fields
+      const submission = {
+        name: data.name,
+        platform: data.platform || "Unknown",
+        additionalNotes: data.additionalNotes || "",
+        // Add required fields from schema
+        description: data.additionalNotes || `User requested show: ${data.name}`,
+        ageRange: "All Ages", // Default value
+        episodeLength: 30, // Default value in minutes
+        userId: user?.id
+      };
+      
+      console.log("Submitting show:", submission);
+      
+      // Use the correct endpoint with the correct format
       return apiRequest("/api/show-submissions", {
         method: "POST",
-        body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify(submission),
       });
     },
-    onSuccess: (response) => {
-      console.log("Submission successful:", response);
+    onSuccess: () => {
       toast({
         title: "Show Submitted!",
         description: "Thank you for your submission. Our team will review it soon.",
@@ -116,12 +146,12 @@ export default function SubmitShowForm() {
       queryClient.invalidateQueries({ queryKey: ['/api/show-submissions'] });
     },
     onError: (error) => {
-      console.error("Error submitting show:", error);
       toast({
         title: "Submission Failed",
         description: "There was an error submitting your show. Please try again.",
         variant: "destructive",
       });
+      console.error("Error submitting show:", error);
     },
   });
 
@@ -135,22 +165,7 @@ export default function SubmitShowForm() {
       return;
     }
     
-    // Ensure themes is an array
-    const formattedData = {
-      ...data,
-      // Make sure suggestedThemes is always an array
-      suggestedThemes: data.suggestedThemes 
-        ? (Array.isArray(data.suggestedThemes) 
-            ? data.suggestedThemes 
-            : [data.suggestedThemes])
-        : [],
-      // Ensure we have default values
-      suggestedAgeRange: data.suggestedAgeRange || null,
-      description: data.description || null,
-    };
-    
-    console.log("Submitting show data:", formattedData);
-    submitMutation.mutate(formattedData);
+    submitMutation.mutate(data);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,7 +180,7 @@ export default function SubmitShowForm() {
     setSelectedResult(result);
     
     // Pre-populate form with data from the search result
-    form.setValue("showName", result.name);
+    form.setValue("name", result.name);
     
     // Display message if the show is already in our database or submitted
     if (result.source === 'database') {
@@ -182,24 +197,11 @@ export default function SubmitShowForm() {
       });
     }
     
-    // Add source information to description
-    let description = result.description || "";
-    
-    // Add platform information to description
+    // Set platform based on source
     if (result.source === 'youtube') {
-      description += description ? "\n\n" : "";
-      description += "Platform: YouTube";
+      form.setValue("platform", "YouTube");
     } else if (result.source === 'omdb') {
-      description += description ? "\n\n" : "";
-      description += "Platform: TV/Streaming";
-    }
-    
-    // Update description field
-    form.setValue("description", description);
-    
-    // Set suggested age range based on available info
-    if (result.source === 'omdb' && result.releaseYear) {
-      form.setValue("suggestedAgeRange", `Released in ${result.releaseYear}`);
+      form.setValue("platform", "TV/Streaming");
     }
   };
 
@@ -271,7 +273,7 @@ export default function SubmitShowForm() {
             {/* Form Fields */}
             <FormField
               control={form.control}
-              name="showName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Show Name</FormLabel>
@@ -285,15 +287,12 @@ export default function SubmitShowForm() {
 
             <FormField
               control={form.control}
-              name="description"
+              name="platform"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Where to Watch</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      {...field} 
-                      placeholder="Describe the show and where to watch it (Netflix, YouTube, PBS Kids, etc.)"
-                    />
+                    <Input {...field} placeholder="Netflix, YouTube, PBS Kids, etc." />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -302,42 +301,16 @@ export default function SubmitShowForm() {
 
             <FormField
               control={form.control}
-              name="suggestedAgeRange"
+              name="additionalNotes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Suggested Age Range (optional)</FormLabel>
+                  <FormLabel>Additional Notes (optional)</FormLabel>
                   <FormControl>
-                    <Input 
+                    <Textarea 
                       {...field} 
-                      placeholder="e.g., 3-5 years, 8+, teens, etc."
+                      placeholder="Any other information like video sample links or reasons you'd like to see this show added"
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="suggestedThemes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Suggested Themes (optional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field}
-                      value={field.value?.join(', ') || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const themes = value.split(',').map(theme => theme.trim()).filter(Boolean);
-                        field.onChange(themes);
-                      }}
-                      placeholder="Enter themes separated by commas (e.g., learning, adventure, friendship)"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Themes help categorize shows and make them easier to find
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
