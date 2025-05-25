@@ -227,10 +227,28 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               </div>
             )}
             
-            <div className="mt-2 w-full">
+            <div className="mt-2 w-full flex flex-col items-center">
               <Badge className={`${getStimulationLevelColor(show.stimulationScore)} px-4 py-1.5 text-base mx-auto flex justify-center`}>
                 {getStimulationLevelName(show.stimulationScore)} Stimulation
               </Badge>
+              
+              <div className="h-2 w-full max-w-56 bg-gray-200 rounded-full overflow-hidden flex mt-3">
+                {[1, 2, 3, 4, 5].map((segment) => {
+                  const color = 
+                    segment === 1 ? 'bg-green-500' : 
+                    segment === 2 ? 'bg-lime-500' : 
+                    segment === 3 ? 'bg-yellow-500' : 
+                    segment === 4 ? 'bg-orange-500' : 
+                    'bg-red-500';
+                  
+                  return (
+                    <div
+                      key={segment}
+                      className={`h-full w-1/5 ${segment <= show.stimulationScore ? color : 'bg-gray-200'}`}
+                    />
+                  );
+                })}
+              </div>
             </div>
             
             <p className="text-sm text-center text-gray-600 max-w-full px-2">
@@ -284,101 +302,15 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           </Button>
         </div>
         
-        {/* Social Media Sharing Buttons */}
-        <div className="flex flex-col space-y-4">
-          <p className="text-center text-sm font-medium">Share on social media</p>
-          
-          {/* First row of sharing buttons */}
-          <div className="flex justify-center space-x-3">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-blue-100 hover:bg-blue-200 rounded-full"
-              onClick={() => openShareWindow(facebookShareUrl)}
-              title="Share on Facebook"
-            >
-              <Facebook className="h-5 w-5 text-blue-600" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-sky-100 hover:bg-sky-200 rounded-full"
-              onClick={() => openShareWindow(twitterShareUrl)}
-              title="Share on Twitter"
-            >
-              <Twitter className="h-5 w-5 text-sky-500" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-blue-100 hover:bg-blue-200 rounded-full"
-              onClick={() => openShareWindow(linkedinShareUrl)}
-              title="Share on LinkedIn"
-            >
-              <Linkedin className="h-5 w-5 text-blue-800" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-green-100 hover:bg-green-200 rounded-full"
-              onClick={() => openShareWindow(whatsappShareUrl)}
-              title="Share on WhatsApp"
-            >
-              <i className="fab fa-whatsapp text-green-600 text-lg"></i>
-            </Button>
-          </div>
-          
-          {/* Second row of sharing buttons - new platforms */}
-          <div className="flex justify-center space-x-3">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full"
-              onClick={() => {
-                navigator.clipboard.writeText(instagramShareText);
-                toast({
-                  title: "Instagram text copied!",
-                  description: "Paste this in your Instagram post or story",
-                });
-              }}
-              title="Copy for Instagram"
-            >
-              <Instagram className="h-5 w-5 text-white" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-black hover:bg-gray-900 rounded-full"
-              onClick={() => {
-                navigator.clipboard.writeText(tiktokShareText);
-                toast({
-                  title: "TikTok text copied!",
-                  description: "Paste this in your TikTok caption",
-                });
-              }}
-              title="Copy for TikTok"
-            >
-              <i className="fas fa-music text-white text-lg"></i>
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-yellow-300 hover:bg-yellow-400 rounded-full"
-              onClick={() => openShareWindow(snapchatShareUrl)}
-              title="Share on Snapchat"
-            >
-              <Camera className="h-5 w-5 text-white" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="bg-gray-100 hover:bg-gray-200 rounded-full"
-              onClick={() => openShareWindow(emailShareUrl)}
-              title="Share via Email"
-            >
-              <Mail className="h-5 w-5 text-gray-600" />
-            </Button>
-          </div>
+        {/* Referral link explanation */}
+        <div className="flex flex-col space-y-2 bg-gray-50 p-3 rounded-md">
+          <p className="text-center text-sm font-medium">How to share and earn points</p>
+          <ol className="text-xs text-gray-600 list-decimal pl-5">
+            <li>Download the image above using the download button</li>
+            <li>Share the image on your social media accounts</li>
+            <li>Include your referral link in your post: <span className="font-mono text-xs bg-gray-100 px-1 rounded">{shareUrl}</span></li>
+            <li>You'll earn 10 points each time someone signs up through your link!</li>
+          </ol>
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2 mt-2">
