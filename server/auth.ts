@@ -78,13 +78,14 @@ export function setupAuth(app: Express) {
 
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     store: sessionStore,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      secure: false, // Set to false for development environment
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true
+      httpOnly: true,
+      sameSite: 'lax'
     }
   };
 
@@ -397,10 +398,17 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
+  // Fixed API endpoint to get current user's information
+  app.get("/api/auth/user", (req, res) => {
+    console.log("Checking auth - Session ID:", req.sessionID);
+    console.log("Checking auth - isAuthenticated:", req.isAuthenticated());
+    console.log("Checking auth - User:", req.user ? `ID: ${req.user.id}` : "No user in session");
+    
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
+    
+    // Return the authenticated user
     res.json(req.user);
   });
   
