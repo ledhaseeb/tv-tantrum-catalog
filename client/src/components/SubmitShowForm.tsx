@@ -45,9 +45,6 @@ type SearchResult = {
 
 const formSchema = z.object({
   name: z.string().min(2, "Show name must be at least 2 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  ageRange: z.string().min(1, "Please select an age range"),
-  episodeLength: z.number().min(1, "Episode length must be at least 1 minute").optional(),
   platform: z.string().min(1, "Please specify where you watch this show"),
   additionalNotes: z.string().optional(),
 });
@@ -66,9 +63,6 @@ export default function SubmitShowForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      description: "",
-      ageRange: "",
-      episodeLength: undefined,
       platform: "",
       additionalNotes: "",
     },
@@ -220,69 +214,6 @@ export default function SubmitShowForm() {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="ageRange"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Age Range</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select age range" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="0-2">0-2 years</SelectItem>
-                        <SelectItem value="3-5">3-5 years</SelectItem>
-                        <SelectItem value="6-8">6-8 years</SelectItem>
-                        <SelectItem value="9-12">9-12 years</SelectItem>
-                        <SelectItem value="13+">13+ years</SelectItem>
-                        <SelectItem value="All Ages">All Ages</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="episodeLength"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Episode Length (minutes)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
 
             <FormField
               control={form.control}
