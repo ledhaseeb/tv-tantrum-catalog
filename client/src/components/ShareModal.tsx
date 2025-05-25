@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Share2, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ShareModalProps {
   open: boolean;
@@ -28,8 +29,11 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
   
-  // Generate the share URL
-  const shareUrl = `${window.location.origin}/share/${show.id}`;
+  // Generate the share URL with referral parameter if user is logged in
+  const { user } = useAuth();
+  const shareUrl = user 
+    ? `${window.location.origin}/share/${show.id}?ref=${user.id}` 
+    : `${window.location.origin}/share/${show.id}`;
   
   // Handle copy to clipboard
   const handleCopy = async () => {

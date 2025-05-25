@@ -23,6 +23,7 @@ import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
 import ResearchView from "@/pages/research-view";
+import SharePage from "@/pages/share";
 import AdminResearchLinks from "@/pages/admin-research-links";
 import AdminResearchManager from "@/pages/admin-research-manager";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
@@ -58,6 +59,13 @@ function Router() {
         </Route>
         <Route path="/registration-pending">
           <RegistrationPendingPage />
+        </Route>
+        
+        {/* Share page - accessible to all users */}
+        <Route path="/share/:id">
+          {(params) => (
+            <SharePage />
+          )}
         </Route>
         
         {/* Main App Routes - Accessible only with approved accounts or in dev mode */}
