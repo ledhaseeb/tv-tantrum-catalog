@@ -136,8 +136,19 @@ export default function SubmitShowForm() {
     // Pre-populate form with data from the search result
     form.setValue("name", result.name);
     
-    if (result.description) {
-      form.setValue("description", result.description);
+    // Display message if the show is already in our database or submitted
+    if (result.source === 'database') {
+      toast({
+        title: "Show Already Exists",
+        description: "This show is already in our database!",
+        variant: "default",
+      });
+    } else if (result.source === 'submission') {
+      toast({
+        title: "Show Already Submitted",
+        description: result.status || "This show has already been submitted for review.",
+        variant: "default",
+      });
     }
     
     // Set platform based on source
@@ -191,7 +202,10 @@ export default function SubmitShowForm() {
                       <div>
                         <div className="font-medium">{result.name}</div>
                         <div className="text-xs text-gray-500">
-                          {result.source === 'youtube' ? 'YouTube Channel' : `${result.releaseYear || 'TV Show'}`}
+                          {result.source === 'database' ? 'In Database' :
+                           result.source === 'submission' ? result.status :
+                           result.source === 'youtube' ? 'YouTube Channel' : 
+                           `${result.releaseYear || 'TV Show'}`}
                         </div>
                       </div>
                     </div>

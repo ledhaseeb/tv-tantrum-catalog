@@ -2953,7 +2953,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Search external APIs (YouTube and OMDB)
+  // Search our database and external APIs (YouTube and OMDB)
   app.get("/api/lookup/show", requireLogin, async (req: Request, res: Response) => {
     try {
       const query = req.query.q as string;
@@ -2965,6 +2965,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let results = [];
       
+      // Always search our TV show database first
+      try {
+        const dbShows = await db
+          .select({
+            id: tvShows.id,
+            name: tvShows.name,
+            description: tvShows.description,
+            imageUrl: tvShows.imageUrl,
+            releaseYear: tvShows.releaseYear
+          })
+          .from(tvShows)
+          .where(like(tvShows.name, `%${query}%`))
+          .limit(5);
+        
+        if (dbShows.length > 0) {
+          results = [...results, ...dbShows.map(show => ({
+            id: show.id.toString(),
+            name: show.name,
+            description: show.description,
+            imageUrl: show.imageUrl,
+            source: 'database',
+            releaseYear: show.releaseYear ? show.releaseYear.toString() : null,
+            status: 'In Database'
+          }))];
+        }
+      } catch (dbError) {
+        console.error("Error searching TV shows database:", dbError);
+      }
+      
+      // Then search show submissions
+      try {
+        const submittedShows = await db
+          .select({
+            id: showSubmissions.id,
+            name: showSubmissions.name,
+            status: showSubmissions.status
+          })
+          .from(showSubmissions)
+          .where(like(showSubmissions.name, `%${query}%`))
+          .limit(5);
+        
+        if (submittedShows.length > 0) {
+          results = [...results, ...submittedShows.map(submission => ({
+            id: `submission-${submission.id.toString()}`,
+            name: submission.name,
+            description: "Previously submitted show",
+            source: 'submission',
+            status: submission.status === 'pending' ? 'Already Submitted (Pending)' : 
+                   submission.status === 'approved' ? 'Already Submitted (Approved)' : 
+                   'Already Submitted (Rejected)'
+          }))];
+        }
+      } catch (submissionError) {
+        console.error("Error searching show submissions:", submissionError);
+      }
+      
+      // Then search external APIs if requested
       if (source === 'youtube' || !source) {
         const youtubeResults = await youtubeService.searchChannels(query);
         results = [...results, ...youtubeResults.map(channel => ({
@@ -2991,8 +3048,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(results);
     } catch (error) {
-      console.error("Error searching external APIs:", error);
-      res.status(500).json({ message: "Failed to search external APIs" });
+      console.error("Error searching shows:", error);
+      res.status(500).json({ message: "Failed to search for shows" });
     }
   });
 
