@@ -311,7 +311,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-// Keep the MemStorage implementation for backward compatibility
+// Using an existing MemStorage implementation or creating one if needed
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private tvShows: Map<number, TvShow>;

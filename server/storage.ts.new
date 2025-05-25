@@ -1,0 +1,668 @@
+import { 
+  users, 
+  type User, 
+  type InsertUser, 
+  type TvShow, 
+  type TvShowReview, 
+  type InsertTvShow, 
+  type InsertTvShowReview, 
+  type TvShowGitHub, 
+  type TvShowSearch, 
+  type InsertTvShowSearch, 
+  type Favorite,
+  type UserPointsHistory,
+  type InsertUserPointsHistory,
+  type ReviewUpvote,
+  type InsertReviewUpvote,
+  type ResearchSummary,
+  type InsertResearchSummary,
+  type UserReadResearch,
+  type InsertUserReadResearch,
+  type ShowSubmission,
+  type InsertShowSubmission,
+  type UserReferral,
+  type InsertUserReferral
+} from "@shared/schema";
+
+export interface IStorage {
+  // User methods
+  getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(insertUser: InsertUser): Promise<User>;
+  updateUser(id: string, updates: Partial<User>): Promise<User>;
+  
+  // TV Show methods
+  getAllTvShows(): Promise<TvShow[]>;
+  getTvShowsByFilter(filter: Record<string, any>): Promise<TvShow[]>;
+  addTvShow(insertTvShow: InsertTvShow): Promise<TvShow>;
+  updateTvShow(id: number, updates: Partial<TvShow>): Promise<TvShow>;
+  getTvShow(id: number): Promise<TvShow | undefined>;
+  
+  // TV Show Reviews
+  getTvShowReviews(tvShowId: number): Promise<TvShowReview[]>;
+  addTvShowReview(insertTvShowReview: InsertTvShowReview): Promise<TvShowReview>;
+  getReviewsByUserId(userId: string): Promise<TvShowReview[]>;
+  
+  // TV Show Search
+  recordSearch(tvShowId: number, query: string): Promise<TvShowSearch>;
+  getPopularShows(): Promise<TvShow[]>;
+  getRecentlyViewedShows(userId: string): Promise<TvShow[]>;
+  incrementShowViewCount(tvShowId: number): Promise<void>;
+  getShowViewCount(tvShowId: number): Promise<number>;
+  
+  // Favorites
+  addFavorite(userId: string, tvShowId: number): Promise<Favorite>;
+  removeFavorite(userId: string, tvShowId: number): Promise<boolean>;
+  getUserFavorites(userId: string): Promise<TvShow[]>;
+  isShowFavorited(userId: string, tvShowId: number): Promise<boolean>;
+  
+  // Points System
+  getUserPoints(userId: string): Promise<number>;
+  awardPoints(userId: string, points: number, actionType: string, reason?: string): Promise<UserPointsHistory>;
+  getPointsHistory(userId: string): Promise<UserPointsHistory[]>;
+  
+  // Research Reading
+  getUserReadResearch(userId: string): Promise<ResearchSummary[]>;
+  getUserUnreadResearch(userId: string): Promise<ResearchSummary[]>;
+  hasUserReadResearch(userId: string, researchId: number): Promise<boolean>;
+  markResearchAsRead(userId: string, researchId: number): Promise<UserReadResearch>;
+  getAllResearch(): Promise<ResearchSummary[]>;
+  getResearchById(id: number): Promise<ResearchSummary | undefined>;
+  
+  // Review Upvotes
+  upvoteReview(userId: string, reviewId: number): Promise<ReviewUpvote>;
+  removeUpvote(userId: string, reviewId: number): Promise<boolean>;
+  hasUserUpvotedReview(reviewId: number, userId: string): Promise<boolean>;
+  hasUserUpvotedReview(userId: string, reviewId: number): Promise<boolean>;
+  getReviewUpvotes(reviewId: number): Promise<number>;
+  
+  // Show Submissions
+  createShowSubmission(insertShowSubmission: InsertShowSubmission): Promise<ShowSubmission>;
+  getUserShowSubmissions(userId: string): Promise<ShowSubmission[]>;
+  getAllShowSubmissions(): Promise<ShowSubmission[]>;
+  updateShowSubmission(id: number, updates: Partial<ShowSubmission>): Promise<ShowSubmission>;
+  getShowSubmission(id: number): Promise<ShowSubmission | undefined>;
+  
+  // Referrals
+  createReferral(userId: string, code: string): Promise<UserReferral>;
+  getReferralByCode(code: string): Promise<UserReferral | undefined>;
+  recordReferralUse(id: number, referredUserId: string): Promise<UserReferral>;
+  getUserReferrals(userId: string): Promise<UserReferral[]>;
+}
+
+// Storage implementation using in-memory data structures
+export class MemStorage implements IStorage {
+  private users = new Map<string, User>();
+  private tvShows = new Map<number, TvShow>();
+  private tvShowReviews = new Map<number, TvShowReview>();
+  private tvShowSearches = new Map<number, TvShowSearch>();
+  private tvShowCurrentId = 1;
+  private tvShowReviewCurrentId = 1;
+  private tvShowSearchCurrentId = 1;
+  private favorites = new Map<string, Set<number>>();
+  private pointsHistory = new Map<string, UserPointsHistory[]>();
+  private pointsHistoryCurrentId = 1;
+  private reviewUpvotes = new Map<number, Set<string>>();
+  private researchSummaries = new Map<number, ResearchSummary>();
+  private researchCurrentId = 1;
+  private userReadResearch = new Map<string, Set<number>>();
+  private userReadResearchCurrentId = 1;
+  private showSubmissions = new Map<number, ShowSubmission>();
+  private showSubmissionCurrentId = 1;
+  private userReferrals = new Map<number, UserReferral>();
+  private userReferralCurrentId = 1;
+
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email
+    );
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username
+    );
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const user: User = {
+      id: insertUser.id,
+      email: insertUser.email,
+      password: insertUser.password,
+      firstName: insertUser.firstName,
+      lastName: insertUser.lastName,
+      profileImageUrl: insertUser.profileImageUrl,
+      username: insertUser.username,
+      isAdmin: insertUser.isAdmin || false,
+      country: insertUser.country,
+      loginStreak: 0,
+      points: 0,
+      rank: "Novice",
+      preferences: insertUser.preferences || {},
+      badges: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastLogin: null,
+      referralCode: insertUser.referralCode
+    };
+
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    const user = await this.getUser(id);
+    if (!user) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+
+    const updatedUser = {
+      ...user,
+      ...updates,
+      updatedAt: new Date()
+    };
+
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  // TV Show methods
+  async getAllTvShows(): Promise<TvShow[]> {
+    return Array.from(this.tvShows.values());
+  }
+
+  async getTvShowsByFilter(filter: Record<string, any>): Promise<TvShow[]> {
+    let shows = Array.from(this.tvShows.values());
+
+    // Filter by age range if provided
+    if (filter.ageRange) {
+      shows = shows.filter(show => show.age_range === filter.ageRange);
+    }
+
+    // Filter by episode length if provided
+    if (filter.episodeLength) {
+      const avgEpisodeLength = filter.episodeLength;
+      shows = shows.filter(show => {
+        if (avgEpisodeLength === "short") {
+          return show.episode_length <= 15;
+        } else if (avgEpisodeLength === "medium") {
+          return show.episode_length > 15 && show.episode_length <= 30;
+        } else if (avgEpisodeLength === "long") {
+          return show.episode_length > 30;
+        }
+        return true;
+      });
+    }
+
+    // Filter by stimulation level if provided
+    if (filter.stimulationLevel) {
+      const level = filter.stimulationLevel;
+      shows = shows.filter(show => {
+        if (level === "low") {
+          return show.stimulation_score < 3;
+        } else if (level === "medium") {
+          return show.stimulation_score >= 3 && show.stimulation_score <= 7;
+        } else if (level === "high") {
+          return show.stimulation_score > 7;
+        }
+        return true;
+      });
+    }
+
+    // Filter by themes if provided
+    if (filter.themes && filter.themes.length > 0) {
+      shows = shows.filter(show => {
+        if (!show.themes) return false;
+        const showThemes = Array.isArray(show.themes) ? show.themes : [show.themes];
+        return filter.themes.some((theme: string) => showThemes.includes(theme));
+      });
+    }
+
+    // Sort by rating if requested
+    if (filter.sortBy === "rating") {
+      shows.sort((a, b) => {
+        const ratingA = a.avg_rating || 0;
+        const ratingB = b.avg_rating || 0;
+        return filter.sortOrder === "asc" ? ratingA - ratingB : ratingB - ratingA;
+      });
+    }
+
+    // Sort by popularity if requested
+    if (filter.sortBy === "popularity") {
+      shows.sort((a, b) => {
+        const viewsA = a.view_count || 0;
+        const viewsB = b.view_count || 0;
+        return filter.sortOrder === "asc" ? viewsA - viewsB : viewsB - viewsA;
+      });
+    }
+
+    return shows;
+  }
+
+  async addTvShow(insertTvShow: InsertTvShow): Promise<TvShow> {
+    const id = this.tvShowCurrentId++;
+    const tvShow: TvShow = {
+      id,
+      ...insertTvShow,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      view_count: 0,
+      avg_rating: 0,
+      review_count: 0
+    };
+
+    this.tvShows.set(id, tvShow);
+    return tvShow;
+  }
+
+  async updateTvShow(id: number, updates: Partial<TvShow>): Promise<TvShow> {
+    const tvShow = await this.getTvShow(id);
+    if (!tvShow) {
+      throw new Error(`TV Show with ID ${id} not found`);
+    }
+
+    const updatedTvShow: TvShow = {
+      ...tvShow,
+      ...updates,
+      updatedAt: new Date()
+    };
+
+    this.tvShows.set(id, updatedTvShow);
+    return updatedTvShow;
+  }
+
+  async getTvShow(id: number): Promise<TvShow | undefined> {
+    return this.tvShows.get(id);
+  }
+
+  // TV Show Reviews
+  async getTvShowReviews(tvShowId: number): Promise<TvShowReview[]> {
+    return Array.from(this.tvShowReviews.values()).filter(
+      (review) => review.tvShowId === tvShowId
+    );
+  }
+
+  async addTvShowReview(insertTvShowReview: InsertTvShowReview): Promise<TvShowReview> {
+    const id = this.tvShowReviewCurrentId++;
+    const review: TvShowReview = {
+      id,
+      ...insertTvShowReview,
+      createdAt: new Date()
+    };
+
+    this.tvShowReviews.set(id, review);
+
+    // Update the TV show's average rating and review count
+    const tvShow = await this.getTvShow(insertTvShowReview.tvShowId);
+    if (tvShow) {
+      const reviews = await this.getTvShowReviews(tvShow.id);
+      const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+      const avgRating = totalRating / reviews.length;
+
+      await this.updateTvShow(tvShow.id, {
+        avg_rating: avgRating,
+        review_count: reviews.length
+      });
+    }
+
+    return review;
+  }
+
+  async getReviewsByUserId(userId: number): Promise<TvShowReview[]> {
+    return Array.from(this.tvShowReviews.values()).filter(
+      (review) => review.userId === userId.toString()
+    );
+  }
+
+  // TV Show Search
+  async recordSearch(tvShowId: number, query: string): Promise<TvShowSearch> {
+    const id = this.tvShowSearchCurrentId++;
+    const search: TvShowSearch = {
+      id,
+      tvShowId,
+      searchCount: 1,
+      lastSearched: new Date()
+    };
+
+    // Update existing search or add new one
+    const existingSearch = Array.from(this.tvShowSearches.values()).find(
+      (s) => s.tvShowId === tvShowId
+    );
+
+    if (existingSearch) {
+      existingSearch.searchCount++;
+      existingSearch.lastSearched = new Date();
+      this.tvShowSearches.set(existingSearch.id, existingSearch);
+      return existingSearch;
+    }
+
+    this.tvShowSearches.set(id, search);
+    return search;
+  }
+
+  async getPopularShows(): Promise<TvShow[]> {
+    // Get all TV shows and sort by view count (descending)
+    const shows = Array.from(this.tvShows.values());
+    return shows.sort((a, b) => {
+      const viewsA = a.view_count || 0;
+      const viewsB = b.view_count || 0;
+      return viewsB - viewsA;
+    }).slice(0, 10); // Return top 10
+  }
+
+  async getRecentlyViewedShows(userId: string): Promise<TvShow[]> {
+    // Placeholder for recently viewed shows - would need a user_views table in a real DB
+    return this.getPopularShows();
+  }
+
+  async incrementShowViewCount(tvShowId: number): Promise<void> {
+    const tvShow = await this.getTvShow(tvShowId);
+    if (tvShow) {
+      const viewCount = (tvShow.view_count || 0) + 1;
+      await this.updateTvShow(tvShowId, { view_count: viewCount });
+    }
+  }
+
+  async getShowViewCount(tvShowId: number): Promise<number> {
+    const tvShow = await this.getTvShow(tvShowId);
+    return tvShow?.view_count || 0;
+  }
+
+  // Favorites
+  async addFavorite(userId: string, tvShowId: number): Promise<Favorite> {
+    if (!this.favorites.has(userId)) {
+      this.favorites.set(userId, new Set());
+    }
+
+    this.favorites.get(userId)!.add(tvShowId);
+
+    return {
+      id: 0, // Not used in memory implementation
+      userId,
+      tvShowId,
+      createdAt: new Date()
+    };
+  }
+
+  async removeFavorite(userId: string, tvShowId: number): Promise<boolean> {
+    const userFavorites = this.favorites.get(userId);
+    if (!userFavorites) {
+      return false;
+    }
+
+    return userFavorites.delete(tvShowId);
+  }
+
+  async getUserFavorites(userId: string): Promise<TvShow[]> {
+    const userFavorites = this.favorites.get(userId);
+    if (!userFavorites || userFavorites.size === 0) {
+      return [];
+    }
+
+    const favoriteShows: TvShow[] = [];
+    for (const tvShowId of userFavorites) {
+      const show = await this.getTvShow(tvShowId);
+      if (show) {
+        favoriteShows.push(show);
+      }
+    }
+
+    return favoriteShows;
+  }
+
+  async isShowFavorited(userId: string, tvShowId: number): Promise<boolean> {
+    const userFavorites = this.favorites.get(userId);
+    if (!userFavorites) {
+      return false;
+    }
+
+    return userFavorites.has(tvShowId);
+  }
+
+  // Points System
+  async getUserPoints(userId: string): Promise<number> {
+    const user = await this.getUser(userId);
+    return user?.points || 0;
+  }
+
+  async awardPoints(userId: string, points: number, actionType: string, reason?: string): Promise<UserPointsHistory> {
+    // Update user's total points
+    const user = await this.getUser(userId);
+    if (user) {
+      await this.updateUser(userId, {
+        points: (user.points || 0) + points
+      });
+    }
+
+    // Create points history record
+    const id = this.pointsHistoryCurrentId++;
+    const pointsRecord: UserPointsHistory = {
+      id,
+      userId,
+      points,
+      actionType,
+      reason: reason || actionType,
+      createdAt: new Date()
+    };
+
+    // Add to user's points history
+    if (!this.pointsHistory.has(userId)) {
+      this.pointsHistory.set(userId, []);
+    }
+
+    this.pointsHistory.get(userId)!.push(pointsRecord);
+    return pointsRecord;
+  }
+
+  async getPointsHistory(userId: string): Promise<UserPointsHistory[]> {
+    return this.pointsHistory.get(userId) || [];
+  }
+
+  // Research Reading
+  async getUserReadResearch(userId: number): Promise<any[]> {
+    const userRead = this.userReadResearch.get(userId.toString());
+    if (!userRead || userRead.size === 0) {
+      return [];
+    }
+
+    const readResearch: ResearchSummary[] = [];
+    for (const researchId of userRead) {
+      const research = this.researchSummaries.get(researchId);
+      if (research) {
+        readResearch.push(research);
+      }
+    }
+
+    return readResearch;
+  }
+
+  async getUserShowSubmissions(userId: number): Promise<any[]> {
+    return Array.from(this.showSubmissions.values()).filter(
+      (submission) => submission.userId === userId
+    );
+  }
+
+  async getUserUnreadResearch(userId: string): Promise<ResearchSummary[]> {
+    const userRead = this.userReadResearch.get(userId) || new Set<number>();
+    const allResearch = Array.from(this.researchSummaries.values());
+    
+    return allResearch.filter(research => !userRead.has(research.id));
+  }
+
+  async hasUserReadResearch(userId: number, researchId: number): Promise<boolean> {
+    const userRead = this.userReadResearch.get(userId.toString());
+    if (!userRead) {
+      return false;
+    }
+
+    return userRead.has(researchId);
+  }
+
+  async markResearchAsRead(userId: number, researchId: number): Promise<any> {
+    if (!this.userReadResearch.has(userId.toString())) {
+      this.userReadResearch.set(userId.toString(), new Set());
+    }
+
+    this.userReadResearch.get(userId.toString())!.add(researchId);
+
+    return {
+      id: this.userReadResearchCurrentId++,
+      userId: userId.toString(),
+      researchId,
+      readAt: new Date()
+    };
+  }
+
+  async getAllResearch(): Promise<ResearchSummary[]> {
+    return Array.from(this.researchSummaries.values());
+  }
+
+  async getResearchById(id: number): Promise<ResearchSummary | undefined> {
+    return this.researchSummaries.get(id);
+  }
+
+  // Review Upvotes
+  async upvoteReview(userId: string, reviewId: number): Promise<ReviewUpvote> {
+    if (!this.reviewUpvotes.has(reviewId)) {
+      this.reviewUpvotes.set(reviewId, new Set());
+    }
+
+    this.reviewUpvotes.get(reviewId)!.add(userId);
+
+    return {
+      id: 0, // Not used in memory implementation
+      userId,
+      reviewId,
+      createdAt: new Date()
+    };
+  }
+
+  async removeUpvote(userId: string, reviewId: number): Promise<boolean> {
+    const reviewUpvotes = this.reviewUpvotes.get(reviewId);
+    if (!reviewUpvotes) {
+      return false;
+    }
+
+    return reviewUpvotes.delete(userId);
+  }
+
+  async hasUserUpvotedReview(userId: string, reviewId: number): Promise<boolean> {
+    const reviewUpvotes = this.reviewUpvotes.get(reviewId);
+    if (!reviewUpvotes) {
+      return false;
+    }
+
+    return reviewUpvotes.has(userId);
+  }
+
+  async getReviewUpvotes(reviewId: number): Promise<number> {
+    const reviewUpvotes = this.reviewUpvotes.get(reviewId);
+    if (!reviewUpvotes) {
+      return 0;
+    }
+
+    return reviewUpvotes.size;
+  }
+
+  // Show Submissions
+  async createShowSubmission(insertShowSubmission: InsertShowSubmission): Promise<ShowSubmission> {
+    const id = this.showSubmissionCurrentId++;
+    const submission: ShowSubmission = {
+      id,
+      ...insertShowSubmission,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: insertShowSubmission.status || "pending",
+      adminNotes: null
+    };
+
+    this.showSubmissions.set(id, submission);
+    return submission;
+  }
+
+  async getUserShowSubmissions(userId: string): Promise<ShowSubmission[]> {
+    return Array.from(this.showSubmissions.values()).filter(
+      (submission) => submission.userId === Number(userId)
+    );
+  }
+
+  async getAllShowSubmissions(): Promise<ShowSubmission[]> {
+    return Array.from(this.showSubmissions.values());
+  }
+
+  async updateShowSubmission(id: number, updates: Partial<ShowSubmission>): Promise<ShowSubmission> {
+    const submission = this.showSubmissions.get(id);
+    if (!submission) {
+      throw new Error(`Show submission with ID ${id} not found`);
+    }
+
+    const updatedSubmission: ShowSubmission = {
+      ...submission,
+      ...updates,
+      updatedAt: new Date()
+    };
+
+    this.showSubmissions.set(id, updatedSubmission);
+    return updatedSubmission;
+  }
+
+  async getShowSubmission(id: number): Promise<ShowSubmission | undefined> {
+    return this.showSubmissions.get(id);
+  }
+
+  // Referrals
+  async createReferral(userId: string, code: string): Promise<UserReferral> {
+    const id = this.userReferralCurrentId++;
+    const referral: UserReferral = {
+      id,
+      userId,
+      code,
+      referredUserId: null,
+      status: "active",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      usedAt: null
+    };
+
+    this.userReferrals.set(id, referral);
+    return referral;
+  }
+
+  async getReferralByCode(code: string): Promise<UserReferral | undefined> {
+    return Array.from(this.userReferrals.values()).find(
+      (referral) => referral.code === code
+    );
+  }
+
+  async recordReferralUse(id: number, referredUserId: string): Promise<UserReferral> {
+    const referral = this.userReferrals.get(id);
+    if (!referral) {
+      throw new Error(`Referral with ID ${id} not found`);
+    }
+
+    const updatedReferral: UserReferral = {
+      ...referral,
+      referredUserId,
+      status: "used",
+      usedAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.userReferrals.set(id, updatedReferral);
+    return updatedReferral;
+  }
+
+  async getUserReferrals(userId: string): Promise<UserReferral[]> {
+    return Array.from(this.userReferrals.values()).filter(
+      (referral) => referral.userId === userId
+    );
+  }
+}
+
+export const storage = new MemStorage();
