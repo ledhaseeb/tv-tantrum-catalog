@@ -62,7 +62,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refetch
   } = useQuery<User | null, Error>({
     queryKey: ["/api/auth/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/auth/user", {
+          credentials: "include"
+        });
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            return null;
+          }
+          throw new Error("Failed to fetch user");
+        }
+        
+        return await res.json();
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+        return null;
+      }
+    },
     // This ensures we never have undefined, only null for unauthenticated users
     select: (data) => data ?? null,
     // Initialize with null (not authenticated)
