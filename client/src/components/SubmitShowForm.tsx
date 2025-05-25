@@ -117,8 +117,11 @@ export default function SubmitShowForm() {
         name: data.name,
         platform: data.platform || "Unknown",
         additionalNotes: data.additionalNotes || "",
-        userId: user?.id,
-        status: 'pending'
+        // Add required fields from schema
+        description: data.additionalNotes || `User requested show: ${data.name}`,
+        ageRange: "All Ages", // Default value
+        episodeLength: 30, // Default value in minutes
+        userId: user?.id
       };
       
       console.log("Submitting show:", submission);
