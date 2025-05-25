@@ -61,10 +61,8 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           timestamp: new Date().toISOString()
         }));
         
-        // Force direct navigation to dashboard
-        setTimeout(() => {
-          window.location.replace('/user-dashboard');
-        }, 300);
+        // The actual navigation will be handled by the useAuth hook
+        // No need to redirect here as it would cause a conflict
         
         onSuccess();
       },

@@ -178,9 +178,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Update React Query cache with user data
       queryClient.setQueryData(["/api/auth/user"], user);
       
-      // Navigate to user dashboard without refreshing the page
+      // Navigate to home page after login success
       setTimeout(() => {
-        window.location.href = '/user-dashboard';
+        window.location.href = '/home';
       }, 500);
     },
     onError: (error: Error) => {
