@@ -44,9 +44,10 @@ type SearchResult = {
 };
 
 const formSchema = z.object({
-  name: z.string().min(2, "Show name must be at least 2 characters"),
-  platform: z.string().min(1, "Please specify where you watch this show"),
-  additionalNotes: z.string().optional(),
+  showName: z.string().min(2, "Show name must be at least 2 characters"),
+  description: z.string().optional(),
+  suggestedAgeRange: z.string().optional(),
+  adminNotes: z.string().optional(),
 });
 
 type ShowSubmission = z.infer<typeof formSchema>;
@@ -62,9 +63,10 @@ export default function SubmitShowForm() {
   const form = useForm<ShowSubmission>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      platform: "",
-      additionalNotes: "",
+      showName: "",
+      description: "",
+      suggestedAgeRange: "",
+      adminNotes: "",
     },
   });
 
@@ -141,7 +143,7 @@ export default function SubmitShowForm() {
     setSelectedResult(result);
     
     // Pre-populate form with data from the search result
-    form.setValue("name", result.name);
+    form.setValue("showName", result.name);
     
     // Display message if the show is already in our database or submitted
     if (result.source === 'database') {
@@ -158,11 +160,24 @@ export default function SubmitShowForm() {
       });
     }
     
-    // Set platform based on source
+    // Add source information to description
+    let description = result.description || "";
+    
+    // Add platform information to description
     if (result.source === 'youtube') {
-      form.setValue("platform", "YouTube");
+      description += description ? "\n\n" : "";
+      description += "Platform: YouTube";
     } else if (result.source === 'omdb') {
-      form.setValue("platform", "TV/Streaming");
+      description += description ? "\n\n" : "";
+      description += "Platform: TV/Streaming";
+    }
+    
+    // Update description field
+    form.setValue("description", description);
+    
+    // Set suggested age range based on available info
+    if (result.source === 'omdb' && result.releaseYear) {
+      form.setValue("suggestedAgeRange", `Released in ${result.releaseYear}`);
     }
   };
 
