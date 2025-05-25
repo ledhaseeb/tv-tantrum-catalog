@@ -176,8 +176,9 @@ export default function Home() {
   }).slice(0, 24);
   
   // Filter shows based on search term
-  const filteredShows = allShows?.filter((show: TvShow) => {
+  const filteredShows = allShows ? allShows.filter((show: TvShow) => {
     if (!searchQuery.trim()) return false;
+    if (!show || !show.name) return false; // Safety check
     
     const searchLower = searchQuery.toLowerCase().trim();
     const nameLower = show.name.toLowerCase();
@@ -198,7 +199,7 @@ export default function Home() {
     if (simplifiedName.includes(searchLower)) return true;
     
     return false;
-  }).slice(0, 6);
+  }).slice(0, 6) : [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
