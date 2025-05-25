@@ -19,6 +19,7 @@ import PreLaunchFAQ from "@/pages/pre-launch-faq";
 import TokenEntryPage from "@/pages/token-entry";
 import RegistrationPendingPage from "@/pages/registration-pending";
 import UserDashboard from "@/pages/user-dashboard";
+import DirectDashboard from "@/pages/direct-dashboard";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
@@ -51,6 +52,11 @@ function Router() {
           <ApprovedRoute>
             <UserDashboard />
           </ApprovedRoute>
+        </Route>
+        
+        {/* Direct Dashboard Access - For troubleshooting auth issues */}
+        <Route path="/direct-dashboard">
+          <DirectDashboard />
         </Route>
         
         {/* Main Application Routes */}
