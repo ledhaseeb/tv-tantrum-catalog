@@ -204,14 +204,15 @@ export const showSubmissions = pgTable("show_submissions", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
-  description: text("description").notNull(),
-  ageRange: text("age_range").notNull(),
-  episodeLength: integer("episode_length"),
   platform: text("platform"),
   additionalNotes: text("additional_notes"),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdBy: text("created_by"), // Username of the person who created the submission
+  reviewedBy: text("reviewed_by"), // Admin who reviewed this submission
+  reviewedAt: timestamp("reviewed_at"), // When the submission was reviewed
+  approvedToTvShowId: integer("approved_to_tv_show_id").references(() => tvShows.id), // If approved, link to TV show
 });
 
 export const userReferrals = pgTable("user_referrals", {
@@ -299,6 +300,9 @@ export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).om
   createdAt: true,
   updatedAt: true,
   status: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  approvedToTvShowId: true
 });
 
 export const insertUserReferralSchema = createInsertSchema(userReferrals).omit({

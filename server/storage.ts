@@ -132,29 +132,184 @@ export interface IStorage {
 
 // Database Storage Implementation
 import { db } from "./db";
-import { users, type User, type InsertUser } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { 
+  users, tvShows, showSubmissions,
+  type User, type InsertUser,
+  type TvShow, type InsertTvShow,
+  type ShowSubmission, type InsertShowSubmission,
+} from "@shared/schema";
+import { eq, desc, like } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      return user || undefined;
+    } catch (error) {
+      console.error("Error getting user:", error);
+      throw error;
+    }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    try {
+      const [user] = await db.select().from(users).where(eq(users.username, username));
+      return user || undefined;
+    } catch (error) {
+      console.error("Error getting user by username:", error);
+      throw error;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      return user || undefined;
+    } catch (error) {
+      console.error("Error getting user by email:", error);
+      throw error;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    try {
+      const [user] = await db
+        .insert(users)
+        .values(insertUser)
+        .returning();
+      return user;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  }
+
+  async upsertUser(userData: Partial<User>): Promise<User> {
+    try {
+      if (!userData.id) {
+        throw new Error("User ID is required for upsert operation");
+      }
+      
+      const existingUser = await this.getUser(userData.id);
+      
+      if (existingUser) {
+        // Update existing user
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            ...userData,
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, userData.id))
+          .returning();
+        return updatedUser;
+      } else {
+        // Create new user
+        return this.createUser(userData as InsertUser);
+      }
+    } catch (error) {
+      console.error("Error upserting user:", error);
+      throw error;
+    }
   }
   
-  // The rest of the database methods will be implemented as needed
+  // Show submission methods
+  async addShowSubmission(submission: InsertShowSubmission): Promise<ShowSubmission> {
+    try {
+      // Get the username to store with the submission
+      const user = await this.getUser(submission.userId);
+      const createdBy = user?.username || "Unknown User";
+      
+      const [result] = await db
+        .insert(showSubmissions)
+        .values({
+          ...submission,
+          createdBy
+        })
+        .returning();
+      
+      return result;
+    } catch (error) {
+      console.error("Error adding show submission:", error);
+      throw error;
+    }
+  }
+  
+  async getUserShowSubmissions(userId: string): Promise<ShowSubmission[]> {
+    try {
+      return await db
+        .select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.userId, userId))
+        .orderBy(desc(showSubmissions.createdAt));
+    } catch (error) {
+      console.error("Error getting user show submissions:", error);
+      throw error;
+    }
+  }
+  
+  async getPendingShowSubmissions(): Promise<ShowSubmission[]> {
+    try {
+      return await db
+        .select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.status, "pending"))
+        .orderBy(desc(showSubmissions.createdAt));
+    } catch (error) {
+      console.error("Error getting pending show submissions:", error);
+      throw error;
+    }
+  }
+  
+  async updateShowSubmissionStatus(id: number, status: string): Promise<ShowSubmission> {
+    try {
+      const [updatedSubmission] = await db
+        .update(showSubmissions)
+        .set({
+          status,
+          updatedAt: new Date()
+        })
+        .where(eq(showSubmissions.id, id))
+        .returning();
+      
+      if (!updatedSubmission) {
+        throw new Error(`Show submission with ID ${id} not found`);
+      }
+      
+      return updatedSubmission;
+    } catch (error) {
+      console.error("Error updating show submission status:", error);
+      throw error;
+    }
+  }
+  
+  async searchShowSubmissions(query: string): Promise<ShowSubmission[]> {
+    try {
+      return await db
+        .select()
+        .from(showSubmissions)
+        .where(like(showSubmissions.name, `%${query}%`))
+        .limit(5);
+    } catch (error) {
+      console.error("Error searching show submissions:", error);
+      throw error;
+    }
+  }
+  
+  // TV Shows methods
+  async getTvShowById(id: number): Promise<TvShow | undefined> {
+    try {
+      const [show] = await db
+        .select()
+        .from(tvShows)
+        .where(eq(tvShows.id, id));
+      return show;
+    } catch (error) {
+      console.error("Error getting TV show:", error);
+      throw error;
+    }
+  }
 
 // Keep the MemStorage implementation for backward compatibility
 export class MemStorage implements IStorage {
