@@ -251,7 +251,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
               </div>
             </div>
             
-            <div className="w-full px-4 mt-4">
+            <div className="w-full flex items-center justify-center mt-4 mb-4" style={{ minHeight: "80px" }}>
               <p className="text-sm text-gray-600 text-center leading-relaxed mx-auto">
                 {getStimulationLevelText(show.stimulationScore)}
               </p>
