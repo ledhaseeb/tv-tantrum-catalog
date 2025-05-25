@@ -2,10 +2,10 @@ import express, { Request, Response } from "express";
 import session from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
-import { db } from "./db";
-import { showSubmissions, users } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
 import { setupVite } from "./vite";
+import { db } from "./db";
+import { showSubmissions } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === "production";
@@ -54,27 +54,25 @@ app.post("/api/show-submissions", async (req: Request, res: Response) => {
     
     // Prepare submission data
     const submissionData = {
+      userId: user.id,
       showName: req.body.showName,
       description: req.body.description || null,
       suggestedAgeRange: req.body.suggestedAgeRange || null,
       suggestedThemes: Array.isArray(req.body.suggestedThemes) 
         ? req.body.suggestedThemes 
         : (req.body.suggestedThemes ? [req.body.suggestedThemes] : []),
-      userId: user.id, // Use string ID to match updated schema
       status: "pending" // Always set initial status to pending
     };
     
     console.log("Prepared submission data:", submissionData);
     
-    // Create the submission directly in database
+    // Insert into database directly
     const [submission] = await db
       .insert(showSubmissions)
       .values(submissionData)
       .returning();
     
     console.log("Submission created:", submission);
-    
-    // Award points feature will be implemented later when we have the user points table
     
     res.status(201).json({
       message: "Show submission created successfully",
@@ -102,13 +100,80 @@ app.get("/api/show-submissions/user", async (req: Request, res: Response) => {
       .select()
       .from(showSubmissions)
       .where(eq(showSubmissions.userId, user.id))
-      .orderBy(sql`${showSubmissions.createdAt} DESC`);
+      .orderBy(desc(showSubmissions.createdAt));
     
     res.json(userSubmissions);
   } catch (error) {
     console.error("Error fetching user submissions:", error);
     res.status(500).json({
       message: "Failed to fetch user submissions",
+      error: (error as Error).message
+    });
+  }
+});
+
+// Get pending submissions (for admin review)
+app.get("/api/show-submissions/pending", async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized: Admin access required" });
+    }
+    
+    const pendingSubmissions = await db
+      .select()
+      .from(showSubmissions)
+      .where(eq(showSubmissions.status, "pending"))
+      .orderBy(desc(showSubmissions.createdAt));
+    
+    res.json(pendingSubmissions);
+  } catch (error) {
+    console.error("Error fetching pending submissions:", error);
+    res.status(500).json({
+      message: "Failed to fetch pending submissions",
+      error: (error as Error).message
+    });
+  }
+});
+
+// Update submission status (for admin approval/rejection)
+app.patch("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    const submissionId = parseInt(req.params.id, 10);
+    const { status, adminNotes } = req.body;
+    
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized: Admin access required" });
+    }
+    
+    if (!["approved", "rejected", "pending"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+    
+    const [updatedSubmission] = await db
+      .update(showSubmissions)
+      .set({
+        status,
+        adminNotes: adminNotes || null,
+        updatedAt: new Date()
+      })
+      .where(eq(showSubmissions.id, submissionId))
+      .returning();
+    
+    if (!updatedSubmission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+    
+    res.json({
+      message: `Submission ${status}`,
+      submission: updatedSubmission
+    });
+  } catch (error) {
+    console.error("Error updating submission status:", error);
+    res.status(500).json({
+      message: "Failed to update submission status",
       error: (error as Error).message
     });
   }
