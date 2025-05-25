@@ -2832,26 +2832,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/show-submissions", requireLogin, async (req: Request, res: Response) => {
     try {
       const user = req.user;
+      console.log("Show submission request received:", req.body);
       
       if (!user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
       
-      // Validate the submission data
-      const submissionData = insertShowSubmissionSchema.parse({
-        ...req.body,
-        userId: user.id
-      });
+      // Prepare submission data
+      const submissionData = {
+        showName: req.body.showName,
+        description: req.body.description || null,
+        suggestedAgeRange: req.body.suggestedAgeRange || null,
+        suggestedThemes: Array.isArray(req.body.suggestedThemes) ? req.body.suggestedThemes : [],
+        userId: user.id,
+        status: "pending" // Always set initial status to pending
+      };
       
-      // Convert theme strings to array if needed
-      if (submissionData.suggestedThemes && !Array.isArray(submissionData.suggestedThemes)) {
-        submissionData.suggestedThemes = [submissionData.suggestedThemes];
-      }
+      console.log("Prepared submission data:", submissionData);
+      
+      // Validate the submission data using the schema
+      const validatedData = insertShowSubmissionSchema.parse(submissionData);
+      console.log("Validated data:", validatedData);
       
       // Create the submission using direct database access
       const [submission] = await db
         .insert(showSubmissions)
-        .values(submissionData)
+        .values(validatedData)
         .returning();
       
       // Award points for the submission if available
