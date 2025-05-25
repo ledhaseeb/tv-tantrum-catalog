@@ -53,6 +53,12 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           title: "Login successful!",
           description: "Welcome back to TV Tantrum",
         });
+        
+        // Manually redirect to dashboard after successful login
+        setTimeout(() => {
+          window.location.href = '/user-dashboard';
+        }, 300);
+        
         onSuccess();
       },
     });
