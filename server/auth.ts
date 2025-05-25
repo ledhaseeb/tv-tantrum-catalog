@@ -78,12 +78,12 @@ export function setupAuth(app: Express) {
 
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || 'tv-tantrum-development-secret',
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     store: sessionStore,
     name: 'tvtantrum_session',
     cookie: {
-      secure: false, // Set to false for both dev and production in this environment
+      secure: process.env.NODE_ENV === 'production', // Only secure in production
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       sameSite: 'lax',
@@ -154,27 +154,14 @@ export function setupAuth(app: Express) {
       // Convert id to string if it's a number to match database schema
       const userId = typeof id === 'number' ? id.toString() : id;
       
-      console.log(`Deserializing user ID: ${userId}`);
-      
       const user = await storage.getUser(userId);
       if (!user) {
-        console.log(`User not found for ID: ${userId}`);
         return done(null, false);
       }
-      
       // Don't include password in the user object
       const { password: _, ...safeUser } = user;
-      console.log(`Successfully deserialized user: ${userId}`);
-      
-      // Set user authentication flag for this session
-      const userWithFlag = {
-        ...safeUser, 
-        isAuthenticated: true 
-      };
-      
-      done(null, userWithFlag as Express.User);
+      done(null, safeUser as Express.User);
     } catch (error) {
-      console.error(`Error deserializing user: ${error}`);
       done(error);
     }
   });

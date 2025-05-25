@@ -30,7 +30,12 @@ export async function addFavorite(userId: string, tvShowId: number): Promise<any
       [tvShowId]
     );
     
+    if (showResult.rows.length === 0) {
+      throw new Error(`TV show with ID ${tvShowId} not found`);
+    }
+    
     const showName = showResult.rows[0]?.name || 'Unknown show';
+    console.log(`Adding favorite - Show ID: ${tvShowId}, Show Name: ${showName}`);
     
     // Add to favorites with show name
     const result = await client.query(
@@ -57,23 +62,41 @@ export async function addFavorite(userId: string, tvShowId: number): Promise<any
  * Remove a show from user's favorites
  */
 export async function removeFavorite(userId: string, tvShowId: number): Promise<boolean> {
+  const client = await pool.connect();
+  
   try {
-    const result = await pool.query(
-      'DELETE FROM favorites WHERE user_id = $1 AND tv_show_id = $2',
+    await client.query('BEGIN');
+    
+    // Get the show name first for better logging
+    const showQuery = await client.query(
+      'SELECT name FROM tv_shows WHERE id = $1',
+      [tvShowId]
+    );
+    
+    const showName = showQuery.rows[0]?.name || 'Unknown show';
+    
+    // Then perform the deletion
+    const result = await client.query(
+      'DELETE FROM favorites WHERE user_id = $1 AND tv_show_id = $2 RETURNING *',
       [userId, tvShowId]
     );
     
+    await client.query('COMMIT');
+    
     const removed = result.rowCount > 0;
     if (removed) {
-      console.log(`User ${userId} removed show ${tvShowId} from favorites`);
+      console.log(`User ${userId} removed show ${tvShowId} (${showName}) from favorites`);
     } else {
-      console.log(`Show ${tvShowId} was not in favorites for user ${userId}`);
+      console.log(`Show ${tvShowId} (${showName}) was not in favorites for user ${userId}`);
     }
     
     return removed;
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error removing favorite:', error);
     return false;
+  } finally {
+    client.release();
   }
 }
 
