@@ -94,11 +94,18 @@ export default function SubmitShowForm() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: (data: ShowSubmission) => apiRequest("/api/show-submissions", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-    onSuccess: () => {
+    mutationFn: (data: ShowSubmission) => {
+      console.log("Making API request with data:", data);
+      return apiRequest("/api/show-submissions", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    },
+    onSuccess: (response) => {
+      console.log("Submission successful:", response);
       toast({
         title: "Show Submitted!",
         description: "Thank you for your submission. Our team will review it soon.",
@@ -109,12 +116,12 @@ export default function SubmitShowForm() {
       queryClient.invalidateQueries({ queryKey: ['/api/show-submissions'] });
     },
     onError: (error) => {
+      console.error("Error submitting show:", error);
       toast({
         title: "Submission Failed",
         description: "There was an error submitting your show. Please try again.",
         variant: "destructive",
       });
-      console.error("Error submitting show:", error);
     },
   });
 
@@ -128,7 +135,22 @@ export default function SubmitShowForm() {
       return;
     }
     
-    submitMutation.mutate(data);
+    // Ensure themes is an array
+    const formattedData = {
+      ...data,
+      // Make sure suggestedThemes is always an array
+      suggestedThemes: data.suggestedThemes 
+        ? (Array.isArray(data.suggestedThemes) 
+            ? data.suggestedThemes 
+            : [data.suggestedThemes])
+        : [],
+      // Ensure we have default values
+      suggestedAgeRange: data.suggestedAgeRange || null,
+      description: data.description || null,
+    };
+    
+    console.log("Submitting show data:", formattedData);
+    submitMutation.mutate(formattedData);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
