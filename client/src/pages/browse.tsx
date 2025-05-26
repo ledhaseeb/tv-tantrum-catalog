@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
 import ShowCard from "@/components/ShowCard";
+import SimpleShowCard from "@/components/SimpleShowCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -447,10 +448,9 @@ export default function Browse() {
                     {currentShows.map((show, index) => {
                       console.log(`BROWSE PAGE: Rendering ShowCard ${index} with data:`, show);
                       return (
-                        <ShowCard 
+                        <SimpleShowCard 
                           key={show.id} 
                           show={show} 
-                          viewMode="grid"
                           onClick={() => handleShowClick(show.id)}
                         />
                       );
