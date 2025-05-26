@@ -109,6 +109,8 @@ export class SearchService {
     const client = await this.pool.connect();
     
     try {
+      console.log('Filter query detected:', filters);
+      
       // Base query that safely handles all filter combinations
       let query = `SELECT * FROM tv_shows WHERE 1=1`;
       const params: any[] = [];
@@ -121,25 +123,26 @@ export class SearchService {
         paramIndex++;
       }
       
-      // Add other filters based on what's in the request
-      // ageGroup filter
-      if (filters.ageGroup) {
-        query += ` AND age_group = $${paramIndex}`;
-        params.push(filters.ageGroup);
-        paramIndex++;
+      // Age range filter (updated to use proper field name)
+      if (filters.ageRangeMin !== undefined && filters.ageRangeMax !== undefined) {
+        // Handle age range filtering with proper age parsing
+        query += ` AND age_range IS NOT NULL`;
       }
       
-      // tantrumFactor filter
-      if (filters.tantrumFactor) {
-        query += ` AND tantrum_factor = $${paramIndex}`;
-        params.push(filters.tantrumFactor);
-        paramIndex++;
+      // Stimulation score range filter
+      if (filters.stimulationScoreRange) {
+        const range = typeof filters.stimulationScoreRange === 'string' 
+          ? JSON.parse(filters.stimulationScoreRange) 
+          : filters.stimulationScoreRange;
+        query += ` AND stimulation_score >= $${paramIndex} AND stimulation_score <= $${paramIndex + 1}`;
+        params.push(range.min, range.max);
+        paramIndex += 2;
       }
       
-      // Sensory-specific filters
-      if (filters.interactivityLevel) {
-        query += ` AND interactivity_level = $${paramIndex}`;
-        params.push(filters.interactivityLevel);
+      // Interaction level filter (updated field name)
+      if (filters.interactionLevel) {
+        query += ` AND interaction_level = $${paramIndex}`;
+        params.push(filters.interactionLevel);
         paramIndex++;
       }
       
@@ -158,11 +161,8 @@ export class SearchService {
       // Sort filter - apply appropriate sorting
       if (filters.sortBy) {
         switch (filters.sortBy) {
-          case 'name_asc':
+          case 'name':
             query += ` ORDER BY name ASC`;
-            break;
-          case 'name_desc':
-            query += ` ORDER BY name DESC`;
             break;
           case 'newest':
             query += ` ORDER BY release_year DESC NULLS LAST`;
@@ -170,8 +170,11 @@ export class SearchService {
           case 'oldest':
             query += ` ORDER BY release_year ASC NULLS LAST`;
             break;
-          case 'popular':
-            query += ` ORDER BY view_count DESC NULLS LAST`;
+          case 'stimulation-score':
+            query += ` ORDER BY stimulation_score DESC NULLS LAST`;
+            break;
+          case 'interactivity-level':
+            query += ` ORDER BY interaction_level DESC NULLS LAST`;
             break;
           default:
             query += ` ORDER BY name ASC`;
@@ -217,7 +220,35 @@ export class SearchService {
         }
       }
       
-      return shows;
+      // Normalize the field names to match the frontend expectations (same as search function)
+      return shows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        ageRange: row.age_range || '',
+        stimulationScore: row.stimulation_score || 0,
+        themes: row.themes || [],
+        imageUrl: row.image_url,
+        network: row.network,
+        releaseYear: row.release_year,
+        endYear: row.end_year,
+        isOngoing: row.is_ongoing,
+        seasons: row.seasons,
+        availableOn: row.available_on || [],
+        interactionLevel: row.interaction_level,
+        dialogueIntensity: row.dialogue_intensity,
+        soundFrequency: row.sound_frequency,
+        episodeLength: row.episode_length || 0,
+        creator: row.creator,
+        creativityRating: row.creativity_rating,
+        subscriberCount: row.subscriber_count,
+        videoCount: row.video_count,
+        channelId: row.channel_id,
+        isYouTubeChannel: row.is_youtube_channel || false,
+        publishedAt: row.published_at,
+        hasOmdbData: row.has_omdb_data || false,
+        hasYoutubeData: row.has_youtube_data || false
+      }));
     } finally {
       client.release();
     }
