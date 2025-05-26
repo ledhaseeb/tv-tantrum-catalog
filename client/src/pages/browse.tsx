@@ -188,6 +188,7 @@ export default function Browse() {
         
         const data = await response.json();
         console.log('BROWSE PAGE: Received', data.length, 'shows');
+        console.log('BROWSE PAGE: First show data:', data[0]);
         setShows(data);
       } catch (err) {
         console.error('BROWSE PAGE: Error fetching shows:', err);
@@ -285,6 +286,12 @@ export default function Browse() {
   const currentShows = shows ? shows.slice(indexOfFirstShow, indexOfLastShow) : [];
   const totalPages = shows ? Math.ceil(shows.length / showsPerPage) : 0;
   const totalShows = shows?.length || 0;
+
+  // Debug current shows data
+  console.log('BROWSE PAGE: Current shows for display:', currentShows.length);
+  if (currentShows.length > 0) {
+    console.log('BROWSE PAGE: First current show:', currentShows[0]);
+  }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
