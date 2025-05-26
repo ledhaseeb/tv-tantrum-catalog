@@ -264,12 +264,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (!res.ok) {
-        // If we get a 401, clear stale auth state
-        if (res.status === 401) {
-          localStorage.removeItem('tvtantrum_auth');
-          queryClient.setQueryData(["/api/user"], null);
-          queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-        }
         const errorText = await res.text();
         throw new Error(errorText || "Failed to remove from favorites");
       }
@@ -283,12 +277,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (!res.ok) {
-        // If we get a 401, clear stale auth state
-        if (res.status === 401) {
-          localStorage.removeItem('tvtantrum_auth');
-          queryClient.setQueryData(["/api/user"], null);
-          queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-        }
         const errorText = await res.text();
         throw new Error(errorText || "Failed to add to favorites");
       }

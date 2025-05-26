@@ -75,13 +75,22 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const [, navigate] = useLocation();
   const { toast } = useToast();
   
-  const toggleFavorite = async (e: React.MouseEvent) => {
+  const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Always try the favorite action and let the auth context handle authentication
-    try {
-      await toggleFav(show.id);
-      
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or register to save shows to your favorites.",
+        variant: "default",
+      });
+      navigate("/auth");
+      return;
+    }
+    
+    // Use the auth context toggle favorite function
+    toggleFav(show.id).then(() => {
       // Update local state (optimistic update)
       setIsFavorite(!isFavorite);
       
@@ -90,25 +99,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         description: isFavorite ? `${show.name} has been removed from your favorites.` : `${show.name} has been added to your favorites.`,
         variant: "default",
       });
-    } catch (error) {
+    }).catch(error => {
+      toast({
+        title: "Error",
+        description: "There was an error updating your favorites. Please try again.",
+        variant: "destructive",
+      });
       console.error("Error toggling favorite:", error);
-      
-      // Check if it's an authentication error
-      if (error?.message?.includes("401") || error?.message?.includes("Not authenticated") || error?.message?.includes("must be logged in")) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in or register to save shows to your favorites.",
-          variant: "default",
-        });
-        navigate("/auth");
-      } else {
-        toast({
-          title: "Error",
-          description: "There was an error updating your favorites. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
+    });
   };
   
   // Format release year range
