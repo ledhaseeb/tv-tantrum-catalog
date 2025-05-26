@@ -34,7 +34,35 @@ export class SearchService {
         [`%${searchTerm.trim()}%`]
       );
       
-      return result.rows;
+      // Normalize the field names to match the frontend expectations
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        ageRange: row.age_range || '',
+        stimulationScore: row.stimulation_score || 0,
+        themes: row.themes || [],
+        imageUrl: row.image_url,
+        network: row.network,
+        releaseYear: row.release_year,
+        endYear: row.end_year,
+        isOngoing: row.is_ongoing,
+        seasons: row.seasons,
+        availableOn: row.available_on || [],
+        interactionLevel: row.interaction_level,
+        dialogueIntensity: row.dialogue_intensity,
+        soundFrequency: row.sound_frequency,
+        episodeLength: row.episode_length || 0,
+        creator: row.creator,
+        creativityRating: row.creativity_rating,
+        subscriberCount: row.subscriber_count,
+        videoCount: row.video_count,
+        channelId: row.channel_id,
+        isYouTubeChannel: row.is_youtube_channel || false,
+        publishedAt: row.published_at,
+        hasOmdbData: row.has_omdb_data || false,
+        hasYoutubeData: row.has_youtube_data || false
+      }));
     } finally {
       client.release();
     }
