@@ -448,9 +448,10 @@ export default function Browse() {
                     {currentShows.map((show, index) => {
                       console.log(`BROWSE PAGE: Rendering ShowCard ${index} with data:`, show);
                       return (
-                        <SimpleShowCard 
+                        <ShowCard 
                           key={show.id} 
                           show={show} 
+                          viewMode="grid"
                           onClick={() => handleShowClick(show.id)}
                         />
                       );

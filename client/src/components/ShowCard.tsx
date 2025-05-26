@@ -22,14 +22,17 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const [imageError, setImageError] = useState(false);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
-
+  // Ensure we have valid show data
+  if (!show || !show.id) {
+    return null;
+  }
   
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
     ...show,
     // Type-safe normalization for field names that might come in different formats
     imageUrl: show.imageUrl || '',
-    ageRange: show.ageRange || '',
+    ageRange: show.ageRange || 'Unknown',
     stimulationScore: show.stimulationScore || 0
   };
   
