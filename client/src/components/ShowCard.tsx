@@ -75,22 +75,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const [, navigate] = useLocation();
   const { toast } = useToast();
   
-  const toggleFavorite = (e: React.MouseEvent) => {
+  const toggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Check if user is logged in
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in or register to save shows to your favorites.",
-        variant: "default",
-      });
-      navigate("/auth");
-      return;
-    }
-    
-    // Use the auth context toggle favorite function
-    toggleFav(show.id).then(() => {
+    // Always try the favorite action and let the auth context handle authentication
+    try {
+      await toggleFav(show.id);
+      
       // Update local state (optimistic update)
       setIsFavorite(!isFavorite);
       
@@ -99,7 +90,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         description: isFavorite ? `${show.name} has been removed from your favorites.` : `${show.name} has been added to your favorites.`,
         variant: "default",
       });
-    }).catch(error => {
+    } catch (error) {
       console.error("Error toggling favorite:", error);
       
       // Check if it's an authentication error
@@ -117,7 +108,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           variant: "destructive",
         });
       }
-    });
+    }
   };
   
   // Format release year range
