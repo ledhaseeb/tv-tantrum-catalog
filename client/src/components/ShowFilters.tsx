@@ -338,6 +338,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               onSubmit={(e) => {
                 e.preventDefault();
                 console.log('Search form submitted with term:', searchInput);
+                setShowSearchDropdown(false);
                 handleFilterChange('search', searchInput);
                 const updatedFilters = {
                   ...filters,
