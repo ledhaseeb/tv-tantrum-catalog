@@ -291,6 +291,7 @@ export default function Browse() {
   console.log('BROWSE PAGE: Current shows for display:', currentShows.length);
   if (currentShows.length > 0) {
     console.log('BROWSE PAGE: First current show:', currentShows[0]);
+    console.log('BROWSE PAGE: All current shows:', currentShows);
   }
 
   const handlePageChange = (page: number) => {
