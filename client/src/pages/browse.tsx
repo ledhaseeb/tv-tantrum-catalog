@@ -151,12 +151,6 @@ export default function Browse() {
   
   // Direct fetch implementation for maximum reliability
   useEffect(() => {
-    // Skip fetch if no filters are applied (to prevent unnecessary requests)
-    if (Object.keys(activeFilters).length === 0) {
-      setIsLoading(false);
-      return;
-    }
-    
     async function fetchShows() {
       setIsLoading(true);
       setError(null);
