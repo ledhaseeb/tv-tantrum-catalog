@@ -382,11 +382,22 @@ export default function Detail({ id }: DetailProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
     } catch (error) {
       console.error("Failed to toggle favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check if it's an authentication error
+      if (error?.message?.includes("401") || error?.message?.includes("Not authenticated") || error?.message?.includes("must be logged in")) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in or register to save shows to your favorites.",
+          variant: "default",
+        });
+        setLocation("/auth");
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update favorites. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

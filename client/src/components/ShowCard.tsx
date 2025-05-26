@@ -100,12 +100,23 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         variant: "default",
       });
     }).catch(error => {
-      toast({
-        title: "Error",
-        description: "There was an error updating your favorites. Please try again.",
-        variant: "destructive",
-      });
       console.error("Error toggling favorite:", error);
+      
+      // Check if it's an authentication error
+      if (error?.message?.includes("401") || error?.message?.includes("Not authenticated") || error?.message?.includes("must be logged in")) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in or register to save shows to your favorites.",
+          variant: "default",
+        });
+        navigate("/auth");
+      } else {
+        toast({
+          title: "Error",
+          description: "There was an error updating your favorites. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
   
