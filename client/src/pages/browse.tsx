@@ -180,6 +180,11 @@ export default function Browse() {
           params.append('themeMatchMode', activeFilters.themeMatchMode);
         }
         
+        // Add stimulation score range as JSON string
+        if (activeFilters.stimulationScoreRange) {
+          params.append('stimulationScoreRange', JSON.stringify(activeFilters.stimulationScoreRange));
+        }
+        
         // Use fetch directly
         const response = await fetch(`/api/tv-shows?${params.toString()}`);
         
