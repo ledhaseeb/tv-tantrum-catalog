@@ -444,14 +444,17 @@ export default function Browse() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {currentShows.map(show => (
-                      <ShowCard 
-                        key={show.id} 
-                        show={show} 
-                        viewMode="grid"
-                        onClick={() => handleShowClick(show.id)}
-                      />
-                    ))}
+                    {currentShows.map((show, index) => {
+                      console.log(`BROWSE PAGE: Rendering ShowCard ${index} with data:`, show);
+                      return (
+                        <ShowCard 
+                          key={show.id} 
+                          show={show} 
+                          viewMode="grid"
+                          onClick={() => handleShowClick(show.id)}
+                        />
+                      );
+                    })}
                   </div>
                 )}
                 

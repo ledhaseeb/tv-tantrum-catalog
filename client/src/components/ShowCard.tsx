@@ -22,8 +22,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const [imageError, setImageError] = useState(false);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
-  // Debug show data
-  console.log('ShowCard received show data:', show);
+
   
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
