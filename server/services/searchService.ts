@@ -134,6 +134,7 @@ export class SearchService {
         const range = typeof filters.stimulationScoreRange === 'string' 
           ? JSON.parse(filters.stimulationScoreRange) 
           : filters.stimulationScoreRange;
+        console.log('Stimulation score range filter applied:', range);
         query += ` AND stimulation_score >= $${paramIndex} AND stimulation_score <= $${paramIndex + 1}`;
         params.push(range.min, range.max);
         paramIndex += 2;
@@ -171,7 +172,7 @@ export class SearchService {
             query += ` ORDER BY release_year ASC NULLS LAST`;
             break;
           case 'stimulation-score':
-            query += ` ORDER BY stimulation_score DESC NULLS LAST`;
+            query += ` ORDER BY stimulation_score ASC NULLS LAST`;
             break;
           case 'interactivity-level':
             query += ` ORDER BY interaction_level DESC NULLS LAST`;
