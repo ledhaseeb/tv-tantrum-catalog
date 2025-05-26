@@ -54,6 +54,8 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const [selectedThemes, setSelectedThemes] = useState<string[]>(activeFilters.themes || []);
   const [themeMatchMode, setThemeMatchMode] = useState<'AND' | 'OR'>(activeFilters.themeMatchMode || 'AND');
   const [openAutoComplete, setOpenAutoComplete] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   
   // Fetch shows for autocomplete and theme analysis
   const { data: shows } = useQuery<TvShow[]>({
@@ -117,6 +119,20 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   useEffect(() => {
     console.log("Current filters in ShowFilters component:", filters);
   }, [filters]);
+
+  // Hide search dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   
   // Find relevant secondary themes based on shows that have the primary theme
   const findRelevantSecondaryThemes = (primaryTheme: string) => {
@@ -313,7 +329,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
         
         <div className="space-y-6">
           {/* Search by show name with autocomplete */}
-          <div>
+          <div ref={searchContainerRef}>
             <Label htmlFor="show-name" className="block text-sm font-medium text-gray-700 mb-2">
               Show Name
             </Label>
@@ -340,6 +356,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                   value={searchInput}
                   onChange={(e) => {
                     setSearchInput(e.target.value);
+                    setShowSearchDropdown(e.target.value.trim().length > 0);
                   }}
                   className="w-full pl-8 rounded-r-none"
                 />
@@ -353,7 +370,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             </form>
               
             {/* Show matching results based on searchInput */}
-            {searchInput.trim().length > 0 && (
+            {showSearchDropdown && searchInput.trim().length > 0 && (
               <div className="relative mt-1">
                 <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-gray-200">
                   <div className="py-1">
@@ -390,6 +407,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                           onClick={() => {
                             console.log('Selecting show from dropdown:', show.name);
                             setSearchInput(show.name);
+                            setShowSearchDropdown(false);
                             handleFilterChange('search', show.name);
                             const updatedFilters = {
                               ...filters,
