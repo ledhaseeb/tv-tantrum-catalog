@@ -69,6 +69,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   
   // Common themes extracted dynamically from the database
   const [commonThemes, setCommonThemes] = useState<string[]>([]);
+  const [availableThemes, setAvailableThemes] = useState<string[]>([]);
   
   // Extract all themes from the database when shows data is loaded
   useEffect(() => {
@@ -91,7 +92,52 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     console.log(`Found ${sortedThemes.length} unique themes in the database`);
     
     setCommonThemes(sortedThemes);
+    setAvailableThemes(sortedThemes); // Initially all themes are available
   }, [shows]);
+
+  // Calculate available themes based on selected themes and match mode
+  useEffect(() => {
+    if (!shows || !Array.isArray(shows) || themeMatchMode === 'OR') {
+      // In OR mode or no shows, all themes are available
+      setAvailableThemes(commonThemes);
+      return;
+    }
+
+    if (selectedThemes.length === 0) {
+      // No themes selected, all themes are available
+      setAvailableThemes(commonThemes);
+      return;
+    }
+
+    // In AND mode with selected themes, find themes that co-exist
+    const coexistingThemes = new Set<string>();
+    
+    // Find shows that contain ALL currently selected themes
+    const matchingShows = shows.filter(show => {
+      if (!show.themes || !Array.isArray(show.themes)) return false;
+      const themes = show.themes as string[];
+      return selectedThemes.every(selectedTheme => 
+        themes.includes(selectedTheme)
+      );
+    });
+
+    // Collect all themes from shows that match the current selection
+    matchingShows.forEach(show => {
+      if (show.themes && Array.isArray(show.themes)) {
+        show.themes.forEach(theme => {
+          if (theme && theme.trim() !== '') {
+            coexistingThemes.add(theme.trim());
+          }
+        });
+      }
+    });
+
+    // Convert to array and sort, including already selected themes
+    const availableThemesList = Array.from(coexistingThemes).sort();
+    setAvailableThemes(availableThemesList);
+    
+    console.log(`AND mode: Found ${availableThemesList.length} themes that co-exist with selected themes`);
+  }, [shows, selectedThemes, themeMatchMode, commonThemes]);
   
   // Update local state when props change
   useEffect(() => {
@@ -570,31 +616,37 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             </div>
             
             <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
-              {commonThemes.map((theme) => (
-                <div key={theme} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`theme-${theme}`}
-                    checked={selectedThemes.includes(theme)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        const newThemes = [...selectedThemes, theme];
-                        setSelectedThemes(newThemes);
-                        handleFilterChange('themes', newThemes);
-                      } else {
-                        const newThemes = selectedThemes.filter(t => t !== theme);
-                        setSelectedThemes(newThemes);
-                        handleFilterChange('themes', newThemes.length > 0 ? newThemes : undefined);
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor={`theme-${theme}`}
-                    className="text-sm cursor-pointer flex-1"
-                  >
-                    {theme}
-                  </label>
-                </div>
-              ))}
+              {availableThemes.map((theme) => {
+                const isSelected = selectedThemes.includes(theme);
+                const isDisabled = themeMatchMode === 'AND' && selectedThemes.length > 0 && !isSelected && !availableThemes.includes(theme);
+                
+                return (
+                  <div key={theme} className={`flex items-center space-x-2 ${isDisabled ? 'opacity-50' : ''}`}>
+                    <Checkbox
+                      id={`theme-${theme}`}
+                      checked={isSelected}
+                      disabled={isDisabled}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          const newThemes = [...selectedThemes, theme];
+                          setSelectedThemes(newThemes);
+                          handleFilterChange('themes', newThemes);
+                        } else {
+                          const newThemes = selectedThemes.filter(t => t !== theme);
+                          setSelectedThemes(newThemes);
+                          handleFilterChange('themes', newThemes.length > 0 ? newThemes : undefined);
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`theme-${theme}`}
+                      className={`text-sm cursor-pointer flex-1 ${isDisabled ? 'text-gray-400 cursor-not-allowed' : ''}`}
+                    >
+                      {theme}
+                    </label>
+                  </div>
+                );
+              })}
             </div>
             
             {/* Theme match mode explanation */}
