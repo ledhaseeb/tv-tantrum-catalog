@@ -142,7 +142,8 @@ export class SearchService {
       
       // Interaction level filter (updated field name)
       if (filters.interactionLevel) {
-        query += ` AND interaction_level = $${paramIndex}`;
+        console.log('Filtering by interaction level:', filters.interactionLevel);
+        query += ` AND interactivity_level = $${paramIndex}`;
         params.push(filters.interactionLevel);
         paramIndex++;
       }
