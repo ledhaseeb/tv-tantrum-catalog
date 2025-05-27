@@ -38,7 +38,7 @@ interface FiltersType {
   search?: string;
   themes?: string[];
   themeMatchMode?: 'AND' | 'OR';
-  interactivityLevel?: string;
+  interactionLevel?: string;
   stimulationScoreRange?: {min: number, max: number};
 }
 
@@ -670,8 +670,8 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               Interactivity Level
             </Label>
             <Select 
-              value={filters.interactivityLevel} 
-              onValueChange={(value) => handleFilterChange('interactivityLevel', value)}
+              value={filters.interactionLevel} 
+              onValueChange={(value) => handleFilterChange('interactionLevel', value)}
             >
               <SelectTrigger id="interactivity-level">
                 <SelectValue placeholder="Any" />

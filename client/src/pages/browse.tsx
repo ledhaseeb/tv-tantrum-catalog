@@ -113,6 +113,12 @@ export default function Browse() {
       initialFilters.interactionLevel = interactionLevel;
     }
     
+    // Also check for interactivityLevel (for consistency)
+    const interactivityLevel = searchParams.get('interactivityLevel');
+    if (interactivityLevel) {
+      initialFilters.interactionLevel = interactivityLevel;
+    }
+    
     // Get dialogue intensity from URL
     const dialogueIntensity = searchParams.get('dialogueIntensity');
     if (dialogueIntensity) {
