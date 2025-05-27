@@ -615,7 +615,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
               )}
             </div>
             
-            <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
+            <div className="space-y-2 max-h-80 overflow-y-auto border rounded-md p-2">
               {availableThemes.map((theme) => {
                 const isSelected = selectedThemes.includes(theme);
                 const isDisabled = themeMatchMode === 'AND' && selectedThemes.length > 0 && !isSelected && !availableThemes.includes(theme);

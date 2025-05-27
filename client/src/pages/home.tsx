@@ -199,6 +199,7 @@ export default function Home() {
       return lowerTheme.includes('music') ||
              lowerTheme.includes('dance') ||
              lowerTheme.includes('learning through songs') ||
+             lowerTheme.includes('sing-a-long') ||
              lowerTheme.includes('instruments');
     });
   }).slice(0, 24);
@@ -210,7 +211,8 @@ export default function Home() {
     return themes.some((theme: string) => {
       const lowerTheme = theme.toLowerCase();
       return lowerTheme.includes('fantasy elements') ||
-             lowerTheme.includes('mild fantasy violence');
+             lowerTheme.includes('mild fantasy violence') ||
+             lowerTheme.includes('super hero themes');
     });
   }).slice(0, 24);
   
@@ -632,7 +634,7 @@ export default function Home() {
         "Musical Shows",
         "Shows featuring songs, musical numbers and rhythmic content", 
         musicalShows, 
-        "/browse?themes=Music,Dance,Learning through Songs&themeMatchMode=OR"
+        "/browse?themes=Music,Dance,Learning through Songs,sing-a-long&themeMatchMode=OR"
       )}
       
       {/* Fantasy Shows */}
@@ -640,7 +642,7 @@ export default function Home() {
         "Fantasy Shows",
         "Shows with magical, imaginative and fantasy elements", 
         fantasyShows, 
-        "/browse?themes=Fantasy Elements,Mild Fantasy Violence&themeMatchMode=OR"
+        "/browse?themes=Fantasy Elements,Mild Fantasy Violence,Super Hero Themes&themeMatchMode=OR"
       )}
       
       {/* Preschooler Shows */}
