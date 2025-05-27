@@ -652,6 +652,108 @@ export default function Home() {
         preschoolerShows, 
         "/browse?ageRange=2-4&themeMatchMode=OR"
       )}
+
+      {/* Leaderboard Section */}
+      <Leaderboard />
     </main>
+  );
+}
+
+// Leaderboard Component
+function Leaderboard() {
+  const { data: leaderboard, isLoading } = useQuery<any[]>({
+    queryKey: ['/api/leaderboard'],
+    staleTime: 300000, // 5 minutes
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-gradient-to-r from-purple-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Community Leaders</h2>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <span className="text-gray-600">Loading leaderboard...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!leaderboard || leaderboard.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="py-12 bg-gradient-to-r from-purple-50 to-blue-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Community Leaders</h2>
+          <p className="text-gray-600">Top contributors earning points through reviews, referrals, and community engagement</p>
+        </div>
+        
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+              {leaderboard.slice(0, 9).map((user, index) => (
+                <div 
+                  key={user.id} 
+                  className={`flex items-center space-x-4 p-4 rounded-lg transition-all duration-200 hover:shadow-md ${
+                    index === 0 ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 border-2 border-yellow-300' :
+                    index === 1 ? 'bg-gradient-to-r from-gray-100 to-gray-50 border-2 border-gray-300' :
+                    index === 2 ? 'bg-gradient-to-r from-orange-100 to-orange-50 border-2 border-orange-300' :
+                    'bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  <div className="flex-shrink-0">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                      index === 0 ? 'bg-yellow-500' :
+                      index === 1 ? 'bg-gray-500' :
+                      index === 2 ? 'bg-orange-500' :
+                      'bg-purple-500'
+                    }`}>
+                      {index < 3 ? (
+                        <span className="text-lg">
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                        </span>
+                      ) : (
+                        <span className="text-sm">#{index + 1}</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate">
+                      {user.username || 'Anonymous User'}
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg font-bold text-purple-600">
+                        {user.total_points || 0}
+                      </span>
+                      <span className="text-xs text-gray-500">points</span>
+                    </div>
+                    {user.country && (
+                      <span className="text-xs text-gray-400 truncate">
+                        {user.country}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {leaderboard.length > 9 && (
+              <div className="bg-gray-50 px-6 py-3 text-center">
+                <p className="text-sm text-gray-600">
+                  And {leaderboard.length - 9} more amazing community members!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

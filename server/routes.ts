@@ -2281,19 +2281,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
-  // Get leaderboard
+
+  // Get leaderboard - top users by points (public endpoint)
   app.get("/api/leaderboard", async (req: Request, res: Response) => {
     try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      const leaderboard = await storage.getTopUsers(limit);
-      res.json(leaderboard);
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const { pool } = await import('./db');
+      const result = await pool.query(`
+        SELECT 
+          u.id,
+          u.username,
+          u.email,
+          COALESCE(u.total_points, 0) as total_points,
+          u.country,
+          u.created_at
+        FROM users u 
+        WHERE u.is_approved = true AND u.username IS NOT NULL
+        ORDER BY COALESCE(u.total_points, 0) DESC, u.created_at ASC
+        LIMIT $1
+      `, [limit]);
+      
+      res.json(result.rows);
     } catch (error) {
-      console.error('Error getting leaderboard:', error);
-      res.status(500).json({ 
-        message: "Error retrieving leaderboard", 
-        error: error instanceof Error ? error.message : "Unknown error" 
-      });
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ message: 'Failed to fetch leaderboard' });
     }
   });
   
