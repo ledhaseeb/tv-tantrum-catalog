@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="TV Tantrum" description="Dynamic web application for children's media research and discovery">
+  
+  <!-- PROJECT OVERVIEW -->
+  <overview>
+    <description>A dynamic web application that gamifies children's media consumption research, providing an intelligent and interactive platform for discovering age-appropriate TV shows with advanced content analysis.</description>
+    <technologies>
+      <frontend>React, TypeScript, Tailwind CSS, Vite, Wouter (routing)</frontend>
+      <backend>Express.js, TypeScript, PostgreSQL, Drizzle ORM</backend>
+      <ui_library>Shadcn/ui components</ui_library>
+      <features>Sensory-based content filtering, Interactive show discovery, Comprehensive metadata analysis, User authentication, Points system, Social sharing</features>
+    </technologies>
+  </overview>
+
+  <!-- CORE ARCHITECTURE -->
+  <architecture>
+    <client_side>
+      <path>client/src/</path>
+      <main_files>
+        <file>main.tsx</file>
+        <file>App.tsx</file>
+        <file>index.css</file>
+      </main_files>
+      <components>
+        <ui_components>client/src/components/ui/</ui_components>
+        <custom_components>
+          <file>ShowCard.tsx</file>
+          <file>ShowFilters.tsx</file>
+          <file>ShareModal.tsx</file>
+          <file>Navbar.tsx</file>
+          <file>RatingBar.tsx</file>
+        </custom_components>
+      </components>
+      <pages>
+        <file>home.tsx</file>
+        <file>browse.tsx</file>
+        <file>detail.tsx</file>
+        <file>compare.tsx</file>
+        <file>user-dashboard.tsx</file>
+        <file>admin-page.tsx</file>
+        <file>research.tsx</file>
+      </pages>
+    </client_side>
+    
+    <server_side>
+      <path>server/</path>
+      <main_files>
+        <file>index.ts</file>
+        <file>routes.ts</file>
+        <file>database-storage.ts</file>
+      </main_files>
+      <services>
+        <file>services/searchService.ts</file>
+        <file>auth.ts</file>
+        <file>omdb.ts</file>
+        <file>youtube.ts</file>
+      </services>
+    </server_side>
+    
+    <shared>
+      <path>shared/</path>
+      <file>schema.ts</file>
+    </shared>
+  </architecture>
+
+  <!-- DATABASE SCHEMA -->
+  <database>
+    <type>PostgreSQL with Drizzle ORM</type>
+    <key_tables>
+      <table name="tv_shows">Primary show data with sensory metrics</table>
+      <table name="users">User accounts and authentication</table>
+      <table name="tv_show_reviews">User reviews and ratings</table>
+      <table name="favorites">User favorites tracking</table>
+      <table name="themes">Show themes taxonomy</table>
+      <table name="platforms">Streaming platforms</table>
+      <table name="user_points_history">Gamification points system</table>
+      <table name="research_summaries">Research content</table>
+    </key_tables>
+  </database>
+
+  <!-- KEY FEATURES -->
+  <features>
+    <sensory_analysis>
+      <description>Advanced sensory impact analysis for children's content</description>
+      <metrics>
+        <metric>stimulationScore (1-5 scale)</metric>
+        <metric>interactivityLevel (Low/Moderate/High)</metric>
+        <metric>dialogueIntensity</metric>
+        <metric>soundEffectsLevel</metric>
+        <metric>musicTempo</metric>
+        <metric>sceneFrequency</metric>
+      </metrics>
+    </sensory_analysis>
+    
+    <filtering_system>
+      <description>Comprehensive filtering based on sensory data</description>
+      <filters>
+        <filter>Age range</filter>
+        <filter>Stimulation score range</filter>
+        <filter>Interactivity level</filter>
+        <filter>Themes (with AND/OR logic)</filter>
+        <filter>Platform availability</filter>
+      </filters>
+    </filtering_system>
+    
+    <gamification>
+      <description>Points-based engagement system</description>
+      <point_sources>
+        <source>Daily login rewards</source>
+        <source>Review upvotes</source>
+        <source>Successful referrals</source>
+        <source>Show submissions</source>
+        <source>Research engagement</source>
+      </point_sources>
+    </gamification>
+    
+    <social_features>
+      <description>Community-driven content discovery</description>
+      <features>
+        <feature>User reviews and ratings</feature>
+        <feature>Social sharing with referral tracking</feature>
+        <feature>Favorites system</feature>
+        <feature>Show comparisons</feature>
+      </features>
+    </social_features>
+  </features>
+
+  <!-- ADMIN FUNCTIONALITY -->
+  <admin_features>
+    <show_management>
+      <description>Complete CRUD operations for TV shows</description>
+      <capabilities>
+        <capability>Add new shows</capability>
+        <capability>Edit show details</capability>
+        <capability>Update sensory metrics</capability>
+        <capability>Manage images</capability>
+      </capabilities>
+    </show_management>
+    
+    <user_management>
+      <description>User account administration</description>
+      <capabilities>
+        <capability>View all users</capability>
+        <capability>Approve/reject registrations</capability>
+        <capability>Manage admin privileges</capability>
+      </capabilities>
+    </user_management>
+    
+    <research_management>
+      <description>Research content administration</description>
+      <capabilities>
+        <capability>Upload research documents</capability>
+        <capability>Manage research summaries</capability>
+        <capability>Track user engagement</capability>
+      </capabilities>
+    </research_management>
+  </admin_features>
+
+  <!-- API INTEGRATIONS -->
+  <external_apis>
+    <omdb_api>
+      <description>Movie/TV show metadata retrieval</description>
+      <usage>Enriching show data with official information</usage>
+    </omdb_api>
+    
+    <youtube_api>
+      <description>YouTube channel data for content creators</description>
+      <usage>Supporting YouTube-based children's content</usage>
+    </youtube_api>
+  </external_apis>
+
+  <!-- DATA MANAGEMENT -->
+  <data_utilities>
+    <description>Comprehensive data management scripts</description>
+    <scripts>
+      <script>api-data-updater.js - API data synchronization</script>
+      <script>data-manager.js - Data consolidation utilities</script>
+      <script>image-manager.js - Image processing and optimization</script>
+      <script>apply-custom-data.js - Custom data application</script>
+    </scripts>
+  </data_utilities>
+
+  <!-- CURRENT STATE -->
+  <project_status>
+    <working_features>
+      <feature>✓ Complete user authentication system</feature>
+      <feature>✓ Advanced show filtering with sensory data</feature>
+      <feature>✓ Alphabetical sorting (case-insensitive)</feature>
+      <feature>✓ Interactivity level filtering</feature>
+      <feature>✓ Admin dashboard with CRUD operations</feature>
+      <feature>✓ Points and gamification system</feature>
+      <feature>✓ Social sharing with referral tracking</feature>
+      <feature>✓ Research content management</feature>
+      <feature>✓ Show comparison functionality</feature>
+      <feature>✓ Responsive design</feature>
+    </working_features>
+    
+    <recent_fixes>
+      <fix>✓ Fixed database field mapping for sensory data display</fix>
+      <fix>✓ Corrected interactivity level filter functionality</fix>
+      <fix>✓ Implemented case-insensitive alphabetical sorting</fix>
+      <fix>✓ Added error handling for admin dashboard updates</fix>
+      <fix>✓ Fixed field name consistency across components</fix>
+    </recent_fixes>
+  </project_status>
+
+</project>
