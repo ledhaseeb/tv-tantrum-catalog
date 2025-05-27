@@ -805,13 +805,13 @@ export default function Detail({ id }: DetailProps) {
                   <div>
                     <div className="flex justify-between mb-1">
                       <div className="text-gray-600">Dialogue Intensity:</div>
-                      <div className="font-medium">{showDetail.dialogueIntensity || 'Moderate'}</div>
+                      <div className="font-medium">{showDetail.dialogueIntensity || 'Not Available'}</div>
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        let level = 3; // Default level
+                        let level = 1; // Default to low if no data
                         
-                        // Handle all possible rating values from the spreadsheet
+                        // Handle all possible rating values from the database
                         if (showDetail.dialogueIntensity) {
                           if (showDetail.dialogueIntensity.includes('Low-Moderate') || 
                               showDetail.dialogueIntensity.includes('Low to Moderate')) {
@@ -1122,13 +1122,13 @@ export default function Detail({ id }: DetailProps) {
                   <div>
                     <div className="flex justify-between mb-1">
                       <div className="text-gray-600">Interaction Level:</div>
-                      <div className="font-medium">{showDetail.interactivityLevel || 'Moderate'}</div>
+                      <div className="font-medium">{showDetail.interactivityLevel || 'Not Available'}</div>
                     </div>
                     <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
                       {[1, 2, 3, 4, 5].map((segment) => {
-                        let level = 3; // Default to moderate
+                        let level = 1; // Default to low if no data
                         
-                        // Handle all possible rating values from the spreadsheet
+                        // Handle all possible rating values from the database
                         if (showDetail.interactivityLevel) {
                           if (showDetail.interactivityLevel.includes('Low-Moderate') || 
                               showDetail.interactivityLevel.includes('Low to Moderate')) {
