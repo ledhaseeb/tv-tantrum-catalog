@@ -39,6 +39,7 @@ interface FiltersType {
   themes?: string[];
   themeMatchMode?: 'AND' | 'OR';
   interactionLevel?: string;
+  interactivityLevel?: string;
   stimulationScoreRange?: {min: number, max: number};
 }
 
@@ -534,133 +535,75 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
             </div>
           </div>
           
-          {/* Themes dropdown */}
+          {/* Themes with checkboxes */}
           <div>
-            <Label className="block text-sm font-medium text-gray-700 mb-2">
-              Primary Theme
-            </Label>
-            <Select
-              value={selectedThemes.length ? selectedThemes[0] : "any"}
-              onValueChange={(value) => {
-                // Clear previous selections and set this as the only theme
-                if (value && value !== "any") {
-                  setSelectedThemes([value]);
-                  handleFilterChange('themes', [value]);
-                  // Immediately update relevant secondary themes
-                  findRelevantSecondaryThemes(value);
-                } else {
-                  setSelectedThemes([]);
-                  handleFilterChange('themes', undefined);
-                  setRelevantSecondaryThemes([]);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a theme" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Theme</SelectItem>
-                {commonThemes.map((theme) => (
-                  <SelectItem key={theme} value={theme}>
-                    {theme}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {/* Theme matching mode toggle - only appears when a primary theme is selected */}
-            {selectedThemes.length > 0 && (
-              <div className="mt-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm text-gray-600">Theme match mode:</Label>
-                  <div className="flex space-x-2">
-                    <Button 
-                      size="sm" 
-                      variant={themeMatchMode === 'AND' ? "default" : "outline"}
-                      onClick={() => {
-                        setThemeMatchMode('AND');
-                        // Re-apply current filters with new matching mode
-                        if (selectedThemes.length > 0) {
-                          const updatedFilters = {
-                            ...filters,
-                            themes: selectedThemes,
-                            themeMatchMode: 'AND' as const
-                          };
-                          onFilterChange(updatedFilters);
-                        }
-                      }}
-                    >
-                      AND
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant={themeMatchMode === 'OR' ? "default" : "outline"}
-                      onClick={() => {
-                        setThemeMatchMode('OR');
-                        // Re-apply current filters with new matching mode
-                        if (selectedThemes.length > 0) {
-                          const updatedFilters = {
-                            ...filters,
-                            themes: selectedThemes,
-                            themeMatchMode: 'OR' as const
-                          };
-                          onFilterChange(updatedFilters);
-                        }
-                      }}
-                    >
-                      OR
-                    </Button>
-                  </div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium text-gray-700">
+                Themes
+              </Label>
+              {selectedThemes.length > 0 && (
+                <div className="flex space-x-1">
+                  <Button 
+                    size="sm" 
+                    variant={themeMatchMode === 'AND' ? "default" : "outline"}
+                    onClick={() => {
+                      setThemeMatchMode('AND');
+                      handleFilterChange('themeMatchMode', 'AND');
+                    }}
+                    className="h-6 px-2 text-xs"
+                  >
+                    AND
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant={themeMatchMode === 'OR' ? "default" : "outline"}
+                    onClick={() => {
+                      setThemeMatchMode('OR');
+                      handleFilterChange('themeMatchMode', 'OR');
+                    }}
+                    className="h-6 px-2 text-xs"
+                  >
+                    OR
+                  </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {themeMatchMode === 'AND' 
-                    ? 'Shows must contain ALL selected themes' 
-                    : 'Shows can contain ANY of the selected themes'}
-                </p>
-              </div>
-            )}
+              )}
+            </div>
             
-            {/* Secondary theme dropdown (only appears when primary theme is selected) */}
+            <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
+              {commonThemes.map((theme) => (
+                <div key={theme} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`theme-${theme}`}
+                    checked={selectedThemes.includes(theme)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        const newThemes = [...selectedThemes, theme];
+                        setSelectedThemes(newThemes);
+                        handleFilterChange('themes', newThemes);
+                      } else {
+                        const newThemes = selectedThemes.filter(t => t !== theme);
+                        setSelectedThemes(newThemes);
+                        handleFilterChange('themes', newThemes.length > 0 ? newThemes : undefined);
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor={`theme-${theme}`}
+                    className="text-sm cursor-pointer flex-1"
+                  >
+                    {theme}
+                  </label>
+                </div>
+              ))}
+            </div>
+            
+            {/* Theme match mode explanation */}
             {selectedThemes.length > 0 && (
-              <div className="mt-4">
-                <Label className="block text-sm font-medium text-gray-700 mb-2">
-                  Secondary Theme (Optional)
-                </Label>
-                <Select
-                  value={selectedThemes.length > 1 ? selectedThemes[1] : "none"}
-                  onValueChange={(value) => {
-                    if (value && value !== "none") {
-                      // Add as second theme
-                      const newThemes = [selectedThemes[0], value];
-                      setSelectedThemes(newThemes);
-                      handleFilterChange('themes', newThemes);
-                    } else {
-                      // Remove secondary theme
-                      const newThemes = [selectedThemes[0]];
-                      setSelectedThemes(newThemes);
-                      handleFilterChange('themes', newThemes);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a secondary theme" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Secondary Theme</SelectItem>
-                    {relevantSecondaryThemes.map((theme) => (
-                        <SelectItem key={theme} value={theme}>
-                          {theme}
-                        </SelectItem>
-                      ))
-                    }
-                    <div className="px-3 py-2 text-xs text-gray-500 border-t mt-1">
-                      {themeMatchMode === 'OR' 
-                        ? 'Showing all available themes' 
-                        : 'Showing themes that co-exist with primary theme'}
-                    </div>
-                  </SelectContent>
-                </Select>
-              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {themeMatchMode === 'AND' 
+                  ? 'Shows must contain ALL selected themes' 
+                  : 'Shows can contain ANY of the selected themes'}
+              </p>
             )}
           </div>
           
