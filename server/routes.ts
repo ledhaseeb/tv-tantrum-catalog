@@ -622,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/shows/popular", async (req: Request, res: Response) => {
     try {
       const limitStr = req.query.limit;
-      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 24; // Default to 24 for carousel
       
       const shows = await storage.getPopularShows(limit);
       res.json(shows);

@@ -56,9 +56,9 @@ export default function Home() {
     staleTime: 60000, // 1 minute
   });
   
-  // Fetch popular shows from our tracking data
+  // Fetch popular shows from view count tracking data
   const { data: popularShowsData, isLoading: popularShowsLoading } = useQuery<TvShow[]>({
-    queryKey: ['/api/shows/popular'],
+    queryKey: ['/api/shows/popular', { limit: 24 }],
     staleTime: 60000, // 1 minute
   });
   
@@ -127,8 +127,8 @@ export default function Home() {
            (stimulationScore !== null && stimulationScore <= 2);
   }).slice(0, 24);
   
-  // Use popular shows data if available, otherwise fallback to all shows
-  const popularShows = popularShowsData?.slice(0, 24) || allShows?.slice(0, 24);
+  // Use popular shows data from view count tracking
+  const popularShows = popularShowsData;
   
   // Get high interaction shows
   const highInteractionShows = allShows?.filter(show => {
