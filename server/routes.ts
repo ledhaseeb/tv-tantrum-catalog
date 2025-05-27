@@ -840,6 +840,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         externalData
       };
       
+      // Transform database field names to camelCase for frontend compatibility
+      if (show.interactivity_level) response.interactivityLevel = show.interactivity_level;
+      if (show.dialogue_intensity) response.dialogueIntensity = show.dialogue_intensity;
+      if (show.scene_frequency) response.sceneFrequency = show.scene_frequency;
+      if (show.sound_effects_level) response.soundEffectsLevel = show.sound_effects_level;
+      if (show.total_sound_effect_time_level) response.totalSoundEffectTimeLevel = show.total_sound_effect_time_level;
+      if (show.music_tempo) response.musicTempo = show.music_tempo;
+      if (show.total_music_level) response.totalMusicLevel = show.total_music_level;
+      if (show.animation_style) response.animationStyle = show.animation_style;
+      
       // Make sure the YouTube data from the database is directly accessible
       // by exposing it at the top level of the response
       if (show.isYouTubeChannel || show.subscriberCount || show.videoCount) {
