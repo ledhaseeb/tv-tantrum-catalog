@@ -2372,11 +2372,12 @@
     "interactivityLevel": "Moderate",
     "animationStyle": "3D CGI Animation with stylized and colorful designs. Bright but not overly saturated colors, with a focus on vibrant settings.",
     "dialogueIntensity": "Moderate",
-    "soundEffectsLevel": "Moderate",
+    "soundEffectsLevel": "Medium",
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "A children's TV show"
   },
   "95": {
     "stimulationScore": 4,
@@ -2399,7 +2400,8 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate-High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Young pup Tag Barker and her adventures in Pawston, a colorful community of dogs on the go."
   },
   "96": {
     "stimulationScore": 4,
@@ -2426,7 +2428,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Gracie's Corner is a YouTube channel for kids. It provides a combination of educational, fun, and encouraging songs for children from diverse backgrounds. Come sing and dance with Gracie as she takes a fun imaginary journey with f..."
   },
   "97": {
     "stimulationScore": 5,
@@ -2444,12 +2447,13 @@
     ],
     "interactivityLevel": "Low",
     "animationStyle": "3D CGI animation",
-    "dialogueIntensity": "Very Low",
-    "soundEffectsLevel": "Very-High",
+    "dialogueIntensity": "Low",
+    "soundEffectsLevel": "High",
     "musicTempo": "High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "The forest ranger's house is the only area of human civilization in the middle of untamed wilderness in a vast natural reserve in Canada. When the ranger is away, a bear named Grizzy feels that the ranger's house is his territory, given that bears sit at the top of the food chain. After making his way inside the home, Grizzy takes advantage of all the modern conveniences there, including a comfortable sofa, air conditioning and fully equipped kitchen. He's not alone, though, because a group of small creatures called lemmings also populate the ranger's house when he is away. Because Grizzy and the lemmings are not civilized enough to live together in peace, it becomes an atmosphere of madness when the two sides try to outdo each other with tricks."
   },
   "98": {
     "stimulationScore": 2,
@@ -2470,7 +2474,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "The 'Guess How Much I Love You animated series is set in a timeless watercolour landscape of grassy fields, mossy forests, lazy rivers and sunny green valleys. It's an innocent, picture-book world of butterflies, flowers, whimsy and wonder. This is the idyllic home of Little Nutbrown Hare and his father, Big Nutbrown Hare. The series follows their adventures as they explore their beautiful surrounds, play with their friends and delight in the love between them. Always ready to play and laugh, Little Nutbrown Hare bounds through his days with whisker-twitching curiosity. The ever patient Big Nutbrown Hare lovingly leads his son on journeys of discovery -- discovery of the joys that nature holds. Fun-loving Little Field Mouse and mischievous Little Grey Squirrel often join them on their adventures and not too far away they might encounter tricky Little Redwood Fox, or Little White Owl with her tall tales of mystery and magic. Together they explore the meadows, forests and streams - playing, laughing and discovering the wonder that the world holds."
   },
   "99": {
     "stimulationScore": 3,
@@ -2492,14 +2497,15 @@
     "interactivityLevel": "High",
     "animationStyle": "Live-Action with musical elements. Color Palette: Bright and vibrant colors reflecting the cultural setting.",
     "dialogueIntensity": "Moderate-High",
-    "soundEffectsLevel": "Moderate",
+    "soundEffectsLevel": "Medium",
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Hosts Ron and Natalie Daise, a warm and loving African-American couple who live on a sea island off the coast of South Carolina, open their home to preschoolers and their caregivers with a rich mix of song, games, stories, dance and humor. The sing-along series stimulates active participation from viewers around such familiar topics as birthdays, jokes, baby animals, rhyming, collecting and preparing food. With the Daises and their three children at the heart of the show, a variety of friends, relatives, neighborhood children and a bright-yellow tree frog named Binyah Binyah Pollywog (a full body puppet) form an extended family with viewers. Each episode also features an exploration of the unique culture of the Sea Island region with an up-close look at the community and its people, including artists, fishermen, weavers and farmers."
   },
   "100": {
-    "stimulationScore": 3,
+    "stimulationScore": 2,
     "TV or YouTube": "TV",
     "ageRange": "4-8",
     "Seasons": "3 Seasons",
@@ -2509,14 +2515,15 @@
       "Problem Solving",
       "Perseverance"
     ],
-    "interactivityLevel": "Low-Moderate",
+    "interactivityLevel": "Low",
     "animationStyle": "Stop-Motion Animation using clay figures (claymation). Color Palette: Varied colors with a mix of bright and muted tones. Unique asthetic uncommon in the present day.",
-    "dialogueIntensity": "Low-Moderate",
-    "soundEffectsLevel": "Moderate-High",
-    "musicTempo": "Varies",
+    "dialogueIntensity": "Moderate",
+    "soundEffectsLevel": "Medium",
+    "musicTempo": "Moderate",
     "totalMusicLevel": "High",
-    "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Moderate"
+    "totalSoundEffectTimeLevel": "Moderate",
+    "sceneFrequency": "Low-Moderate",
+    "description": "The adventures of Gumby, a being made of clay and who can transform into several shapes, without losing his anatomy. He is accompanied by his red pony Pokey."
   },
   "101": {
     "stimulationScore": 4,
@@ -2544,7 +2551,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "Handyman Hal is a family friendly show that takes you on entertaining and educational adventures. Follow Handyman Hal as he makes repairs and learns how things work. Would you like to go behind the scenes at a fire station? Want t..."
   },
   "102": {
     "stimulationScore": 4,
@@ -2570,7 +2578,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Moderate-High"
+    "sceneFrequency": "Moderate-High",
+    "description": "In a distant and mystical land, wimpy Prince Adam leads the life of royalty. Unknown to all but a few close friends/allies, Prince Adam is actually a hero, the mighty He-Man. Together with his friends, (such as Teela; her father, a man-at-arms; mysterious Orko and his mighty friend/horse substitute Battle Cat), He-Man battles the evil Skeletor and his minions for control of the world, and, more importantly, for the control, power and \"honor of Greyskull,\" the mysterious castle from which He-Man derives his powers."
   },
   "103": {
     "stimulationScore": 3,
@@ -2618,7 +2627,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "\"HERO ELEMENTARY centers around a team of super students called Sparks' Crew. Led by their quirky and enthusiastic teacher, Mr. Sparks, these pint size heroes work together to help people, solve problems, and try to make the world a better place. When their imperfect powers aren't up to the task, they look to their other powers - the Superpowers of Science - to help them investigate, observe, make predictions, and figure out a solution to save the day!\""
   },
   "105": {
     "stimulationScore": 5,
@@ -2633,12 +2643,13 @@
     ],
     "interactivityLevel": "Low",
     "animationStyle": "High-Contrast 3D Animation with Bright Colors and Simple Shapes",
-    "dialogueIntensity": "None",
+    "dialogueIntensity": "Low",
     "soundEffectsLevel": "Moderate-High",
     "musicTempo": "High",
-    "totalMusicLevel": "Very-High (Repetative) ",
+    "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "A children's TV show"
   },
   "106": {
     "stimulationScore": 4,
@@ -2660,7 +2671,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Duggee looks after the Squirrels, who earn different badges on their adventures."
   },
   "107": {
     "stimulationScore": 4,
@@ -2683,7 +2695,8 @@
     "musicTempo": "Moderate-High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "For Horrid Henry, life is just not fair! He feels that the rest of the world is against him and he wages a constant war against the tyranny of adults. Like any headstrong young boy, he is determined, relentless, he doesn't hold back and he never admits defeat! He will stop at nothing to outwit the enemy and teachers, relatives and babysitters avoid him at all costs. Even his parents argue over whose turn it is to look after him! Henry is endearingly straight forward and lives for the moment, he'll wolf down his little brother Peter's chocolates before even thinking of an alibi! He doesn't try to be truly horrid, it just comes naturally! He's still young, however, and can be scared by talk of ghosts or monsters. The school doctor's syringe reduces him to a quivering heap! Although Henry is certainly proud of himself, he never learns from his mistakes. Henry indulges in fantasies, transforms into terrifying creatures to match his frustrations and often has 'Eureka moments' when he has what he thinks is a spectacularly wonderful idea. In every story, there is something Henry has to get or do (or occasionally avoid doing) and the ensuing chaos is the consequence of this overriding desire. When he thinks of a plan it is simple to get his own way, never to make trouble purely for its own sake. He takes life very seriously and he sincerely believes in what he is doing. No wonder his favorite saying is ... 'it's not fair!!!!'"
   },
   "108": {
     "stimulationScore": 3,
@@ -2729,11 +2742,12 @@
     "interactivityLevel": "Moderate",
     "animationStyle": "2D digital animation",
     "dialogueIntensity": "Moderate",
-    "soundEffectsLevel": "Moderate",
+    "soundEffectsLevel": "Medium",
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "In the If You Give a Mouse a Cookie series, based on the beloved books by Laura Numeroff and Felicia Bond, we get to know Mouse, Pig, Moose, Dog and Cat and their favorite humans. When Mouse and friends get together, one thing always leads to another in the most unexpected ways. You just never know where things will end up, but you can be sure that IF Mouse and Friends go on an adventure together, THEN they will just have to have fun the whole time."
   },
   "110": {
     "stimulationScore": 1,
@@ -2755,7 +2769,8 @@
     "musicTempo": "Low",
     "totalMusicLevel": "Low",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Low"
+    "sceneFrequency": "Low",
+    "description": "A toddler/infant adventure garden which tip-toes between the twilight state of a child being awake and moving through to a state of sleep. It is somewhat psychedelic, yet to a child it is fun, imaginative, colourful and, as the programme comes to a close, relaxing and sweet."
   },
   "111": {
     "stimulationScore": 2,
@@ -2778,7 +2793,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "From the creator of \"Bear in the Big Blue House,\" \"It's a Big Big World\" features Snook the sloth. He lives in the World Tree with various animal friends including marmosets, a tree frog and an anteater."
   },
   "112": {
     "stimulationScore": 2,
@@ -2799,7 +2815,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "The adventures of Johnson the courageous pink elephant, Alfred the leaky hot water bottle, McDuff the cheeky concertina, Diesel the noisy dump truck, Squeaky the shy robot and Victoria the gracious dinosaur, who live amongst the clutter in Michael's bedroom. This irrepressible bunch of toys share their adventures while Michael is out or asleep."
   },
   "113": {
     "stimulationScore": 2,
@@ -2821,7 +2838,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Moderate",
     "totalSoundEffectTimeLevel": "Low",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "The adventures of a cheerful 4, going on 5-year-old JoJo and her loving Gran Gran."
   },
   "114": {
     "stimulationScore": 3,
@@ -3019,7 +3037,8 @@
     "musicTempo": "Low-Moderate",
     "totalMusicLevel": "Low",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Low"
+    "sceneFrequency": "Low",
+    "description": "On Christmas Eve, the tree is decorated, and gifts are unwrapped ... and Arnold receives a fun gift from Kipper! As their world turns into a winter wonderland, Kipper and Tiger turn themselves into a giant snowball and build - what else? - a snow dog! From sledding down Big Hill to slip-sliding across a frozen pond to building an igloo, Kipper loves playing with his friends all winter long!"
   },
   "122": {
     "stimulationScore": 1,
@@ -3092,7 +3111,8 @@
     "musicTempo": "High",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "High"
+    "sceneFrequency": "High",
+    "description": "A pink-haired girl named Stephanie moves to LazyTown with her uncle (the mayor of said town) where she tries to teach its extremely lazy residents that physical activity is beneficial."
   },
   "125": {
     "stimulationScore": 5,
@@ -3114,10 +3134,11 @@
     "musicTempo": "Moderate",
     "totalMusicLevel": "High",
     "totalSoundEffectTimeLevel": "High",
-    "sceneFrequency": "Moderate"
+    "sceneFrequency": "Moderate",
+    "description": "Leo is a dump truck who is very curious and inquisitive. He loves to build things and see how they work."
   },
   "126": {
-    "stimulationScore": 5,
+    "stimulationScore": 4,
     "TV or YouTube": "YouTube",
     "ageRange": "3-7",
     "themes": [
@@ -3134,11 +3155,12 @@
     "interactivityLevel": "Low-Moderate",
     "animationStyle": "3D CGI animation with detailed depictions of animals and environments.",
     "dialogueIntensity": "High",
-    "soundEffectsLevel": "Moderate",
+    "soundEffectsLevel": "Medium",
     "musicTempo": "Moderate",
     "totalMusicLevel": "Moderate-High",
     "totalSoundEffectTimeLevel": "Moderate",
-    "sceneFrequency": "Moderate-High"
+    "sceneFrequency": "Moderate-High",
+    "description": "Join Leo and friends as they go on exciting adventures around the world and explore exotic locations and learn fun facts about animals and nature!"
   },
   "127": {
     "stimulationScore": 3,
