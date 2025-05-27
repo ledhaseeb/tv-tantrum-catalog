@@ -144,36 +144,32 @@ export default function Home() {
            interactivityLevel === 'Mod-High';
   }).slice(0, 24);
   
-  // Find shows by educational themes using OR logic
+  // Find shows by educational themes using OR logic with actual database themes
   const educationalShows = allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
     if (!themes || !Array.isArray(themes)) return false;
     
     return themes.some((theme: string) => {
       const lowerTheme = theme.toLowerCase();
-      return lowerTheme.includes('education') || 
-             lowerTheme.includes('learning') ||
+      return lowerTheme.includes('elementary-basics') || 
              lowerTheme.includes('preschool-basics') ||
-             lowerTheme.includes('elementary') ||
-             lowerTheme.includes('academic') ||
-             lowerTheme.includes('teaching') ||
-             lowerTheme.includes('instructional') ||
-             lowerTheme.includes('curriculum') ||
-             lowerTheme.includes('educational') ||
-             lowerTheme.includes('knowledge') ||
+             lowerTheme.includes('stem') ||
+             lowerTheme.includes('science') ||
+             lowerTheme.includes('math') ||
              lowerTheme.includes('literacy') ||
              lowerTheme.includes('numeracy') ||
-             lowerTheme.includes('science') ||
-             lowerTheme.includes('stem') ||
-             lowerTheme.includes('math') ||
-             lowerTheme.includes('reading') ||
-             lowerTheme.includes('spelling') ||
+             lowerTheme.includes('reading comprehension') ||
+             lowerTheme.includes('phonics') ||
+             lowerTheme.includes('language learning') ||
+             lowerTheme.includes('learn through play') ||
+             lowerTheme.includes('learning through songs') ||
+             lowerTheme.includes('learning from mistakes') ||
+             lowerTheme.includes('learning disabilities') ||
              lowerTheme.includes('vocabulary') ||
-             lowerTheme.includes('counting') ||
-             lowerTheme.includes('alphabet') ||
-             lowerTheme.includes('colors') ||
-             lowerTheme.includes('shapes') ||
-             lowerTheme.includes('basics');
+             lowerTheme.includes('critical thinking') ||
+             lowerTheme.includes('problem solving') ||
+             lowerTheme.includes('problem-solving') ||
+             lowerTheme.includes('cognitive development');
     });
   }).slice(0, 24);
   
@@ -185,24 +181,12 @@ export default function Home() {
       const lowerTheme = theme.toLowerCase();
       return lowerTheme.includes('adventure') ||
              lowerTheme.includes('exploration') ||
-             lowerTheme.includes('quest') ||
-             lowerTheme.includes('journey') ||
              lowerTheme.includes('discovery') ||
-             lowerTheme.includes('expedition') ||
-             lowerTheme.includes('outdoor') ||
-             lowerTheme.includes('wilderness') ||
-             lowerTheme.includes('treasure') ||
-             lowerTheme.includes('hero') ||
-             lowerTheme.includes('rescue') ||
-             lowerTheme.includes('mission') ||
-             lowerTheme.includes('brave') ||
-             lowerTheme.includes('courage') ||
-             lowerTheme.includes('action') ||
-             lowerTheme.includes('exciting') ||
-             lowerTheme.includes('thrilling') ||
-             lowerTheme.includes('epic') ||
-             lowerTheme.includes('travel') ||
-             lowerTheme.includes('exploring');
+             lowerTheme.includes('outdoor exploration') ||
+             lowerTheme.includes('wildlife exploration') ||
+             lowerTheme.includes('sensory exploration') ||
+             lowerTheme.includes('career exploration') ||
+             lowerTheme.includes('courage');
     });
   }).slice(0, 24);
   
@@ -213,27 +197,9 @@ export default function Home() {
     return themes.some((theme: string) => {
       const lowerTheme = theme.toLowerCase();
       return lowerTheme.includes('music') ||
-             lowerTheme.includes('musical') ||
-             lowerTheme.includes('song') ||
-             lowerTheme.includes('singing') ||
              lowerTheme.includes('dance') ||
-             lowerTheme.includes('dancing') ||
-             lowerTheme.includes('rhythm') ||
-             lowerTheme.includes('melody') ||
-             lowerTheme.includes('instrument') ||
-             lowerTheme.includes('band') ||
-             lowerTheme.includes('choir') ||
-             lowerTheme.includes('concert') ||
-             lowerTheme.includes('performance') ||
-             lowerTheme.includes('entertainment') ||
-             lowerTheme.includes('karaoke') ||
-             lowerTheme.includes('beat') ||
-             lowerTheme.includes('tune') ||
-             lowerTheme.includes('harmony') ||
-             lowerTheme.includes('jazz') ||
-             lowerTheme.includes('rock') ||
-             lowerTheme.includes('pop') ||
-             lowerTheme.includes('classical');
+             lowerTheme.includes('learning through songs') ||
+             lowerTheme.includes('instruments');
     });
   }).slice(0, 24);
   
@@ -243,30 +209,8 @@ export default function Home() {
     
     return themes.some((theme: string) => {
       const lowerTheme = theme.toLowerCase();
-      return lowerTheme.includes('fantasy') ||
-             lowerTheme.includes('magic') ||
-             lowerTheme.includes('magical') ||
-             lowerTheme.includes('fairy') ||
-             lowerTheme.includes('fairytale') ||
-             lowerTheme.includes('dragon') ||
-             lowerTheme.includes('wizard') ||
-             lowerTheme.includes('witch') ||
-             lowerTheme.includes('enchanted') ||
-             lowerTheme.includes('mystical') ||
-             lowerTheme.includes('mythical') ||
-             lowerTheme.includes('kingdom') ||
-             lowerTheme.includes('princess') ||
-             lowerTheme.includes('prince') ||
-             lowerTheme.includes('castle') ||
-             lowerTheme.includes('spell') ||
-             lowerTheme.includes('potion') ||
-             lowerTheme.includes('unicorn') ||
-             lowerTheme.includes('creature') ||
-             lowerTheme.includes('legend') ||
-             lowerTheme.includes('folklore') ||
-             lowerTheme.includes('mythology') ||
-             lowerTheme.includes('supernatural') ||
-             lowerTheme.includes('otherworldly');
+      return lowerTheme.includes('fantasy elements') ||
+             lowerTheme.includes('mild fantasy violence');
     });
   }).slice(0, 24);
   
