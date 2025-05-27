@@ -189,6 +189,8 @@ export class SearchService {
       // Execute the query
       const result = await client.query(query, params);
       
+      console.log(`Interaction level filter returned ${result.rows.length} shows`);
+      
       // Process the results for theme filtering if necessary
       let shows = result.rows;
       
