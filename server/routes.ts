@@ -580,6 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // For any other filter combinations, use the search service
       console.log("Filter query detected:", req.query);
+      console.log("Interaction level from query:", req.query.interactionLevel);
       
       // Convert query params to the correct format for the search service
       const filters: any = {};
