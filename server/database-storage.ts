@@ -917,7 +917,7 @@ export class DatabaseStorage implements IStorage {
           
           // Stimulation metrics
           stimulationScore: row.stimulation_score || 0,
-          interactionLevel: row.interaction_level || null,
+          interactivityLevel: row.interactivity_level || null,
           dialogueIntensity: row.dialogue_intensity || null,
           soundFrequency: row.sound_frequency || null,
           totalMusicLevel: row.total_music_level || null,
