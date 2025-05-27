@@ -22,8 +22,23 @@ import {
   type UserReferral, type InsertUserReferral,
   type TvShowGitHub
 } from "@shared/schema";
-import { preserveCustomImageUrl, updateCustomImageMap } from "./image-preservator";
-import { updateCustomShowDetails, preserveCustomShowDetails } from "./details-preservator";
+// Import custom preservator functions with error handling
+let updateCustomImageMap: Function | null = null;
+let updateCustomShowDetails: Function | null = null;
+
+try {
+  const imagePreservator = require("./image-preservator");
+  updateCustomImageMap = imagePreservator.updateCustomImageMap;
+} catch (error) {
+  console.log("Image preservator not available, continuing without it");
+}
+
+try {
+  const detailsPreservator = require("./details-preservator");
+  updateCustomShowDetails = detailsPreservator.updateCustomShowDetails;
+} catch (error) {
+  console.log("Details preservator not available, continuing without it");
+}
 
 // We'll implement a simpler solution directly in this file
 
@@ -1287,8 +1302,12 @@ export class DatabaseStorage implements IStorage {
 
   async updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined> {
     // If we're updating the image URL, save it to our custom map
-    if (show.imageUrl) {
-      updateCustomImageMap(id, show.imageUrl);
+    if (show.imageUrl && updateCustomImageMap) {
+      try {
+        updateCustomImageMap(id, show.imageUrl);
+      } catch (error) {
+        console.log("Error updating custom image map, continuing without it");
+      }
     }
     
     // Fix the availableOn field if it's a string instead of an array
@@ -1334,8 +1353,12 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Save to custom details map if we have important fields to preserve
-    if (hasImportantFields) {
-      updateCustomShowDetails(id, stimulationMetrics);
+    if (hasImportantFields && updateCustomShowDetails) {
+      try {
+        updateCustomShowDetails(id, stimulationMetrics);
+      } catch (error) {
+        console.log("Error updating custom show details, continuing without it");
+      }
     }
     
     const [updatedShow] = await db
