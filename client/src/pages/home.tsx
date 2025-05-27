@@ -144,13 +144,37 @@ export default function Home() {
            interactivityLevel === 'Mod-High';
   }).slice(0, 24);
   
-  // Find shows by popular themes - ensure at least 24 shows per category
+  // Find shows by educational themes using OR logic
   const educationalShows = allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
-    return themes?.some((theme: string) => 
-      theme.toLowerCase().includes('education') || 
-      theme.toLowerCase().includes('learning')
-    );
+    if (!themes || !Array.isArray(themes)) return false;
+    
+    return themes.some((theme: string) => {
+      const lowerTheme = theme.toLowerCase();
+      return lowerTheme.includes('education') || 
+             lowerTheme.includes('learning') ||
+             lowerTheme.includes('preschool-basics') ||
+             lowerTheme.includes('elementary') ||
+             lowerTheme.includes('academic') ||
+             lowerTheme.includes('teaching') ||
+             lowerTheme.includes('instructional') ||
+             lowerTheme.includes('curriculum') ||
+             lowerTheme.includes('educational') ||
+             lowerTheme.includes('knowledge') ||
+             lowerTheme.includes('literacy') ||
+             lowerTheme.includes('numeracy') ||
+             lowerTheme.includes('science') ||
+             lowerTheme.includes('stem') ||
+             lowerTheme.includes('math') ||
+             lowerTheme.includes('reading') ||
+             lowerTheme.includes('spelling') ||
+             lowerTheme.includes('vocabulary') ||
+             lowerTheme.includes('counting') ||
+             lowerTheme.includes('alphabet') ||
+             lowerTheme.includes('colors') ||
+             lowerTheme.includes('shapes') ||
+             lowerTheme.includes('basics');
+    });
   }).slice(0, 24);
   
   const adventureShows = allShows?.filter(show => {
