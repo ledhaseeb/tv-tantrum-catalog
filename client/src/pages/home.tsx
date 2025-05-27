@@ -208,12 +208,66 @@ export default function Home() {
   
   const musicalShows = allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
-    return themes?.some((theme: string) => theme.toLowerCase().includes('music'));
+    if (!themes || !Array.isArray(themes)) return false;
+    
+    return themes.some((theme: string) => {
+      const lowerTheme = theme.toLowerCase();
+      return lowerTheme.includes('music') ||
+             lowerTheme.includes('musical') ||
+             lowerTheme.includes('song') ||
+             lowerTheme.includes('singing') ||
+             lowerTheme.includes('dance') ||
+             lowerTheme.includes('dancing') ||
+             lowerTheme.includes('rhythm') ||
+             lowerTheme.includes('melody') ||
+             lowerTheme.includes('instrument') ||
+             lowerTheme.includes('band') ||
+             lowerTheme.includes('choir') ||
+             lowerTheme.includes('concert') ||
+             lowerTheme.includes('performance') ||
+             lowerTheme.includes('entertainment') ||
+             lowerTheme.includes('karaoke') ||
+             lowerTheme.includes('beat') ||
+             lowerTheme.includes('tune') ||
+             lowerTheme.includes('harmony') ||
+             lowerTheme.includes('jazz') ||
+             lowerTheme.includes('rock') ||
+             lowerTheme.includes('pop') ||
+             lowerTheme.includes('classical');
+    });
   }).slice(0, 24);
   
   const fantasyShows = allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
-    return themes?.some((theme: string) => theme.toLowerCase().includes('fantasy'));
+    if (!themes || !Array.isArray(themes)) return false;
+    
+    return themes.some((theme: string) => {
+      const lowerTheme = theme.toLowerCase();
+      return lowerTheme.includes('fantasy') ||
+             lowerTheme.includes('magic') ||
+             lowerTheme.includes('magical') ||
+             lowerTheme.includes('fairy') ||
+             lowerTheme.includes('fairytale') ||
+             lowerTheme.includes('dragon') ||
+             lowerTheme.includes('wizard') ||
+             lowerTheme.includes('witch') ||
+             lowerTheme.includes('enchanted') ||
+             lowerTheme.includes('mystical') ||
+             lowerTheme.includes('mythical') ||
+             lowerTheme.includes('kingdom') ||
+             lowerTheme.includes('princess') ||
+             lowerTheme.includes('prince') ||
+             lowerTheme.includes('castle') ||
+             lowerTheme.includes('spell') ||
+             lowerTheme.includes('potion') ||
+             lowerTheme.includes('unicorn') ||
+             lowerTheme.includes('creature') ||
+             lowerTheme.includes('legend') ||
+             lowerTheme.includes('folklore') ||
+             lowerTheme.includes('mythology') ||
+             lowerTheme.includes('supernatural') ||
+             lowerTheme.includes('otherworldly');
+    });
   }).slice(0, 24);
   
   const preschoolerShows = allShows?.filter(show => {
