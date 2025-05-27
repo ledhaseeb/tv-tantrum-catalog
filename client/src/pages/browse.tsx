@@ -147,15 +147,20 @@ export default function Browse() {
       // If no URL filters, ensure we still trigger a fetch for default view
       setActiveFilters({});
     }
+    // Mark filters as initialized so fetch can proceed
+    setFiltersInitialized(true);
   }, [search]);
 
   // Use direct fetch instead of React Query to avoid timestamp issues
   const [shows, setShows] = useState<TvShow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
   
   // Direct fetch implementation for maximum reliability
   useEffect(() => {
+    // Don't fetch until URL filters have been parsed
+    if (!filtersInitialized) return;
     async function fetchShows() {
       setIsLoading(true);
       setError(null);
@@ -209,7 +214,7 @@ export default function Browse() {
     }
     
     fetchShows();
-  }, [activeFilters]);
+  }, [activeFilters, filtersInitialized]);
   
   // Handler for navigating to show details
   const handleShowClick = (id: number) => {
