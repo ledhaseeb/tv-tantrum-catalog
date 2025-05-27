@@ -139,9 +139,13 @@ export default function Browse() {
       }
     }
     
-    // Apply filters from URL if any exist
+    // Apply filters from URL immediately if any exist
     if (Object.keys(initialFilters).length > 0) {
+      console.log('BROWSE PAGE: Auto-applying filters from URL:', initialFilters);
       setActiveFilters(initialFilters);
+    } else {
+      // If no URL filters, ensure we still trigger a fetch for default view
+      setActiveFilters({});
     }
   }, [search]);
 
