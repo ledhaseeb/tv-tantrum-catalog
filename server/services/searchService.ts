@@ -164,7 +164,7 @@ export class SearchService {
       if (filters.sortBy) {
         switch (filters.sortBy) {
           case 'name':
-            query += ` ORDER BY name ASC`;
+            query += ` ORDER BY LOWER(name) ASC`;
             break;
           case 'newest':
             query += ` ORDER BY release_year DESC NULLS LAST`;
@@ -179,11 +179,11 @@ export class SearchService {
             query += ` ORDER BY interaction_level DESC NULLS LAST`;
             break;
           default:
-            query += ` ORDER BY name ASC`;
+            query += ` ORDER BY LOWER(name) ASC`;
         }
       } else {
         // Default sort
-        query += ` ORDER BY name ASC`;
+        query += ` ORDER BY LOWER(name) ASC`;
       }
       
       // Execute the query
