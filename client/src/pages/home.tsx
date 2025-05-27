@@ -179,7 +179,31 @@ export default function Home() {
   
   const adventureShows = allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
-    return themes?.some((theme: string) => theme.toLowerCase().includes('adventure'));
+    if (!themes || !Array.isArray(themes)) return false;
+    
+    return themes.some((theme: string) => {
+      const lowerTheme = theme.toLowerCase();
+      return lowerTheme.includes('adventure') ||
+             lowerTheme.includes('exploration') ||
+             lowerTheme.includes('quest') ||
+             lowerTheme.includes('journey') ||
+             lowerTheme.includes('discovery') ||
+             lowerTheme.includes('expedition') ||
+             lowerTheme.includes('outdoor') ||
+             lowerTheme.includes('wilderness') ||
+             lowerTheme.includes('treasure') ||
+             lowerTheme.includes('hero') ||
+             lowerTheme.includes('rescue') ||
+             lowerTheme.includes('mission') ||
+             lowerTheme.includes('brave') ||
+             lowerTheme.includes('courage') ||
+             lowerTheme.includes('action') ||
+             lowerTheme.includes('exciting') ||
+             lowerTheme.includes('thrilling') ||
+             lowerTheme.includes('epic') ||
+             lowerTheme.includes('travel') ||
+             lowerTheme.includes('exploring');
+    });
   }).slice(0, 24);
   
   const musicalShows = allShows?.filter(show => {
