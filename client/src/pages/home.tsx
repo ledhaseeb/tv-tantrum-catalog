@@ -61,9 +61,15 @@ export default function Home() {
     queryKey: ['/api/shows/popular', { limit: 24 }],
     staleTime: 60000, // 1 minute
   });
+
+  // Fetch highly rated shows from review data
+  const { data: highlyRatedShowsData, isLoading: highlyRatedShowsLoading } = useQuery<TvShow[]>({
+    queryKey: ['/api/shows/highly-rated', { limit: 24 }],
+    staleTime: 60000, // 1 minute
+  });
   
   // Combined loading state
-  const isLoading = allShowsLoading || popularShowsLoading;
+  const isLoading = allShowsLoading || popularShowsLoading || highlyRatedShowsLoading;
   
   // Find a featured show (using something with good data for demonstration)
   const featuredShow = allShows?.find(show => 
@@ -118,14 +124,8 @@ export default function Home() {
     return stimulationScore !== null && stimulationScore <= 2;
   }).slice(0, 24);
   
-  // Using stimulation score as a proxy for ratings since overallRating is not in the schema
-  const highlyRatedShows = allShows?.filter(show => {
-    const stimulationScore = getShowProperty(show, ['stimulationScore', 'stimulation_score']);
-    const themes = getShowProperty(show, ['themes']);
-    
-    return (stimulationScore !== null && stimulationScore <= 3 && themes && themes.length >= 3) || 
-           (stimulationScore !== null && stimulationScore <= 2);
-  }).slice(0, 24);
+  // Use highly rated shows data from user review ratings
+  const highlyRatedShows = highlyRatedShowsData;
   
   // Use popular shows data from view count tracking
   const popularShows = popularShowsData;

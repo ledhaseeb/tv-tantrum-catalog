@@ -632,6 +632,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get highly rated TV shows
+  app.get("/api/shows/highly-rated", async (req: Request, res: Response) => {
+    try {
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 24; // Default to 24 for carousel
+      
+      const shows = await storage.getHighlyRatedShows(limit);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching highly rated TV shows:", error);
+      res.status(500).json({ message: "Failed to fetch highly rated TV shows" });
+    }
+  });
+
   // These functions have already been defined above, so we don't need to redefine them.
 
 // Get single TV show by ID

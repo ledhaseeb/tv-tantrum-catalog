@@ -1659,6 +1659,81 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getHighlyRatedShows(limit: number = 24): Promise<TvShow[]> {
+    try {
+      const client = await this.pool.connect();
+      
+      const result = await client.query(`
+        SELECT 
+          ts.*,
+          ROUND(AVG(tr.rating)::numeric, 2) as avg_rating,
+          COUNT(tr.rating) as review_count,
+          COUNT(CASE WHEN tr.rating >= 4 THEN 1 END) as high_rating_count
+        FROM tv_shows ts
+        INNER JOIN tv_show_reviews tr ON ts.id = tr.tv_show_id
+        GROUP BY ts.id
+        HAVING COUNT(tr.rating) >= 3  -- Minimum 3 reviews for credibility
+        ORDER BY 
+          COUNT(CASE WHEN tr.rating >= 4 THEN 1 END) DESC,  -- High ratings first
+          ROUND(AVG(tr.rating)::numeric, 2) DESC,           -- Then average rating
+          COUNT(tr.rating) DESC                             -- Then total review count
+        LIMIT $1
+      `, [limit]);
+      
+      client.release();
+      
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        imageUrl: row.image_url,
+        ageRange: row.age_range,
+        episodeLength: row.episode_length,
+        themes: row.themes,
+        availableOn: row.available_on,
+        stimulationScore: row.stimulation_score,
+        interactionLevel: row.interactivity_level,
+        dialogueIntensity: row.dialogue_intensity,
+        soundFrequency: row.sound_frequency,
+        totalMusicLevel: row.total_music_level,
+        musicTempo: row.music_tempo,
+        soundEffectsLevel: row.sound_effects_level,
+        animationStyle: row.animation_style,
+        sceneFrequency: row.scene_frequency,
+        totalSoundEffectTimeLevel: row.total_sound_effect_time_level,
+        network: row.network,
+        year: row.year,
+        productionCompany: row.production_company,
+        creator: row.creator,
+        releaseYear: row.release_year,
+        endYear: row.end_year,
+        isOngoing: row.is_ongoing,
+        seasons: row.seasons,
+        totalEpisodes: row.total_episodes,
+        productionCountry: row.production_country,
+        language: row.language,
+        genre: row.genre,
+        targetAudience: row.target_audience,
+        viewerRating: row.viewer_rating,
+        contentRating: row.content_rating,
+        awards: row.awards,
+        synopsis: row.synopsis,
+        tags: row.tags,
+        isYouTubeChannel: row.is_youtube_channel,
+        channelId: row.channel_id,
+        subscriberCount: row.subscriber_count,
+        videoCount: row.video_count,
+        publishedAt: row.published_at,
+        hasOmdbData: row.has_omdb_data,
+        interactivityLevel: row.interactivity_level,
+        soundFrequency: row.sound_frequency
+      }));
+    } catch (error) {
+      console.error("Error getting highly rated shows:", error);
+      return [];
+    }
+  }
+
   async importShowsFromGitHub(githubShows: TvShowGitHub[]): Promise<TvShow[]> {
     const importedShows: TvShow[] = [];
 
