@@ -603,6 +603,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the public directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
   
+  // Get all available themes for filtering
+  app.get('/api/themes', async (req, res) => {
+    try {
+      const themes = await storage.getAllThemes();
+      res.json(themes);
+    } catch (error) {
+      console.error('Error fetching themes:', error);
+      res.status(500).json({ error: 'Failed to fetch themes' });
+    }
+  });
+
   // Register the lookup API router
   app.use('/api/lookup-show', lookupRouter);
   
