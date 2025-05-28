@@ -7,17 +7,17 @@ export interface Badge {
 
 export const BADGES: Badge[] = [
   { name: "Tablet Baby", emoji: "👶", points: 25, description: "Welcome to TV Tantrum!" },
-  { name: "Toddler Watcher", emoji: "🧒", points: 50, description: "Getting the hang of it" },
-  { name: "Show Explorer", emoji: "🔍", points: 100, description: "Discovering new content" },
-  { name: "Content Critic", emoji: "📝", points: 150, description: "Sharing your thoughts" },
-  { name: "TV Enthusiast", emoji: "📺", points: 250, description: "Really getting into it" },
-  { name: "Screen Scholar", emoji: "📚", points: 400, description: "Becoming an expert" },
-  { name: "Media Maven", emoji: "🎬", points: 600, description: "True connoisseur" },
-  { name: "TV Tamer", emoji: "🧑‍🧒", points: 800, description: "Master of family viewing" },
-  { name: "Binge Boss", emoji: "👑", points: 1000, description: "Ruling the remote" },
-  { name: "Show Shaman", emoji: "🧙", points: 1200, description: "Mystical viewing powers" },
-  { name: "Content Curator", emoji: "🎨", points: 1400, description: "Artistic taste" },
-  { name: "Streaming Sage", emoji: "🧠", points: 1600, description: "Wisdom of the streams" },
+  { name: "TV Tamer", emoji: "🧑‍🧒", points: 50, description: "Getting the hang of it" },
+  { name: "Algorithm Avoider", emoji: "🫷", points: 100, description: "Discovering new content" },
+  { name: "Mood-Swing Mediator", emoji: "🧑‍⚖️", points: 200, description: "Sharing your thoughts" },
+  { name: "Rhythm Regulator", emoji: "🪪", points: 300, description: "Really getting into it" },
+  { name: "Pixel Protector", emoji: "🥽", points: 400, description: "Becoming an expert" },
+  { name: "Screen-Time Sherpa", emoji: "🤝", points: 500, description: "True connoisseur" },
+  { name: "Programme Peacekeeper", emoji: "✌️", points: 750, description: "Master of family viewing" },
+  { name: "Calm-Ware Engineer", emoji: "🧑‍🔧", points: 1000, description: "Ruling the remote" },
+  { name: "Digital Diplomat", emoji: "🧑‍💼", points: 1250, description: "Mystical viewing powers" },
+  { name: "Sensory Sentinel", emoji: "🦾", points: 1500, description: "Artistic taste" },
+  { name: "Guardian of the Glow", emoji: "🥷", points: 1750, description: "Wisdom of the streams" },
   { name: "Screen Sensei", emoji: "🧘", points: 2000, description: "Ultimate TV master" }
 ];
 
