@@ -7,11 +7,11 @@ import { format } from 'date-fns';
 
 interface ShowSubmission {
   id: number;
-  showName: string;
-  whereTheyWatch: string;
+  show_name: string;
+  where_they_watch: string;
   status: 'pending' | 'approved' | 'rejected';
-  requestCount: number;
-  createdAt: string;
+  request_count: number;
+  created_at: string;
 }
 
 export default function SubmitShowPage() {
@@ -95,13 +95,13 @@ export default function SubmitShowPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900">
-                            {submission.showName}
+                            {submission.show_name}
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">
-                            {submission.whereTheyWatch}
+                            {submission.where_they_watch}
                           </p>
                           <p className="text-xs text-gray-500 mt-2">
-                            Submitted {format(new Date(submission.createdAt), 'MMM d, yyyy')}
+                            Submitted {format(new Date(submission.created_at), 'MMM d, yyyy')}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -111,10 +111,10 @@ export default function SubmitShowPage() {
                               {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                             </Badge>
                           </div>
-                          {submission.requestCount > 1 && (
+                          {submission.request_count > 1 && (
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <Users className="h-3 w-3" />
-                              {submission.requestCount} requests
+                              {submission.request_count} requests
                             </div>
                           )}
                         </div>
