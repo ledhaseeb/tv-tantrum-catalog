@@ -692,7 +692,7 @@ export default function Home() {
       
       {/* Preschooler Shows */}
       {preschoolerShows && preschoolerShows.length > 0 && renderCategorySection(
-        "Preschooler Favorites",
+        "Preschoolers",
         "Shows specifically designed for children ages 2-4", 
         preschoolerShows, 
         "/browse?ageRange=2-4&themeMatchMode=OR"
