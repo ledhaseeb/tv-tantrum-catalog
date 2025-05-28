@@ -3219,9 +3219,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { pool } = await import('./db');
       const normalizedShowName = showName.toLowerCase().replace(/[^a-z0-9]/g, '');
       
-      // Check existing TV shows with fuzzy matching
+      // Check existing TV shows with case-insensitive fuzzy matching
       const existingShowResult = await pool.query(
-        'SELECT id, name FROM tv_shows WHERE LOWER(REPLACE(REPLACE(REPLACE(name, \' \', \'\'), \'-\', \'\'), \'.\', \'\')) = $1',
+        'SELECT id, name FROM tv_shows WHERE LOWER(REPLACE(REPLACE(REPLACE(name, \' \', \'\'), \'-\', \'\'), \'.\', \'\')) = LOWER($1)',
         [normalizedShowName]
       );
       
