@@ -3366,26 +3366,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/show-submissions/:id/approve', async (req, res) => {
+  // New approve endpoint for consolidated submissions
+  app.post('/api/show-submissions/approve', async (req, res) => {
     try {
-      if (!req.session?.userId) {
+      if (!req.isAuthenticated()) {
         return res.status(401).json({ error: 'Not authenticated' });
       }
 
       // Check if user is admin
-      const user = await storage.getUser(parseInt(req.session.userId));
-      if (!user?.isAdmin) {
+      if (!req.user?.isAdmin) {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
-      const submissionId = parseInt(req.params.id);
-      const { linkedShowId } = req.body;
+      const { normalizedName, linkedShowId } = req.body;
+      
+      if (!normalizedName) {
+        return res.status(400).json({ error: 'Normalized name is required' });
+      }
 
-      const result = await storage.approveShowSubmission(submissionId, req.session.userId, linkedShowId);
-      res.json(result);
+      const { pool } = await import('./db');
+      
+      // Get all pending submissions for this normalized show name
+      const submissionsResult = await pool.query(
+        'SELECT id, user_id, show_name FROM show_submissions WHERE normalized_name = $1 AND status = $2',
+        [normalizedName, 'pending']
+      );
+      
+      if (submissionsResult.rows.length === 0) {
+        return res.status(404).json({ error: 'No pending submissions found for this show' });
+      }
+
+      // Update all submissions to approved status
+      await pool.query(
+        'UPDATE show_submissions SET status = $1, updated_at = NOW() WHERE normalized_name = $2 AND status = $3',
+        ['approved', normalizedName, 'pending']
+      );
+
+      // Award points to all users who submitted this show
+      const uniqueUserIds = [...new Set(submissionsResult.rows.map(row => row.user_id))];
+      const pointsPerUser = 20;
+      const now = new Date();
+
+      for (const userId of uniqueUserIds) {
+        // Add to points history
+        await pool.query(
+          `INSERT INTO user_points_history(user_id, points, activity_type, description, created_at)
+           VALUES($1, $2, $3, $4, $5)`,
+          [userId, pointsPerUser, 'show_submission_approved', `Show submission approved: ${submissionsResult.rows.find(r => r.user_id === userId)?.show_name}`, now]
+        );
+
+        // Update user total points
+        await pool.query(
+          `UPDATE users SET 
+            total_points = COALESCE(total_points, 0) + $1
+           WHERE id = $2`,
+          [pointsPerUser, userId]
+        );
+      }
+
+      // If linking to an existing show, could add additional logic here
+      if (linkedShowId) {
+        console.log(`Linking submissions to existing show ID: ${linkedShowId}`);
+      }
+
+      res.json({
+        success: true,
+        message: `Approved ${submissionsResult.rows.length} submissions for ${uniqueUserIds.length} users`,
+        submissionsApproved: submissionsResult.rows.length,
+        usersRewarded: uniqueUserIds.length,
+        pointsAwarded: pointsPerUser
+      });
+
     } catch (error) {
-      console.error('Error approving submission:', error);
-      res.status(500).json({ error: 'Failed to approve submission' });
+      console.error('Error approving submissions:', error);
+      res.status(500).json({ error: 'Failed to approve submissions' });
     }
   });
 

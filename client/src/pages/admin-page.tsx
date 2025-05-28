@@ -2777,11 +2777,28 @@ function ShowSubmissionsSection() {
 
   const handleApproveSubmission = async (submission: any) => {
     try {
-      // For now, just show a placeholder for approval
-      toast({
-        title: "Approval Feature",
-        description: `Ready to approve "${submission.show_name}" with ${submission.request_count} requests from users: ${submission.requested_by_users.join(', ')}`,
+      console.log('Approving submission:', submission);
+      
+      const response = await apiRequest('POST', '/api/show-submissions/approve', {
+        normalizedName: submission.normalized_name,
+        linkedShowId: null // Can be expanded later for linking to existing shows
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to approve submission: ${errorText}`);
+      }
+
+      const result = await response.json();
+      
+      toast({
+        title: "Show Approved Successfully!",
+        description: `"${submission.show_name}" approved! ${result.usersRewarded} users earned ${result.pointsAwarded} points each.`,
+      });
+
+      // Refresh the submissions list to remove the approved item
+      fetchSubmissions();
+      
     } catch (error) {
       console.error('Error approving submission:', error);
       toast({
