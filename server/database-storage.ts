@@ -2025,6 +2025,8 @@ export class DatabaseStorage implements IStorage {
       const sharePoints = await this.getPointsByActivityType(userId, 'share');
       const referralPoints = await this.getPointsByActivityType(userId, 'referral');
       const submissionPoints = await this.getPointsByActivityType(userId, 'show_submission');
+      const submissionApprovedPoints = await this.getPointsByActivityType(userId, 'show_submission_approved');
+      const totalSubmissionPoints = submissionPoints + submissionApprovedPoints;
       const researchPoints = await this.getPointsByActivityType(userId, 'research_read');
       
       return {
@@ -2037,7 +2039,7 @@ export class DatabaseStorage implements IStorage {
           loginRewards: loginRewardPoints,
           shares: sharePoints,
           referrals: referralPoints,
-          showSubmissions: submissionPoints,
+          showSubmissions: totalSubmissionPoints,
           researchRead: researchPoints
         },
         rank: userRank
