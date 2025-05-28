@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -1345,7 +1345,17 @@ export default function AdminPage() {
                       {filteredUsers.map((user) => (
                         <TableRow key={user.id}>
                           <TableCell>{user.id}</TableCell>
-                          <TableCell>{user.username || '-'}</TableCell>
+                          <TableCell>
+                            {user.username ? (
+                              <Link href={`/user/${user.id}`}>
+                                <span className="text-blue-600 hover:text-blue-800 cursor-pointer underline">
+                                  {user.username}
+                                </span>
+                              </Link>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.country || '-'}</TableCell>
                           <TableCell>
