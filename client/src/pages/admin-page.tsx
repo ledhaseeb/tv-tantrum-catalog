@@ -963,6 +963,39 @@ export default function AdminPage() {
     }
   };
   
+  // Handle featured toggle
+  const handleFeaturedToggle = async (showId: number, isFeatured: boolean) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/shows/${showId}/featured`, { 
+        is_featured: isFeatured 
+      });
+      
+      // Update shows in state
+      setShows(prev => prev.map(show => 
+        show.id === showId ? { ...show, is_featured: isFeatured } : { ...show, is_featured: false }
+      ));
+      setFilteredShows(prev => prev.map(show => 
+        show.id === showId ? { ...show, is_featured: isFeatured } : { ...show, is_featured: false }
+      ));
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/shows'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tv-shows'] });
+      
+      toast({
+        title: isFeatured ? "Show Featured" : "Show Unfeatured",
+        description: isFeatured ? "This show is now featured on the homepage." : "This show is no longer featured.",
+      });
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update featured status. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleDeleteShow = async () => {
     if (!selectedShow) return;
     
@@ -1220,6 +1253,7 @@ export default function AdminPage() {
                       <TableHead>Name</TableHead>
                       <TableHead>Age Range</TableHead>
                       <TableHead>Stimulation</TableHead>
+                      <TableHead>Featured</TableHead>
                       <TableHead>OMDb</TableHead>
                       <TableHead>YouTube</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -1228,7 +1262,7 @@ export default function AdminPage() {
                   <TableBody>
                     {filteredShows.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                           No shows found
                         </TableCell>
                       </TableRow>
@@ -1239,6 +1273,16 @@ export default function AdminPage() {
                           <TableCell className="font-medium">{show.name}</TableCell>
                           <TableCell>{show.ageRange || 'N/A'}</TableCell>
                           <TableCell>{show.stimulationScore}/5</TableCell>
+                          <TableCell>
+                            <Button
+                              variant={show.is_featured ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handleFeaturedToggle(show.id, !show.is_featured)}
+                              className={show.is_featured ? "bg-yellow-600 hover:bg-yellow-700" : ""}
+                            >
+                              {show.is_featured ? "★ Featured" : "☆ Set Featured"}
+                            </Button>
+                          </TableCell>
                           <TableCell>
                             {show.hasOmdbData ? (
                               <span className="text-green-600 font-medium flex items-center">
