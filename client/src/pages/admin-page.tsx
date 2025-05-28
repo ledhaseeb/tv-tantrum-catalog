@@ -1113,6 +1113,7 @@ export default function AdminPage() {
           <TabsTrigger value="shows">TV Shows</TabsTrigger>
           <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="submissions">Show Submissions</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         
@@ -1461,6 +1462,20 @@ export default function AdminPage() {
                   </Table>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="submissions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Show Submissions</CardTitle>
+              <CardDescription>
+                Review and approve show submissions from users (sorted by popularity)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ShowSubmissionsSection />
             </CardContent>
           </Card>
         </TabsContent>
@@ -2696,5 +2711,145 @@ export default function AdminPage() {
         </DialogContent>
       </Dialog>
     </main>
+  );
+}
+
+// Show Submissions Management Component
+function ShowSubmissionsSection() {
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Fetch pending submissions grouped by popularity
+  const fetchSubmissions = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/show-submissions/pending');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSubmissions(data);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load show submissions",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load show submissions",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load submissions on component mount
+  useEffect(() => {
+    fetchSubmissions();
+  }, []);
+
+  const handleApproveSubmission = async (submission: any) => {
+    try {
+      // For now, just show a placeholder for approval
+      toast({
+        title: "Approval Feature",
+        description: `Ready to approve "${submission.show_name}" with ${submission.request_count} requests from users: ${submission.requested_by_users.join(', ')}`,
+      });
+    } catch (error) {
+      console.error('Error approving submission:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve submission",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading submissions...</span>
+      </div>
+    );
+  }
+
+  if (submissions.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <Clock className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Submissions</h3>
+        <p className="text-gray-500">All show submissions have been processed.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Pending Show Submissions ({submissions.length})</h3>
+        <Button onClick={fetchSubmissions} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+      </div>
+
+      <div className="space-y-3">
+        {submissions.map((submission, index) => (
+          <Card key={submission.normalized_name} className="border-l-4 border-l-blue-500">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className="font-semibold text-lg">{submission.show_name}</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <User className="h-3 w-3 mr-1" />
+                        {submission.request_count} request{submission.request_count !== 1 ? 's' : ''}
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Pending
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><strong>Requested by:</strong> {submission.requested_by_users.join(', ')}</p>
+                    <p><strong>Platforms:</strong> {submission.platforms.filter((p: string) => p).join(', ')}</p>
+                    <p><strong>First requested:</strong> {new Date(submission.first_requested).toLocaleDateString()}</p>
+                    <p><strong>Last requested:</strong> {new Date(submission.last_requested).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    onClick={() => handleApproveSubmission(submission)}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 }
