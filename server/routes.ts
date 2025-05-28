@@ -3217,11 +3217,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if show already exists in our database
       const { pool } = await import('./db');
+      
+      // Improved normalization: remove all non-alphanumeric characters and convert to lowercase
       const normalizedShowName = showName.toLowerCase().replace(/[^a-z0-9]/g, '');
       
       // Check existing TV shows with case-insensitive fuzzy matching
       const existingShowResult = await pool.query(
-        'SELECT id, name FROM tv_shows WHERE LOWER(REPLACE(REPLACE(REPLACE(name, \' \', \'\'), \'-\', \'\'), \'.\', \'\')) = LOWER($1)',
+        'SELECT id, name FROM tv_shows WHERE LOWER(REGEXP_REPLACE(name, \'[^a-zA-Z0-9]\', \'\', \'g\')) = $1',
         [normalizedShowName]
       );
       
@@ -3314,11 +3316,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { pool } = await import('./db');
       
-      // Get submissions grouped by normalized_name with counts and user details
+      // Get submissions grouped by improved normalization to consolidate better
       const result = await pool.query(`
         SELECT 
-          normalized_name,
-          show_name,
+          LOWER(REGEXP_REPLACE(show_name, '[^a-zA-Z0-9]', '', 'g')) as normalized_name,
+          -- Use the most common capitalization as the display name
+          MODE() WITHIN GROUP (ORDER BY show_name) as show_name,
           COUNT(*) as request_count,
           MIN(ss.created_at) as first_requested,
           MAX(ss.created_at) as last_requested,
@@ -3329,7 +3332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FROM show_submissions ss
         JOIN users u ON ss.user_id = u.id
         WHERE ss.status = 'pending'
-        GROUP BY normalized_name, show_name
+        GROUP BY LOWER(REGEXP_REPLACE(show_name, '[^a-zA-Z0-9]', '', 'g'))
         ORDER BY request_count DESC, first_requested ASC
       `);
 
