@@ -743,6 +743,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get featured TV show
+  app.get("/api/shows/featured", async (req: Request, res: Response) => {
+    try {
+      // Get database connection
+      const { pool } = await import('./db');
+      
+      // Find the featured show
+      const result = await pool.query(
+        'SELECT * FROM tv_shows WHERE is_featured = TRUE LIMIT 1'
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "No featured show found" });
+      }
+      
+      // Convert database row to TvShow format
+      const row = result.rows[0];
+      const show = {
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        ageRange: row.age_range,
+        episodeLength: row.episode_length,
+        stimulationScore: row.stimulation_score,
+        themes: row.themes,
+        imageUrl: row.image_url,
+        availableOn: row.available_on,
+        tags: row.tags,
+        interactivityLevel: row.interactivity_level,
+        dialogueIntensity: row.dialogue_intensity,
+        soundEffectsLevel: row.sound_effects_level,
+        animationStyle: row.animation_style,
+        sceneFrequency: row.scene_frequency,
+        totalSoundEffectTimeLevel: row.total_sound_effect_time_level,
+        network: row.network,
+        year: row.year,
+        productionCompany: row.production_company,
+        creator: row.creator,
+        releaseYear: row.release_year,
+        endYear: row.end_year,
+        isOngoing: row.is_ongoing,
+        seasons: row.seasons,
+        totalEpisodes: row.total_episodes,
+        productionCountry: row.production_country,
+        language: row.language,
+        genre: row.genre,
+        targetAudience: row.target_audience,
+        viewerRating: row.viewer_rating,
+        contentRating: row.content_rating,
+        awards: row.awards,
+        synopsis: row.synopsis,
+        isYouTubeChannel: row.is_youtube_channel,
+        channelId: row.channel_id,
+        subscriberCount: row.subscriber_count,
+        videoCount: row.video_count,
+        publishedAt: row.published_at,
+        hasOmdbData: row.has_omdb_data,
+        hasYoutubeData: row.has_youtube_data,
+        interactivityLevel: row.interactivity_level,
+        soundFrequency: row.sound_frequency,
+        is_featured: row.is_featured
+      };
+      
+      res.json(show);
+    } catch (error) {
+      console.error("Error fetching featured TV show:", error);
+      res.status(500).json({ message: "Failed to fetch featured TV show" });
+    }
+  });
+
   // These functions have already been defined above, so we don't need to redefine them.
 
 // Get single TV show by ID
@@ -2404,6 +2474,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       res.status(500).json({ message: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  // Update show featured status (admin only)
+  app.patch("/api/shows/:id/featured", async (req: Request, res: Response) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const showId = parseInt(req.params.id);
+      if (isNaN(showId)) {
+        return res.status(400).json({ message: "Invalid show ID" });
+      }
+      
+      const { is_featured } = req.body;
+      if (typeof is_featured !== 'boolean') {
+        return res.status(400).json({ message: "is_featured must be a boolean" });
+      }
+      
+      // Get database connection
+      const { pool } = await import('./db');
+      
+      // If setting a show as featured, first unfeature all other shows
+      if (is_featured) {
+        await pool.query('UPDATE tv_shows SET is_featured = FALSE');
+      }
+      
+      // Update the specific show's featured status
+      const result = await pool.query(
+        'UPDATE tv_shows SET is_featured = $1 WHERE id = $2 RETURNING *',
+        [is_featured, showId]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+      
+      res.json({ 
+        success: true, 
+        show: result.rows[0],
+        message: is_featured ? "Show featured successfully" : "Show unfeatured successfully"
+      });
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      res.status(500).json({ message: 'Failed to update featured status' });
     }
   });
 

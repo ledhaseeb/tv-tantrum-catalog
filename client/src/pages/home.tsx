@@ -103,11 +103,14 @@ export default function Home() {
   // Combined loading state
   const isLoading = allShowsLoading || popularShowsLoading || highlyRatedShowsLoading;
   
-  // Find a featured show (using something with good data for demonstration)
-  const featuredShow = allShows?.find(show => 
-    show.name.includes("Brambly") || 
-    (show.themes?.includes("Adventure") && show.themes?.includes("Fantasy"))
-  ) || allShows?.[0];
+  // Fetch the featured show from the database
+  const { data: featuredShowData } = useQuery<TvShow>({
+    queryKey: ['/api/shows/featured'],
+    staleTime: 60000, // 1 minute
+  });
+  
+  // Use featured show from database, fallback to first show if none is featured
+  const featuredShow = featuredShowData || allShows?.[0];
   
   // Track the favorite status of the featured show
   const [isFeaturedShowFavorite, setIsFeaturedShowFavorite] = useState(false);
