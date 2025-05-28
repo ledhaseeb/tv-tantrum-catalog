@@ -32,3 +32,13 @@ export function getNextBadge(points: number): Badge | null {
   const nextBadge = BADGES.find(badge => points < badge.points);
   return nextBadge || null;
 }
+
+export function getBadgeName(points: number): string {
+  const badge = getCurrentBadge(points);
+  return badge.name;
+}
+
+export function getBadgeEmoji(points: number): string {
+  const badge = getCurrentBadge(points);
+  return badge.emoji;
+}
