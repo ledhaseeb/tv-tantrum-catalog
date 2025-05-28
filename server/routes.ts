@@ -3200,6 +3200,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Show submissions routes (NEW system)
+  app.post('/api/show-submissions', async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      const { showName, whereTheyWatch } = req.body;
+      
+      if (!showName || !whereTheyWatch) {
+        return res.status(400).json({ error: 'Show name and where they watch are required' });
+      }
+
+      const submission = await storage.addShowSubmission({
+        userId: req.session.userId,
+        showName,
+        whereTheyWatch
+      });
+
+      res.json(submission);
+    } catch (error) {
+      console.error('Error submitting show:', error);
+      res.status(500).json({ error: 'Failed to submit show' });
+    }
+  });
+
+  app.get('/api/show-submissions/pending', async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      // Check if user is admin
+      const user = await storage.getUser(parseInt(req.session.userId));
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const submissions = await storage.getPendingShowSubmissions();
+      res.json(submissions);
+    } catch (error) {
+      console.error('Error getting pending submissions:', error);
+      res.status(500).json({ error: 'Failed to get pending submissions' });
+    }
+  });
+
+  app.get('/api/show-submissions/my', async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      const submissions = await storage.getUserShowSubmissions(req.session.userId);
+      res.json(submissions);
+    } catch (error) {
+      console.error('Error getting user submissions:', error);
+      res.status(500).json({ error: 'Failed to get your submissions' });
+    }
+  });
+
+  app.post('/api/show-submissions/:id/approve', async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      // Check if user is admin
+      const user = await storage.getUser(parseInt(req.session.userId));
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const submissionId = parseInt(req.params.id);
+      const { linkedShowId } = req.body;
+
+      const result = await storage.approveShowSubmission(submissionId, req.session.userId, linkedShowId);
+      res.json(result);
+    } catch (error) {
+      console.error('Error approving submission:', error);
+      res.status(500).json({ error: 'Failed to approve submission' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

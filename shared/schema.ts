@@ -307,12 +307,7 @@ export const insertUserReadResearchSchema = createInsertSchema(userReadResearch)
   readAt: true,
 });
 
-export const insertShowSubmissionSchema = createInsertSchema(showSubmissions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  status: true,
-});
+
 
 export const insertUserReferralSchema = createInsertSchema(userReferrals).omit({
   id: true,
