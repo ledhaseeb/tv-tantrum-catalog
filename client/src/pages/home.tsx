@@ -523,7 +523,7 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -557,7 +557,6 @@ export default function Home() {
                   {isFeaturedShowFavorite ? 'Saved' : 'Add to Favorites'}
                 </Button>
                 <Button 
-                  className="mt-2" 
                   onClick={() => handleShowCardClick(featuredShow.id)}
                 >
                   View Show Details
