@@ -3104,50 +3104,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Show Submissions
-  app.post("/api/show-submissions", async (req: Request, res: Response) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to submit shows" });
-      }
-      
-      const submission = await storage.addShowSubmission({
-        ...req.body,
-        userId
-      });
-      res.json(submission);
-    } catch (error) {
-      console.error("Error submitting show:", error);
-      res.status(500).json({ message: "Failed to submit show" });
-    }
-  });
+  // DISABLED: Old show submissions endpoints - will be replaced with new implementation
+  // app.post("/api/show-submissions", async (req: Request, res: Response) => {
+  //   try {
+  //     const userId = req.session?.userId;
+  //     if (!userId) {
+  //       return res.status(401).json({ message: "You must be logged in to submit shows" });
+  //     }
+  //     
+  //     const submission = await storage.addShowSubmission({
+  //       ...req.body,
+  //       userId
+  //     });
+  //     res.json(submission);
+  //   } catch (error) {
+  //     console.error("Error submitting show:", error);
+  //     res.status(500).json({ message: "Failed to submit show" });
+  //   }
+  // });
   
-  app.get("/api/show-submissions", async (req: Request, res: Response) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to view submissions" });
-      }
-      
-      const user = await storage.getUser(userId);
-      
-      // Admin can see all pending submissions
-      if (user?.isAdmin) {
-        const submissions = await storage.getPendingShowSubmissions();
-        res.json(submissions);
-      } else {
-        // Regular users only see their own submissions
-        const submissions = await storage.getUserShowSubmissions(userId);
-        res.json(submissions);
-      }
-    } catch (error) {
-      console.error("Error fetching show submissions:", error);
-      res.status(500).json({ message: "Failed to fetch show submissions" });
-    }
-  });
+  // app.get("/api/show-submissions", async (req: Request, res: Response) => {
+  //   try {
+  //     const userId = req.session?.userId;
+  //     if (!userId) {
+  //       return res.status(401).json({ message: "You must be logged in to view submissions" });
+  //     }
+  //     
+  //     const user = await storage.getUser(userId);
+  //     
+  //     // Admin can see all pending submissions
+  //     if (user?.isAdmin) {
+  //       const submissions = await storage.getPendingShowSubmissions();
+  //       res.json(submissions);
+  //     } else {
+  //       // Regular users only see their own submissions
+  //       const submissions = await storage.getUserShowSubmissions(userId);
+  //       res.json(submissions);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching show submissions:", error);
+  //     res.status(500).json({ message: "Failed to fetch show submissions" });
+  //   }
+  // });
   
-  // Admin only - update submission status
+  // DISABLED: Admin only - update submission status
   app.put("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
     try {
       const userId = req.session?.userId;

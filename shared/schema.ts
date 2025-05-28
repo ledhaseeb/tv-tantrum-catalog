@@ -199,19 +199,20 @@ export const userReadResearch = pgTable("user_read_research", {
   readAt: timestamp("read_at").notNull().defaultNow(),
 });
 
-export const showSubmissions = pgTable("show_submissions", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  ageRange: text("age_range").notNull(),
-  episodeLength: integer("episode_length"),
-  platform: text("platform"),
-  additionalNotes: text("additional_notes"),
-  status: text("status").notNull().default("pending"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+// DISABLED: Old show submissions table - will be replaced with new implementation
+// export const showSubmissions = pgTable("show_submissions", {
+//   id: serial("id").primaryKey(),
+//   userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+//   name: text("name").notNull(),
+//   description: text("description").notNull(),
+//   ageRange: text("age_range").notNull(),
+//   episodeLength: integer("episode_length"),
+//   platform: text("platform"),
+//   additionalNotes: text("additional_notes"),
+//   status: text("status").notNull().default("pending"),
+//   createdAt: timestamp("created_at").notNull().defaultNow(),
+//   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+// });
 
 export const userReferrals = pgTable("user_referrals", {
   id: serial("id").primaryKey(),
