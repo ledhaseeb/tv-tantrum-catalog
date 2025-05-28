@@ -2769,10 +2769,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const summaries = await storage.getResearchSummaries();
       
-      // Check if user is logged in to determine read status
-      const userId = req.session?.userId;
-      if (userId) {
+      // Check if user is logged in to determine read status - use passport authentication
+      if (req.isAuthenticated() && req.user) {
+        const userId = req.user.id.toString();
+        console.log(`Getting read research for user ${userId}`);
         const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
+        console.log(`User ${userId} has read research IDs:`, userReadIds);
         const summariesWithReadStatus = summaries.map(summary => ({
           ...summary,
           hasRead: userReadIds.includes(summary.id)
