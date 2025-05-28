@@ -227,6 +227,9 @@ interface ResearchCardProps {
 }
 
 const ResearchCard = ({ summary, onReadMore }: ResearchCardProps) => {
+  // Debug: Log the summary data to see if hasRead is being passed
+  console.log('ResearchCard summary:', summary.id, summary.title, 'hasRead:', summary.hasRead);
+  
   // Format category name for display
   const formatCategoryName = (category: string) => {
     if (!category) return 'General';
