@@ -3220,10 +3220,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedShowName = showName.toLowerCase().replace(/[^a-z0-9]/g, '');
       
       // Check existing TV shows with fuzzy matching
+      console.log('Checking for duplicate show:', showName, 'normalized to:', normalizedShowName);
       const existingShowResult = await pool.query(
         'SELECT id, name FROM tv_shows WHERE LOWER(REPLACE(REPLACE(REPLACE(name, \' \', \'\'), \'-\', \'\'), \'.\', \'\')) = $1',
         [normalizedShowName]
       );
+      console.log('Found existing shows:', existingShowResult.rows.length);
       
       if (existingShowResult.rows.length > 0) {
         // Show already exists - return info about existing show
@@ -3266,7 +3268,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const submission = result.rows[0];
 
-      res.json(submission);
+      res.json({
+        ...submission,
+        isNewSubmission: true,
+        message: "Show submitted successfully! We'll review it soon."
+      });
     } catch (error) {
       console.error('Error submitting show:', error);
       res.status(500).json({ error: 'Failed to submit show' });
