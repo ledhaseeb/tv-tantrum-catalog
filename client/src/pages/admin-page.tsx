@@ -2779,9 +2779,17 @@ function ShowSubmissionsSection() {
     try {
       console.log('Approving submission:', submission);
       
-      const response = await apiRequest('POST', '/api/show-submissions/approve', {
-        normalizedName: submission.normalized_name,
-        linkedShowId: null // Can be expanded later for linking to existing shows
+      // Use fetch directly instead of apiRequest to avoid any interference
+      const response = await fetch('/api/show-submissions/approve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for authentication
+        body: JSON.stringify({
+          normalizedName: submission.normalized_name,
+          linkedShowId: null
+        })
       });
 
       console.log('Response status:', response.status, response.ok);
@@ -2792,17 +2800,8 @@ function ShowSubmissionsSection() {
         throw new Error(`Failed to approve submission: ${errorText}`);
       }
 
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-      
-      let result;
-      try {
-        result = JSON.parse(responseText);
-        console.log('Parsed result:', result);
-      } catch (parseError) {
-        console.error('Failed to parse JSON:', parseError);
-        throw new Error('Invalid response format');
-      }
+      const result = await response.json();
+      console.log('Parsed result:', result);
       
       toast({
         title: "Show Approved Successfully!",
@@ -2816,7 +2815,7 @@ function ShowSubmissionsSection() {
       console.error('Error approving submission:', error);
       toast({
         title: "Error",
-        description: "Failed to approve submission",
+        description: error instanceof Error ? error.message : "Failed to approve submission",
         variant: "destructive",
       });
     }
