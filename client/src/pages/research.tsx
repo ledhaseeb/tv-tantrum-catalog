@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'wouter';
@@ -134,18 +135,49 @@ const Research = () => {
         </Badge>
       </div>
 
+      {/* Mobile: Dropdown selector */}
+      <div className="block md:hidden mb-8">
+        <Select value={activeCategory} onValueChange={setActiveCategory}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a category">
+              {categories.find(cat => cat.id === activeCategory)?.name}
+              {categoryCounts && categoryCounts[activeCategory] > 0 && (
+                <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
+                  {categoryCounts[activeCategory]}
+                </span>
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                <div className="flex items-center justify-between w-full">
+                  <span>{category.name}</span>
+                  {categoryCounts && categoryCounts[category.id] > 0 && (
+                    <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
+                      {categoryCounts[category.id]}
+                    </span>
+                  )}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Desktop: Tab interface */}
       <Tabs 
         defaultValue="all" 
         value={activeCategory} 
         onValueChange={setActiveCategory} 
-        className="mb-14"
+        className="hidden md:block mb-14"
       >
-        <TabsList className="flex overflow-x-auto mb-10 px-1 gap-2 md:justify-center scrollbar-hide">
+        <TabsList className="flex flex-wrap mb-10 px-1 justify-center gap-2">
           {categories.map((category) => (
             <TabsTrigger 
               key={category.id}
               value={category.id}
-              className={`flex flex-col items-center py-2 px-3 ${category.id === 'all' ? 'min-w-[100px]' : 'min-w-[150px]'} h-auto flex-shrink-0`}
+              className={`flex flex-col items-center py-2 px-3 ${category.id === 'all' ? 'min-w-[100px]' : 'min-w-[150px]'} h-auto`}
             >
               <span className="text-center">
                 {category.id === 'all' ? category.name : 
@@ -164,29 +196,26 @@ const Research = () => {
             </TabsTrigger>
           ))}
         </TabsList>
-
-        {categories.map((category) => (
-          <TabsContent key={category.id} value={category.id}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {category.id === 'all'
-                ? (summaries && Array.isArray(summaries) ? summaries.map((summary: any) => (
-                    <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
-                  )) : null)
-                : (categorizedSummaries[category.id] && Array.isArray(categorizedSummaries[category.id]) 
-                    ? categorizedSummaries[category.id].map((summary: any) => (
-                        <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
-                      ))
-                    : (
-                      <div className="col-span-full text-center py-12 text-gray-500">
-                        <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                        <p>No research summaries found in this category</p>
-                      </div>
-                    )
-                  )}
-            </div>
-          </TabsContent>
-        ))}
       </Tabs>
+
+      {/* Content display for both mobile and desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {activeCategory === 'all'
+          ? (summaries && Array.isArray(summaries) ? summaries.map((summary: any) => (
+              <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+            )) : null)
+          : (categorizedSummaries[activeCategory] && Array.isArray(categorizedSummaries[activeCategory]) 
+              ? categorizedSummaries[activeCategory].map((summary: any) => (
+                  <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+                ))
+              : (
+                <div className="col-span-full text-center py-12 text-gray-500">
+                  <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                  <p>No research summaries found in this category</p>
+                </div>
+              )
+            )}
+      </div>
     </div>
   );
 };
