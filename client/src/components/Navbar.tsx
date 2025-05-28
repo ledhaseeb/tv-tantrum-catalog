@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/queryClient";
-import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X, BookOpen } from "lucide-react";
+import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X, BookOpen, Plus } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -137,6 +137,15 @@ export default function Navbar() {
                     >
                       <BookOpen className="h-4 w-4" />
                       <span>Research</span>
+                    </Button>
+                  </Link>
+                  <Link href="/submit-show">
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Submit Show</span>
                     </Button>
                   </Link>
                   <Link href="/user-dashboard">
