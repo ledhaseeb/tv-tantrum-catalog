@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -762,9 +762,11 @@ function Leaderboard() {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900 truncate">
-                      {user.username || 'Anonymous User'}
-                    </h3>
+                    <Link href={`/user/${user.id}`}>
+                      <h3 className="text-sm font-semibold text-gray-900 truncate hover:text-purple-600 cursor-pointer transition-colors">
+                        {user.username || 'Anonymous User'}
+                      </h3>
+                    </Link>
                     <p className="text-xs text-purple-600 font-medium truncate">
                       {getBadgeName(user.total_points)}
                     </p>
