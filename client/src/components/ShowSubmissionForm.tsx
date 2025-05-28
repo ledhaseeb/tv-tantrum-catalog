@@ -40,18 +40,24 @@ export function ShowSubmissionForm({ onSuccess }: ShowSubmissionFormProps) {
     onSuccess: (response) => {
       // Use setTimeout to avoid React's setState warning during render
       setTimeout(() => {
-        // Check if this was a new submission or a duplicate
-        const isNewSubmission = response.isNewSubmission !== false;
-        
-        if (isNewSubmission) {
+        if (response.isDuplicate) {
+          // Show already exists in our database
+          toast({
+            title: "Show already exists!",
+            description: `"${response.existingShow.name}" is already in our database. You can find it by searching.`,
+            variant: "default",
+          });
+        } else if (response.isNewSubmission === false) {
+          // Someone already submitted this - we increased priority
+          toast({
+            title: "Request noted!",
+            description: "This show has been requested before. We've increased its priority for review.",
+          });
+        } else {
+          // Brand new submission
           toast({
             title: "Show submitted successfully!",
             description: "Thank you for your suggestion. We'll review it soon.",
-          });
-        } else {
-          toast({
-            title: "Already requested!",
-            description: "This show has been suggested before. We've noted your interest.",
           });
         }
 

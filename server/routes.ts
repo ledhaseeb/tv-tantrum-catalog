@@ -3215,11 +3215,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Show name and where they watch are required' });
       }
 
-      // Insert directly into the clean database
+      // Check if show already exists in our database
       const { pool } = await import('./db');
+      const normalizedShowName = showName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // Check existing TV shows
+      const existingShowResult = await pool.query(
+        'SELECT id, name FROM tv_shows WHERE LOWER(REGEXP_REPLACE(name, \'[^a-zA-Z0-9]\', \'\', \'g\')) = $1',
+        [normalizedShowName]
+      );
+      
+      if (existingShowResult.rows.length > 0) {
+        // Show already exists - return info about existing show
+        const existingShow = existingShowResult.rows[0];
+        return res.json({
+          isNewSubmission: false,
+          isDuplicate: true,
+          existingShow: existingShow,
+          message: `"${existingShow.name}" is already in our database! You can find it by searching.`
+        });
+      }
+
+      // Check if someone already submitted this exact show
+      const existingSubmissionResult = await pool.query(
+        'SELECT * FROM show_submissions WHERE normalized_name = $1',
+        [normalizedShowName]
+      );
+      
+      if (existingSubmissionResult.rows.length > 0) {
+        // Someone already submitted this - increment request count
+        const updateResult = await pool.query(
+          'UPDATE show_submissions SET request_count = request_count + 1, updated_at = NOW() WHERE normalized_name = $1 RETURNING *',
+          [normalizedShowName]
+        );
+        
+        const submission = updateResult.rows[0];
+        return res.json({
+          ...submission,
+          isNewSubmission: false,
+          isDuplicate: false,
+          message: `This show has been requested before! We've noted your interest and increased its priority.`
+        });
+      }
+
+      // New submission - insert into database
       const result = await pool.query(
         'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [userId, showName, whereTheyWatch, showName.toLowerCase().replace(/[^a-z0-9]/g, ''), 'pending']
+        [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
       );
       
       const submission = result.rows[0];
