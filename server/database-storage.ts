@@ -346,12 +346,13 @@ export class DatabaseStorage implements IStorage {
    */
   private async updateThemesForShow(tvShowId: number, themeNames: string[]): Promise<void> {
     try {
-      // Start a transaction
-      await db.transaction(async (tx) => {
+      // Use direct SQL for more reliable theme updates
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        
         // Remove existing theme associations
-        await tx
-          .delete(tvShowThemes)
-          .where(eq(tvShowThemes.tvShowId, tvShowId));
+        await client.query('DELETE FROM tv_show_themes WHERE tv_show_id = $1', [tvShowId]);
         
         // Process each theme name
         for (const themeName of themeNames) {
@@ -360,42 +361,46 @@ export class DatabaseStorage implements IStorage {
           
           // Find or create the theme
           let themeId: number;
-          const existingTheme = await tx
-            .select()
-            .from(themes)
-            .where(eq(themes.name, themeName));
-            
-          if (existingTheme.length > 0) {
-            themeId = existingTheme[0].id;
+          const existingTheme = await client.query('SELECT id FROM themes WHERE name = $1', [themeName]);
+          
+          if (existingTheme.rows.length > 0) {
+            themeId = existingTheme.rows[0].id;
           } else {
             // Create new theme
-            const newTheme = await tx
-              .insert(themes)
-              .values({ name: themeName })
-              .returning();
-            themeId = newTheme[0].id;
+            const newTheme = await client.query('INSERT INTO themes (name) VALUES ($1) RETURNING id', [themeName]);
+            themeId = newTheme.rows[0].id;
           }
           
           // Create association in the junction table
-          await tx
-            .insert(tvShowThemes)
-            .values({ tvShowId, themeId })
-            .onConflictDoNothing();
+          await client.query(
+            'INSERT INTO tv_show_themes (tv_show_id, theme_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [tvShowId, themeId]
+          );
         }
         
         // Also update the array column for backward compatibility
-        await tx
-          .update(tvShows)
-          .set({ themes: themeNames })
-          .where(eq(tvShows.id, tvShowId));
-      });
+        await client.query('UPDATE tv_shows SET themes = $1 WHERE id = $2', [themeNames, tvShowId]);
+        
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
     } catch (error) {
       console.error("Error updating themes for show", error);
       // Fallback to just updating the array column
-      await db
-        .update(tvShows)
-        .set({ themes: themeNames })
-        .where(eq(tvShows.id, tvShowId));
+      try {
+        const client = await pool.connect();
+        try {
+          await client.query('UPDATE tv_shows SET themes = $1 WHERE id = $2', [themeNames, tvShowId]);
+        } finally {
+          client.release();
+        }
+      } catch (fallbackError) {
+        console.error("Fallback theme update also failed:", fallbackError);
+      }
     }
   }
   
