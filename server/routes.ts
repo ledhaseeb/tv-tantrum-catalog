@@ -3202,14 +3202,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Show submissions routes (NEW system)
   app.post('/api/show-submissions', async (req, res) => {
+    console.log('=== SUBMISSION ROUTE HIT ===');
     try {
       if (!req.isAuthenticated()) {
+        console.log('User not authenticated');
         return res.status(401).json({ message: "Not authenticated" });
       }
       
       const userId = req.user!.id;
+      console.log('User ID:', userId);
 
       const { showName, whereTheyWatch } = req.body;
+      console.log('Request body:', { showName, whereTheyWatch });
       
       if (!showName || !whereTheyWatch) {
         return res.status(400).json({ error: 'Show name and where they watch are required' });
