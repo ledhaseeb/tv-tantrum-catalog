@@ -138,14 +138,14 @@ const Research = () => {
         defaultValue="all" 
         value={activeCategory} 
         onValueChange={setActiveCategory} 
-        className="mb-14"
+        className="mb-6"
       >
-        <TabsList className="flex overflow-x-auto scrollbar-hide mb-10 px-1 justify-start md:justify-center gap-2 min-w-full">
+        <TabsList className="flex overflow-x-auto scrollbar-hide mb-6 px-1 justify-start md:justify-center gap-1 min-w-full">
           {categories.map((category) => (
             <TabsTrigger 
               key={category.id}
               value={category.id}
-              className={`flex flex-col items-center py-2 px-3 ${category.id === 'all' ? 'min-w-[100px]' : 'min-w-[150px]'} h-auto flex-shrink-0`}
+              className={`flex flex-col items-center py-1.5 px-2.5 ${category.id === 'all' ? 'min-w-[90px]' : 'min-w-[130px]'} h-auto flex-shrink-0 text-sm`}
             >
               <span className="text-center">
                 {category.id === 'all' ? category.name : 
