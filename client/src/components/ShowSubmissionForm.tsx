@@ -21,10 +21,21 @@ export function ShowSubmissionForm({ onSuccess }: ShowSubmissionFormProps) {
 
   const submitMutation = useMutation({
     mutationFn: async (data: { showName: string; whereTheyWatch: string }) => {
-      return await apiRequest('/api/show-submissions', {
+      const response = await fetch('/api/show-submissions', {
         method: 'POST',
-        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit show');
+      }
+      
+      return await response.json();
     },
     onSuccess: (response) => {
       // Check if this was a new submission or a duplicate
