@@ -3203,8 +3203,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Show submissions routes (NEW system)
   app.post('/api/show-submissions', async (req, res) => {
     try {
-      // For now, hardcode user ID 7 (haseeb) to test functionality
-      const userId = '7'; // We'll fix authentication after confirming this works
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const userId = req.user!.id;
 
       const { showName, whereTheyWatch } = req.body;
       
@@ -3212,11 +3215,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Show name and where they watch are required' });
       }
 
-      const submission = await storage.addShowSubmission({
-        userId: userId,
-        showName,
-        whereTheyWatch
-      });
+      // Insert directly into the clean database
+      const { pool } = await import('./db');
+      const result = await pool.query(
+        'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [userId, showName, whereTheyWatch, showName.toLowerCase().replace(/[^a-z0-9]/g, ''), 'pending']
+      );
+      
+      const submission = result.rows[0];
 
       res.json(submission);
     } catch (error) {
@@ -3248,10 +3254,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/show-submissions/my', async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ message: "Not authenticated" });
       }
+      
+      const userId = req.user!.id;
 
-      const submissions = await storage.getUserShowSubmissions(req.user.id.toString());
+      // Get submissions directly from the clean database
+      const { pool } = await import('./db');
+      const result = await pool.query(
+        'SELECT * FROM show_submissions WHERE user_id = $1 ORDER BY created_at DESC',
+        [userId]
+      );
+      
+      const submissions = result.rows;
       res.json(submissions);
     } catch (error) {
       console.error('Error getting user submissions:', error);
