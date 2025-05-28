@@ -708,40 +708,25 @@ function Leaderboard() {
                   }`}
                 >
                   <div className="flex-shrink-0 relative">
-                    {user.profile_image_url ? (
-                      <div className="relative">
-                        <img 
-                          src={user.profile_image_url} 
-                          alt={user.username}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        {index < 3 && (
-                          <div className="absolute -top-1 -right-1 text-lg">
-                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                          </div>
-                        )}
-                        {index >= 3 && (
-                          <div className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                            {index + 1}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                        index === 0 ? 'bg-yellow-500' :
-                        index === 1 ? 'bg-gray-500' :
-                        index === 2 ? 'bg-orange-500' :
-                        'bg-purple-500'
-                      }`}>
-                        {index < 3 ? (
-                          <span className="text-lg">
-                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                          </span>
-                        ) : (
-                          <span className="text-sm">#{index + 1}</span>
-                        )}
-                      </div>
-                    )}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg relative ${
+                      user.background_color || 'bg-purple-500'
+                    }`}>
+                      {getBadgeEmoji(user.total_points)}
+                      
+                      {/* Ranking badges for top 3 */}
+                      {index < 3 && (
+                        <div className="absolute -top-1 -right-1 text-sm">
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                        </div>
+                      )}
+                      
+                      {/* Position number for others */}
+                      {index >= 3 && (
+                        <div className="absolute -top-1 -right-1 bg-gray-800 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          {index + 1}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex-1 min-w-0">

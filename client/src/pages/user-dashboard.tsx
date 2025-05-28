@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen, Heart, X, Camera, Upload } from 'lucide-react';
+import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen, Heart, X, Camera, Upload, Palette } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -15,77 +15,84 @@ import ShowCard from '@/components/ShowCard';
 import { useLocation } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 
+// Badge progression system
+const BADGE_PROGRESSION = [
+  { name: "TV Watcher", emoji: "📺", points: 0 }, // Default badge
+  { name: "Tablet Baby", emoji: "👶", points: 25 },
+  { name: "TV Tamer", emoji: "🧑‍🧒", points: 50 },
+  { name: "Algorithm Avoider", emoji: "🫷", points: 100 },
+  { name: "Mood-Swing Mediator", emoji: "🧑‍⚖️", points: 200 },
+  { name: "Rhythm Regulator", emoji: "🪪", points: 300 },
+  { name: "Pixel Protector", emoji: "🥽", points: 400 },
+  { name: "Screen-Time Sherpa", emoji: "🤝", points: 500 },
+  { name: "Programme Peacekeeper", emoji: "✌️", points: 750 },
+  { name: "Calm-Ware Engineer", emoji: "🧑‍🔧", points: 1000 },
+  { name: "Digital Diplomat", emoji: "🧑‍💼", points: 1250 },
+  { name: "Sensory Sentinel", emoji: "🦾", points: 1500 },
+  { name: "Guardian of the Glow", emoji: "🥷", points: 1750 },
+  { name: "Screen Sensei", emoji: "🧘", points: 2000 }
+];
+
+// Background color options
+const BACKGROUND_COLORS = [
+  { name: "Purple", value: "bg-purple-500", preview: "#8b5cf6" },
+  { name: "Blue", value: "bg-blue-500", preview: "#3b82f6" },
+  { name: "Green", value: "bg-green-500", preview: "#10b981" },
+  { name: "Orange", value: "bg-orange-500", preview: "#f97316" },
+  { name: "Pink", value: "bg-pink-500", preview: "#ec4899" },
+  { name: "Red", value: "bg-red-500", preview: "#ef4444" },
+  { name: "Yellow", value: "bg-yellow-500", preview: "#eab308" },
+  { name: "Indigo", value: "bg-indigo-500", preview: "#6366f1" },
+  { name: "Teal", value: "bg-teal-500", preview: "#14b8a6" },
+  { name: "Gray", value: "bg-gray-600", preview: "#4b5563" }
+];
+
+// Helper function to get current badge based on points
+const getCurrentBadge = (points: number) => {
+  const sorted = [...BADGE_PROGRESSION].reverse();
+  return sorted.find(badge => points >= badge.points) || BADGE_PROGRESSION[0];
+};
+
+// Helper function to get next badge
+const getNextBadge = (points: number) => {
+  return BADGE_PROGRESSION.find(badge => points < badge.points);
+};
+
 const UserDashboard = () => {
   const { user, toggleFavorite } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [selectedBackgroundColor, setSelectedBackgroundColor] = useState('bg-purple-500');
 
-  // Profile image upload mutation
-  const uploadProfileImageMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('profileImage', file);
-      
-      const response = await fetch('/api/user/profile-image', {
-        method: 'POST',
-        body: formData,
+  // Background color update mutation
+  const updateBackgroundColorMutation = useMutation({
+    mutationFn: async (backgroundColor: string) => {
+      const response = await apiRequest('/api/user/background-color', {
+        method: 'PUT',
+        body: JSON.stringify({ backgroundColor }),
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload profile image');
-      }
-      
-      return response.json();
+      return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
-        title: "Profile image updated!",
-        description: "Your profile picture has been successfully updated.",
+        title: "Background color updated!",
+        description: "Your profile background color has been changed.",
       });
-      // Invalidate user queries to refresh the profile image
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
+      setShowColorPicker(false);
     },
-    onError: (error) => {
+    onError: () => {
       toast({
-        title: "Upload failed",
-        description: "Failed to upload profile image. Please try again.",
+        title: "Update failed",
+        description: "Failed to update background color. Please try again.",
         variant: "destructive",
       });
     },
   });
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select an image file.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image smaller than 5MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      setIsUploadingImage(true);
-      uploadProfileImageMutation.mutate(file);
-      setIsUploadingImage(false);
-    }
-  };
 
   const { data: dashboardData, isLoading: isLoadingDashboard } = useQuery({
     queryKey: ['/api/user/dashboard'],
@@ -103,9 +110,19 @@ const UserDashboard = () => {
   const topUsers = dashboardData?.topUsers || [];
   const recentActivity = dashboardData?.recentActivity || [];
   
-  // Calculate next milestone and progress
-  const nextMilestone = Math.ceil(totalPoints / 100) * 100 + 100;
-  const progress = (totalPoints % 100) / 100 * 100;
+  // Get current and next badge based on points
+  const currentBadge = getCurrentBadge(totalPoints);
+  const nextBadge = getNextBadge(totalPoints);
+  
+  // Calculate progress to next badge
+  const nextMilestone = nextBadge ? nextBadge.points : 2000;
+  const prevMilestone = currentBadge.points;
+  const progress = nextBadge ? 
+    ((totalPoints - prevMilestone) / (nextMilestone - prevMilestone)) * 100 : 
+    100;
+  
+  // Get user's background color preference
+  const userBackgroundColor = user?.backgroundColor || 'bg-purple-500';
 
   if (isLoadingDashboard) {
     return (
@@ -152,38 +169,46 @@ const UserDashboard = () => {
     <div className="container max-w-4xl py-8">
       <div className="flex flex-col md:flex-row gap-6 md:items-center mb-8">
         <div className="relative group">
-          <Avatar className="w-20 h-20">
-            <AvatarImage src={user?.profileImageUrl} alt={user?.username} />
-            <AvatarFallback className="text-2xl">
-              {user?.username?.slice(0, 1).toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          
-          {/* Profile Image Upload Overlay */}
-          <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white hover:text-white hover:bg-transparent p-1"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploadingImage || uploadProfileImageMutation.isPending}
-            >
-              {isUploadingImage || uploadProfileImageMutation.isPending ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              ) : (
-                <Camera className="w-5 h-5" />
-              )}
-            </Button>
+          {/* Emoji Badge Avatar */}
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl ${userBackgroundColor} relative`}>
+            {currentBadge.emoji}
+            
+            {/* Background Color Picker Overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:text-white hover:bg-transparent p-1"
+                onClick={() => setShowColorPicker(!showColorPicker)}
+              >
+                <Palette className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
           
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
+          {/* Color Picker Dropdown */}
+          {showColorPicker && (
+            <Card className="absolute top-full left-0 mt-2 p-4 z-50 min-w-[200px]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Choose Background Color</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="grid grid-cols-5 gap-2">
+                  {BACKGROUND_COLORS.map((color) => (
+                    <button
+                      key={color.value}
+                      className={`w-8 h-8 rounded-full border-2 ${color.value} ${
+                        userBackgroundColor === color.value ? 'border-gray-800 scale-110' : 'border-gray-300'
+                      } transition-all hover:scale-105`}
+                      onClick={() => updateBackgroundColorMutation.mutate(color.value)}
+                      disabled={updateBackgroundColorMutation.isPending}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
         
         <div className="flex-1">
@@ -191,50 +216,51 @@ const UserDashboard = () => {
           <p className="text-gray-500">{user?.email}</p>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant="outline" className="bg-orange-50 text-orange-500 border-orange-200">
-              <Trophy className="w-3 h-3 mr-1" /> {userRank}
+              <Trophy className="w-3 h-3 mr-1" /> {currentBadge.name}
             </Badge>
             <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
               <Award className="w-3 h-3 mr-1" /> {totalPoints} Points
             </Badge>
           </div>
           
-          {/* Upload Profile Image Button - Mobile */}
+          {/* Customize Background Button - Mobile */}
           <div className="md:hidden mt-3">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploadingImage || uploadProfileImageMutation.isPending}
+              onClick={() => setShowColorPicker(!showColorPicker)}
               className="w-full"
             >
-              {isUploadingImage || uploadProfileImageMutation.isPending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Profile Picture
-                </>
-              )}
+              <Palette className="w-4 h-4 mr-2" />
+              Customize Background
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Progress to next milestone */}
+      {/* Progress to next badge */}
       <Card className="mb-8">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Progress to Next Milestone</CardTitle>
+          <CardTitle className="text-lg">Progress to Next Badge</CardTitle>
           <CardDescription>
-            {totalPoints} / {nextMilestone} points
+            {nextBadge ? (
+              <>
+                {totalPoints} / {nextMilestone} points to unlock{' '}
+                <span className="font-semibold">{nextBadge.name} {nextBadge.emoji}</span>
+              </>
+            ) : (
+              <>Congratulations! You've reached the highest badge: {currentBadge.name} {currentBadge.emoji}</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Progress value={progress} className="h-2" />
           <div className="mt-2 text-sm text-gray-500">
-            Earn {nextMilestone - totalPoints} more points to reach the next milestone!
+            {nextBadge ? (
+              <>Earn {nextMilestone - totalPoints} more points to unlock the next badge!</>
+            ) : (
+              <>You've mastered all badges! Keep earning points to maintain your Screen Sensei status.</>
+            )}
           </div>
         </CardContent>
       </Card>
