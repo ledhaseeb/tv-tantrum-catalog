@@ -2773,7 +2773,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.isAuthenticated() && req.user) {
         const userId = req.user.id.toString();
         console.log(`Getting read research for user ${userId}`);
-        const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
+        const userReadResearch = await storage.getUserReadResearch(userId);
+        console.log(`User ${userId} read research raw data:`, userReadResearch);
+        const userReadIds = userReadResearch.map(r => r.id);
         console.log(`User ${userId} has read research IDs:`, userReadIds);
         const summariesWithReadStatus = summaries.map(summary => ({
           ...summary,
