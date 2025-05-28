@@ -3219,11 +3219,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { pool } = await import('./db');
       const normalizedShowName = showName.toLowerCase().replace(/[^a-z0-9]/g, '');
       
+      console.log('=== DUPLICATE CHECK ===');
+      console.log('Original show name:', showName);
+      console.log('Normalized show name:', normalizedShowName);
+      
       // Check existing TV shows with case-insensitive fuzzy matching
       const existingShowResult = await pool.query(
         'SELECT id, name FROM tv_shows WHERE LOWER(REPLACE(REPLACE(REPLACE(name, \' \', \'\'), \'-\', \'\'), \'.\', \'\')) = LOWER($1)',
         [normalizedShowName]
       );
+      
+      console.log('Found existing shows:', existingShowResult.rows.length);
+      if (existingShowResult.rows.length > 0) {
+        console.log('Existing show found:', existingShowResult.rows[0]);
+      }
       
       if (existingShowResult.rows.length > 0) {
         // Show already exists - return info about existing show
