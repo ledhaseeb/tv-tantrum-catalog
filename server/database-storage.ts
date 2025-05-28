@@ -1339,7 +1339,7 @@ export class DatabaseStorage implements IStorage {
     
     // Extract and handle themes with junction table if they're being updated
     const themeNames = show.themes;
-    delete show.themes; // Remove themes from the direct update
+    // Don't delete themes from the direct update - we need them in both places
     
     // Extract and handle platforms with junction table if they're being updated
     const platformNames = show.availableOn;
