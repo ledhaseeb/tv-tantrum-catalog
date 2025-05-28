@@ -1996,26 +1996,13 @@ export default function AdminPage() {
               <Label htmlFor="themes" className="text-right">
                 Themes
               </Label>
-              <Textarea
-                id="themes"
-                value={Array.isArray(formState.themes) ? formState.themes.join(', ') : ''}
-                onChange={(e) => {
-                  // Store the raw input value without processing during typing
-                  const rawValue = e.target.value;
-                  setFormState({...formState, themes: [rawValue]});
-                }}
-                onBlur={(e) => {
-                  // Process the themes when the field loses focus
-                  const themesArray = e.target.value
-                    .split(',')
-                    .map(theme => theme.trim())
-                    .filter(theme => theme !== '');
-                  setFormState({...formState, themes: themesArray});
-                }}
-                className="col-span-3"
-                placeholder="Enter themes separated by commas (e.g., 'Education, Adventure, Problem-solving')"
-                rows={2}
-              />
+              <div className="col-span-3">
+                <ThemeSelector
+                  selectedThemes={Array.isArray(formState.themes) ? formState.themes : []}
+                  onThemesChange={(themes) => setFormState({...formState, themes})}
+                  placeholder="Select or add themes..."
+                />
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
