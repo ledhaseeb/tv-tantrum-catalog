@@ -38,29 +38,32 @@ export function ShowSubmissionForm({ onSuccess }: ShowSubmissionFormProps) {
       return await response.json();
     },
     onSuccess: (response) => {
-      // Check if this was a new submission or a duplicate
-      const isNewSubmission = response.isNewSubmission !== false;
-      
-      if (isNewSubmission) {
-        toast({
-          title: "Show submitted successfully!",
-          description: "Thank you for your suggestion. We'll review it soon.",
-        });
-      } else {
-        toast({
-          title: "Already requested!",
-          description: "This show has been suggested before. We've noted your interest.",
-        });
-      }
+      // Use setTimeout to avoid React's setState warning during render
+      setTimeout(() => {
+        // Check if this was a new submission or a duplicate
+        const isNewSubmission = response.isNewSubmission !== false;
+        
+        if (isNewSubmission) {
+          toast({
+            title: "Show submitted successfully!",
+            description: "Thank you for your suggestion. We'll review it soon.",
+          });
+        } else {
+          toast({
+            title: "Already requested!",
+            description: "This show has been suggested before. We've noted your interest.",
+          });
+        }
 
-      // Reset form
-      setShowName('');
-      setWhereTheyWatch('');
-      
-      // Invalidate user submissions query to refresh any lists
-      queryClient.invalidateQueries({ queryKey: ['/api/show-submissions/my'] });
-      
-      onSuccess?.();
+        // Reset form
+        setShowName('');
+        setWhereTheyWatch('');
+        
+        // Invalidate user submissions query to refresh any lists
+        queryClient.invalidateQueries({ queryKey: ['/api/show-submissions/my'] });
+        
+        onSuccess?.();
+      }, 0);
     },
     onError: (error: any) => {
       toast({
