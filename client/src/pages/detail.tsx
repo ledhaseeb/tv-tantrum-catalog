@@ -744,19 +744,13 @@ export default function Detail({ id }: DetailProps) {
                     showDetail.themes.map((theme, index) => (
                       <Badge 
                         key={index} 
-                        className="px-2 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-md"
+                        className="px-2 py-1 text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-md"
                       >
                         {theme}
                       </Badge>
                     ))
                   ) : (
-                    <>
-                      <Badge className="px-2 py-1 text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-md">Courage</Badge>
-                      <Badge className="px-2 py-1 text-xs bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-md">Creativity & Imagination</Badge>
-                      <Badge className="px-2 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-md">Dark Themes</Badge>
-                      <Badge className="px-2 py-1 text-xs bg-green-100 text-green-800 hover:bg-green-200 rounded-md">Entertainment</Badge>
-                      <Badge className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded-md">Humor</Badge>
-                    </>
+                    <span className="text-xs text-gray-500 italic">No themes specified</span>
                   )}
                 </div>
               </div>
