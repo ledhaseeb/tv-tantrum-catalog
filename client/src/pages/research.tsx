@@ -18,6 +18,7 @@ const Research = () => {
   const { data: summaries, isLoading: isLoadingSummaries } = useQuery({
     queryKey: ['/api/research'],
     enabled: !!user,
+    staleTime: 0, // Always fetch fresh data to show read status updates
   });
 
   // Define categories based on actual database categories
