@@ -1999,6 +1999,12 @@ export default function AdminPage() {
                 id="themes"
                 value={Array.isArray(formState.themes) ? formState.themes.join(', ') : ''}
                 onChange={(e) => {
+                  // Store the raw input value without processing during typing
+                  const rawValue = e.target.value;
+                  setFormState({...formState, themes: [rawValue]});
+                }}
+                onBlur={(e) => {
+                  // Process the themes when the field loses focus
                   const themesArray = e.target.value
                     .split(',')
                     .map(theme => theme.trim())
@@ -2571,6 +2577,12 @@ export default function AdminPage() {
                 id="themes"
                 value={Array.isArray(newShowFormState.themes) ? newShowFormState.themes.join(', ') : ''}
                 onChange={(e) => {
+                  // Store the raw input value without processing during typing
+                  const rawValue = e.target.value;
+                  setNewShowFormState({...newShowFormState, themes: [rawValue]});
+                }}
+                onBlur={(e) => {
+                  // Process the themes when the field loses focus
                   const themesArray = e.target.value
                     .split(',')
                     .map(theme => theme.trim())
