@@ -2313,13 +2313,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user background color
   app.put("/api/user/background-color", async (req: Request, res: Response) => {
     try {
-      // Use the same authentication pattern as other endpoints
-      if (!req.isAuthenticated() || !req.user) {
+      // Use the exact same authentication pattern as dashboard endpoint
+      if (!req.isAuthenticated()) {
         return res.status(401).json({ message: 'You must be logged in to update background color' });
       }
 
-      // Get user ID from authenticated user (same pattern as other endpoints)
-      const userId = parseInt(req.user.id);
+      // Get user ID from authenticated user (same pattern as dashboard endpoint)
+      const userId = parseInt(req.user!.id);
 
       const { backgroundColor } = req.body;
       
