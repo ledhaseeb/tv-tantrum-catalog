@@ -2662,16 +2662,149 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Show submissions methods
-  async addShowSubmission(data: any): Promise<any> {
+  // NEW: Show submissions methods with smart duplicate detection and priority system
+  
+  // Helper function to normalize show names for duplicate detection
+  private normalizeShowName(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim();
+  }
+
+  async addShowSubmission(data: { userId: string; showName: string; whereTheyWatch: string }): Promise<any> {
     return await db.transaction(async (tx) => {
       try {
-        // Add submission
+        const normalizedName = this.normalizeShowName(data.showName);
+        
+        // Check for existing submission with similar normalized name
+        const existingSubmission = await tx
+          .select()
+          .from(showSubmissions)
+          .where(
+            and(
+              eq(showSubmissions.normalizedName, normalizedName),
+              eq(showSubmissions.status, 'pending')
+            )
+          )
+          .limit(1);
+
+        if (existingSubmission.length > 0) {
+          // Update existing submission - increment request count and priority
+          const [updatedSubmission] = await tx
+            .update(showSubmissions)
+            .set({
+              requestCount: existingSubmission[0].requestCount + 1,
+              priorityScore: existingSubmission[0].requestCount + 1, // Higher count = higher priority
+            })
+            .where(eq(showSubmissions.id, existingSubmission[0].id))
+            .returning();
+          
+          return { ...updatedSubmission, isNewSubmission: false };
+        } else {
+          // Create new submission
+          const [newSubmission] = await tx
+            .insert(showSubmissions)
+            .values({
+              userId: data.userId,
+              showName: data.showName,
+              normalizedName: normalizedName,
+              whereTheyWatch: data.whereTheyWatch,
+              status: 'pending',
+              requestCount: 1,
+              priorityScore: 1,
+            })
+            .returning();
+          
+          return { ...newSubmission, isNewSubmission: true };
+        }
+      } catch (error) {
+        console.error('Error adding show submission:', error);
+        throw error;
+      }
+    });
+  }
+
+  async getPendingShowSubmissions(): Promise<any[]> {
+    try {
+      const submissions = await db
+        .select({
+          id: showSubmissions.id,
+          showName: showSubmissions.showName,
+          whereTheyWatch: showSubmissions.whereTheyWatch,
+          requestCount: showSubmissions.requestCount,
+          priorityScore: showSubmissions.priorityScore,
+          createdAt: showSubmissions.createdAt,
+          status: showSubmissions.status,
+        })
+        .from(showSubmissions)
+        .where(eq(showSubmissions.status, 'pending'))
+        .orderBy(desc(showSubmissions.priorityScore), desc(showSubmissions.requestCount));
+      
+      return submissions;
+    } catch (error) {
+      console.error('Error getting pending show submissions:', error);
+      return [];
+    }
+  }
+
+  async getUserShowSubmissions(userId: string): Promise<any[]> {
+    try {
+      const submissions = await db
+        .select()
+        .from(showSubmissions)
+        .where(eq(showSubmissions.userId, userId))
+        .orderBy(desc(showSubmissions.createdAt));
+      
+      return submissions;
+    } catch (error) {
+      console.error('Error getting user show submissions:', error);
+      return [];
+    }
+  }
+
+  async approveShowSubmission(submissionId: number, adminUserId: string, linkedShowId: number): Promise<any> {
+    return await db.transaction(async (tx) => {
+      try {
+        // Get the submission details
         const [submission] = await tx
-          .insert(showSubmissions)
-          .values({
-            userId: data.userId,
-            showName: data.showName,
+          .select()
+          .from(showSubmissions)
+          .where(eq(showSubmissions.id, submissionId));
+
+        if (!submission) {
+          throw new Error('Submission not found');
+        }
+
+        // Update submission status
+        const [updatedSubmission] = await tx
+          .update(showSubmissions)
+          .set({
+            status: 'approved',
+            processedAt: new Date(),
+            processedBy: adminUserId,
+            linkedShowId: linkedShowId,
+          })
+          .where(eq(showSubmissions.id, submissionId))
+          .returning();
+
+        // Award 20 points to the original submitter
+        await this.awardPoints(
+          parseInt(submission.userId),
+          20,
+          'show_submission',
+          `Show submission "${submission.showName}" was approved and added to the database`
+        );
+
+        return updatedSubmission;
+      } catch (error) {
+        console.error('Error approving show submission:', error);
+        throw error;
+      }
+    });
+  }
+}
             description: data.description || null,
             suggestedAgeRange: data.suggestedAgeRange || null,
             suggestedThemes: data.suggestedThemes || [],
