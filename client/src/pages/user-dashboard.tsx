@@ -100,8 +100,9 @@ const UserDashboard = () => {
         title: "Background color updated!",
         description: "Your profile background color has been changed.",
       });
-      // Refresh the page to show the new color immediately
-      window.location.reload();
+      
+      // Refresh dashboard data to show the updated background color
+      queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
     },
     onError: () => {
       toast({
@@ -139,8 +140,9 @@ const UserDashboard = () => {
     ((totalPoints - prevMilestone) / (nextMilestone - prevMilestone)) * 100 : 
     100;
   
-  // Get user's background color preference
-  const userBackgroundColor = user?.backgroundColor || 'bg-purple-500';
+  // Get user's background color preference from dashboard data
+  const dashboardUser = dashboardData?.user;
+  const userBackgroundColor = dashboardUser?.background_color || dashboardUser?.backgroundColor || 'bg-purple-500';
 
   if (isLoadingDashboard) {
     return (
