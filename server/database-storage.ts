@@ -910,6 +910,16 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAllThemes(): Promise<{ id: number; name: string }[]> {
+    try {
+      const result = await pool.query('SELECT id, name FROM themes ORDER BY name');
+      return result.rows;
+    } catch (error) {
+      console.error('Error fetching all themes:', error);
+      throw error;
+    }
+  }
+
   async getTvShowById(id: number): Promise<TvShow | undefined> {
     try {
       // Use direct SQL query for reliability, similar to getAllTvShows
