@@ -3203,6 +3203,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Show submissions routes (NEW system)
   app.post('/api/show-submissions', async (req, res) => {
     try {
+      console.log('Session data:', req.session);
+      console.log('User ID from session:', req.session?.userId);
+      
       if (!req.session?.userId) {
         return res.status(401).json({ error: 'Not authenticated' });
       }
