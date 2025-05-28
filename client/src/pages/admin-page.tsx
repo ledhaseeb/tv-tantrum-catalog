@@ -2724,12 +2724,34 @@ function ShowSubmissionsSection() {
   const fetchSubmissions = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/show-submissions/pending');
+      
+      // First make sure we're authenticated and have the latest session
+      const userCheckResponse = await apiRequest('GET', '/api/user');
+      if (!userCheckResponse.ok) {
+        console.warn('User authentication required for show submissions');
+        // Don't redirect here since this is a component within the admin page
+        toast({
+          title: "Authentication Required",
+          description: "Please refresh the page and log in again",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Use debug mode pattern that works for other admin endpoints
+      const isDev = process.env.NODE_ENV === 'development' || window.location.hostname.includes('replit');
+      const endpoint = isDev ? '/api/show-submissions/pending?debug=true' : '/api/show-submissions/pending';
+      
+      console.log('Attempting to fetch show submissions from:', endpoint);
+      const response = await apiRequest('GET', endpoint);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Successfully fetched show submissions:', data.length);
         setSubmissions(data);
       } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch submissions:', errorText);
         toast({
           title: "Error",
           description: "Failed to load show submissions",

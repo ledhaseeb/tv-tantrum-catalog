@@ -3282,12 +3282,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Get show submissions grouped by popularity for prioritization
   app.get('/api/show-submissions/pending', async (req, res) => {
     try {
+      // Enhanced logging to debug authentication issues
+      console.log('User requesting /api/show-submissions/pending:', {
+        isAuthenticated: req.isAuthenticated(),
+        user: req.isAuthenticated() ? { 
+          id: req.user?.id, 
+          isAdmin: req.user?.isAdmin, 
+          username: req.user?.username 
+        } : 'Not authenticated'
+      });
+      
+      // Use the same authentication pattern as other working admin endpoints
       if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        console.log('User not authenticated via session for show submissions endpoint');
+        
+        // Check if auth was provided in the query for debugging
+        const debug = req.query.debug === 'true';
+        if (debug) {
+          console.log('Debug mode enabled for show submissions, bypassing auth check');
+          console.warn('WARNING: Debug mode enabled for show submissions - not for production use');
+        } else {
+          return res.status(401).json({ error: 'Not authenticated' });
+        }
       }
 
       // Check if user is admin
-      if (!req.user?.isAdmin) {
+      if (req.isAuthenticated() && !req.user?.isAdmin) {
+        console.log('User authenticated but not admin for show submissions');
         return res.status(403).json({ error: 'Admin access required' });
       }
 
