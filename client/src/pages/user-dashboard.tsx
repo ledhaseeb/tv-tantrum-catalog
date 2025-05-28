@@ -69,21 +69,25 @@ const UserDashboard = () => {
   // Background color update mutation
   const updateBackgroundColorMutation = useMutation({
     mutationFn: async (backgroundColor: string) => {
-      const response = await apiRequest('/api/user/background-color', {
+      const response = await fetch('/api/user/background-color', {
         method: 'PUT',
         body: JSON.stringify({ backgroundColor }),
         headers: { 'Content-Type': 'application/json' }
       });
-      return response;
+      
+      if (!response.ok) {
+        throw new Error('Failed to update background color');
+      }
+      
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Background color updated!",
         description: "Your profile background color has been changed.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
-      setShowColorPicker(false);
+      // Refresh the page to show the new color immediately
+      window.location.reload();
     },
     onError: () => {
       toast({
