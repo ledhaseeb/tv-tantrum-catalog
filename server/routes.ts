@@ -3240,11 +3240,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const submission = result.rows[0];
 
-      // Update request_count for all existing submissions of the same show
+      // Update request_count for all OTHER existing submissions of the same show (not this new one)
       if (requestCount > 1) {
         await pool.query(
-          'UPDATE show_submissions SET request_count = $1 WHERE normalized_name = $2',
-          [requestCount, normalizedShowName]
+          'UPDATE show_submissions SET request_count = $1 WHERE normalized_name = $2 AND id != $3',
+          [requestCount, normalizedShowName, submission.id]
         );
       }
 
