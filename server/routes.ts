@@ -3225,13 +3225,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         [normalizedShowName]
       );
       
-      // Always create a submission record for the user, but provide different feedback
+      // Always create a submission record for the user, but track request counts
+      const totalRequestsResult = await pool.query(
+        'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1',
+        [normalizedShowName]
+      );
+      
+      const requestCount = parseInt(totalRequestsResult.rows[0].count) + 1; // +1 for this new submission
+
       const result = await pool.query(
-        'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
+        'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status, request_count) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [userId, showName, whereTheyWatch, normalizedShowName, 'pending', requestCount]
       );
       
       const submission = result.rows[0];
+
+      // Update request_count for all existing submissions of the same show
+      if (requestCount > 1) {
+        await pool.query(
+          'UPDATE show_submissions SET request_count = $1 WHERE normalized_name = $2',
+          [requestCount, normalizedShowName]
+        );
+      }
 
       if (existingShowResult.rows.length > 0) {
         // Show already exists in database
@@ -3245,19 +3260,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } else {
         // Check if someone else already submitted this show
-        const existingSubmissionResult = await pool.query(
-          'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1 AND user_id != $2',
-          [normalizedShowName, userId]
-        );
-        
-        const otherSubmissions = parseInt(existingSubmissionResult.rows[0].count);
+        const otherSubmissions = requestCount - 1; // Subtract this submission
         
         if (otherSubmissions > 0) {
           res.json({
             ...submission,
             isNewSubmission: false,
             isDuplicate: false,
-            message: `This show has been requested before by other users! We've noted your interest too.`
+            message: `This show has been requested ${requestCount} times! Your request increases its priority.`
           });
         } else {
           res.json({
