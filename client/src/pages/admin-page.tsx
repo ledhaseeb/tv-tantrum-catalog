@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemeSelector } from '@/components/ThemeSelector';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   Loader2, 
@@ -2573,26 +2574,13 @@ export default function AdminPage() {
               <Label htmlFor="themes" className="text-right">
                 Themes
               </Label>
-              <Textarea
-                id="themes"
-                value={Array.isArray(newShowFormState.themes) ? newShowFormState.themes.join(', ') : ''}
-                onChange={(e) => {
-                  // Store the raw input value without processing during typing
-                  const rawValue = e.target.value;
-                  setNewShowFormState({...newShowFormState, themes: [rawValue]});
-                }}
-                onBlur={(e) => {
-                  // Process the themes when the field loses focus
-                  const themesArray = e.target.value
-                    .split(',')
-                    .map(theme => theme.trim())
-                    .filter(theme => theme !== '');
-                  setNewShowFormState({...newShowFormState, themes: themesArray});
-                }}
-                className="col-span-3"
-                placeholder="Enter themes separated by commas (e.g., 'Education, Adventure, Problem-solving')"
-                rows={2}
-              />
+              <div className="col-span-3">
+                <ThemeSelector
+                  selectedThemes={Array.isArray(newShowFormState.themes) ? newShowFormState.themes : []}
+                  onThemesChange={(themes) => setNewShowFormState({...newShowFormState, themes})}
+                  placeholder="Select or add themes..."
+                />
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">

@@ -127,6 +127,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to check admin status" });
     }
   });
+
+  // Get all themes
+  app.get('/api/themes', async (req, res) => {
+    try {
+      const themes = await storage.getAllThemes();
+      res.json(themes);
+    } catch (error) {
+      console.error('Error fetching themes:', error);
+      res.status(500).json({ error: 'Failed to fetch themes' });
+    }
+  });
   
   // Add user authentication endpoints
   
