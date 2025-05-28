@@ -1385,9 +1385,11 @@ export class DatabaseStorage implements IStorage {
     // Update themes if provided
     if (themeNames && Array.isArray(themeNames)) {
       try {
+        console.log(`Updating themes for show ${id}:`, themeNames);
         await this.updateThemesForShow(id, themeNames);
+        console.log(`Successfully updated themes for show ${id}`);
       } catch (error) {
-        console.error("Error updating themes:", error);
+        console.error("Error updating themes for show", id, ":", error);
         // Continue with the update even if theme update fails
       }
     }
