@@ -282,6 +282,14 @@ export default function Navbar() {
                           Research
                         </Link>
                         <Link 
+                          href="/submit-show"
+                          onClick={() => setIsNavOpen(false)}
+                          className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                        >
+                          <Plus className="h-5 w-5 mr-2" />
+                          Submit Show
+                        </Link>
+                        <Link 
                           href="/user-dashboard"
                           onClick={() => setIsNavOpen(false)}
                           className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
