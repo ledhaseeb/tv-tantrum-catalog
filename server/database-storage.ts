@@ -1392,6 +1392,8 @@ export class DatabaseStorage implements IStorage {
         console.error("Error updating themes for show", id, ":", error);
         // Continue with the update even if theme update fails
       }
+    } else {
+      console.log(`No themes to update for show ${id}, themeNames:`, themeNames);
     }
     
     // Update platforms if provided
