@@ -248,19 +248,8 @@ function Router() {
 
         {/* User Dashboard - Accessible for logged in users */}
         {isDevMode ? (
-          <Route path="/user-dashboard">
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <UserDashboard />
-              </div>
-              <Footer />
-            </div>
-          </Route>
-        ) : (
-          <ApprovedRoute 
-            path="/user-dashboard" 
-            component={() => (
+          <>
+            <Route path="/user-dashboard">
               <div className="flex-grow flex flex-col">
                 <Navbar />
                 <div className="flex-grow">
@@ -268,8 +257,44 @@ function Router() {
                 </div>
                 <Footer />
               </div>
-            )} 
-          />
+            </Route>
+            <Route path="/dashboard">
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <UserDashboard />
+                </div>
+                <Footer />
+              </div>
+            </Route>
+          </>
+        ) : (
+          <>
+            <ApprovedRoute 
+              path="/user-dashboard" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <UserDashboard />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+            <ApprovedRoute 
+              path="/dashboard" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <UserDashboard />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+          </>
         )}
 
         {/* Submit Show - Accessible for logged in users */}

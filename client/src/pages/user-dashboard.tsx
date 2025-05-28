@@ -69,6 +69,10 @@ const UserDashboard = () => {
   // Background color update mutation
   const updateBackgroundColorMutation = useMutation({
     mutationFn: async (backgroundColor: string) => {
+      console.log('=== Frontend Debug ===');
+      console.log('Updating background color to:', backgroundColor);
+      console.log('Making API request...');
+      
       const response = await fetch('/api/user/background-color', {
         method: 'PUT',
         body: JSON.stringify({ backgroundColor }),
@@ -78,12 +82,18 @@ const UserDashboard = () => {
         credentials: 'include' // Include cookies for session authentication
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log('Error response:', errorData);
         throw new Error(errorData.message || 'Failed to update background color');
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('Success response:', result);
+      return result;
     },
     onSuccess: (data) => {
       toast({
