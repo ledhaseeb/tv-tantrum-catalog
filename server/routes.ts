@@ -3279,23 +3279,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Get show submissions grouped by popularity for prioritization
   app.get('/api/show-submissions/pending', async (req, res) => {
     try {
-      if (!req.session?.userId) {
-        return res.status(401).json({ error: 'Not authenticated' });
+      if (!req.isAuthenticated() || !req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
       }
 
-      // Check if user is admin
-      const user = await storage.getUser(parseInt(req.session.userId));
-      if (!user?.isAdmin) {
-        return res.status(403).json({ error: 'Admin access required' });
-      }
+      const { pool } = await import('./db');
+      
+      // Get submissions grouped by normalized_name with counts and user details
+      const result = await pool.query(`
+        SELECT 
+          normalized_name,
+          show_name,
+          COUNT(*) as request_count,
+          MIN(created_at) as first_requested,
+          MAX(created_at) as last_requested,
+          ARRAY_AGG(DISTINCT u.username ORDER BY u.username) as requested_by_users,
+          ARRAY_AGG(DISTINCT ss.where_they_watch) as platforms,
+          MAX(ss.status) as status,
+          ARRAY_AGG(ss.id ORDER BY ss.created_at) as submission_ids
+        FROM show_submissions ss
+        JOIN users u ON ss.user_id = u.id
+        WHERE ss.status = 'pending'
+        GROUP BY normalized_name, show_name
+        ORDER BY request_count DESC, first_requested ASC
+      `);
 
-      const submissions = await storage.getPendingShowSubmissions();
-      res.json(submissions);
+      res.json(result.rows);
     } catch (error) {
-      console.error('Error getting pending submissions:', error);
-      res.status(500).json({ error: 'Failed to get pending submissions' });
+      console.error('Error fetching admin show submissions:', error);
+      res.status(500).json({ error: 'Failed to fetch show submissions' });
     }
   });
 
