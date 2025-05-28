@@ -3226,37 +3226,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'SELECT id, name FROM tv_shows WHERE LOWER(REGEXP_REPLACE(name, \'[^a-zA-Z0-9]\', \'\', \'g\')) = $1',
         [normalizedShowName]
       );
-      
-      // Always create a submission record for the user
-      const result = await pool.query(
-        'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
-      );
-      
-      const submission = result.rows[0];
-
-      // Calculate the total request count for this show in real-time
-      const totalRequestsResult = await pool.query(
-        'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1',
-        [normalizedShowName]
-      );
-      
-      const requestCount = parseInt(totalRequestsResult.rows[0].count);
-      
-      // Add the calculated request count to our response (but don't store it in DB)
-      submission.request_count = requestCount;
 
       if (existingShowResult.rows.length > 0) {
-        // Show already exists in database
+        // Show already exists in database - don't create submission record
         const existingShow = existingShowResult.rows[0];
         res.json({
-          ...submission,
           isNewSubmission: false,
           isDuplicate: true,
           existingShow: existingShow,
-          message: `"${existingShow.name}" is already in our database! Thanks for your interest - you'll still earn points.`
+          message: `"${existingShow.name}" is already in our database! Thanks for your interest.`
         });
       } else {
+        // Only create submission record if show doesn't exist
+        const result = await pool.query(
+          'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
+        );
+        
+        const submission = result.rows[0];
+
+        // Calculate the total request count for this show in real-time
+        const totalRequestsResult = await pool.query(
+          'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1',
+          [normalizedShowName]
+        );
+        
+        const requestCount = parseInt(totalRequestsResult.rows[0].count);
+        
+        // Add the calculated request count to our response (but don't store it in DB)
+        submission.request_count = requestCount;
         // Check if someone else already submitted this show
         const otherSubmissions = requestCount - 1; // Subtract this submission
         
