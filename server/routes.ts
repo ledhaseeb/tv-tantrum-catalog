@@ -2313,38 +2313,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user background color
   app.put("/api/user/background-color", async (req: Request, res: Response) => {
     try {
-      // Debug logging
-      console.log('=== Background Color Update Debug ===');
-      console.log('Session ID:', req.sessionID);
-      console.log('Session data:', JSON.stringify(req.session, null, 2));
-      console.log('Is authenticated:', req.isAuthenticated?.());
-      console.log('User from req.user:', req.user);
-      console.log('Request body:', req.body);
-      console.log('=====================================');
-
-      // Try both session userId and authenticated user id
-      let userId = null;
-      if (req.session?.userId) {
-        userId = parseInt(req.session.userId);
-        console.log('Using session userId:', userId);
-      } else if (req.isAuthenticated?.() && req.user?.id) {
-        userId = parseInt(req.user.id);
-        console.log('Using authenticated user id:', userId);
-      }
-
-      if (!userId) {
-        console.log('Authentication failed - no valid user ID found');
+      // Use the same authentication pattern as other endpoints
+      if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: 'You must be logged in to update background color' });
       }
+
+      // Get user ID from authenticated user (same pattern as other endpoints)
+      const userId = parseInt(req.user.id);
 
       const { backgroundColor } = req.body;
       
       if (!backgroundColor) {
-        console.log('Validation failed - no backgroundColor provided');
         return res.status(400).json({ message: 'Background color is required' });
       }
-
-      console.log(`Updating background color for user ${userId} to ${backgroundColor}`);
 
       // Update user's background color in database
       const { pool } = await import('./db');
