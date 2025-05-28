@@ -3225,40 +3225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         [normalizedShowName]
       );
       
-      if (existingShowResult.rows.length > 0) {
-        // Show already exists - return info about existing show
-        const existingShow = existingShowResult.rows[0];
-        return res.json({
-          isNewSubmission: false,
-          isDuplicate: true,
-          existingShow: existingShow,
-          message: `"${existingShow.name}" is already in our database! You can find it by searching.`
-        });
-      }
-
-      // Check if someone already submitted this exact show
-      const existingSubmissionResult = await pool.query(
-        'SELECT * FROM show_submissions WHERE normalized_name = $1',
-        [normalizedShowName]
-      );
-      
-      if (existingSubmissionResult.rows.length > 0) {
-        // Someone already submitted this - increment request count
-        const updateResult = await pool.query(
-          'UPDATE show_submissions SET request_count = request_count + 1, updated_at = NOW() WHERE normalized_name = $1 RETURNING *',
-          [normalizedShowName]
-        );
-        
-        const submission = updateResult.rows[0];
-        return res.json({
-          ...submission,
-          isNewSubmission: false,
-          isDuplicate: false,
-          message: `This show has been requested before! We've noted your interest and increased its priority.`
-        });
-      }
-
-      // New submission - insert into database
+      // Always create a submission record for the user, but provide different feedback
       const result = await pool.query(
         'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
         [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
@@ -3266,11 +3233,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const submission = result.rows[0];
 
-      res.json({
-        ...submission,
-        isNewSubmission: true,
-        message: "Show submitted successfully! We'll review it soon."
-      });
+      if (existingShowResult.rows.length > 0) {
+        // Show already exists in database
+        const existingShow = existingShowResult.rows[0];
+        res.json({
+          ...submission,
+          isNewSubmission: false,
+          isDuplicate: true,
+          existingShow: existingShow,
+          message: `"${existingShow.name}" is already in our database! Thanks for your interest - you'll still earn points.`
+        });
+      } else {
+        // Check if someone else already submitted this show
+        const existingSubmissionResult = await pool.query(
+          'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1 AND user_id != $2',
+          [normalizedShowName, userId]
+        );
+        
+        const otherSubmissions = parseInt(existingSubmissionResult.rows[0].count);
+        
+        if (otherSubmissions > 0) {
+          res.json({
+            ...submission,
+            isNewSubmission: false,
+            isDuplicate: false,
+            message: `This show has been requested before by other users! We've noted your interest too.`
+          });
+        } else {
+          res.json({
+            ...submission,
+            isNewSubmission: true,
+            message: "Show submitted successfully! We'll review it soon."
+          });
+        }
+      }
     } catch (error) {
       console.error('Error submitting show:', error);
       res.status(500).json({ error: 'Failed to submit show' });
