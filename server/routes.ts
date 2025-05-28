@@ -672,7 +672,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (Object.keys(req.query).length === 0) {
         console.log("Admin dashboard: Getting all TV shows without filters");
         const allShows = await storage.getAllTvShows();
-        return res.json(allShows);
+        
+        // Add featured status from database for admin dashboard
+        const { pool } = await import('./db');
+        const featuredResult = await pool.query('SELECT id, is_featured FROM tv_shows WHERE is_featured = TRUE');
+        const featuredIds = new Set(featuredResult.rows.map(row => row.id));
+        
+        // Add is_featured field to each show
+        const showsWithFeaturedStatus = allShows.map(show => ({
+          ...show,
+          is_featured: featuredIds.has(show.id)
+        }));
+        
+        return res.json(showsWithFeaturedStatus);
       }
       
       // For any other filter combinations, use the search service
