@@ -43,6 +43,13 @@ const getBadgeEmoji = (points: number) => {
   return badge.emoji;
 };
 
+// Helper function to get badge name based on points
+const getBadgeName = (points: number) => {
+  const sorted = [...BADGE_PROGRESSION].reverse();
+  const badge = sorted.find(badge => points >= badge.points) || BADGE_PROGRESSION[0];
+  return badge.name;
+};
+
 export default function Home() {
   const [_, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -758,6 +765,9 @@ function Leaderboard() {
                     <h3 className="text-sm font-semibold text-gray-900 truncate">
                       {user.username || 'Anonymous User'}
                     </h3>
+                    <p className="text-xs text-purple-600 font-medium truncate">
+                      {getBadgeName(user.total_points)}
+                    </p>
                     <div className="flex items-center space-x-2">
                       <span className="text-lg font-bold text-purple-600">
                         {user.total_points || 0}
