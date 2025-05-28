@@ -2295,7 +2295,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           u.email,
           COALESCE(u.total_points, 0) as total_points,
           u.country,
-          u.created_at
+          u.created_at,
+          u.profile_image_url
         FROM users u 
         WHERE u.is_approved = true AND u.username IS NOT NULL
         ORDER BY COALESCE(u.total_points, 0) DESC, u.created_at ASC
@@ -2306,6 +2307,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       res.status(500).json({ message: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  // Upload profile image
+  app.post("/api/user/profile-image", upload.single('profileImage'), async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: 'You must be logged in to upload a profile image' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+
+      const userId = parseInt(req.session.userId);
+      const imageUrl = `/media/profile-images/${req.file.filename}`;
+
+      // Update user's profile image URL in database
+      const { pool } = await import('./db');
+      await pool.query(
+        'UPDATE users SET profile_image_url = $1 WHERE id = $2',
+        [imageUrl, userId]
+      );
+
+      res.json({ 
+        message: 'Profile image uploaded successfully',
+        imageUrl: imageUrl
+      });
+    } catch (error) {
+      console.error('Error uploading profile image:', error);
+      res.status(500).json({ message: 'Failed to upload profile image' });
     }
   });
   

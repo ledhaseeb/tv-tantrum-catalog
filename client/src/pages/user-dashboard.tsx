@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useRef } from 'react';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -7,18 +7,85 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen, Heart, X } from 'lucide-react';
+import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen, Heart, X, Camera, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ShowCard from '@/components/ShowCard';
 import { useLocation } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
 
 const UserDashboard = () => {
   const { user, toggleFavorite } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // Profile image upload mutation
+  const uploadProfileImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('profileImage', file);
+      
+      const response = await fetch('/api/user/profile-image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload profile image');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Profile image updated!",
+        description: "Your profile picture has been successfully updated.",
+      });
+      // Invalidate user queries to refresh the profile image
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/dashboard'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload profile image. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setIsUploadingImage(true);
+      uploadProfileImageMutation.mutate(file);
+      setIsUploadingImage(false);
+    }
+  };
 
   const { data: dashboardData, isLoading: isLoadingDashboard } = useQuery({
     queryKey: ['/api/user/dashboard'],
@@ -84,13 +151,42 @@ const UserDashboard = () => {
   return (
     <div className="container max-w-4xl py-8">
       <div className="flex flex-col md:flex-row gap-6 md:items-center mb-8">
-        <Avatar className="w-20 h-20">
-          <AvatarImage src={user?.profileImageUrl} alt={user?.username} />
-          <AvatarFallback className="text-2xl">
-            {user?.username?.slice(0, 1).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        <div>
+        <div className="relative group">
+          <Avatar className="w-20 h-20">
+            <AvatarImage src={user?.profileImageUrl} alt={user?.username} />
+            <AvatarFallback className="text-2xl">
+              {user?.username?.slice(0, 1).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          
+          {/* Profile Image Upload Overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:text-white hover:bg-transparent p-1"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingImage || uploadProfileImageMutation.isPending}
+            >
+              {isUploadingImage || uploadProfileImageMutation.isPending ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <Camera className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
+          
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+        </div>
+        
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">{user?.username || "User"}'s Dashboard</h1>
           <p className="text-gray-500">{user?.email}</p>
           <div className="flex items-center gap-2 mt-1">
@@ -100,6 +196,29 @@ const UserDashboard = () => {
             <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
               <Award className="w-3 h-3 mr-1" /> {totalPoints} Points
             </Badge>
+          </div>
+          
+          {/* Upload Profile Image Button - Mobile */}
+          <div className="md:hidden mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingImage || uploadProfileImageMutation.isPending}
+              className="w-full"
+            >
+              {isUploadingImage || uploadProfileImageMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Profile Picture
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
