@@ -220,7 +220,10 @@ const UserDashboard = () => {
                       className={`w-8 h-8 rounded-full border-2 ${color.value} ${
                         userBackgroundColor === color.value ? 'border-gray-800 scale-110' : 'border-gray-300'
                       } transition-all hover:scale-105`}
-                      onClick={() => updateBackgroundColorMutation.mutate(color.value)}
+                      onClick={() => {
+                        updateBackgroundColorMutation.mutate(color.value);
+                        setShowColorPicker(false); // Close the picker after selection
+                      }}
                       disabled={updateBackgroundColorMutation.isPending}
                       title={color.name}
                     />
