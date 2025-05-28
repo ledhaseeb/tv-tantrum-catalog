@@ -1049,61 +1049,7 @@ export default function AdminPage() {
               <CardTitle>Admin Dashboard</CardTitle>
               <CardDescription>Manage TV shows, research, and settings</CardDescription>
             </div>
-            <div className="flex space-x-2">
-              <Button 
-                onClick={handleUpdateMetadata} 
-                disabled={isUpdatingMetadata}
-                variant="outline"
-                className="whitespace-nowrap"
-              >
-                {isUpdatingMetadata ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating Metadata...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Update Show Metadata
-                  </>
-                )}
-              </Button>
-              <Button 
-                onClick={handleUpdateYouTubeMetadata} 
-                disabled={isUpdatingYouTubeMetadata}
-                variant="outline"
-                className="whitespace-nowrap"
-              >
-                {isUpdatingYouTubeMetadata ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating YouTube Data...
-                  </>
-                ) : (
-                  <>
-                    <Video className="h-4 w-4 mr-2" />
-                    Update YouTube Data
-                  </>
-                )}
-              </Button>
-              <Button 
-                onClick={handleRefreshData} 
-                disabled={isRefreshing}
-                variant="outline"
-              >
-                {isRefreshing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Refreshing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh Data
-                  </>
-                )}
-              </Button>
-            </div>
+
           </div>
         </CardHeader>
       </Card>
