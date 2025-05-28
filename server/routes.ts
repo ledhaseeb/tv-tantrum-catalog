@@ -3214,7 +3214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const submission = await storage.addShowSubmission({
-        userId: req.session.userId,
+        userId: req.session.userId.toString(),
         showName,
         whereTheyWatch
       });
@@ -3252,7 +3252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: 'Not authenticated' });
       }
 
-      const submissions = await storage.getUserShowSubmissions(req.session.userId);
+      const submissions = await storage.getUserShowSubmissions(req.session.userId.toString());
       res.json(submissions);
     } catch (error) {
       console.error('Error getting user submissions:', error);

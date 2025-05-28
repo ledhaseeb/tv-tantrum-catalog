@@ -15,9 +15,16 @@ interface ShowSubmission {
 }
 
 export default function SubmitShowPage() {
-  const { data: submissions = [], isLoading } = useQuery<ShowSubmission[]>({
+  const { data: submissions = [], isLoading, error } = useQuery<ShowSubmission[]>({
     queryKey: ['/api/show-submissions/my'],
-    queryFn: () => fetch('/api/show-submissions/my').then(res => res.json()),
+    queryFn: async () => {
+      const res = await fetch('/api/show-submissions/my');
+      if (!res.ok) {
+        throw new Error('Failed to fetch submissions');
+      }
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    },
   });
 
   const getStatusIcon = (status: string) => {
