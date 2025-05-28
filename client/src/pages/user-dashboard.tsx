@@ -296,6 +296,29 @@ const UserDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FilePlus2 className="h-5 w-5 text-blue-600" />
+                Quick Actions
+              </CardTitle>
+              <CardDescription>
+                Contribute to our database and earn points
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => setLocation('/submit-show')}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <FilePlus2 className="h-4 w-4 mr-2" />
+                Suggest a Show
+                <span className="ml-auto text-xs bg-blue-500 px-2 py-1 rounded">+20 pts</span>
+              </Button>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-2">
