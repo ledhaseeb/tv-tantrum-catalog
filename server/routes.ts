@@ -3203,10 +3203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Show submissions routes (NEW system)
   app.post('/api/show-submissions', async (req, res) => {
     try {
-      console.log('Session data:', req.session);
-      console.log('User ID from session:', req.session?.userId);
-      
-      if (!req.session?.userId) {
+      if (!req.isAuthenticated()) {
         return res.status(401).json({ error: 'Not authenticated' });
       }
 
@@ -3217,7 +3214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const submission = await storage.addShowSubmission({
-        userId: req.session.userId.toString(),
+        userId: req.user.id.toString(),
         showName,
         whereTheyWatch
       });
@@ -3251,11 +3248,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/show-submissions/my', async (req, res) => {
     try {
-      if (!req.session?.userId) {
+      if (!req.isAuthenticated()) {
         return res.status(401).json({ error: 'Not authenticated' });
       }
 
-      const submissions = await storage.getUserShowSubmissions(req.session.userId.toString());
+      const submissions = await storage.getUserShowSubmissions(req.user.id.toString());
       res.json(submissions);
     } catch (error) {
       console.error('Error getting user submissions:', error);
