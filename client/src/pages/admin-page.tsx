@@ -2784,12 +2784,25 @@ function ShowSubmissionsSection() {
         linkedShowId: null // Can be expanded later for linking to existing shows
       });
 
+      console.log('Response status:', response.status, response.ok);
+      
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Error response:', errorText);
         throw new Error(`Failed to approve submission: ${errorText}`);
       }
 
-      const result = await response.json();
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('Parsed result:', result);
+      } catch (parseError) {
+        console.error('Failed to parse JSON:', parseError);
+        throw new Error('Invalid response format');
+      }
       
       toast({
         title: "Show Approved Successfully!",
@@ -2797,7 +2810,7 @@ function ShowSubmissionsSection() {
       });
 
       // Refresh the submissions list to remove the approved item
-      fetchSubmissions();
+      await fetchSubmissions();
       
     } catch (error) {
       console.error('Error approving submission:', error);
