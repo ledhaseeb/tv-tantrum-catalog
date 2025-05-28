@@ -3282,8 +3282,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Get show submissions grouped by popularity for prioritization
   app.get('/api/show-submissions/pending', async (req, res) => {
     try {
-      if (!req.isAuthenticated() || !req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      // Check if user is admin
+      const user = await storage.getUser(parseInt(req.session.userId));
+      if (!user?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
       }
 
       const { pool } = await import('./db');
