@@ -153,11 +153,21 @@ export default function Home() {
     return null;
   };
 
+  // Shuffle function to randomize show order for home page carousels
+  const shuffleArray = (array: any[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   // Filter shows by categories - ensure at least 24 shows per category for better browsing
-  const lowStimulationShows = allShows?.filter(show => {
+  const lowStimulationShows = shuffleArray(allShows?.filter(show => {
     const stimulationScore = getShowProperty(show, ['stimulationScore', 'stimulation_score']);
     return stimulationScore !== null && stimulationScore <= 2;
-  }).slice(0, 24);
+  }) || []).slice(0, 24);
   
   // Use highly rated shows data from user review ratings
   const highlyRatedShows = highlyRatedShowsData;
@@ -180,7 +190,7 @@ export default function Home() {
   }).slice(0, 24);
   
   // Find shows by educational themes using OR logic with actual database themes
-  const educationalShows = allShows?.filter(show => {
+  const educationalShows = shuffleArray(allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
     if (!themes || !Array.isArray(themes)) return false;
     
@@ -206,9 +216,9 @@ export default function Home() {
              lowerTheme.includes('problem-solving') ||
              lowerTheme.includes('cognitive development');
     });
-  }).slice(0, 24);
+  }) || []).slice(0, 24);
   
-  const adventureShows = allShows?.filter(show => {
+  const adventureShows = shuffleArray(allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
     if (!themes || !Array.isArray(themes)) return false;
     
@@ -223,9 +233,9 @@ export default function Home() {
              lowerTheme.includes('career exploration') ||
              lowerTheme.includes('courage');
     });
-  }).slice(0, 24);
+  }) || []).slice(0, 24);
   
-  const musicalShows = allShows?.filter(show => {
+  const musicalShows = shuffleArray(allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
     if (!themes || !Array.isArray(themes)) return false;
     
@@ -237,9 +247,9 @@ export default function Home() {
              lowerTheme.includes('sing-a-long') ||
              lowerTheme.includes('instruments');
     });
-  }).slice(0, 24);
+  }) || []).slice(0, 24);
   
-  const fantasyShows = allShows?.filter(show => {
+  const fantasyShows = shuffleArray(allShows?.filter(show => {
     const themes = getShowProperty(show, ['themes']);
     if (!themes || !Array.isArray(themes)) return false;
     
@@ -249,7 +259,7 @@ export default function Home() {
              lowerTheme.includes('mild fantasy violence') ||
              lowerTheme.includes('super hero themes');
     });
-  }).slice(0, 24);
+  }) || []).slice(0, 24);
   
   const preschoolerShows = allShows?.filter(show => {
     const ageRange = getShowProperty(show, ['ageRange', 'age_range']);
