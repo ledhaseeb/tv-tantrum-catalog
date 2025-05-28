@@ -3225,28 +3225,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         [normalizedShowName]
       );
       
-      // Always create a submission record for the user, but track request counts
+      // Always create a submission record for the user
+      const result = await pool.query(
+        'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
+      );
+      
+      const submission = result.rows[0];
+
+      // Calculate the total request count for this show in real-time
       const totalRequestsResult = await pool.query(
         'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1',
         [normalizedShowName]
       );
       
-      const requestCount = parseInt(totalRequestsResult.rows[0].count) + 1; // +1 for this new submission
-
-      const result = await pool.query(
-        'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status, request_count) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [userId, showName, whereTheyWatch, normalizedShowName, 'pending', requestCount]
-      );
+      const requestCount = parseInt(totalRequestsResult.rows[0].count);
       
-      const submission = result.rows[0];
-
-      // Update request_count for all OTHER existing submissions of the same show (not this new one)
-      if (requestCount > 1) {
-        await pool.query(
-          'UPDATE show_submissions SET request_count = $1 WHERE normalized_name = $2 AND id != $3',
-          [requestCount, normalizedShowName, submission.id]
-        );
-      }
+      // Add the calculated request count to our response (but don't store it in DB)
+      submission.request_count = requestCount;
 
       if (existingShowResult.rows.length > 0) {
         // Show already exists in database
