@@ -186,7 +186,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="container max-w-4xl py-8 px-4 md:px-6">
       <div className="flex flex-col md:flex-row gap-6 md:items-center mb-8">
         <div className="relative group">
           {/* Emoji Badge Avatar */}
