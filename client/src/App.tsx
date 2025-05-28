@@ -19,6 +19,7 @@ import PreLaunchFAQ from "@/pages/pre-launch-faq";
 import TokenEntryPage from "@/pages/token-entry";
 import RegistrationPendingPage from "@/pages/registration-pending";
 import UserDashboard from "@/pages/user-dashboard";
+import UserProfile from "@/pages/user-profile";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
@@ -267,6 +268,17 @@ function Router() {
                 <Footer />
               </div>
             </Route>
+            <Route path="/user/:userId">
+              {(params) => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <UserProfile />
+                  </div>
+                  <Footer />
+                </div>
+              )}
+            </Route>
           </>
         ) : (
           <>
@@ -294,6 +306,17 @@ function Router() {
                 </div>
               )} 
             />
+            <Route path="/user/:userId">
+              {(params) => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <UserProfile />
+                  </div>
+                  <Footer />
+                </div>
+              )}
+            </Route>
           </>
         )}
 

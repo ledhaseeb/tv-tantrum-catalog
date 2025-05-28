@@ -502,6 +502,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user dashboard" });
     }
   });
+
+  // Get public user profile data
+  app.get('/api/user/profile/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Get user data from database
+      const { pool } = await import('./db');
+      const userResult = await pool.query(
+        'SELECT id, username, email, total_points, background_color FROM users WHERE id = $1',
+        [userId]
+      );
+      
+      const user = userResult.rows[0];
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get user reviews
+      let reviews = [];
+      try {
+        reviews = await storage.getReviewsByUserId(userId);
+      } catch (error) {
+        console.error('Error getting user reviews:', error);
+      }
+
+      // Get user favorites
+      let favorites = [];
+      try {
+        favorites = await storage.getUserFavorites(userId);
+      } catch (error) {
+        console.error('Error getting user favorites:', error);
+      }
+
+      // Get user points history for recent activity
+      let pointsHistory = [];
+      try {
+        if (typeof storage.getUserPointsHistory === 'function') {
+          pointsHistory = await storage.getUserPointsHistory(userId) || [];
+        }
+      } catch (error) {
+        console.error('Error getting user points history:', error);
+      }
+
+      // Create recent activity from points history and reviews (similar to dashboard)
+      let recentActivity = [];
+      try {
+        // Create enhanced review activities
+        const reviewActivities = reviews.map((review) => ({
+          id: review.id,
+          userId: review.userId,
+          points: 10, // Points for a review
+          activityType: 'review',
+          description: `Review of ${review.tvShowName}`,
+          createdAt: review.createdAt
+        }));
+
+        // Combine activities
+        const combinedActivities = [...reviewActivities, ...pointsHistory];
+
+        // Sort by creation date (newest first)
+        combinedActivities.sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        });
+
+        // Get the 10 most recent activities
+        recentActivity = combinedActivities.slice(0, 10);
+      } catch (error) {
+        console.error('Error building recent activity:', error);
+      }
+
+      // Compile public profile data
+      const profileData = {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          background_color: user.background_color
+        },
+        points: user.total_points || 0,
+        reviews: reviews.slice(0, 10), // Limit to recent reviews
+        favorites: favorites.slice(0, 10), // Limit to recent favorites
+        recentActivity
+      };
+
+      res.json(profileData);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
   
   // Serve static files from the public directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
@@ -2311,7 +2408,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user background color with authentication middleware
-  app.put("/api/user/background-color", ensureAuthenticated, async (req: Request, res: Response) => {
+  app.put("/api/user/background-color", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     try {
       // User is already authenticated by middleware, get the user ID
       const userId = parseInt(req.user!.id);
