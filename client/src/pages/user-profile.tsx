@@ -32,7 +32,7 @@ export default function UserProfile() {
   const { userId } = useParams();
 
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ['/api/user/profile', userId],
+    queryKey: [`/api/user/profile/${userId}`],
     enabled: !!userId,
   });
 
