@@ -261,12 +261,12 @@ export default function Home() {
     });
   }) || []).slice(0, 24);
   
-  const preschoolerShows = allShows?.filter(show => {
+  const preschoolerShows = shuffleArray(allShows?.filter(show => {
     const ageRange = getShowProperty(show, ['ageRange', 'age_range']);
     
     return ageRange?.toLowerCase().includes('preschool') || 
            (ageRange && parseInt(ageRange.split('-')[0]) <= 4);
-  }).slice(0, 24);
+  }) || []).slice(0, 24);
   
   // Filter shows based on search term
   const filteredShows = allShows ? allShows.filter((show: TvShow) => {
