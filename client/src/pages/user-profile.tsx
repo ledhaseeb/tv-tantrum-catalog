@@ -66,8 +66,26 @@ export default function UserProfile() {
   // Get current badge based on points
   const currentBadge = getCurrentBadge(totalPoints);
 
-  // Get user's background color preference
-  const userBackgroundColor = user?.background_color || user?.backgroundColor || 'bg-purple-500';
+  // Get user's background color preference and convert to hex
+  const getHexColor = (color: string) => {
+    const colorMap: { [key: string]: string } = {
+      'bg-red-500': '#ef4444',
+      'bg-orange-500': '#f97316',
+      'bg-yellow-500': '#eab308',
+      'bg-green-500': '#22c55e',
+      'bg-blue-500': '#3b82f6',
+      'bg-purple-500': '#a855f7',
+      'bg-pink-500': '#ec4899',
+      'bg-indigo-500': '#6366f1',
+      'bg-cyan-500': '#06b6d4',
+      'bg-teal-500': '#14b8a6',
+      'bg-lime-500': '#84cc16',
+      'bg-amber-500': '#f59e0b'
+    };
+    return colorMap[color] || color || '#a855f7';
+  };
+  
+  const userBackgroundColor = getHexColor(user?.background_color || user?.backgroundColor || 'bg-purple-500');
 
   return (
     <div className="container max-w-4xl py-8">
@@ -75,12 +93,14 @@ export default function UserProfile() {
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-4 mb-4">
           {/* User Badge */}
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl ${userBackgroundColor}`}>
+          <div 
+            className="w-20 h-20 rounded-full flex items-center justify-center text-3xl"
+            style={{ backgroundColor: userBackgroundColor }}
+          >
             {currentBadge.emoji}
           </div>
           <div>
             <h1 className="text-3xl font-bold">{user.username}'s Profile</h1>
-            <p className="text-muted-foreground">{user.email}</p>
           </div>
         </div>
         

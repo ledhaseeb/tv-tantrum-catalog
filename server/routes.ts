@@ -515,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user data from database
       const { pool } = await import('./db');
       const userResult = await pool.query(
-        'SELECT id, username, email, total_points, background_color FROM users WHERE id = $1',
+        'SELECT id, username, total_points, background_color FROM users WHERE id = $1',
         [userId]
       );
       
