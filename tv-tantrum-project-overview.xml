@@ -1,207 +1,207 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="TV Tantrum" description="Dynamic web application for children's media research and discovery">
+<project-overview>
+  <name>TV Tantrum</name>
+  <description>A gamified web platform that transforms children's media discovery into an engaging, intelligent experience. The application provides a secure, interactive interface for families to explore age-appropriate TV shows through advanced content recommendation and personalized user interactions.</description>
   
-  <!-- PROJECT OVERVIEW -->
-  <overview>
-    <description>A dynamic web application that gamifies children's media consumption research, providing an intelligent and interactive platform for discovering age-appropriate TV shows with advanced content analysis.</description>
-    <technologies>
-      <frontend>React, TypeScript, Tailwind CSS, Vite, Wouter (routing)</frontend>
-      <backend>Express.js, TypeScript, PostgreSQL, Drizzle ORM</backend>
-      <ui_library>Shadcn/ui components</ui_library>
-      <features>Sensory-based content filtering, Interactive show discovery, Comprehensive metadata analysis, User authentication, Points system, Social sharing</features>
-    </technologies>
-  </overview>
+  <key-technologies>
+    <technology>React with Tailwind CSS and shadcn/ui components</technology>
+    <technology>Express.js backend with TypeScript</technology>
+    <technology>PostgreSQL database with Drizzle ORM</technology>
+    <technology>Real-time theme and metadata management</technology>
+    <technology>Comprehensive content recommendation system</technology>
+    <technology>Interactive user experience design</technology>
+    <technology>Smart form components with validation</technology>
+    <technology>TanStack Query for data fetching</technology>
+  </key-technologies>
 
-  <!-- CORE ARCHITECTURE -->
-  <architecture>
-    <client_side>
-      <path>client/src/</path>
-      <main_files>
-        <file>main.tsx</file>
-        <file>App.tsx</file>
-        <file>index.css</file>
-      </main_files>
-      <components>
-        <ui_components>client/src/components/ui/</ui_components>
-        <custom_components>
-          <file>ShowCard.tsx</file>
-          <file>ShowFilters.tsx</file>
-          <file>ShareModal.tsx</file>
-          <file>Navbar.tsx</file>
-          <file>RatingBar.tsx</file>
-        </custom_components>
-      </components>
-      <pages>
-        <file>home.tsx</file>
-        <file>browse.tsx</file>
-        <file>detail.tsx</file>
-        <file>compare.tsx</file>
-        <file>user-dashboard.tsx</file>
-        <file>admin-page.tsx</file>
-        <file>research.tsx</file>
-      </pages>
-    </client_side>
+  <main-features>
+    <feature>
+      <name>TV Show Discovery & Browsing</name>
+      <description>Advanced filtering system with age range, stimulation scores, themes, and interaction levels. Comprehensive search functionality with intelligent recommendations and alphabetically sorted theme filters.</description>
+    </feature>
     
-    <server_side>
-      <path>server/</path>
-      <main_files>
-        <file>index.ts</file>
-        <file>routes.ts</file>
-        <file>database-storage.ts</file>
-      </main_files>
-      <services>
-        <file>services/searchService.ts</file>
-        <file>auth.ts</file>
-        <file>omdb.ts</file>
-        <file>youtube.ts</file>
-      </services>
-    </server_side>
+    <feature>
+      <name>User Authentication & Profiles</name>
+      <description>Secure user registration and login system with emoji badge progression (13 levels from "Tablet Baby 👶" to "Screen Sensei 🧘"), customizable profile backgrounds, and privacy-focused public profiles without email exposure.</description>
+    </feature>
     
-    <shared>
-      <path>shared/</path>
-      <file>schema.ts</file>
-    </shared>
-  </architecture>
+    <feature>
+      <name>Content Rating & Reviews</name>
+      <description>User-generated reviews with upvoting system, stimulation scoring, and community feedback mechanisms. Points awarded for engagement activities.</description>
+    </feature>
+    
+    <feature>
+      <name>Gamification System</name>
+      <description>Points-based reward system with 13 emoji badge progression levels (25-2000 points), achievements for login streaks, reviews, upvotes, referrals, show submissions, and research reading. Leaderboard with clickable usernames for profile navigation.</description>
+    </feature>
+    
+    <feature>
+      <name>Admin Dashboard</name>
+      <description>Comprehensive content management system with smart theme management, user administration, image optimization, and automated data synchronization. Features intelligent ThemeSelector component preventing duplicates and typos.</description>
+    </feature>
+    
+    <feature>
+      <name>Smart Theme Management</name>
+      <description>Intelligent categorization system with autocomplete theme selector, duplicate prevention, automatic Title Case formatting, and synchronized storage across themes table, tv_show_themes junction table, and tv_shows array columns.</description>
+    </feature>
 
-  <!-- DATABASE SCHEMA -->
-  <database>
-    <type>PostgreSQL with Drizzle ORM</type>
-    <key_tables>
-      <table name="tv_shows">Primary show data with sensory metrics</table>
-      <table name="users">User accounts and authentication</table>
-      <table name="tv_show_reviews">User reviews and ratings</table>
-      <table name="favorites">User favorites tracking</table>
-      <table name="themes">Show themes taxonomy</table>
-      <table name="platforms">Streaming platforms</table>
-      <table name="user_points_history">Gamification points system</table>
-      <table name="research_summaries">Research content</table>
-    </key_tables>
-  </database>
+    <feature>
+      <name>Featured Content System</name>
+      <description>Dynamic featured show highlighting with database flag support (is_featured column) and random carousel displays across six content categories on the home page.</description>
+    </feature>
+  </main-features>
 
-  <!-- KEY FEATURES -->
-  <features>
-    <sensory_analysis>
-      <description>Advanced sensory impact analysis for children's content</description>
-      <metrics>
-        <metric>stimulationScore (1-5 scale)</metric>
-        <metric>interactivityLevel (Low/Moderate/High)</metric>
-        <metric>dialogueIntensity</metric>
-        <metric>soundEffectsLevel</metric>
-        <metric>musicTempo</metric>
-        <metric>sceneFrequency</metric>
-      </metrics>
-    </sensory_analysis>
+  <recent-updates>
+    <update date="2025-05-28">
+      <title>Smart Theme Management System</title>
+      <description>Implemented comprehensive ThemeSelector component with autocomplete, search functionality, duplicate prevention, and automatic Title Case formatting. Added themes API endpoint and integrated into both Add Show and Edit Show forms.</description>
+    </update>
     
-    <filtering_system>
-      <description>Comprehensive filtering based on sensory data</description>
-      <filters>
-        <filter>Age range</filter>
-        <filter>Stimulation score range</filter>
-        <filter>Interactivity level</filter>
-        <filter>Themes (with AND/OR logic)</filter>
-        <filter>Platform availability</filter>
-      </filters>
-    </filtering_system>
+    <update date="2025-05-28">
+      <title>Theme Database Synchronization</title>
+      <description>Fixed critical synchronization issues between themes table and TV shows array columns. Standardized theme formatting (e.g., 'sing-a-long' → 'Sing Along', 'Super Hero themes' → 'Super Hero Themes') ensuring alphabetical sorting and consistent data across all storage locations.</description>
+    </update>
     
-    <gamification>
-      <description>Points-based engagement system</description>
-      <point_sources>
-        <source>Daily login rewards</source>
-        <source>Review upvotes</source>
-        <source>Successful referrals</source>
-        <source>Show submissions</source>
-        <source>Research engagement</source>
-      </point_sources>
-    </gamification>
-    
-    <social_features>
-      <description>Community-driven content discovery</description>
-      <features>
-        <feature>User reviews and ratings</feature>
-        <feature>Social sharing with referral tracking</feature>
-        <feature>Favorites system</feature>
-        <feature>Show comparisons</feature>
-      </features>
-    </social_features>
-  </features>
+    <update date="2025-05-28">
+      <title>Enhanced Form Components</title>
+      <description>Replaced manual theme input textareas with intelligent ThemeSelector components featuring visual badge management, existing theme detection, and seamless integration with current show data for editing workflows.</description>
+    </update>
 
-  <!-- ADMIN FUNCTIONALITY -->
-  <admin_features>
-    <show_management>
-      <description>Complete CRUD operations for TV shows</description>
-      <capabilities>
-        <capability>Add new shows</capability>
-        <capability>Edit show details</capability>
-        <capability>Update sensory metrics</capability>
-        <capability>Manage images</capability>
-      </capabilities>
-    </show_management>
-    
-    <user_management>
-      <description>User account administration</description>
-      <capabilities>
-        <capability>View all users</capability>
-        <capability>Approve/reject registrations</capability>
-        <capability>Manage admin privileges</capability>
-      </capabilities>
-    </user_management>
-    
-    <research_management>
-      <description>Research content administration</description>
-      <capabilities>
-        <capability>Upload research documents</capability>
-        <capability>Manage research summaries</capability>
-        <capability>Track user engagement</capability>
-      </capabilities>
-    </research_management>
-  </admin_features>
+    <update date="2025-05-28">
+      <title>User Profile & Badge System</title>
+      <description>Implemented 13-level emoji badge progression system tied to point milestones, customizable profile background colors, privacy-focused public profiles, and clickable username navigation from leaderboard and admin dashboard.</description>
+    </update>
 
-  <!-- API INTEGRATIONS -->
-  <external_apis>
-    <omdb_api>
-      <description>Movie/TV show metadata retrieval</description>
-      <usage>Enriching show data with official information</usage>
-    </omdb_api>
+    <update date="2025-05-28">
+      <title>Featured Content & Home Page Enhancement</title>
+      <description>Added is_featured column to shows table, implemented dynamic featured show highlighting, and created random carousel displays for six content categories on the home page for improved content discovery.</description>
+    </update>
+  </recent-updates>
+
+  <database-schema>
+    <table name="users">
+      <description>User account information, authentication data, total_points for badge progression, and profile customization settings</description>
+    </table>
     
-    <youtube_api>
-      <description>YouTube channel data for content creators</description>
-      <usage>Supporting YouTube-based children's content</usage>
-    </youtube_api>
-  </external_apis>
-
-  <!-- DATA MANAGEMENT -->
-  <data_utilities>
-    <description>Comprehensive data management scripts</description>
-    <scripts>
-      <script>api-data-updater.js - API data synchronization</script>
-      <script>data-manager.js - Data consolidation utilities</script>
-      <script>image-manager.js - Image processing and optimization</script>
-      <script>apply-custom-data.js - Custom data application</script>
-    </scripts>
-  </data_utilities>
-
-  <!-- CURRENT STATE -->
-  <project_status>
-    <working_features>
-      <feature>✓ Complete user authentication system</feature>
-      <feature>✓ Advanced show filtering with sensory data</feature>
-      <feature>✓ Alphabetical sorting (case-insensitive)</feature>
-      <feature>✓ Interactivity level filtering</feature>
-      <feature>✓ Admin dashboard with CRUD operations</feature>
-      <feature>✓ Points and gamification system</feature>
-      <feature>✓ Social sharing with referral tracking</feature>
-      <feature>✓ Research content management</feature>
-      <feature>✓ Show comparison functionality</feature>
-      <feature>✓ Responsive design</feature>
-    </working_features>
+    <table name="tv_shows">
+      <description>Comprehensive TV show metadata including sensory details, themes array, platform availability, and is_featured flag for content highlighting</description>
+    </table>
     
-    <recent_fixes>
-      <fix>✓ Fixed database field mapping for sensory data display</fix>
-      <fix>✓ Corrected interactivity level filter functionality</fix>
-      <fix>✓ Implemented case-insensitive alphabetical sorting</fix>
-      <fix>✓ Added error handling for admin dashboard updates</fix>
-      <fix>✓ Fixed field name consistency across components</fix>
-    </recent_fixes>
-  </project_status>
+    <table name="themes">
+      <description>Normalized theme data with proper Title Case formatting, alphabetical organization, and unique constraints to prevent duplicates</description>
+    </table>
+    
+    <table name="tv_show_themes">
+      <description>Junction table maintaining many-to-many relationships between shows and themes for data integrity and efficient querying</description>
+    </table>
+    
+    <table name="reviews">
+      <description>User-generated content reviews with ratings, upvote tracking, and community feedback mechanisms</description>
+    </table>
+    
+    <table name="favorites">
+      <description>User favorite shows tracking for personalized recommendations and points calculation</description>
+    </table>
+    
+    <table name="research_summaries">
+      <description>Educational content and research data for informed content selection and user points from reading activities</description>
+    </table>
 
-</project>
+    <table name="review_upvotes">
+      <description>Tracking system for review upvotes with user attribution and points calculation</description>
+    </table>
+  </database-schema>
+
+  <api-endpoints>
+    <endpoint path="/api/user" method="GET">
+      <description>Retrieve current user information, authentication status, and badge progression data</description>
+    </endpoint>
+    
+    <endpoint path="/api/tv-shows" method="GET">
+      <description>Fetch TV shows with advanced filtering (themes, age range, stimulation score), search, pagination, and alphabetically sorted theme options</description>
+    </endpoint>
+    
+    <endpoint path="/api/themes" method="GET">
+      <description>Retrieve all available themes in alphabetical order for intelligent theme selection and autocomplete functionality</description>
+    </endpoint>
+    
+    <endpoint path="/api/shows/:id" method="GET">
+      <description>Get detailed information for a specific TV show including sensory data, themes, and related content</description>
+    </endpoint>
+    
+    <endpoint path="/api/shows/:id" method="PATCH">
+      <description>Update TV show information with smart theme synchronization across all database tables</description>
+    </endpoint>
+    
+    <endpoint path="/api/reviews" method="POST">
+      <description>Submit user reviews with ratings, content feedback, and automatic points allocation</description>
+    </endpoint>
+    
+    <endpoint path="/api/favorites" method="POST/DELETE">
+      <description>Manage user favorite shows for personalized experiences and points tracking</description>
+    </endpoint>
+
+    <endpoint path="/api/user/dashboard" method="GET">
+      <description>Comprehensive user dashboard data including points breakdown, badge level, recent activity, and recommendations</description>
+    </endpoint>
+
+    <endpoint path="/api/users/:id/profile" method="GET">
+      <description>Public user profile information with privacy protection (no email exposure) and badge display</description>
+    </endpoint>
+  </api-endpoints>
+
+  <file-structure>
+    <directory name="client/src">
+      <file name="pages/home.tsx">Home page with featured content carousel and browsing interface</file>
+      <file name="pages/browse.tsx">Advanced filtering with alphabetical theme sorting and search functionality</file>
+      <file name="pages/detail.tsx">Detailed show information and user interactions</file>
+      <file name="pages/admin-page.tsx">Administrative dashboard with smart theme management and user administration</file>
+      <file name="pages/user-profile.tsx">Public user profiles with emoji badges and privacy protection</file>
+      <file name="pages/user-dashboard.tsx">Personalized user dashboard with points and recommendations</file>
+      <file name="components/ThemeSelector.tsx">Smart theme management component with autocomplete and duplicate prevention</file>
+      <file name="components/ShowCard.tsx">Reusable TV show display component with theme badges</file>
+      <file name="components/ShowFilters.tsx">Advanced filtering interface with alphabetical theme sorting</file>
+      <file name="lib/badges.ts">Badge progression system with 13 emoji levels and point thresholds</file>
+    </directory>
+    
+    <directory name="server">
+      <file name="routes.ts">API endpoint definitions with theme management and user profile handling</file>
+      <file name="database-storage.ts">Database operations with synchronized theme management across tables</file>
+      <file name="index.ts">Server initialization and configuration</file>
+    </directory>
+    
+    <directory name="shared">
+      <file name="schema.ts">TypeScript type definitions and database schema with theme relationships</file>
+    </directory>
+
+    <directory name="utilities">
+      <file name="sync-themes.js">Theme synchronization utility for maintaining data consistency</file>
+      <file name="image-manager.js">Consolidated image management and optimization</file>
+      <file name="data-manager.js">Consolidated data management and validation</file>
+      <file name="api-data-updater.js">API integration for metadata updates</file>
+    </directory>
+  </file-structure>
+
+  <key-accomplishments>
+    <accomplishment>Smart theme management system preventing database inconsistencies and duplicates</accomplishment>
+    <accomplishment>Intelligent form components with autocomplete, validation, and seamless editing workflows</accomplishment>
+    <accomplishment>Robust filtering system with alphabetical sorting and multiple criteria support</accomplishment>
+    <accomplishment>Scalable content management with comprehensive admin dashboard</accomplishment>
+    <accomplishment>Engaging 13-level emoji badge progression system with point-based rewards</accomplishment>
+    <accomplishment>Privacy-focused user profiles with customizable backgrounds and clickable navigation</accomplishment>
+    <accomplishment>Synchronized data integrity across multiple theme storage locations</accomplishment>
+    <accomplishment>Featured content system with dynamic highlighting and random carousels</accomplishment>
+    <accomplishment>Comprehensive utility scripts for data management and synchronization</accomplishment>
+    <accomplishment>Type-safe development with TypeScript and proper schema validation</accomplishment>
+  </key-accomplishments>
+
+  <current-status>
+    <status>Fully functional smart theme management system deployed and tested</status>
+    <status>All theme synchronization issues resolved with proper alphabetical sorting</status>
+    <status>Both Add Show and Edit Show forms using intelligent ThemeSelector component</status>
+    <status>Database consistency maintained across themes table, junction table, and show arrays</status>
+    <status>User badge progression system operational with 13 emoji levels</status>
+    <status>Featured content system ready for dynamic content highlighting</status>
+    <status>Privacy-protected public profiles with clickable username navigation</status>
+  </current-status>
+</project-overview>
