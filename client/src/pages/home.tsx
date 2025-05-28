@@ -439,7 +439,7 @@ export default function Home() {
       {featuredShow && (
         <div className="bg-indigo-50 rounded-xl overflow-hidden mb-12">
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 p-6">
+            <div className="md:w-1/4 p-6">
               <div className="mb-2">
                 <Badge variant="outline" className="bg-purple-100 text-purple-800 uppercase text-xs font-bold tracking-wide">
                   Featured Listing
@@ -449,16 +449,16 @@ export default function Home() {
                 <img 
                   src={featuredShow.imageUrl} 
                   alt={featuredShow.name} 
-                  className="w-full h-80 object-cover rounded-md shadow-lg"
+                  className="w-full aspect-[3/4] object-cover rounded-md shadow-lg"
                 />
               ) : (
-                <div className="w-full h-80 bg-gray-200 rounded-md shadow-lg flex items-center justify-center">
+                <div className="w-full aspect-[3/4] bg-gray-200 rounded-md shadow-lg flex items-center justify-center">
                   <i className="fas fa-tv text-gray-400 text-5xl"></i>
                 </div>
               )}
             </div>
             
-            <div className="md:w-2/3 p-6">
+            <div className="md:w-3/4 p-6">
               <h2 className="text-2xl font-heading font-bold mb-2 text-gray-900">
                 {featuredShow.name}
               </h2>
