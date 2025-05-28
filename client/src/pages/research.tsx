@@ -145,7 +145,7 @@ const Research = () => {
             <TabsTrigger 
               key={category.id}
               value={category.id}
-              className={`flex flex-col items-center py-1.5 px-3 ${category.id === 'all' ? 'min-w-[110px]' : 'min-w-[160px]'} h-auto flex-shrink-0 text-sm whitespace-nowrap`}
+              className={`flex flex-col items-center py-3 px-3 ${category.id === 'all' ? 'min-w-[110px] min-h-[70px]' : 'min-w-[160px] min-h-[70px]'} h-auto flex-shrink-0 text-sm`}
             >
               <span className="text-center">
                 {category.id === 'all' ? category.name : 
