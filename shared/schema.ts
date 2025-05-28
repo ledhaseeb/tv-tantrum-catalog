@@ -101,7 +101,6 @@ export const favorites = pgTable("favorites", {
 export const themes = pgTable("themes", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
-  description: text("description"),
 });
 
 export const platforms = pgTable("platforms", {
