@@ -72,11 +72,15 @@ const UserDashboard = () => {
       const response = await fetch('/api/user/background-color', {
         method: 'PUT',
         body: JSON.stringify({ backgroundColor }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include' // Include cookies for session authentication
       });
       
       if (!response.ok) {
-        throw new Error('Failed to update background color');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update background color');
       }
       
       return response.json();
