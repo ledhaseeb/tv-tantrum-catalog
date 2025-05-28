@@ -18,6 +18,31 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+// Badge progression system
+const BADGE_PROGRESSION = [
+  { name: "TV Watcher", emoji: "📺", points: 0 },
+  { name: "Tablet Baby", emoji: "👶", points: 25 },
+  { name: "TV Tamer", emoji: "🧑‍🧒", points: 50 },
+  { name: "Algorithm Avoider", emoji: "🫷", points: 100 },
+  { name: "Mood-Swing Mediator", emoji: "🧑‍⚖️", points: 200 },
+  { name: "Rhythm Regulator", emoji: "🪪", points: 300 },
+  { name: "Pixel Protector", emoji: "🥽", points: 400 },
+  { name: "Screen-Time Sherpa", emoji: "🤝", points: 500 },
+  { name: "Programme Peacekeeper", emoji: "✌️", points: 750 },
+  { name: "Calm-Ware Engineer", emoji: "🧑‍🔧", points: 1000 },
+  { name: "Digital Diplomat", emoji: "🧑‍💼", points: 1250 },
+  { name: "Sensory Sentinel", emoji: "🦾", points: 1500 },
+  { name: "Guardian of the Glow", emoji: "🥷", points: 1750 },
+  { name: "Screen Sensei", emoji: "🧘", points: 2000 }
+];
+
+// Helper function to get badge emoji based on points
+const getBadgeEmoji = (points: number) => {
+  const sorted = [...BADGE_PROGRESSION].reverse();
+  const badge = sorted.find(badge => points >= badge.points) || BADGE_PROGRESSION[0];
+  return badge.emoji;
+};
+
 export default function Home() {
   const [_, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
