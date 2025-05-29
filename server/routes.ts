@@ -3464,17 +3464,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ success: true, message: 'User already exists', userId: existingUser.id });
       }
       
+      // Extract referral information if present
+      const referrer_id = req.body.referrer_id || null;
+      const referred_show_id = req.body.referred_show_id || null;
+      
       // Create a temporary record for users who verified email but haven't completed registration
       const tempUser = await pool.query(
-        `INSERT INTO temp_ghl_users (first_name, email, country, contact_id, created_at)
-         VALUES ($1, $2, $3, $4, NOW())
+        `INSERT INTO temp_ghl_users (first_name, email, country, contact_id, referrer_id, referred_show_id, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
          ON CONFLICT (email) DO UPDATE SET
          first_name = EXCLUDED.first_name,
          country = EXCLUDED.country,
          contact_id = EXCLUDED.contact_id,
+         referrer_id = EXCLUDED.referrer_id,
+         referred_show_id = EXCLUDED.referred_show_id,
          updated_at = NOW()
          RETURNING *`,
-        [first_name, email, country || null, contact_id || null]
+        [first_name, email, country || null, contact_id || null, referrer_id, referred_show_id]
       );
       
       console.log('Temporary user record created for:', email);
@@ -3529,6 +3535,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isApproved: true, // Auto-approve GHL verified users
         isAdmin: false
       });
+      
+      // Process referral if present
+      if (tempUser.referrer_id) {
+        try {
+          // Import the referral system function
+          const { trackReferral } = require('../server/referral-system');
+          
+          // Track the referral and award points
+          const referralResult = await trackReferral(tempUser.referrer_id, newUser.id);
+          if (referralResult) {
+            console.log(`Referral processed: ${tempUser.referrer_id} referred ${newUser.id}`);
+          }
+        } catch (referralError) {
+          console.error('Error processing referral:', referralError);
+          // Don't fail registration if referral processing fails
+        }
+      }
       
       // Mark registration as completed instead of deleting
       await pool.query(
