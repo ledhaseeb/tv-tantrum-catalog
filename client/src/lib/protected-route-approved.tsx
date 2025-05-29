@@ -44,15 +44,7 @@ export function ApprovedRoute({
     );
   }
 
-  // If logged in but not approved, redirect to pending page
-  if (user.isApproved === false) {
-    return (
-      <Route path={path}>
-        <Redirect to="/registration-pending" />
-      </Route>
-    );
-  }
-
-  // If logged in and approved, show the component
+  // Auto-approve all logged in users (GHL integration handles verification)
+  // If logged in, show the component
   return <Route path={path}><Component /></Route>;
 }
