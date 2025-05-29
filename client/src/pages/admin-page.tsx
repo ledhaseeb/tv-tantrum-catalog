@@ -148,6 +148,11 @@ export default function AdminPage() {
   const [isLoadingResearch, setIsLoadingResearch] = useState(true);
   const [isApprovingUser, setIsApprovingUser] = useState(false);
 
+  // GHL registration funnel state
+  const [ghlRegistrations, setGhlRegistrations] = useState<any[]>([]);
+  const [ghlSummary, setGhlSummary] = useState<any>({});
+  const [isLoadingGhl, setIsLoadingGhl] = useState(true);
+
   // Form state
   const [formState, setFormState] = useState({
     name: '',
@@ -348,6 +353,29 @@ export default function AdminPage() {
           variant: "destructive"
         });
       });
+    }
+  };
+
+  // Function to fetch GHL registration funnel data
+  const fetchGhlRegistrations = async () => {
+    try {
+      setIsLoadingGhl(true);
+      const response = await fetch('/api/admin/ghl-funnel');
+      if (!response.ok) {
+        throw new Error('Failed to fetch GHL registration data');
+      }
+      const data = await response.json();
+      setGhlRegistrations(data.registrations);
+      setGhlSummary(data.summary);
+    } catch (error) {
+      console.error('Error fetching GHL registrations:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load GHL registration data. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingGhl(false);
     }
   };
 

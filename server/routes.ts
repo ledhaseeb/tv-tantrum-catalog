@@ -3530,8 +3530,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAdmin: false
       });
       
-      // Clean up temp record
-      await pool.query('DELETE FROM temp_ghl_users WHERE email = $1', [email]);
+      // Mark registration as completed instead of deleting
+      await pool.query(
+        'UPDATE temp_ghl_users SET registration_completed_at = NOW() WHERE email = $1', 
+        [email]
+      );
       
       console.log('User registration completed for:', email);
       
@@ -3544,6 +3547,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Complete registration error:', error);
       res.status(500).json({ error: 'Registration completion failed' });
+    }
+  });
+
+  // Admin endpoint to monitor GHL registration funnel
+  app.get('/api/admin/ghl-funnel', async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const result = await pool.query(`
+        SELECT 
+          tgu.id,
+          tgu.first_name,
+          tgu.email,
+          tgu.country,
+          tgu.contact_id,
+          tgu.created_at,
+          tgu.registration_completed_at,
+          tgu.notes,
+          u.id as user_id,
+          u.username,
+          CASE 
+            WHEN tgu.registration_completed_at IS NOT NULL THEN 'Completed'
+            WHEN EXISTS (SELECT 1 FROM users WHERE users.email = tgu.email) THEN 'Completed (Legacy)'
+            ELSE 'Pending'
+          END as status,
+          EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - tgu.created_at))/3600 as hours_since_started
+        FROM temp_ghl_users tgu
+        LEFT JOIN users u ON u.email = tgu.email
+        ORDER BY tgu.created_at DESC
+      `);
+
+      res.json({
+        registrations: result.rows,
+        summary: {
+          total: result.rows.length,
+          completed: result.rows.filter(r => r.status.includes('Completed')).length,
+          pending: result.rows.filter(r => r.status === 'Pending').length
+        }
+      });
+
+    } catch (error) {
+      console.error('Error fetching GHL funnel data:', error);
+      res.status(500).json({ error: 'Failed to fetch registration funnel data' });
     }
   });
 
