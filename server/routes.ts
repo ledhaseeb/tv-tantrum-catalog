@@ -3445,6 +3445,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GHL Webhook endpoint for email verified users
+  app.post('/api/ghl-webhook', express.json(), async (req, res) => {
+    try {
+      console.log('GHL webhook received:', req.body);
+      
+      const { first_name, email, country, contact_id } = req.body;
+      
+      // Validate required fields
+      if (!email || !first_name) {
+        return res.status(400).json({ error: 'Missing required fields: email and first_name' });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        console.log('User already exists:', email);
+        return res.json({ success: true, message: 'User already exists', userId: existingUser.id });
+      }
+      
+      // Create a temporary record for users who verified email but haven't completed registration
+      const tempUser = await pool.query(
+        `INSERT INTO temp_ghl_users (first_name, email, country, contact_id, created_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         ON CONFLICT (email) DO UPDATE SET
+         first_name = EXCLUDED.first_name,
+         country = EXCLUDED.country,
+         contact_id = EXCLUDED.contact_id,
+         updated_at = NOW()
+         RETURNING *`,
+        [first_name, email, country || null, contact_id || null]
+      );
+      
+      console.log('Temporary user record created for:', email);
+      
+      res.json({ 
+        success: true, 
+        message: 'Email verified, ready for username/password setup',
+        tempUserId: tempUser.rows[0].id 
+      });
+      
+    } catch (error) {
+      console.error('GHL webhook error:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
+  // Complete registration endpoint - called after username/password setup
+  app.post('/api/complete-registration', express.json(), async (req, res) => {
+    try {
+      const { email, username, password } = req.body;
+      
+      // Validate input
+      if (!email || !username || !password) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      // Get temp user data
+      const tempUserResult = await pool.query(
+        'SELECT * FROM temp_ghl_users WHERE email = $1',
+        [email]
+      );
+      
+      if (tempUserResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Email not found. Please verify your email first.' });
+      }
+      
+      const tempUser = tempUserResult.rows[0];
+      
+      // Check if username is available
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
+      
+      // Create the full user account (auto-approved)
+      const newUser = await storage.createUser({
+        email: tempUser.email,
+        username: username,
+        password: password,
+        firstName: tempUser.first_name,
+        country: tempUser.country,
+        isApproved: true, // Auto-approve GHL verified users
+        isAdmin: false
+      });
+      
+      // Clean up temp record
+      await pool.query('DELETE FROM temp_ghl_users WHERE email = $1', [email]);
+      
+      console.log('User registration completed for:', email);
+      
+      res.json({ 
+        success: true, 
+        message: 'Registration completed successfully',
+        userId: newUser.id 
+      });
+      
+    } catch (error) {
+      console.error('Complete registration error:', error);
+      res.status(500).json({ error: 'Registration completion failed' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

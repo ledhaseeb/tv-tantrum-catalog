@@ -581,8 +581,8 @@ export class DatabaseStorage implements IStorage {
       
       // Use client instead of pool for transaction
       const result = await client.query(`
-        INSERT INTO users (email, password, username, is_admin, country, created_at, is_approved) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        INSERT INTO users (email, password, username, is_admin, country, created_at, is_approved, first_name) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
         RETURNING *
       `, [
         userToInsert.email,
@@ -591,7 +591,8 @@ export class DatabaseStorage implements IStorage {
         userToInsert.isAdmin || false,
         userToInsert.country || '',
         userToInsert.createdAt,
-        userToInsert.isApproved || false
+        userToInsert.isApproved || false,
+        userToInsert.firstName || null
       ]);
       
       // Explicitly commit the transaction
