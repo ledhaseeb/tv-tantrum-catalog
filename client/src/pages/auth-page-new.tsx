@@ -163,15 +163,27 @@ function RegisterForm({
             Fill out the form below to get started. After email verification, you'll create your username and password.
           </p>
           
-          {/* Go High Level Form Embed - Replace with your actual GHL form URL */}
-          <div className="w-full min-h-[400px] border rounded-lg">
+          {/* Go High Level Form Embed */}
+          <div className="w-full min-h-[632px] border rounded-lg">
             <iframe
-              src="YOUR_GHL_FORM_URL_HERE"
-              className="w-full h-[400px] border-0 rounded-lg"
-              title="Registration Form"
-              sandbox="allow-scripts allow-same-origin allow-forms"
+              src="https://api.leadconnectorhq.com/widget/form/k1oNtk7bxZaBfdLXDkek"
+              className="w-full h-[632px] border-0 rounded-lg"
+              id="inline-k1oNtk7bxZaBfdLXDkek" 
+              data-layout="{'id':'INLINE'}"
+              data-trigger-type="alwaysShow"
+              data-trigger-value=""
+              data-activation-type="alwaysActivated"
+              data-activation-value=""
+              data-deactivation-type="neverDeactivate"
+              data-deactivation-value=""
+              data-form-name="Registration form"
+              data-height="632"
+              data-layout-iframe-id="inline-k1oNtk7bxZaBfdLXDkek"
+              data-form-id="k1oNtk7bxZaBfdLXDkek"
+              title="Registration form"
             />
           </div>
+          <script src="https://link.msgsndr.com/js/form_embed.js"></script>
           
           <div className="text-xs text-muted-foreground">
             <p>By registering, you agree to our terms of service and privacy policy.</p>
