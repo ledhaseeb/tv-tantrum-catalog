@@ -1,5 +1,15 @@
 import { db, pool } from "./db";
 import { eq, and, or, not, sql, desc, inArray, like, count } from "drizzle-orm";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews, 
   themes, platforms, tvShowThemes, tvShowPlatforms,
@@ -570,10 +580,14 @@ export class DatabaseStorage implements IStorage {
       
       const now = new Date().toISOString();
       
+      // Hash the password before storing
+      const hashedPassword = insertUser.password ? await hashPassword(insertUser.password) : null;
+      
       // Ensure username is never null to match schema requirements
       const userToInsert = {
         ...insertUser,
         username: insertUser.username || '', // Convert null to empty string if needed
+        password: hashedPassword,
         createdAt: now,
       };
       
