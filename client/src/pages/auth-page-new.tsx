@@ -121,7 +121,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
-// Registration form component
+// GHL Registration form component
 function RegisterForm({ 
   onSuccess,
   earlyAccessToken
@@ -129,91 +129,25 @@ function RegisterForm({
   onSuccess: () => void; 
   earlyAccessToken: string | null;
 }) {
-  const { registerMutation } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [usernameStatus, setUsernameStatus] = useState<'checking' | 'available' | 'taken' | null>(null);
-  const [usernameValue, setUsernameValue] = useState("");
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  // Username availability check
   useEffect(() => {
-    // Don't check if username is less than 3 characters
-    if (!usernameValue || usernameValue.length < 3) {
-      setUsernameStatus(null);
-      return;
-    }
-    
-    // Set status to checking before API call
-    setUsernameStatus('checking');
-    
-    // Debounce the API call - only make it after user stops typing
-    const timeoutId = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/check-username?username=${encodeURIComponent(usernameValue)}`);
-        const data = await response.json();
-        setUsernameStatus(data.available ? 'available' : 'taken');
-      } catch (error) {
-        console.error('Failed to check username availability:', error);
-        setUsernameStatus(null);
-      }
-    }, 500);
-    
-    return () => clearTimeout(timeoutId);
-  }, [usernameValue]);
-
-  const onSubmit = (data: RegisterFormValues) => {
-    // Check username availability before submitting
-    if (usernameStatus === 'taken') {
-      toast({
-        title: "Username already taken",
-        description: "Please choose a different username.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // If username is still being checked, wait for the check to complete
-    if (usernameStatus === 'checking') {
-      toast({
-        title: "Please wait",
-        description: "We're still checking if your username is available.",
-      });
-      return;
-    }
-    
-    // Make sure we have a valid early access token
-    if (!earlyAccessToken || earlyAccessToken !== "2025") {
-      toast({
-        title: "Early access token missing",
-        description: "You need a valid early access token to register.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Remove confirmPassword as it's not needed for the API
-    const { confirmPassword, ...registerData } = data;
-    
-    registerMutation.mutate(registerData, {
-      onSuccess: () => {
+    // Listen for GHL form completion
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'GHL_FORM_COMPLETED') {
         toast({
-          title: "Registration successful!",
-          description: "Your account is pending approval.",
+          title: "Email Verification Sent!",
+          description: "Please check your email and click the verification link to continue.",
         });
-        navigate("/registration-pending");
       }
-    });
-  };
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [toast]);
 
   return (
     <Card>
@@ -224,115 +158,26 @@ function RegisterForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <div className="relative">
-                    <FormControl>
-                      <Input 
-                        type="text"
-                        placeholder="Choose a username"
-                        {...field}
-                        disabled={registerMutation.isPending}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setUsernameValue(e.target.value);
-                        }}
-                      />
-                    </FormControl>
-                    {usernameStatus && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        {usernameStatus === 'checking' && (
-                          <div className="animate-spin h-5 w-5 border-2 border-primary rounded-full border-r-transparent" />
-                        )}
-                        {usernameStatus === 'available' && (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        )}
-                        {usernameStatus === 'taken' && (
-                          <XCircle className="h-5 w-5 text-red-500" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <div className="text-center space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Fill out the form below to get started. After email verification, you'll create your username and password.
+          </p>
+          
+          {/* Go High Level Form Embed - Replace with your actual GHL form URL */}
+          <div className="w-full min-h-[400px] border rounded-lg">
+            <iframe
+              src="YOUR_GHL_FORM_URL_HERE"
+              className="w-full h-[400px] border-0 rounded-lg"
+              title="Registration Form"
+              sandbox="allow-scripts allow-same-origin allow-forms"
             />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="Enter your email address"
-                      {...field}
-                      disabled={registerMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    We'll never share your email with anyone else
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="Create a password"
-                      {...field}
-                      disabled={registerMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="Confirm your password"
-                      {...field}
-                      disabled={registerMutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={registerMutation.isPending}
-            >
-              {registerMutation.isPending ? "Registering..." : "Register"}
-            </Button>
-          </form>
-        </Form>
+          </div>
+          
+          <div className="text-xs text-muted-foreground">
+            <p>By registering, you agree to our terms of service and privacy policy.</p>
+            <p className="mt-2">After email verification, you'll be redirected to complete your account setup.</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
