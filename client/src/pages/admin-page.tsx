@@ -401,6 +401,11 @@ export default function AdminPage() {
     loadInitialShows();
   }, [toast]);
 
+  // Load GHL registration data
+  useEffect(() => {
+    fetchGhlRegistrations();
+  }, []);
+
   // Handle search
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -1088,6 +1093,7 @@ export default function AdminPage() {
           <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Show Submissions</TabsTrigger>
+          <TabsTrigger value="ghl-funnel">Registration Funnel</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         
