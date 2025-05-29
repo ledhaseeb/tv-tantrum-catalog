@@ -50,14 +50,16 @@ export default function CompleteRegistration() {
     setIsSubmitting(true);
     
     try {
-      await apiRequest("/api/complete-registration", {
-        method: "POST",
-        body: JSON.stringify({
-          email: data.email,
-          username: data.username,
-          password: data.password,
-        }),
+      const response = await apiRequest("POST", "/api/complete-registration", {
+        email: data.email,
+        username: data.username,
+        password: data.password,
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
 
       setIsComplete(true);
       toast({
