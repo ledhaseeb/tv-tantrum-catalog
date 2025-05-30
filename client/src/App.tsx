@@ -251,6 +251,17 @@ function Router() {
           </div>
         </Route>
 
+        {/* Login page - redirect to auth */}
+        <Route path="/login">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <AuthPage />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+
         {/* User Dashboard - Accessible for logged in users */}
         {isDevMode ? (
           <>
