@@ -2315,9 +2315,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const summaries = await storage.getResearchSummaries();
       
       // Check if user is logged in to determine read status
-      const userId = req.session?.userId;
-      if (userId) {
-        const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const userReadIds = (await storage.getUserReadResearch(userId.toString())).map(r => r.id);
         const summariesWithReadStatus = summaries.map(summary => ({
           ...summary,
           hasRead: userReadIds.includes(summary.id)
@@ -2350,9 +2350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if user has read this research
-      const userId = req.session?.userId;
-      if (userId) {
-        const hasRead = await storage.hasUserReadResearch(userId, id);
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const hasRead = await storage.hasUserReadResearch(userId.toString(), id);
         res.json({
           ...summary,
           hasRead
