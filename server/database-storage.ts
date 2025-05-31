@@ -2704,7 +2704,25 @@ export class DatabaseStorage implements IStorage {
       try {
         const normalizedName = this.normalizeShowName(data.showName);
         
-        // Check for existing submission with similar normalized name
+        // Check if THIS user already submitted this show
+        const userExistingSubmission = await tx
+          .select()
+          .from(showSubmissions)
+          .where(
+            and(
+              eq(showSubmissions.userId, data.userId),
+              eq(showSubmissions.normalizedName, normalizedName),
+              eq(showSubmissions.status, 'pending')
+            )
+          )
+          .limit(1);
+
+        if (userExistingSubmission.length > 0) {
+          // User already submitted this show - return error
+          throw new Error("You have already submitted this show. Please wait for review or submit a different show.");
+        }
+
+        // Check for existing submission from other users with similar normalized name
         const existingSubmission = await tx
           .select()
           .from(showSubmissions)
