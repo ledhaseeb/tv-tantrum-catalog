@@ -50,6 +50,7 @@ const ResearchDetail = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
       
       if (!response.ok) {
