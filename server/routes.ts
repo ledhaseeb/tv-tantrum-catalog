@@ -18,6 +18,7 @@ import * as dataManager from "../data-manager.js";
 import * as apiDataUpdater from "../api-data-updater.js";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
+import { createShortUrl, resolveShortUrl } from "./url-shortener";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -2568,6 +2569,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching pending show submissions:", error);
       res.status(500).json({ message: "Failed to fetch pending submissions" });
+    }
+  });
+
+  // URL Shortener endpoints
+
+  // Create a short URL for sharing
+  app.post("/api/short-url", async (req: Request, res: Response) => {
+    try {
+      const { showId, originalUrl } = req.body;
+      
+      if (!showId) {
+        return res.status(400).json({ message: "Show ID is required" });
+      }
+
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+      const result = await createShortUrl(parseInt(showId), userId, originalUrl);
+      
+      if (!result) {
+        return res.status(500).json({ message: "Failed to create short URL" });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error creating short URL:", error);
+      res.status(500).json({ message: "Failed to create short URL" });
+    }
+  });
+
+  // Resolve short URL (redirect)
+  app.get("/s/:shortCode", async (req: Request, res: Response) => {
+    try {
+      const { shortCode } = req.params;
+      const originalUrl = await resolveShortUrl(shortCode);
+      
+      if (!originalUrl) {
+        return res.status(404).json({ message: "Short URL not found" });
+      }
+
+      // Redirect to the original URL
+      res.redirect(302, originalUrl);
+    } catch (error) {
+      console.error("Error resolving short URL:", error);
+      res.status(500).json({ message: "Failed to resolve short URL" });
     }
   });
 

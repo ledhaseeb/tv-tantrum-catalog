@@ -41,6 +41,8 @@ interface ShareModalProps {
 export default function ShareModal({ open, onOpenChange, show }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [imageDownloading, setImageDownloading] = useState(false);
+  const [shortUrl, setShortUrl] = useState<string>('');
+  const [shortCode, setShortCode] = useState<string>('');
   const shareCardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -49,19 +51,53 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
   const shareUrl = user && user.id
     ? `${window.location.origin}/share/${show.id}?ref=${user.id}` 
     : `${window.location.origin}/share/${show.id}`;
+
+  // Create short URL when modal opens
+  useEffect(() => {
+    if (open && show.id) {
+      createShortUrl();
+    }
+  }, [open, show.id, user]);
+
+  const createShortUrl = async () => {
+    try {
+      const response = await fetch('/api/short-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          showId: show.id,
+          originalUrl: shareUrl
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setShortUrl(data.shortUrl);
+        setShortCode(data.shortCode);
+      } else {
+        // Fallback to regular URL if short URL creation fails
+        setShortUrl(shareUrl);
+      }
+    } catch (error) {
+      console.error('Error creating short URL:', error);
+      setShortUrl(shareUrl);
+    }
+  };
     
-  // Short version of the URL for display in the image
-  const shortShareUrl = `tvtantrum.app/s/${show.id}${user && user.id ? `?r=${user.id}` : ''}`;
+  // Use short URL for display, fallback to regular URL
+  const displayUrl = shortUrl || shareUrl;
+  const shortShareUrl = shortCode ? `tvtantrum.app/s/${shortCode}` : `tvtantrum.app/share/${show.id}`;
   
-  // Social media share URLs
-  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation Score: ${show.stimulationScore}/5`)}&url=${encodeURIComponent(shareUrl)}`;
-  const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-  const emailShareUrl = `mailto:?subject=${encodeURIComponent(`Check out ${show.name} on TV Tantrum`)}&body=${encodeURIComponent(`I thought you might be interested in this show: ${show.name} on TV Tantrum. It has a stimulation score of ${show.stimulationScore}/5.\n\nCheck it out here: ${shareUrl}`)}`;
-  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5. ${shareUrl}`)}`;
+  // Social media share URLs - use short URL for better sharing
+  const urlForSharing = displayUrl || shareUrl;
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlForSharing)}`;
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation Score: ${show.stimulationScore}/5`)}&url=${encodeURIComponent(urlForSharing)}`;
+  const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(urlForSharing)}`;
+  const emailShareUrl = `mailto:?subject=${encodeURIComponent(`Check out ${show.name} on TV Tantrum`)}&body=${encodeURIComponent(`I thought you might be interested in this show: ${show.name} on TV Tantrum. It has a stimulation score of ${show.stimulationScore}/5.\n\nCheck it out here: ${urlForSharing}`)}`;
+  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5. ${urlForSharing}`)}`;
   
   // Additional social platform share URLs
-  const instagramShareText = `Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5.\n\n${shareUrl}`;
+  const instagramShareText = `Check out ${show.name} on TV Tantrum! Stimulation score: ${show.stimulationScore}/5.\n\n${urlForSharing}`;
   const snapchatShareUrl = `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(shareUrl)}`;
   const tiktokShareText = `#TVTantrum #KidsShows #${show.name.replace(/\s+/g, '')} ${shareUrl}`;
   
@@ -304,7 +340,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
           </ol>
           <div className="flex mt-1 items-center">
             <Input
-              value={shareUrl}
+              value={displayUrl}
               readOnly
               className="text-xs h-8"
             />
