@@ -223,6 +223,17 @@ export const userReferrals = pgTable("user_referrals", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Short URLs for sharing - makes referral links look more professional
+export const shortUrls = pgTable("short_urls", {
+  id: serial("id").primaryKey(),
+  shortCode: text("short_code").notNull().unique(),
+  originalUrl: text("original_url").notNull(),
+  showId: integer("show_id").notNull().references(() => tvShows.id),
+  userId: text("user_id").references(() => users.id), // Optional - for referral tracking
+  clicks: integer("clicks").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Zod schemas for inserting/selecting ---
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
