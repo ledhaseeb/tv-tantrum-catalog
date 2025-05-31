@@ -481,6 +481,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Handle age range filter
+      if (req.query.ageRange) {
+        try {
+          const ageRange = typeof req.query.ageRange === 'string'
+            ? JSON.parse(req.query.ageRange as string)
+            : req.query.ageRange;
+          
+          if (ageRange && typeof ageRange === 'object' && 'min' in ageRange && 'max' in ageRange) {
+            filters.ageRangeMin = ageRange.min;
+            filters.ageRangeMax = ageRange.max;
+          }
+        } catch (error) {
+          console.error('Error parsing ageRange:', error);
+        }
+      }
+      
+      // Handle individual age range parameters (fallback)
+      if (req.query.ageRangeMin && req.query.ageRangeMax) {
+        filters.ageRangeMin = parseInt(req.query.ageRangeMin as string);
+        filters.ageRangeMax = parseInt(req.query.ageRangeMax as string);
+      }
+      
       // Use the search service for filtered search
       const shows = await searchService.searchWithFilters(filters);
       return res.json(shows);
