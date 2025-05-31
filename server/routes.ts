@@ -470,6 +470,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : (req.query.themes as string[]).map((theme: string) => theme.trim());
       }
       
+      // Handle stimulation score range filter
+      if (req.query.stimulationScoreRange) {
+        try {
+          filters.stimulationScoreRange = typeof req.query.stimulationScoreRange === 'string'
+            ? JSON.parse(req.query.stimulationScoreRange as string)
+            : req.query.stimulationScoreRange;
+        } catch (error) {
+          console.error('Error parsing stimulationScoreRange:', error);
+        }
+      }
+      
       // Use the search service for filtered search
       const shows = await searchService.searchWithFilters(filters);
       return res.json(shows);
