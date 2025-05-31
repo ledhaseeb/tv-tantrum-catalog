@@ -777,7 +777,7 @@ function Leaderboard() {
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg relative ${
                       user.background_color || 'bg-purple-500'
                     }`}>
-                      {getBadgeEmoji(user.total_points)}
+                      {getBadgeEmoji(user.totalPoints || user.total_points)}
                       
                       {/* Ranking badges for top 3 */}
                       {index < 3 && (
@@ -802,11 +802,11 @@ function Leaderboard() {
                       </h3>
                     </Link>
                     <p className="text-xs text-purple-600 font-medium truncate">
-                      {getBadgeName(user.total_points)}
+                      {getBadgeName(user.totalPoints || user.total_points)}
                     </p>
                     <div className="flex items-center space-x-2">
                       <span className="text-lg font-bold text-purple-600">
-                        {user.total_points || 0}
+                        {user.totalPoints || user.total_points || 0}
                       </span>
                       <span className="text-xs text-gray-500">points</span>
                     </div>
