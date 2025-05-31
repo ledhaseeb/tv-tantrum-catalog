@@ -92,7 +92,8 @@ export function setupAuth(app: Express) {
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
+    // Use memory store for development to fix session issues
+    store: process.env.NODE_ENV === 'production' ? sessionStore : undefined,
     cookie: {
       secure: false, // Always false for development and HTTP
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
