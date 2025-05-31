@@ -104,7 +104,7 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
   // Handle copy to clipboard
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(displayUrl);
       setCopied(true);
       
       toast({
