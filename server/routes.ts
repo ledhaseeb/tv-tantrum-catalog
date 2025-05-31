@@ -2623,8 +2623,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert referred_show_id to integer if present
       const referredShowId = referredShowIdRaw ? parseInt(referredShowIdRaw, 10) : null;
       
+      console.log('Parsed webhook data:', {
+        email,
+        firstName,
+        lastName,
+        phone,
+        country,
+        contactId,
+        referrerId,
+        referredShowId
+      });
+
       if (!email) {
         console.error('No email found in GHL webhook payload');
+        console.error('Available fields:', Object.keys(formData));
         return res.status(400).json({ error: 'Email is required' });
       }
       
