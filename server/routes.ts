@@ -2615,7 +2615,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const now = new Date().toISOString();
       const result = await db.execute(
         sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
-            VALUES (${email}, ${firstName}, ${country}, ${contactId}, ${now}, ${now})
+            VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, ${now}, ${now})
             RETURNING *`
       );
       
