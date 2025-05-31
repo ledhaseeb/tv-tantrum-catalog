@@ -33,12 +33,12 @@ export default function Navbar() {
       method: 'POST',
       credentials: 'include'
     }).then(() => {
-      // Redirect to login page after logout
-      window.location.href = '/auth';
+      // Redirect to early access page after logout
+      window.location.href = '/early-access';
     }).catch(err => {
       console.error("Logout error:", err);
       // Force redirect even if there's an error
-      window.location.href = '/auth';
+      window.location.href = '/early-access';
     });
   };
 
