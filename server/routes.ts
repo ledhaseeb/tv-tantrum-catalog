@@ -1439,8 +1439,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add favorite routes, protected by authentication
   // Add a show to user's favorites
   app.post("/api/favorites", async (req: Request, res: Response) => {
-    // Check if user is authenticated
-    if (!req.isAuthenticated()) {
+    // Debug authentication state
+    console.log('Favorites POST - Auth state:', {
+      isAuthenticated: req.isAuthenticated(),
+      hasUser: !!req.user,
+      userId: req.user?.id,
+      sessionId: req.sessionID
+    });
+    
+    // Check if user is authenticated - more robust check
+    if (!req.isAuthenticated() || !req.user) {
+      console.log('Favorites POST - Authentication failed');
       return res.status(401).json({ message: "You must be logged in to use favorites" });
     }
 
