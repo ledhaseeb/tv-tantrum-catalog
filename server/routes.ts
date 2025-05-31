@@ -7,9 +7,9 @@ import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub, tempGhlUsers, users } from "@shared/schema";
+import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub, tempGhlUsers, users, insertTempGhlUserSchema } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
@@ -2611,18 +2611,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Insert new GHL user using the actual table structure
-      const [newUser] = await db
-        .insert(tempGhlUsers)
-        .values({
-          email,
-          first_name: firstName,
-          country,
-          contact_id: contactId,
-          created_at: new Date(),
-          updated_at: new Date()
-        })
-        .returning();
+      // Insert new GHL user using the actual database table structure
+      const [newUser] = await db.execute(
+        sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
+            VALUES (${email}, ${firstName}, ${country}, ${contactId}, ${new Date()}, ${new Date()})
+            RETURNING *`
+      );
       
       console.log('New GHL user created:', newUser);
       
@@ -2645,10 +2639,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user is admin
-      const [user] = await storage.db
+      const [user] = await db
         .select()
-        .from(storage.users)
-        .where(eq(storage.users.id, req.session.userId))
+        .from(users)
+        .where(eq(users.id, req.session.userId))
         .limit(1);
 
       if (!user?.isAdmin) {
@@ -2656,10 +2650,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get all GHL registrations
-      const registrations = await storage.db
+      const registrations = await db
         .select()
-        .from(storage.tempGhlUsers)
-        .orderBy(desc(storage.tempGhlUsers.createdAt));
+        .from(tempGhlUsers)
+        .orderBy(desc(tempGhlUsers.createdAt));
 
       // Calculate summary statistics
       const total = registrations.length;
