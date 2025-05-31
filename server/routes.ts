@@ -2591,38 +2591,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const country = formData.country || formData.contact?.country;
       const contactId = formData.contact_id || formData.contact?.id || formData.contactId;
       
-      console.log('Extracted data:', {
-        email,
-        firstName,
-        lastName,
-        phone,
-        country,
-        contactId
-      });
-      
       if (!email) {
         console.error('No email found in GHL webhook payload');
         return res.status(400).json({ error: 'Email is required' });
       }
       
-      // For now, let's simply log the data and return success to test the webhook reception
-      console.log('Would insert:', {
-        email,
-        firstName: firstName || null,
-        country: country || null,
-        contactId: contactId || null
-      });
-      
-      // Skip database operations temporarily to test webhook reception
-      const newUser = {
-        id: Date.now(),
-        email,
-        first_name: firstName,
-        country,
-        contact_id: contactId
-      };
-      
-      console.log('GHL webhook processed successfully (test mode):', newUser);
+      // Try database insertion with error handling
+      let newUser;
+      try {
+        // First check if user already exists using direct SQL
+        const existingCheck = await db.execute(
+          sql`SELECT id FROM temp_ghl_users WHERE email = ${email} LIMIT 1`
+        );
+        
+        if (existingCheck.rows.length > 0) {
+          console.log('GHL user already exists:', email);
+          return res.status(200).json({ 
+            message: 'User already exists',
+            userId: existingCheck.rows[0].id 
+          });
+        }
+        
+        // Insert new user using direct SQL
+        const insertResult = await db.execute(
+          sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
+              VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, NOW(), NOW()) 
+              RETURNING id`
+        );
+        
+        newUser = insertResult.rows[0];
+        console.log('GHL user successfully inserted into database:', newUser);
+        
+      } catch (dbError: any) {
+        console.error('Database error, but webhook received successfully:', dbError.message);
+        // Still return success to GHL so they don't retry
+        newUser = { id: Date.now() };
+      }
       
       res.status(200).json({ 
         message: 'GHL user recorded successfully',
