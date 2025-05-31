@@ -2550,6 +2550,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint for pending submissions
+  app.get("/api/show-submissions/pending", async (req: Request, res: Response) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to view submissions" });
+      }
+      
+      const user = req.user!;
+      
+      if (!user.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can view pending submissions" });
+      }
+      
+      const submissions = await storage.getConsolidatedShowSubmissions();
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching pending show submissions:", error);
+      res.status(500).json({ message: "Failed to fetch pending submissions" });
+    }
+  });
+
   app.get("/api/show-submissions", async (req: Request, res: Response) => {
     try {
       if (!req.isAuthenticated()) {
