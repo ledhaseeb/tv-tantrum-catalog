@@ -1425,6 +1425,15 @@ export class DatabaseStorage implements IStorage {
     return this.getTvShowById(id);
   }
 
+  async unfeaturedAllShows(): Promise<void> {
+    try {
+      await db.update(tvShows).set({ is_featured: false });
+    } catch (error) {
+      console.error('Error unfeaturing all shows:', error);
+      throw error;
+    }
+  }
+
   async deleteTvShow(id: number): Promise<boolean> {
     try {
       // First, delete any junction table entries

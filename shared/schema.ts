@@ -75,6 +75,7 @@ export const tvShows = pgTable("tv_shows", {
   // Other fields
   animationStyle: text("animation_style"),
   imageUrl: text("image_url"),
+  isFeatured: boolean("is_featured").default(false),
   
   // YouTube-specific fields - will eventually be moved to youtube_channels table
   // Keeping temporarily for backward compatibility

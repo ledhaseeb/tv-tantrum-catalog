@@ -1762,6 +1762,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Toggle featured status for a TV show (admin only)
+  app.patch("/api/shows/:id/featured", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in" });
+      }
+      
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized to update featured status" });
+      }
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      const { is_featured } = req.body;
+      
+      if (typeof is_featured !== 'boolean') {
+        return res.status(400).json({ message: "is_featured must be a boolean" });
+      }
+
+      // If setting a show as featured, first unfeature all other shows
+      if (is_featured) {
+        await storage.unfeaturedAllShows();
+      }
+
+      // Update the show's featured status
+      const updatedShow = await storage.updateTvShow(id, { isFeatured: is_featured });
+      
+      if (!updatedShow) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+
+      res.json(updatedShow);
+    } catch (error) {
+      console.error("Error updating featured status:", error);
+      res.status(500).json({ message: "Failed to update featured status" });
+    }
+  });
+
   // Delete a TV show (admin only)
   app.delete("/api/shows/:id", async (req: Request, res: Response) => {
     try {
