@@ -2,14 +2,12 @@ import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 // Use database storage
 import { storage } from "./database-storage";
-import { db, pool } from "./db";
 import { githubService } from "./github";
 import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
 import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
-import { trackReferral, getUserReferrals } from "./referral-system";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
@@ -30,63 +28,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Set up authentication
   setupAuth(app);
-  
-  // Simple direct file upload endpoint for research images
-  app.post('/api/upload', upload.single('file'), (req, res) => {
-    try {
-      console.log('File upload request received');
-      
-      // Check if file exists
-      if (!req.file) {
-        console.log('No file in request');
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-      
-      // Generate unique filename
-      const timestamp = Date.now();
-      const originalName = req.file.originalname.replace(/\s+/g, '-');
-      const filename = `${timestamp}-${originalName}`;
-      
-      // Ensure directory exists - use relative path instead of __dirname
-      const uploadDir = './public/research';
-      if (!fs.existsSync(uploadDir)) {
-        console.log(`Creating directory: ${uploadDir}`);
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      
-      // Save file
-      const filePath = `${uploadDir}/${filename}`;
-      console.log(`Saving file to: ${filePath}`);
-      
-      // Make sure we have a buffer to write
-      if (!req.file.buffer) {
-        console.error('No buffer data in the uploaded file');
-        return res.status(400).json({ error: 'Invalid file data' });
-      }
-      
-      // Create a disk storage version of multer to handle the file saving
-      const diskStorage = multer.diskStorage({
-        destination: function (req, file, cb) {
-          cb(null, uploadDir);
-        },
-        filename: function (req, file, cb) {
-          cb(null, filename);
-        }
-      });
-      
-      // Create a simple file on disk
-      fs.writeFileSync(filePath, req.file.buffer);
-      
-      // Return URL
-      const fileUrl = `/research/${filename}`;
-      console.log(`File uploaded successfully to ${fileUrl}`);
-      
-      return res.json({ url: fileUrl });
-    } catch (error) {
-      console.error('Upload error:', error);
-      return res.status(500).json({ error: 'Upload failed' });
-    }
-  });
   
   // Auth routes - using original custom authentication system
   app.get('/api/auth/user', (req, res) => {
@@ -125,17 +66,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking admin status:", error);
       res.status(500).json({ message: "Failed to check admin status" });
-    }
-  });
-
-  // Get all themes
-  app.get('/api/themes', async (req, res) => {
-    try {
-      const themes = await storage.getAllThemes();
-      res.json(themes);
-    } catch (error) {
-      console.error('Error fetching themes:', error);
-      res.status(500).json({ error: 'Failed to fetch themes' });
     }
   });
   
@@ -368,9 +298,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get user login streak
-      // Login streak feature is disabled in favor of login rewards
-      // Default to zero values for backward compatibility
       let loginStreak = { currentStreak: 0, weeklyStreak: 0, monthlyStreak: 0 };
+      try {
+        if (typeof storage.getUserLoginStreak === 'function') {
+          loginStreak = await storage.getUserLoginStreak(userId) || loginStreak;
+        }
+      } catch (error) {
+        console.error('Error getting user login streak:', error);
+      }
 
       // Get leaderboard data (top 10 users)
       let topUsers = [];
@@ -382,47 +317,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error getting top users:', error);
       }
       
-      // Get read research summaries and update research points
+      // Get read research summaries
       let readResearch = [];
       try {
         if (typeof storage.getUserReadResearch === 'function') {
           readResearch = await storage.getUserReadResearch(userId) || [];
-          
-          // Explicitly fetch research points from history for accurate count
-          const researchPointsRecords = await pool.query(
-            `SELECT SUM(points) as total FROM user_points_history WHERE user_id = $1 AND activity_type = 'research_read'`,
-            [parsedUserId]
-          );
-          
-          // Make sure we have a valid total, defaulting to 0 if null
-          const researchPoints = parseInt(researchPointsRecords.rows[0]?.total || '0');
-          console.log(`Updated research read points from history: ${researchPoints}`);
-          
-          // Important: Always update the points breakdown even if zero
-          pointsInfo.breakdown.researchRead = researchPoints;
-          
-          // Calculate a fresh total with all components
-          const totalPoints = (pointsInfo.breakdown.reviews || 0) + 
-                        (pointsInfo.breakdown.upvotesGiven || 0) + 
-                        (pointsInfo.breakdown.upvotesReceived || 0) + 
-                        (pointsInfo.breakdown.loginRewards || 0) +
-                        (pointsInfo.breakdown.shares || 0) + 
-                        (pointsInfo.breakdown.referrals || 0) +
-                        (pointsInfo.breakdown.showSubmissions || 0) + 
-                        researchPoints;
-          
-          // Update the total points
-          pointsInfo.total = totalPoints;
-                        
-          // Also update the user table directly to ensure all points are counted
-          await pool.query(
-            `UPDATE users SET total_points = $1 WHERE id = $2`,
-            [pointsInfo.total, parsedUserId]
-          );
-          console.log(`Updated user total points in database to: ${pointsInfo.total}`);
         }
       } catch (error) {
-        console.error('Error getting read research or updating points:', error);
+        console.error('Error getting read research:', error);
       }
       
       // Get show submissions - empty placeholder for now
@@ -431,62 +333,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get most recent activity from points history for the activity feed
       let recentActivity = [];
       try {
-        console.log("Building recent activity for dashboard. Reviews:", reviews.length, "Points history:", pointsHistory.length);
-        
-        // Create enhanced review activities with required fields
-        const reviewActivities = reviews.map((review) => {
-          const activity = {
-            id: review.id,
-            userId: review.userId,
-            points: 10, // Points for a review
-            activityType: 'review',
-            description: `Review of ${review.tvShowName || review.showName || "TV Show"}`,
-            createdAt: review.createdAt
-          };
-          console.log("Created review activity:", activity);
-          return activity;
-        });
-        
-        // Process the points history to ensure proper format
-        const processedPointsHistory = pointsHistory.map(activity => {
-          // Ensure the activity has a proper description
-          if (!activity.description && activity.activityType === 'login_reward') {
-            activity.description = 'Daily login reward';
-          } else if (!activity.description && activity.activityType === 'upvote_given') {
-            activity.description = 'Upvoted a review';
-          } else if (!activity.description && activity.activityType === 'upvote_received') {
-            activity.description = 'Your review received an upvote';
-          }
-          
-          // Return a consistent format
-          return {
-            id: activity.id,
-            userId: activity.userId,
-            points: activity.points,
-            activityType: activity.activityType,
-            description: activity.description || activity.activityType.replace(/_/g, ' '),
-            createdAt: activity.createdAt
-          };
-        });
-        
-        // Combine activities from both sources
-        const combinedActivities = [...processedPointsHistory, ...reviewActivities];
-        console.log("Combined activities count:", combinedActivities.length);
-        
-        // Sort by creation date (newest first)
-        combinedActivities.sort((a, b) => {
-          const dateA = new Date(a.createdAt);
-          const dateB = new Date(b.createdAt);
-          return dateB.getTime() - dateA.getTime();
-        });
-        
-        // Get the 10 most recent activities
-        recentActivity = combinedActivities.slice(0, 10);
-        console.log("Final recent activity count:", recentActivity.length);
-        
-        if (recentActivity.length > 0) {
-          console.log("Most recent activity:", recentActivity[0]);
-        }
+        // Get the 10 most recent activities from points history
+        recentActivity = pointsHistory.slice(0, 10);
       } catch (error) {
         console.error('Error getting recent activity:', error);
       }
@@ -503,7 +351,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         readResearch,
         submissions,
         recommendedShows,
-        // Remove login streak features since we're using login rewards instead
+        streak: loginStreak?.currentStreak || 0,
+        weeklyStreak: loginStreak?.weeklyStreak || 0,
+        monthlyStreak: loginStreak?.monthlyStreak || 0,
         leaderboard: topUsers,
         recentActivity  // Add the recent activity to the dashboard data
       };
@@ -514,118 +364,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user dashboard" });
     }
   });
-
-  // Get public user profile data
-  app.get('/api/user/profile/:userId', async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId, 10);
-      
-      if (isNaN(userId)) {
-        return res.status(400).json({ message: "Invalid user ID" });
-      }
-
-      // Get user data from database
-      const { pool } = await import('./db');
-      const userResult = await pool.query(
-        'SELECT id, username, total_points, background_color FROM users WHERE id = $1',
-        [userId]
-      );
-      
-      const user = userResult.rows[0];
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Get user reviews
-      let reviews = [];
-      try {
-        reviews = await storage.getReviewsByUserId(userId);
-      } catch (error) {
-        console.error('Error getting user reviews:', error);
-      }
-
-      // Get user favorites
-      let favorites = [];
-      try {
-        favorites = await storage.getUserFavorites(userId);
-      } catch (error) {
-        console.error('Error getting user favorites:', error);
-      }
-
-      // Get user points history for recent activity
-      let pointsHistory = [];
-      try {
-        if (typeof storage.getUserPointsHistory === 'function') {
-          pointsHistory = await storage.getUserPointsHistory(userId) || [];
-        }
-      } catch (error) {
-        console.error('Error getting user points history:', error);
-      }
-
-      // Create recent activity from points history and reviews (similar to dashboard)
-      let recentActivity = [];
-      try {
-        // Create enhanced review activities
-        const reviewActivities = reviews.map((review) => ({
-          id: review.id,
-          userId: review.userId,
-          points: 10, // Points for a review
-          activityType: 'review',
-          description: `Review of ${review.tvShowName}`,
-          createdAt: review.createdAt
-        }));
-
-        // Combine activities
-        const combinedActivities = [...reviewActivities, ...pointsHistory];
-
-        // Sort by creation date (newest first)
-        combinedActivities.sort((a, b) => {
-          const dateA = new Date(a.createdAt);
-          const dateB = new Date(b.createdAt);
-          return dateB.getTime() - dateA.getTime();
-        });
-
-        // Get the 10 most recent activities
-        recentActivity = combinedActivities.slice(0, 10);
-      } catch (error) {
-        console.error('Error building recent activity:', error);
-      }
-
-      // Compile public profile data
-      const profileData = {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          background_color: user.background_color
-        },
-        points: user.total_points || 0,
-        reviews: reviews.slice(0, 10), // Limit to recent reviews
-        favorites: favorites.slice(0, 10), // Limit to recent favorites
-        recentActivity
-      };
-
-      res.json(profileData);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      res.status(500).json({ message: "Failed to fetch user profile" });
-    }
-  });
   
   // Serve static files from the public directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
   
-  // Get all available themes for filtering
-  app.get('/api/themes', async (req, res) => {
-    try {
-      const themes = await storage.getAllThemes();
-      res.json(themes);
-    } catch (error) {
-      console.error('Error fetching themes:', error);
-      res.status(500).json({ error: 'Failed to fetch themes' });
-    }
-  });
-
   // Register the lookup API router
   app.use('/api/lookup-show', lookupRouter);
   
@@ -695,24 +437,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (Object.keys(req.query).length === 0) {
         console.log("Admin dashboard: Getting all TV shows without filters");
         const allShows = await storage.getAllTvShows();
-        
-        // Add featured status from database for admin dashboard
-        const { pool } = await import('./db');
-        const featuredResult = await pool.query('SELECT id, is_featured FROM tv_shows WHERE is_featured = TRUE');
-        const featuredIds = new Set(featuredResult.rows.map(row => row.id));
-        
-        // Add is_featured field to each show
-        const showsWithFeaturedStatus = allShows.map(show => ({
-          ...show,
-          is_featured: featuredIds.has(show.id)
-        }));
-        
-        return res.json(showsWithFeaturedStatus);
+        return res.json(allShows);
       }
       
       // For any other filter combinations, use the search service
       console.log("Filter query detected:", req.query);
-      console.log("Interaction level from query:", req.query.interactionLevel);
       
       // Convert query params to the correct format for the search service
       const filters: any = {};
@@ -734,13 +463,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : (req.query.themes as string[]).map((theme: string) => theme.trim());
       }
       
-      // Handle stimulation score range filter
-      if (req.query.stimulationScoreRange) {
-        filters.stimulationScoreRange = typeof req.query.stimulationScoreRange === 'string'
-          ? JSON.parse(req.query.stimulationScoreRange)
-          : req.query.stimulationScoreRange;
-      }
-      
       // Use the search service for filtered search
       const shows = await searchService.searchWithFilters(filters);
       return res.json(shows);
@@ -754,97 +476,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/shows/popular", async (req: Request, res: Response) => {
     try {
       const limitStr = req.query.limit;
-      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 24; // Default to 24 for carousel
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
       
       const shows = await storage.getPopularShows(limit);
       res.json(shows);
     } catch (error) {
       console.error("Error fetching popular TV shows:", error);
       res.status(500).json({ message: "Failed to fetch popular TV shows" });
-    }
-  });
-
-  // Get highly rated TV shows
-  app.get("/api/shows/highly-rated", async (req: Request, res: Response) => {
-    try {
-      const limitStr = req.query.limit;
-      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 24; // Default to 24 for carousel
-      
-      const shows = await storage.getHighlyRatedShows(limit);
-      res.json(shows);
-    } catch (error) {
-      console.error("Error fetching highly rated TV shows:", error);
-      res.status(500).json({ message: "Failed to fetch highly rated TV shows" });
-    }
-  });
-
-  // Get featured TV show
-  app.get("/api/shows/featured", async (req: Request, res: Response) => {
-    try {
-      // Get database connection
-      const { pool } = await import('./db');
-      
-      // Find the featured show
-      const result = await pool.query(
-        'SELECT * FROM tv_shows WHERE is_featured = TRUE LIMIT 1'
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: "No featured show found" });
-      }
-      
-      // Convert database row to TvShow format
-      const row = result.rows[0];
-      const show = {
-        id: row.id,
-        name: row.name,
-        description: row.description,
-        ageRange: row.age_range,
-        episodeLength: row.episode_length,
-        stimulationScore: row.stimulation_score,
-        themes: row.themes,
-        imageUrl: row.image_url,
-        availableOn: row.available_on,
-        tags: row.tags,
-        interactivityLevel: row.interactivity_level,
-        dialogueIntensity: row.dialogue_intensity,
-        soundEffectsLevel: row.sound_effects_level,
-        animationStyle: row.animation_style,
-        sceneFrequency: row.scene_frequency,
-        totalSoundEffectTimeLevel: row.total_sound_effect_time_level,
-        network: row.network,
-        year: row.year,
-        productionCompany: row.production_company,
-        creator: row.creator,
-        releaseYear: row.release_year,
-        endYear: row.end_year,
-        isOngoing: row.is_ongoing,
-        seasons: row.seasons,
-        totalEpisodes: row.total_episodes,
-        productionCountry: row.production_country,
-        language: row.language,
-        genre: row.genre,
-        targetAudience: row.target_audience,
-        viewerRating: row.viewer_rating,
-        contentRating: row.content_rating,
-        awards: row.awards,
-        synopsis: row.synopsis,
-        isYouTubeChannel: row.is_youtube_channel,
-        channelId: row.channel_id,
-        subscriberCount: row.subscriber_count,
-        videoCount: row.video_count,
-        publishedAt: row.published_at,
-        hasOmdbData: row.has_omdb_data,
-        hasYoutubeData: row.has_youtube_data,
-        interactivityLevel: row.interactivity_level,
-        soundFrequency: row.sound_frequency,
-        is_featured: row.is_featured
-      };
-      
-      res.json(show);
-    } catch (error) {
-      console.error("Error fetching featured TV show:", error);
-      res.status(500).json({ message: "Failed to fetch featured TV show" });
     }
   });
 
@@ -1055,16 +693,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reviews,
         externalData
       };
-      
-      // The database layer already provides camelCase field names
-      console.log('Show sensory data from database:', {
-        interactivityLevel: show.interactivityLevel,
-        dialogueIntensity: show.dialogueIntensity,
-        sceneFrequency: show.sceneFrequency,
-        soundEffectsLevel: show.soundEffectsLevel,
-        musicTempo: show.musicTempo,
-        animationStyle: show.animationStyle
-      });
       
       // Make sure the YouTube data from the database is directly accessible
       // by exposing it at the top level of the response
@@ -2483,110 +2111,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
-  // Get leaderboard - top users by points (public endpoint)
+  
+  // Get leaderboard
   app.get("/api/leaderboard", async (req: Request, res: Response) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 10;
-      
-      const { pool } = await import('./db');
-      const result = await pool.query(`
-        SELECT 
-          u.id,
-          u.username,
-          u.email,
-          COALESCE(u.total_points, 0) as total_points,
-          u.country,
-          u.created_at,
-          u.background_color
-        FROM users u 
-        WHERE u.is_approved = true AND u.username IS NOT NULL
-        ORDER BY COALESCE(u.total_points, 0) DESC, u.created_at ASC
-        LIMIT $1
-      `, [limit]);
-      
-      res.json(result.rows);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const leaderboard = await storage.getTopUsers(limit);
+      res.json(leaderboard);
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      res.status(500).json({ message: 'Failed to fetch leaderboard' });
-    }
-  });
-
-  // Update show featured status (admin only)
-  app.patch("/api/shows/:id/featured", async (req: Request, res: Response) => {
-    try {
-      if (!req.isAuthenticated() || !req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-      
-      const showId = parseInt(req.params.id);
-      if (isNaN(showId)) {
-        return res.status(400).json({ message: "Invalid show ID" });
-      }
-      
-      const { is_featured } = req.body;
-      if (typeof is_featured !== 'boolean') {
-        return res.status(400).json({ message: "is_featured must be a boolean" });
-      }
-      
-      // Get database connection
-      const { pool } = await import('./db');
-      
-      // If setting a show as featured, first unfeature all other shows
-      if (is_featured) {
-        await pool.query('UPDATE tv_shows SET is_featured = FALSE');
-      }
-      
-      // Update the specific show's featured status
-      const result = await pool.query(
-        'UPDATE tv_shows SET is_featured = $1 WHERE id = $2 RETURNING *',
-        [is_featured, showId]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Show not found" });
-      }
-      
-      res.json({ 
-        success: true, 
-        show: result.rows[0],
-        message: is_featured ? "Show featured successfully" : "Show unfeatured successfully"
+      console.error('Error getting leaderboard:', error);
+      res.status(500).json({ 
+        message: "Error retrieving leaderboard", 
+        error: error instanceof Error ? error.message : "Unknown error" 
       });
-    } catch (error) {
-      console.error('Error updating featured status:', error);
-      res.status(500).json({ message: 'Failed to update featured status' });
-    }
-  });
-
-  // Update user background color with authentication middleware
-  app.put("/api/user/background-color", async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    try {
-      // User is already authenticated by middleware, get the user ID
-      const userId = parseInt(req.user!.id);
-
-      const { backgroundColor } = req.body;
-      
-      if (!backgroundColor) {
-        return res.status(400).json({ message: 'Background color is required' });
-      }
-
-      // Update user's background color in database
-      const { pool } = await import('./db');
-      await pool.query(
-        'UPDATE users SET background_color = $1 WHERE id = $2',
-        [backgroundColor, userId]
-      );
-
-      res.json({ 
-        message: 'Background color updated successfully',
-        backgroundColor: backgroundColor
-      });
-    } catch (error) {
-      console.error('Error updating background color:', error);
-      res.status(500).json({ message: 'Failed to update background color' });
     }
   });
   
@@ -2770,14 +2307,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const summaries = await storage.getResearchSummaries();
       
-      // Check if user is logged in to determine read status - use passport authentication
-      if (req.isAuthenticated() && req.user) {
-        const userId = req.user.id.toString();
-        console.log(`Getting read research for user ${userId}`);
-        const userReadResearch = await storage.getUserReadResearch(userId);
-        console.log(`User ${userId} read research raw data:`, userReadResearch);
-        const userReadIds = userReadResearch.map(r => r.id);
-        console.log(`User ${userId} has read research IDs:`, userReadIds);
+      // Check if user is logged in to determine read status
+      const userId = req.session?.userId;
+      if (userId) {
+        const userReadIds = (await storage.getUserReadResearch(userId)).map(r => r.id);
         const summariesWithReadStatus = summaries.map(summary => ({
           ...summary,
           hasRead: userReadIds.includes(summary.id)
@@ -2803,39 +2336,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid research ID" });
       }
       
-      // Use direct SQL query to make sure we get all fields
-      const result = await pool.query(
-        `SELECT * FROM research_summaries WHERE id = $1`,
-        [id]
-      );
+      const summary = await storage.getResearchSummary(id);
       
-      if (result.rows.length === 0) {
+      if (!summary) {
         return res.status(404).json({ message: "Research summary not found" });
       }
       
-      const row = result.rows[0];
-      
-      // Convert snake_case to camelCase for consistent API response
-      const summary = {
-        id: row.id,
-        title: row.title,
-        summary: row.summary,
-        fullText: row.full_text,
-        category: row.category,
-        imageUrl: row.image_url,
-        source: row.source,
-        originalUrl: row.original_url,
-        publishedDate: row.published_date,
-        headline: row.headline,
-        subHeadline: row.sub_headline,
-        keyFindings: row.key_findings,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      };
-      
       // Check if user has read this research
-      if (req.isAuthenticated() && req.user) {
-        const userId = req.user.id.toString();
+      const userId = req.session?.userId;
+      if (userId) {
         const hasRead = await storage.hasUserReadResearch(userId, id);
         res.json({
           ...summary,
@@ -2853,191 +2362,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete a research entry (admin only)
-  app.delete("/api/research/:id", async (req: Request, res: Response) => {
-    try {
-      // Parse ID
-      const id = parseInt(req.params.id);
-      
-      // Check if user is authenticated and is an admin
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "You must be logged in" });
-      }
-      
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Not authorized to delete research entries" });
-      }
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-      }
-
-      // Validate the research entry exists
-      const existingEntry = await storage.getResearchSummary(id);
-      if (!existingEntry) {
-        return res.status(404).json({ message: "Research entry not found" });
-      }
-
-      console.log(`Attempting to delete research entry: ${existingEntry.title} (ID: ${id})`);
-      
-      // Use the imported pool to delete the records
-      try {
-        // First delete any associated read records
-        await pool.query('DELETE FROM user_read_research WHERE research_id = $1', [id]);
-        
-        // Then delete the research summary
-        await pool.query('DELETE FROM research_summaries WHERE id = $1', [id]);
-        
-        console.log(`Successfully deleted research entry: ${existingEntry.title} (ID: ${id})`);
-        res.status(200).json({ message: "Research entry deleted successfully" });
-      } catch (sqlError) {
-        console.error("SQL error deleting research entry:", sqlError);
-        return res.status(500).json({ message: "Database error when deleting research entry" });
-      }
-    } catch (error) {
-      console.error("Error deleting research entry:", error);
-      res.status(500).json({ message: "Failed to delete research entry" });
-    }
-  });
-  
-  // Update a research entry (admin only)
-  app.patch("/api/research/:id", async (req: Request, res: Response) => {
-    try {
-      // Parse ID
-      const id = parseInt(req.params.id);
-      
-      // Check if user is authenticated and is an admin
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "You must be logged in" });
-      }
-      
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Not authorized to update research entries" });
-      }
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-      }
-
-      // Validate the research entry exists
-      const existingEntryResult = await pool.query(
-        `SELECT * FROM research_summaries WHERE id = $1`,
-        [id]
-      );
-      
-      if (existingEntryResult.rows.length === 0) {
-        return res.status(404).json({ message: "Research entry not found" });
-      }
-      
-      const existingEntry = existingEntryResult.rows[0];
-      
-      // Convert the database snake_case to camelCase for processing
-      const existingEntryFormatted = {
-        id: existingEntry.id,
-        title: existingEntry.title,
-        summary: existingEntry.summary,
-        fullText: existingEntry.full_text,
-        category: existingEntry.category,
-        imageUrl: existingEntry.image_url,
-        source: existingEntry.source,
-        originalUrl: existingEntry.original_url,
-        publishedDate: existingEntry.published_date,
-        headline: existingEntry.headline,
-        subHeadline: existingEntry.sub_headline,
-        keyFindings: existingEntry.key_findings,
-        createdAt: existingEntry.created_at,
-        updatedAt: existingEntry.updated_at
-      };
-
-      console.log(`Updating research entry #${id} with data:`, JSON.stringify(req.body, null, 2));
-
-      // Use direct SQL to update the research entry
-      try {
-        // Convert camelCase to snake_case for database columns
-        const updateData = {
-          title: req.body.title || existingEntry.title,
-          summary: req.body.summary || existingEntry.summary,
-          full_text: req.body.fullText || existingEntry.full_text,
-          category: req.body.category || existingEntry.category,
-          image_url: req.body.imageUrl || existingEntry.image_url,
-          source: req.body.source || existingEntry.source,
-          original_url: req.body.originalUrl || existingEntry.original_url,
-          published_date: req.body.publishedDate || existingEntry.published_date,
-          headline: req.body.headline || existingEntry.headline,
-          sub_headline: req.body.subHeadline || existingEntry.sub_headline,
-          key_findings: req.body.keyFindings || existingEntry.key_findings,
-          updated_at: new Date()
-        };
-        
-        // Build SQL query dynamically based on provided fields
-        const updates = [];
-        const values = [];
-        let paramCount = 1;
-        
-        for (const [key, value] of Object.entries(updateData)) {
-          if (value !== undefined) {
-            updates.push(`${key} = $${paramCount}`);
-            values.push(value);
-            paramCount++;
-          }
-        }
-        
-        if (updates.length === 0) {
-          return res.status(400).json({ message: "No fields to update" });
-        }
-        
-        // Add ID as the last parameter
-        values.push(id);
-        
-        const query = `
-          UPDATE research_summaries 
-          SET ${updates.join(', ')} 
-          WHERE id = $${paramCount}
-          RETURNING *
-        `;
-        
-        const result = await pool.query(query, values);
-        
-        // Convert snake_case to camelCase for response
-        const updatedEntry = {
-          id: existingEntryFormatted.id,
-          title: updateData.title,
-          summary: updateData.summary,
-          fullText: updateData.full_text,
-          category: updateData.category,
-          imageUrl: updateData.image_url,
-          source: updateData.source,
-          originalUrl: updateData.original_url,
-          publishedDate: updateData.published_date,
-          headline: updateData.headline,
-          subHeadline: updateData.sub_headline,
-          keyFindings: updateData.key_findings,
-          createdAt: existingEntryFormatted.createdAt,
-          updatedAt: updateData.updated_at
-        };
-        
-        console.log(`Research entry #${id} updated successfully`);
-        res.json(updatedEntry);
-      } catch (sqlError) {
-        console.error("SQL error updating research entry:", sqlError);
-        return res.status(500).json({ message: "Database error when updating research entry" });
-      }
-    } catch (error) {
-      console.error("Error updating research entry:", error);
-      res.status(500).json({ message: "Failed to update research entry" });
-    }
-  });
-  
   app.post("/api/research/:id/mark-read", async (req: Request, res: Response) => {
     try {
-      // Check if user is authenticated - use req.user.id from passport
-      if (!req.isAuthenticated() || !req.user) {
-        console.log('User not authenticated for marking research as read');
+      const userId = req.session?.userId;
+      if (!userId) {
         return res.status(401).json({ message: "You must be logged in to mark research as read" });
       }
-      
-      const userId = req.user.id.toString();
-      console.log(`User ${userId} marking research as read`);
       
       const researchId = parseInt(req.params.id);
       
@@ -3056,13 +2386,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin only - add research summary
   app.post("/api/research", async (req: Request, res: Response) => {
     try {
-      // For now, we'll skip authentication to fix the issue
-      // This will be revisited later for proper security
-      console.log("Adding research summary with data:", req.body);
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to add research summaries" });
+      }
       
-      // Directly add the research summary without auth checks
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can add research summaries" });
+      }
+      
       const summary = await storage.addResearchSummary(req.body);
-      console.log("Research summary added successfully:", summary);
       res.json(summary);
     } catch (error) {
       console.error("Error adding research summary:", error);
@@ -3070,89 +2405,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update research original link - Admin only
-  app.post("/api/research/:id/update-link", async (req: Request, res: Response) => {
+  // Show Submissions
+  app.post("/api/show-submissions", async (req: Request, res: Response) => {
     try {
       const userId = req.session?.userId;
       if (!userId) {
-        return res.status(401).json({ message: "You must be logged in to update research links" });
+        return res.status(401).json({ message: "You must be logged in to submit shows" });
+      }
+      
+      const submission = await storage.addShowSubmission({
+        ...req.body,
+        userId
+      });
+      res.json(submission);
+    } catch (error) {
+      console.error("Error submitting show:", error);
+      res.status(500).json({ message: "Failed to submit show" });
+    }
+  });
+  
+  app.get("/api/show-submissions", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to view submissions" });
       }
       
       const user = await storage.getUser(userId);
       
-      if (!user?.isAdmin && !user?.isApproved) {
-        return res.status(403).json({ message: "Only administrators or approved users can update research links" });
+      // Admin can see all pending submissions
+      if (user?.isAdmin) {
+        const submissions = await storage.getPendingShowSubmissions();
+        res.json(submissions);
+      } else {
+        // Regular users only see their own submissions
+        const submissions = await storage.getUserShowSubmissions(userId);
+        res.json(submissions);
       }
-      
-      const researchId = parseInt(req.params.id);
-      const { originalUrl } = req.body;
-      
-      if (isNaN(researchId)) {
-        return res.status(400).json({ message: "Invalid research ID" });
-      }
-      
-      if (!originalUrl) {
-        return res.status(400).json({ message: "Original URL is required" });
-      }
-      
-      // Update research with the original link
-      const { pool } = await import('./db');
-      await pool.query(
-        'UPDATE research_summaries SET original_url = $1 WHERE id = $2',
-        [originalUrl, researchId]
-      );
-      
-      res.json({ success: true, message: "Research link updated successfully" });
     } catch (error) {
-      console.error("Error updating research link:", error);
-      res.status(500).json({ message: "Failed to update research link" });
+      console.error("Error fetching show submissions:", error);
+      res.status(500).json({ message: "Failed to fetch show submissions" });
     }
   });
   
-  // DISABLED: Old show submissions endpoints - will be replaced with new implementation
-  // app.post("/api/show-submissions", async (req: Request, res: Response) => {
-  //   try {
-  //     const userId = req.session?.userId;
-  //     if (!userId) {
-  //       return res.status(401).json({ message: "You must be logged in to submit shows" });
-  //     }
-  //     
-  //     const submission = await storage.addShowSubmission({
-  //       ...req.body,
-  //       userId
-  //     });
-  //     res.json(submission);
-  //   } catch (error) {
-  //     console.error("Error submitting show:", error);
-  //     res.status(500).json({ message: "Failed to submit show" });
-  //   }
-  // });
-  
-  // app.get("/api/show-submissions", async (req: Request, res: Response) => {
-  //   try {
-  //     const userId = req.session?.userId;
-  //     if (!userId) {
-  //       return res.status(401).json({ message: "You must be logged in to view submissions" });
-  //     }
-  //     
-  //     const user = await storage.getUser(userId);
-  //     
-  //     // Admin can see all pending submissions
-  //     if (user?.isAdmin) {
-  //       const submissions = await storage.getPendingShowSubmissions();
-  //       res.json(submissions);
-  //     } else {
-  //       // Regular users only see their own submissions
-  //       const submissions = await storage.getUserShowSubmissions(userId);
-  //       res.json(submissions);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching show submissions:", error);
-  //     res.status(500).json({ message: "Failed to fetch show submissions" });
-  //   }
-  // });
-  
-  // DISABLED: Admin only - update submission status
+  // Admin only - update submission status
   app.put("/api/show-submissions/:id/status", async (req: Request, res: Response) => {
     try {
       const userId = req.session?.userId;
@@ -3202,426 +2498,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ message: "Failed to fetch leaderboard" });
-    }
-  });
-
-  // Show submissions routes (NEW system)
-  app.post('/api/show-submissions', async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
-      
-      const userId = req.user!.id;
-
-      const { showName, whereTheyWatch } = req.body;
-      
-      if (!showName || !whereTheyWatch) {
-        return res.status(400).json({ error: 'Show name and where they watch are required' });
-      }
-
-      // Check if show already exists in our database
-      const { pool } = await import('./db');
-      
-      // Improved normalization: remove all non-alphanumeric characters and convert to lowercase
-      const normalizedShowName = showName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      
-      // Check existing TV shows with case-insensitive fuzzy matching
-      const existingShowResult = await pool.query(
-        'SELECT id, name FROM tv_shows WHERE LOWER(REGEXP_REPLACE(name, \'[^a-zA-Z0-9]\', \'\', \'g\')) = $1',
-        [normalizedShowName]
-      );
-
-      if (existingShowResult.rows.length > 0) {
-        // Show already exists in database - don't create submission record
-        const existingShow = existingShowResult.rows[0];
-        res.json({
-          isNewSubmission: false,
-          isDuplicate: true,
-          existingShow: existingShow,
-          message: `"${existingShow.name}" is already in our database! Thanks for your interest.`
-        });
-      } else {
-        // Only create submission record if show doesn't exist
-        const result = await pool.query(
-          'INSERT INTO show_submissions (user_id, show_name, where_they_watch, normalized_name, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-          [userId, showName, whereTheyWatch, normalizedShowName, 'pending']
-        );
-        
-        const submission = result.rows[0];
-
-        // Calculate the total request count for this show in real-time
-        const totalRequestsResult = await pool.query(
-          'SELECT COUNT(*) as count FROM show_submissions WHERE normalized_name = $1',
-          [normalizedShowName]
-        );
-        
-        const requestCount = parseInt(totalRequestsResult.rows[0].count);
-        
-        // Add the calculated request count to our response (but don't store it in DB)
-        submission.request_count = requestCount;
-        // Check if someone else already submitted this show
-        const otherSubmissions = requestCount - 1; // Subtract this submission
-        
-        if (otherSubmissions > 0) {
-          res.json({
-            ...submission,
-            isNewSubmission: false,
-            isDuplicate: false,
-            message: `This show has been requested ${requestCount} times! Your request increases its priority.`
-          });
-        } else {
-          res.json({
-            ...submission,
-            isNewSubmission: true,
-            message: "Show submitted successfully! We'll review it soon."
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error submitting show:', error);
-      res.status(500).json({ error: 'Failed to submit show' });
-    }
-  });
-
-  // Admin: Get show submissions grouped by popularity for prioritization
-  app.get('/api/show-submissions/pending', async (req, res) => {
-    try {
-      // Enhanced logging to debug authentication issues
-      console.log('User requesting /api/show-submissions/pending:', {
-        isAuthenticated: req.isAuthenticated(),
-        user: req.isAuthenticated() ? { 
-          id: req.user?.id, 
-          isAdmin: req.user?.isAdmin, 
-          username: req.user?.username 
-        } : 'Not authenticated'
-      });
-      
-      // Use the same authentication pattern as other working admin endpoints
-      if (!req.isAuthenticated()) {
-        console.log('User not authenticated via session for show submissions endpoint');
-        
-        // Check if auth was provided in the query for debugging
-        const debug = req.query.debug === 'true';
-        if (debug) {
-          console.log('Debug mode enabled for show submissions, bypassing auth check');
-          console.warn('WARNING: Debug mode enabled for show submissions - not for production use');
-        } else {
-          return res.status(401).json({ error: 'Not authenticated' });
-        }
-      }
-
-      // Check if user is admin
-      if (req.isAuthenticated() && !req.user?.isAdmin) {
-        console.log('User authenticated but not admin for show submissions');
-        return res.status(403).json({ error: 'Admin access required' });
-      }
-
-      const { pool } = await import('./db');
-      
-      // Get submissions grouped by improved normalization to consolidate better
-      const result = await pool.query(`
-        SELECT 
-          LOWER(REGEXP_REPLACE(show_name, '[^a-zA-Z0-9]', '', 'g')) as normalized_name,
-          -- Use the most common capitalization as the display name
-          MODE() WITHIN GROUP (ORDER BY show_name) as show_name,
-          COUNT(*) as request_count,
-          MIN(ss.created_at) as first_requested,
-          MAX(ss.created_at) as last_requested,
-          ARRAY_AGG(DISTINCT u.username ORDER BY u.username) as requested_by_users,
-          ARRAY_AGG(DISTINCT ss.where_they_watch) as platforms,
-          MAX(ss.status) as status,
-          ARRAY_AGG(ss.id ORDER BY ss.created_at) as submission_ids
-        FROM show_submissions ss
-        JOIN users u ON ss.user_id = u.id
-        WHERE ss.status = 'pending'
-        GROUP BY LOWER(REGEXP_REPLACE(show_name, '[^a-zA-Z0-9]', '', 'g'))
-        ORDER BY request_count DESC, first_requested ASC
-      `);
-
-      res.json(result.rows);
-    } catch (error) {
-      console.error('Error fetching admin show submissions:', error);
-      res.status(500).json({ error: 'Failed to fetch show submissions' });
-    }
-  });
-
-  app.get('/api/show-submissions/my', async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
-      
-      const userId = req.user!.id;
-
-      // Get submissions directly from the clean database
-      const { pool } = await import('./db');
-      const result = await pool.query(
-        'SELECT * FROM show_submissions WHERE user_id = $1 ORDER BY created_at DESC',
-        [userId]
-      );
-      
-      const submissions = result.rows;
-      res.json(submissions);
-    } catch (error) {
-      console.error('Error getting user submissions:', error);
-      res.status(500).json({ error: 'Failed to get your submissions' });
-    }
-  });
-
-  // New approve endpoint for consolidated submissions
-  app.post('/api/show-submissions/approve', async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: 'Not authenticated' });
-      }
-
-      // Check if user is admin
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ error: 'Admin access required' });
-      }
-
-      const { normalizedName, linkedShowId } = req.body;
-      
-      if (!normalizedName) {
-        return res.status(400).json({ error: 'Normalized name is required' });
-      }
-
-      const { pool } = await import('./db');
-      
-      // Get all pending submissions for this normalized show name
-      const submissionsResult = await pool.query(
-        'SELECT id, user_id, show_name FROM show_submissions WHERE normalized_name = $1 AND status = $2',
-        [normalizedName, 'pending']
-      );
-      
-      if (submissionsResult.rows.length === 0) {
-        return res.status(404).json({ error: 'No pending submissions found for this show' });
-      }
-
-      // Update all submissions to approved status
-      await pool.query(
-        'UPDATE show_submissions SET status = $1, updated_at = NOW() WHERE normalized_name = $2 AND status = $3',
-        ['approved', normalizedName, 'pending']
-      );
-
-      // Award points to all users who submitted this show
-      const uniqueUserIds = [...new Set(submissionsResult.rows.map(row => row.user_id))];
-      const pointsPerUser = 20;
-      const now = new Date();
-
-      for (const userId of uniqueUserIds) {
-        // Add to points history
-        await pool.query(
-          `INSERT INTO user_points_history(user_id, points, activity_type, description, created_at)
-           VALUES($1, $2, $3, $4, $5)`,
-          [userId, pointsPerUser, 'show_submission_approved', `Show submission approved: ${submissionsResult.rows.find(r => r.user_id === userId)?.show_name}`, now]
-        );
-
-        // Update user total points
-        await pool.query(
-          `UPDATE users SET 
-            total_points = COALESCE(total_points, 0) + $1
-           WHERE id = $2`,
-          [pointsPerUser, userId]
-        );
-      }
-
-      // If linking to an existing show, could add additional logic here
-      if (linkedShowId) {
-        console.log(`Linking submissions to existing show ID: ${linkedShowId}`);
-      }
-
-      res.json({
-        success: true,
-        message: `Approved ${submissionsResult.rows.length} submissions for ${uniqueUserIds.length} users`,
-        submissionsApproved: submissionsResult.rows.length,
-        usersRewarded: uniqueUserIds.length,
-        pointsAwarded: pointsPerUser
-      });
-
-    } catch (error) {
-      console.error('Error approving submissions:', error);
-      res.status(500).json({ error: 'Failed to approve submissions' });
-    }
-  });
-
-  // GHL Webhook endpoint for email verified users
-  app.post('/api/ghl-webhook', express.json(), async (req, res) => {
-    try {
-      console.log('GHL webhook received:', req.body);
-      
-      const { first_name, email, country, contact_id } = req.body;
-      
-      // Validate required fields
-      if (!email || !first_name) {
-        return res.status(400).json({ error: 'Missing required fields: email and first_name' });
-      }
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        console.log('User already exists:', email);
-        return res.json({ success: true, message: 'User already exists', userId: existingUser.id });
-      }
-      
-      // Extract referral information if present
-      const referrer_id = req.body.referrer_id || null;
-      const referred_show_id = req.body.referred_show_id || null;
-      
-      // Create a temporary record for users who verified email but haven't completed registration
-      const tempUser = await pool.query(
-        `INSERT INTO temp_ghl_users (first_name, email, country, contact_id, referrer_id, referred_show_id, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, NOW())
-         ON CONFLICT (email) DO UPDATE SET
-         first_name = EXCLUDED.first_name,
-         country = EXCLUDED.country,
-         contact_id = EXCLUDED.contact_id,
-         referrer_id = EXCLUDED.referrer_id,
-         referred_show_id = EXCLUDED.referred_show_id,
-         updated_at = NOW()
-         RETURNING *`,
-        [first_name, email, country || null, contact_id || null, referrer_id, referred_show_id]
-      );
-      
-      console.log('Temporary user record created for:', email);
-      
-      res.json({ 
-        success: true, 
-        message: 'Email verified, ready for username/password setup',
-        tempUserId: tempUser.rows[0].id 
-      });
-      
-    } catch (error) {
-      console.error('GHL webhook error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  // Complete registration endpoint - called after username/password setup
-  app.post('/api/complete-registration', express.json(), async (req, res) => {
-    try {
-      const { email, username, password } = req.body;
-      
-      // Validate input
-      if (!email || !username || !password) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-      
-      // Get temp user data
-      const tempUserResult = await pool.query(
-        'SELECT * FROM temp_ghl_users WHERE email = $1',
-        [email]
-      );
-      
-      if (tempUserResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Email not found. Please verify your email first.' });
-      }
-      
-      const tempUser = tempUserResult.rows[0];
-      
-      // Check if username is available
-      const existingUsername = await storage.getUserByUsername(username);
-      if (existingUsername) {
-        return res.status(400).json({ error: 'Username already taken' });
-      }
-      
-      // Create the full user account (auto-approved)
-      const newUser = await storage.createUser({
-        email: tempUser.email,
-        username: username,
-        password: password,
-        firstName: tempUser.first_name,
-        country: tempUser.country,
-        isApproved: true, // Auto-approve GHL verified users
-        isAdmin: false
-      });
-      
-      // Process referral if present
-      if (tempUser.referrer_id) {
-        try {
-          // Import the referral system function
-          const { trackReferral } = require('../server/referral-system');
-          
-          // Track the referral and award points
-          const referralResult = await trackReferral(tempUser.referrer_id, newUser.id);
-          if (referralResult) {
-            console.log(`Referral processed: ${tempUser.referrer_id} referred ${newUser.id}`);
-          }
-        } catch (referralError) {
-          console.error('Error processing referral:', referralError);
-          // Don't fail registration if referral processing fails
-        }
-      }
-      
-      // Mark registration as completed instead of deleting
-      await pool.query(
-        'UPDATE temp_ghl_users SET registration_completed_at = NOW() WHERE email = $1', 
-        [email]
-      );
-      
-      console.log('User registration completed for:', email);
-      
-      res.json({ 
-        success: true, 
-        message: 'Registration completed successfully',
-        userId: newUser.id 
-      });
-      
-    } catch (error) {
-      console.error('Complete registration error:', error);
-      res.status(500).json({ error: 'Registration completion failed' });
-    }
-  });
-
-  // Admin endpoint to monitor GHL registration funnel
-  app.get('/api/admin/ghl-funnel', async (req: Request, res: Response) => {
-    try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-      
-      const user = await storage.getUserById(userId);
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const result = await pool.query(`
-        SELECT 
-          tgu.id,
-          tgu.first_name,
-          tgu.email,
-          tgu.country,
-          tgu.contact_id,
-          tgu.created_at,
-          tgu.registration_completed_at,
-          tgu.notes,
-          u.id as user_id,
-          u.username,
-          CASE 
-            WHEN tgu.registration_completed_at IS NOT NULL THEN 'Completed'
-            WHEN EXISTS (SELECT 1 FROM users WHERE users.email = tgu.email) THEN 'Completed (Legacy)'
-            ELSE 'Pending'
-          END as status,
-          EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - tgu.created_at))/3600 as hours_since_started
-        FROM temp_ghl_users tgu
-        LEFT JOIN users u ON u.email = tgu.email
-        ORDER BY tgu.created_at DESC
-      `);
-
-      res.json({
-        registrations: result.rows,
-        summary: {
-          total: result.rows.length,
-          completed: result.rows.filter(r => r.status.includes('Completed')).length,
-          pending: result.rows.filter(r => r.status === 'Pending').length
-        }
-      });
-
-    } catch (error) {
-      console.error('Error fetching GHL funnel data:', error);
-      res.status(500).json({ error: 'Failed to fetch registration funnel data' });
     }
   });
 
