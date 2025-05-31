@@ -716,7 +716,7 @@ export default function Home() {
         "Preschoolers",
         "Shows specifically designed for children ages 2-4", 
         preschoolerShows, 
-        "/browse?ageRange=2-4&themeMatchMode=OR"
+        `/browse?ageRange=${encodeURIComponent(JSON.stringify({min: 2, max: 4}))}`
       )}
 
       {/* Leaderboard Section */}
