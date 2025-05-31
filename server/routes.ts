@@ -2579,7 +2579,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Webhook to receive GHL form submissions
   app.post("/api/ghl/webhook", async (req: Request, res: Response) => {
     try {
-      console.log('GHL Webhook received:', JSON.stringify(req.body, null, 2));
+      console.log('=== GHL WEBHOOK RECEIVED ===');
+      console.log('Headers:', JSON.stringify(req.headers, null, 2));
+      console.log('Body:', JSON.stringify(req.body, null, 2));
+      console.log('Method:', req.method);
+      console.log('URL:', req.url);
+      console.log('================================');
       
       const formData = req.body;
       
