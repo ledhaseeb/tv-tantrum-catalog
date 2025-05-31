@@ -10,10 +10,12 @@ const REFERRAL_POINTS = 10; // Points awarded for successful referrals
  * @param referredId The ID of the newly registered user
  */
 export async function trackReferral(referrerId: string, referredId: string) {
+  const referrerIdInt = parseInt(referrerId);
+  const referredIdInt = parseInt(referredId);
   try {
     // Verify both users exist
-    const [referrer] = await db.select().from(users).where(eq(users.id, referrerId));
-    const [referred] = await db.select().from(users).where(eq(users.id, referredId));
+    const [referrer] = await db.select().from(users).where(eq(users.id, referrerIdInt));
+    const [referred] = await db.select().from(users).where(eq(users.id, referredIdInt));
     
     if (!referrer || !referred) {
       console.error("Referral failed: One or both users not found");
@@ -26,8 +28,8 @@ export async function trackReferral(referrerId: string, referredId: string) {
       .from(userReferrals)
       .where(
         and(
-          eq(userReferrals.referrerId, referrerId),
-          eq(userReferrals.referredId, referredId)
+          eq(userReferrals.referrerId, referrerIdInt),
+          eq(userReferrals.referredId, referredIdInt)
         )
       );
     
@@ -40,8 +42,8 @@ export async function trackReferral(referrerId: string, referredId: string) {
     const [referral] = await db
       .insert(userReferrals)
       .values({
-        referrerId,
-        referredId
+        referrerId: referrerIdInt,
+        referredId: referredIdInt
       })
       .returning();
     
@@ -51,7 +53,7 @@ export async function trackReferral(referrerId: string, referredId: string) {
     }
     
     // Award points to both users
-    await awardReferralPoints(referrerId, referredId);
+    await awardReferralPoints(referrerIdInt, referredIdInt);
     
     return referral;
   } catch (error) {
@@ -63,7 +65,7 @@ export async function trackReferral(referrerId: string, referredId: string) {
 /**
  * Award points to both the referrer and the referred user
  */
-async function awardReferralPoints(referrerId: string, referredId: string) {
+async function awardReferralPoints(referrerId: number, referredId: number) {
   try {
     // Award points to referrer
     await db.transaction(async (tx) => {
