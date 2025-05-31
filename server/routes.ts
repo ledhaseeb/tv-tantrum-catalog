@@ -2596,12 +2596,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Email is required' });
       }
       
-      // Check if this contact already exists
-      const [existingUser] = await db
-        .select()
-        .from(tempGhlUsers)
-        .where(eq(tempGhlUsers.email, email))
-        .limit(1);
+      // Check if this contact already exists using raw SQL to match actual table structure
+      const existingUserResult = await db.execute(
+        sql`SELECT * FROM temp_ghl_users WHERE email = ${email} LIMIT 1`
+      );
+      
+      const existingUser = existingUserResult.rows[0];
       
       if (existingUser) {
         console.log('GHL user already exists:', existingUser.email);
@@ -2612,11 +2612,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Insert new GHL user using the actual database table structure
-      const [newUser] = await db.execute(
+      const now = new Date().toISOString();
+      const result = await db.execute(
         sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
-            VALUES (${email}, ${firstName}, ${country}, ${contactId}, ${new Date()}, ${new Date()})
+            VALUES (${email}, ${firstName}, ${country}, ${contactId}, ${now}, ${now})
             RETURNING *`
       );
+      
+      const newUser = result.rows[0];
       
       console.log('New GHL user created:', newUser);
       
