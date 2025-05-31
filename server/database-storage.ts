@@ -1427,7 +1427,7 @@ export class DatabaseStorage implements IStorage {
 
   async unfeaturedAllShows(): Promise<void> {
     try {
-      await db.update(tvShows).set({ is_featured: false });
+      await db.update(tvShows).set({ isFeatured: false });
     } catch (error) {
       console.error('Error unfeaturing all shows:', error);
       throw error;
