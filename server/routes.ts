@@ -71,7 +71,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add user authentication endpoints
   
-  // Get current user - Already handled by custom auth
+  // Get current user - main endpoint the frontend expects
+  app.get('/api/user', (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    res.json(req.user);
+  });
   
   // Get user dashboard data
   app.get('/api/user/dashboard', async (req, res) => {
