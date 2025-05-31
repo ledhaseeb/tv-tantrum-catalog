@@ -200,6 +200,11 @@ export default function Browse() {
           params.append('stimulationScoreRange', JSON.stringify(activeFilters.stimulationScoreRange));
         }
         
+        // Add age range as JSON string
+        if (activeFilters.ageRange) {
+          params.append('ageRange', JSON.stringify(activeFilters.ageRange));
+        }
+        
         // Use fetch directly
         const response = await fetch(`/api/tv-shows?${params.toString()}`);
         
