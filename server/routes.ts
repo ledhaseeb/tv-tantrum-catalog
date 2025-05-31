@@ -22,6 +22,7 @@ import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import { createShortUrl, resolveShortUrl } from "./url-shortener";
 import path from "path";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add health check endpoint
@@ -2571,6 +2572,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching pending show submissions:", error);
       res.status(500).json({ message: "Failed to fetch pending submissions" });
+    }
+  });
+
+  // Complete registration endpoint
+  app.post("/api/complete-registration", async (req: Request, res: Response) => {
+    try {
+      const { email, username, password } = req.body;
+      
+      if (!email || !username || !password) {
+        return res.status(400).json({ error: "Email, username, and password are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "User with this email already exists" });
+      }
+
+      // Check if username is taken
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ error: "Username is already taken" });
+      }
+
+      // Find the temp GHL user record
+      const tempUser = await db
+        .select()
+        .from(tempGhlUsers)
+        .where(eq(tempGhlUsers.email, email))
+        .limit(1);
+
+      if (tempUser.length === 0) {
+        return res.status(400).json({ error: "No registration record found for this email" });
+      }
+
+      // Create the actual user account
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      const newUser = await storage.createUser({
+        email,
+        username,
+        password: hashedPassword,
+        firstName: tempUser[0].firstName,
+        country: tempUser[0].country,
+        isApproved: true, // Auto-approve GHL users
+        referralCode: tempUser[0].referrerId,
+      });
+
+      // Mark the temp user as having completed registration
+      await db
+        .update(tempGhlUsers)
+        .set({ 
+          hasCompletedRegistration: true,
+          updatedAt: new Date()
+        })
+        .where(eq(tempGhlUsers.id, tempUser[0].id));
+
+      // Handle referral tracking if present
+      if (tempUser[0].referrerId && tempUser[0].referredShowId) {
+        // Award referral points to the referrer
+        const referrerUser = await storage.getUserByUsername(tempUser[0].referrerId);
+        if (referrerUser) {
+          await storage.updateUserPoints(referrerUser.id, 50); // 50 points for successful referral
+        }
+        
+        // Set the referred show as a favorite for the new user
+        await storage.addFavorite(newUser.id, tempUser[0].referredShowId);
+      }
+
+      res.status(201).json({ 
+        message: "Registration completed successfully",
+        userId: newUser.id 
+      });
+
+    } catch (error) {
+      console.error("Error completing registration:", error);
+      res.status(500).json({ error: "Failed to complete registration" });
     }
   });
 
