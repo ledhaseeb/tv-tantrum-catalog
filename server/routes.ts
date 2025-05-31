@@ -7,7 +7,9 @@ import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub } from "@shared/schema";
+import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub, tempGhlUsers, users } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { setupAuth } from "./auth";
@@ -2569,6 +2571,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching pending show submissions:", error);
       res.status(500).json({ message: "Failed to fetch pending submissions" });
+    }
+  });
+
+  // GHL Webhook endpoints
+  
+  // Webhook to receive GHL form submissions
+  app.post("/api/ghl/webhook", async (req: Request, res: Response) => {
+    try {
+      console.log('GHL Webhook received:', JSON.stringify(req.body, null, 2));
+      
+      const formData = req.body;
+      
+      // Extract relevant fields from GHL webhook payload
+      const email = formData.email || formData.contact?.email;
+      const firstName = formData.first_name || formData.contact?.first_name || formData.firstName;
+      const lastName = formData.last_name || formData.contact?.last_name || formData.lastName;
+      const phone = formData.phone || formData.contact?.phone;
+      const country = formData.country || formData.contact?.country;
+      const contactId = formData.contact_id || formData.contact?.id || formData.contactId;
+      
+      if (!email) {
+        console.error('No email found in GHL webhook payload');
+        return res.status(400).json({ error: 'Email is required' });
+      }
+      
+      // Check if this contact already exists
+      const [existingUser] = await db
+        .select()
+        .from(tempGhlUsers)
+        .where(eq(tempGhlUsers.email, email))
+        .limit(1);
+      
+      if (existingUser) {
+        console.log('GHL user already exists:', existingUser.email);
+        return res.status(200).json({ 
+          message: 'User already exists',
+          userId: existingUser.id 
+        });
+      }
+      
+      // Insert new GHL user using the actual table structure
+      const [newUser] = await db
+        .insert(tempGhlUsers)
+        .values({
+          email,
+          first_name: firstName,
+          country,
+          contact_id: contactId,
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning();
+      
+      console.log('New GHL user created:', newUser);
+      
+      res.status(200).json({ 
+        message: 'GHL user recorded successfully',
+        userId: newUser.id 
+      });
+      
+    } catch (error) {
+      console.error('Error processing GHL webhook:', error);
+      res.status(500).json({ error: 'Failed to process webhook' });
+    }
+  });
+
+  // Get GHL registrations for admin dashboard
+  app.get("/api/admin/ghl-funnel", async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Check if user is admin
+      const [user] = await storage.db
+        .select()
+        .from(storage.users)
+        .where(eq(storage.users.id, req.session.userId))
+        .limit(1);
+
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Get all GHL registrations
+      const registrations = await storage.db
+        .select()
+        .from(storage.tempGhlUsers)
+        .orderBy(desc(storage.tempGhlUsers.createdAt));
+
+      // Calculate summary statistics
+      const total = registrations.length;
+      const verified = registrations.filter(r => r.isVerified).length;
+      const completed = registrations.filter(r => r.hasCompletedRegistration).length;
+      const pending = total - completed;
+
+      const summary = {
+        total,
+        verified,
+        completed,
+        pending,
+        conversionRate: total > 0 ? ((completed / total) * 100).toFixed(1) : '0'
+      };
+
+      res.json({ registrations, summary });
+      
+    } catch (error) {
+      console.error('Error fetching GHL registrations:', error);
+      res.status(500).json({ message: "Failed to fetch GHL registrations" });
     }
   });
 
