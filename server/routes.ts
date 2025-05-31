@@ -493,6 +493,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get the featured show
+  app.get("/api/shows/featured", async (req: Request, res: Response) => {
+    try {
+      const shows = await storage.getTvShowsByFilter({});
+      // Find the show that has isFeatured set to true
+      const featuredShow = shows.find(show => show.isFeatured);
+      
+      if (featuredShow) {
+        res.json(featuredShow);
+      } else {
+        res.status(404).json({ message: "No featured show found" });
+      }
+    } catch (error) {
+      console.error("Error fetching featured show:", error);
+      res.status(500).json({ message: "Failed to fetch featured show" });
+    }
+  });
+
   // These functions have already been defined above, so we don't need to redefine them.
 
 // Get single TV show by ID
