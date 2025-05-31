@@ -2787,14 +2787,14 @@ export class DatabaseStorage implements IStorage {
       // Get consolidated view for admin - group by normalized name and count requests
       const result = await db
         .select({
-          normalizedName: showSubmissions.normalizedName,
-          showName: showSubmissions.showName,
-          requestCount: sql`COUNT(*)::int`,
-          firstSubmission: sql`MIN(${showSubmissions.createdAt})`,
-          lastSubmission: sql`MAX(${showSubmissions.createdAt})`,
+          normalized_name: showSubmissions.normalizedName,
+          show_name: showSubmissions.showName,
+          request_count: sql`COUNT(*)::int`,
+          first_requested: sql`MIN(${showSubmissions.createdAt})`,
+          last_requested: sql`MAX(${showSubmissions.createdAt})`,
           status: showSubmissions.status,
-          sampleWhereTheyWatch: sql`STRING_AGG(DISTINCT ${showSubmissions.whereTheyWatch}, ', ')`,
-          submitterCount: sql`COUNT(DISTINCT ${showSubmissions.userId})::int`
+          platforms: sql`ARRAY_AGG(DISTINCT ${showSubmissions.whereTheyWatch})`,
+          requested_by_users: sql`ARRAY_AGG(DISTINCT (SELECT username FROM users WHERE id = ${showSubmissions.userId}))`
         })
         .from(showSubmissions)
         .where(eq(showSubmissions.status, 'pending'))
