@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,15 +36,41 @@ export default function CompleteRegistration() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
+  // Function to get email from URL parameters or localStorage
+  const getPrefilledEmail = () => {
+    // Check URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailFromUrl = urlParams.get('email');
+    if (emailFromUrl) {
+      return emailFromUrl;
+    }
+
+    // Check localStorage for GHL form data
+    const ghlEmail = localStorage.getItem('ghl_user_email');
+    if (ghlEmail) {
+      return ghlEmail;
+    }
+
+    return "";
+  };
+
   const form = useForm<CompleteRegistrationForm>({
     resolver: zodResolver(completeRegistrationSchema),
     defaultValues: {
-      email: "",
+      email: getPrefilledEmail(),
       username: "",
       password: "",
       confirmPassword: "",
     },
   });
+
+  // Update form when component mounts or URL changes
+  useEffect(() => {
+    const prefilledEmail = getPrefilledEmail();
+    if (prefilledEmail && prefilledEmail !== form.getValues('email')) {
+      form.setValue('email', prefilledEmail);
+    }
+  }, [form]);
 
   const onSubmit = async (data: CompleteRegistrationForm) => {
     setIsSubmitting(true);
