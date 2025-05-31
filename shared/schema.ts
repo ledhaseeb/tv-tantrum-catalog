@@ -234,6 +234,22 @@ export const shortUrls = pgTable("short_urls", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Temporary GHL users table to track form submissions before full registration
+export const tempGhlUsers = pgTable("temp_ghl_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  phone: text("phone"),
+  country: text("country"),
+  ghlContactId: text("ghl_contact_id"),
+  isVerified: boolean("is_verified").default(false),
+  hasCompletedRegistration: boolean("has_completed_registration").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  verifiedAt: timestamp("verified_at"),
+  registrationCompletedAt: timestamp("registration_completed_at"),
+});
+
 // --- Zod schemas for inserting/selecting ---
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -324,6 +340,13 @@ export const insertUserReadResearchSchema = createInsertSchema(userReadResearch)
 export const insertUserReferralSchema = createInsertSchema(userReferrals).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertTempGhlUserSchema = createInsertSchema(tempGhlUsers).omit({
+  id: true,
+  createdAt: true,
+  verifiedAt: true,
+  registrationCompletedAt: true,
 });
 
 // --- TypeScript types for database entities ---
