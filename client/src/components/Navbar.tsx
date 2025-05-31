@@ -7,6 +7,17 @@ import { apiGet } from "@/lib/queryClient";
 import { Search, User, LogOut, Home, Filter, BarChart2, Info, Settings, X, BookOpen, Plus } from "lucide-react";
 import type { TvShow } from "../../../shared/schema";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -15,6 +26,21 @@ export default function Navbar() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   // Use the original authentication hook
   const { user, isLoading, isAdmin } = useAuth();
+
+  // Handle logout with confirmation
+  const handleLogout = () => {
+    fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(() => {
+      // Redirect to login page after logout
+      window.location.href = '/auth';
+    }).catch(err => {
+      console.error("Logout error:", err);
+      // Force redirect even if there's an error
+      window.location.href = '/auth';
+    });
+  };
 
   // Fetch shows for search dropdown
   const { data: shows } = useQuery({
@@ -157,27 +183,31 @@ export default function Navbar() {
                       <span>Dashboard</span>
                     </Button>
                   </Link>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                    onClick={() => {
-                      // Perform the logout without a confirmation dialog
-                      fetch('/api/logout', {
-                        method: 'POST',
-                        credentials: 'include'
-                      }).then(() => {
-                        // Redirect to home page after logout
-                        window.location.href = '/home';
-                      }).catch(err => {
-                        console.error("Logout error:", err);
-                        // Force reload even if there's an error
-                        window.location.href = '/home';
-                      });
-                    }}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Logout</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          You will be redirected to the login page and will need to sign in again to access your account.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleLogout}>
+                          Yes, Logout
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ) : (
                 <Link href="/auth">
@@ -297,27 +327,31 @@ export default function Navbar() {
                           <User className="h-5 w-5 mr-2" />
                           Dashboard
                         </Link>
-                        <button
-                          onClick={() => {
-                            setIsNavOpen(false);
-                            // Use the custom logout endpoint without confirmation
-                            fetch('/api/logout', {
-                              method: 'POST',
-                              credentials: 'include'
-                            }).then(() => {
-                              // Redirect to home page after logout
-                              window.location.href = '/home';
-                            }).catch(err => {
-                              console.error("Logout error:", err);
-                              // Force reload even if there's an error
-                              window.location.href = '/home';
-                            });
-                          }}
-                          className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                        >
-                          <LogOut className="h-5 w-5 mr-2" />
-                          Logout
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              onClick={() => setIsNavOpen(false)}
+                              className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                            >
+                              <LogOut className="h-5 w-5 mr-2" />
+                              Logout
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                You will be redirected to the login page and will need to sign in again to access your account.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleLogout}>
+                                Yes, Logout
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </>
                     ) : (
                       <Link 
