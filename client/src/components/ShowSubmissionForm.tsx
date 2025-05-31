@@ -67,6 +67,8 @@ export function ShowSubmissionForm({ onSuccess }: ShowSubmissionFormProps) {
         
         // Invalidate user submissions query to refresh any lists
         queryClient.invalidateQueries({ queryKey: ['/api/show-submissions/my'] });
+        // Also refetch to ensure immediate update
+        queryClient.refetchQueries({ queryKey: ['/api/show-submissions/my'] });
         
         onSuccess?.();
       }, 0);
