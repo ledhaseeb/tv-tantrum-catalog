@@ -10,6 +10,7 @@ import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 import { db } from "./db";
 import { trackReferral } from "./referral-system";
+import bcrypt from "bcrypt";
 
 // Database session store
 const PostgresSessionStore = connectPg(session);
@@ -45,6 +46,16 @@ async function comparePasswords(supplied: string, stored: string) {
   console.log('comparePasswords called with supplied password and stored hash');
   
   try {
+    // Check if it's a bcrypt hash (starts with $2b$)
+    if (stored.startsWith('$2b$')) {
+      console.log('Using bcrypt comparison');
+      const result = await bcrypt.compare(supplied, stored);
+      console.log('Password comparison result:', result);
+      return result;
+    }
+    
+    // Legacy scrypt format
+    console.log('Using legacy scrypt comparison');
     const [hashed, salt] = stored.split(".");
     
     if (!salt) {
