@@ -2591,6 +2591,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const country = formData.country || formData.contact?.country;
       const contactId = formData.contact_id || formData.contact?.id || formData.contactId;
       
+      // Extract referral information from various possible fields
+      const referrerId = formData.referrer_id || formData.referrer || formData.ref || formData.referral_code || 
+                        formData.contact?.referrer_id || formData.contact?.referrer || formData.contact?.ref;
+      const referredShowIdRaw = formData.referred_show_id || formData.show_id || formData.from_show || 
+                               formData.contact?.referred_show_id || formData.contact?.show_id;
+      
+      // Convert referred_show_id to integer if present
+      const referredShowId = referredShowIdRaw ? parseInt(referredShowIdRaw, 10) : null;
+      
       if (!email) {
         console.error('No email found in GHL webhook payload');
         return res.status(400).json({ error: 'Email is required' });
@@ -2612,10 +2621,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        // Insert new user using direct SQL
+        // Insert new user using direct SQL with referral fields
         const insertResult = await db.execute(
-          sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
-              VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, NOW(), NOW()) 
+          sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, referrer_id, referred_show_id, created_at, updated_at) 
+              VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, ${referrerId || null}, ${referredShowId || null}, NOW(), NOW()) 
               RETURNING id`
         );
         
