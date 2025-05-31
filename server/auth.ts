@@ -92,13 +92,13 @@ export function setupAuth(app: Express) {
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    // Use memory store for development to fix session issues
-    store: process.env.NODE_ENV === 'production' ? sessionStore : undefined,
+    store: sessionStore, // Use PostgreSQL store for both dev and production
     cookie: {
-      secure: false, // Always false for development and HTTP
+      secure: process.env.NODE_ENV === 'production', // Secure cookies for HTTPS in production
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: 'lax' // Add sameSite for better compatibility
+      sameSite: 'lax', // Add sameSite for better compatibility
+      domain: process.env.NODE_ENV === 'production' ? '.tvtantrum.com' : undefined // Set domain for production
     }
   };
 
