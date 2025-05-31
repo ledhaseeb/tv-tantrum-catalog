@@ -2607,7 +2607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const tempUser = tempUserResult.rows[0];
 
-      // Create the actual user account
+      // Create the actual user account with bcrypt hashing
       const hashedPassword = await bcrypt.hash(password, 10);
       
       const newUser = await storage.createUser({

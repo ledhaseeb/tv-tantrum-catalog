@@ -580,8 +580,10 @@ export class DatabaseStorage implements IStorage {
       
       const now = new Date().toISOString();
       
-      // Hash the password before storing
-      const hashedPassword = insertUser.password ? await hashPassword(insertUser.password) : null;
+      // Use the password as-is if it's already hashed (starts with $2b$), otherwise hash it
+      const hashedPassword = insertUser.password && insertUser.password.startsWith('$2b$') 
+        ? insertUser.password 
+        : insertUser.password ? await hashPassword(insertUser.password) : null;
       
       // Ensure username is never null to match schema requirements
       const userToInsert = {
