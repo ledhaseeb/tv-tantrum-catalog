@@ -320,9 +320,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get read research summaries
       let readResearch = [];
       try {
-        if (typeof storage.getUserReadResearch === 'function') {
-          readResearch = await storage.getUserReadResearch(userId) || [];
-        }
+        // Use direct database query for read research
+        const readResult = await pool.query(
+          `SELECT r.*, urr.read_at 
+           FROM user_read_research urr
+           JOIN research_summaries r ON urr.research_id = r.id
+           WHERE urr.user_id = $1
+           ORDER BY urr.read_at DESC`,
+          [parsedUserId]
+        );
+        readResearch = readResult.rows || [];
       } catch (error) {
         console.error('Error getting read research:', error);
       }
