@@ -178,7 +178,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user favorites
       let favorites = [];
       try {
-        favorites = await storage.getUserFavorites(parsedUserId);
+        const { getUserFavorites } = await import("./database-favorites");
+        favorites = await getUserFavorites(parsedUserId);
       } catch (error) {
         console.error('Error getting user favorites:', error);
       }
