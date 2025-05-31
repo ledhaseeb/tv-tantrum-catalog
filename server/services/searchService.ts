@@ -123,10 +123,26 @@ export class SearchService {
         paramIndex++;
       }
       
-      // Age range filter (updated to use proper field name)
+      // Age range filter - filter shows that overlap with the requested age range
       if (filters.ageRangeMin !== undefined && filters.ageRangeMax !== undefined) {
-        // Handle age range filtering with proper age parsing
-        query += ` AND age_range IS NOT NULL`;
+        console.log(`Age range filter applied: ${filters.ageRangeMin}-${filters.ageRangeMax}`);
+        
+        query += ` AND (
+          -- Handle exact matches like "0-2", "3-5", etc.
+          (age_range ~ '^[0-9]+-[0-9]+$' AND 
+           CAST(SPLIT_PART(age_range, '-', 1) AS INTEGER) <= $${paramIndex + 1} AND 
+           CAST(SPLIT_PART(age_range, '-', 2) AS INTEGER) >= $${paramIndex})
+          
+          -- Handle ranges with "+" like "13+"
+          OR (age_range ~ '^[0-9]+\\+$' AND 
+              CAST(REGEXP_REPLACE(age_range, '[^0-9]', '', 'g') AS INTEGER) <= $${paramIndex + 1})
+          
+          -- Handle "Any Age" or similar broad categories
+          OR (age_range ILIKE '%any%' OR age_range ILIKE '%all%')
+        )`;
+        
+        params.push(filters.ageRangeMin, filters.ageRangeMax);
+        paramIndex += 2;
       }
       
       // Stimulation score range filter
