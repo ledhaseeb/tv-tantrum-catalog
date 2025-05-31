@@ -9,6 +9,7 @@ import { users } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 import { db } from "./db";
+import { trackReferral } from "./referral-system";
 
 // Database session store
 const PostgresSessionStore = connectPg(session);
@@ -162,9 +163,9 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password, email, country } = req.body;
+      const { username, password, email, country, referrerId } = req.body;
       
-      console.log('Registration attempt:', { email, username, country });
+      console.log('Registration attempt:', { email, username, country, referrerId });
       
       if (!email || !password) {
         return res.status(400).send({ message: "Email and password are required" });
@@ -239,6 +240,18 @@ export function setupAuth(app: Express) {
         const { password: _, ...safeUser } = user;
 
         console.log('User registered successfully:', { id: user.id, email: user.email, username: user.username });
+
+        // Handle referral tracking if referrerId was provided
+        if (referrerId) {
+          console.log('Processing referral for new user:', { referrerId, newUserId: user.id });
+          try {
+            await trackReferral(referrerId, user.id.toString());
+            console.log('Referral tracking completed successfully');
+          } catch (referralError) {
+            console.error('Error tracking referral:', referralError);
+            // Don't fail registration if referral tracking fails
+          }
+        }
 
         req.login(safeUser as Express.User, (err) => {
           if (err) {
