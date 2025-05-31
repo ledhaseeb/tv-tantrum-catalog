@@ -2596,16 +2596,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Username is already taken" });
       }
 
-      // Find the temp GHL user record
-      const tempUser = await db
-        .select()
-        .from(tempGhlUsers)
-        .where(eq(tempGhlUsers.email, email))
-        .limit(1);
+      // Find the temp GHL user record using direct SQL
+      const tempUserResult = await db.execute(
+        sql`SELECT id, email, first_name, country, referrer_id, referred_show_id FROM temp_ghl_users WHERE email = ${email} LIMIT 1`
+      );
 
-      if (tempUser.length === 0) {
+      if (tempUserResult.rows.length === 0) {
         return res.status(400).json({ error: "No registration record found for this email" });
       }
+
+      const tempUser = tempUserResult.rows[0];
 
       // Create the actual user account
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -2614,32 +2614,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         username,
         password: hashedPassword,
-        firstName: tempUser[0].firstName,
-        country: tempUser[0].country,
+        firstName: tempUser.first_name,
+        country: tempUser.country,
         isApproved: true, // Auto-approve GHL users
-        referralCode: tempUser[0].referrerId,
       });
 
       // Mark the temp user as having completed registration
-      await db
-        .update(tempGhlUsers)
-        .set({ 
-          hasCompletedRegistration: true,
-          updatedAt: new Date()
-        })
-        .where(eq(tempGhlUsers.id, tempUser[0].id));
-
-      // Handle referral tracking if present
-      if (tempUser[0].referrerId && tempUser[0].referredShowId) {
-        // Award referral points to the referrer
-        const referrerUser = await storage.getUserByUsername(tempUser[0].referrerId);
-        if (referrerUser) {
-          await storage.updateUserPoints(referrerUser.id, 50); // 50 points for successful referral
-        }
-        
-        // Set the referred show as a favorite for the new user
-        await storage.addFavorite(newUser.id, tempUser[0].referredShowId);
-      }
+      await db.execute(
+        sql`UPDATE temp_ghl_users SET registration_completed_at = NOW() WHERE id = ${tempUser.id}`
+      );
 
       res.status(201).json({ 
         message: "Registration completed successfully",
