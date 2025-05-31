@@ -263,9 +263,31 @@ export default function Home() {
   
   const preschoolerShows = shuffleArray(allShows?.filter(show => {
     const ageRange = getShowProperty(show, ['ageRange', 'age_range']);
+    if (!ageRange) return false;
     
-    return ageRange?.toLowerCase().includes('preschool') || 
-           (ageRange && parseInt(ageRange.split('-')[0]) <= 4);
+    // Handle different age range formats for ages 2-4
+    const ageRangeLower = ageRange.toLowerCase();
+    
+    // Direct matches for 2-4 range
+    if (ageRangeLower.includes('2-4') || ageRangeLower.includes('preschool')) return true;
+    
+    // Handle ranges like "0-2", "3-5", "2-6", etc. that overlap with 2-4
+    const rangeMatch = ageRange.match(/(\d+)-(\d+)/);
+    if (rangeMatch) {
+      const minAge = parseInt(rangeMatch[1]);
+      const maxAge = parseInt(rangeMatch[2]);
+      // Show overlaps with 2-4 range if: minAge <= 4 AND maxAge >= 2
+      return minAge <= 4 && maxAge >= 2;
+    }
+    
+    // Handle single ages like "3", "4"
+    const singleAgeMatch = ageRange.match(/^(\d+)$/);
+    if (singleAgeMatch) {
+      const age = parseInt(singleAgeMatch[1]);
+      return age >= 2 && age <= 4;
+    }
+    
+    return false;
   }) || []).slice(0, 24);
   
   // Filter shows based on search term
