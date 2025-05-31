@@ -2558,9 +2558,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const user = req.user!;
       
-      // Admin can see all pending submissions
+      // Admin can see consolidated submissions view
       if (user.isAdmin) {
-        const submissions = await storage.getPendingShowSubmissions();
+        const submissions = await storage.getConsolidatedShowSubmissions();
         res.json(submissions);
       } else {
         // Regular users only see their own submissions

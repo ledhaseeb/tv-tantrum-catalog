@@ -2722,47 +2722,21 @@ export class DatabaseStorage implements IStorage {
           throw new Error("You have already submitted this show. Please wait for review or submit a different show.");
         }
 
-        // Check for existing submission from other users with similar normalized name
-        const existingSubmission = await tx
-          .select()
-          .from(showSubmissions)
-          .where(
-            and(
-              eq(showSubmissions.normalizedName, normalizedName),
-              eq(showSubmissions.status, 'pending')
-            )
-          )
-          .limit(1);
-
-        if (existingSubmission.length > 0) {
-          // Update existing submission - increment request count and priority
-          const [updatedSubmission] = await tx
-            .update(showSubmissions)
-            .set({
-              requestCount: existingSubmission[0].requestCount + 1,
-              priorityScore: existingSubmission[0].requestCount + 1, // Higher count = higher priority
-            })
-            .where(eq(showSubmissions.id, existingSubmission[0].id))
-            .returning();
-          
-          return { ...updatedSubmission, isNewSubmission: false };
-        } else {
-          // Create new submission
-          const [newSubmission] = await tx
-            .insert(showSubmissions)
-            .values({
-              userId: data.userId,
-              showName: data.showName,
-              normalizedName: normalizedName,
-              whereTheyWatch: data.whereTheyWatch,
-              status: 'pending',
-              requestCount: 1,
-              priorityScore: 1,
-            })
-            .returning();
-          
-          return { ...newSubmission, isNewSubmission: true };
-        }
+        // Always create individual submission - no consolidation at submission time
+        const [newSubmission] = await tx
+          .insert(showSubmissions)
+          .values({
+            userId: data.userId,
+            showName: data.showName,
+            normalizedName: normalizedName,
+            whereTheyWatch: data.whereTheyWatch,
+            status: 'pending',
+            requestCount: 1,
+            priorityScore: 1,
+          })
+          .returning();
+        
+        return { ...newSubmission, isNewSubmission: true };
       } catch (error) {
         console.error('Error adding show submission:', error);
         throw error;
@@ -2804,6 +2778,32 @@ export class DatabaseStorage implements IStorage {
       return submissions;
     } catch (error) {
       console.error('Error getting user show submissions:', error);
+      return [];
+    }
+  }
+
+  async getConsolidatedShowSubmissions(): Promise<any[]> {
+    try {
+      // Get consolidated view for admin - group by normalized name and count requests
+      const result = await db
+        .select({
+          normalizedName: showSubmissions.normalizedName,
+          showName: showSubmissions.showName,
+          requestCount: sql`COUNT(*)::int`,
+          firstSubmission: sql`MIN(${showSubmissions.createdAt})`,
+          lastSubmission: sql`MAX(${showSubmissions.createdAt})`,
+          status: showSubmissions.status,
+          sampleWhereTheyWatch: sql`STRING_AGG(DISTINCT ${showSubmissions.whereTheyWatch}, ', ')`,
+          submitterCount: sql`COUNT(DISTINCT ${showSubmissions.userId})::int`
+        })
+        .from(showSubmissions)
+        .where(eq(showSubmissions.status, 'pending'))
+        .groupBy(showSubmissions.normalizedName, showSubmissions.showName, showSubmissions.status)
+        .orderBy(sql`COUNT(*) DESC, MIN(${showSubmissions.createdAt}) ASC`);
+      
+      return result;
+    } catch (error) {
+      console.error('Error getting consolidated show submissions:', error);
       return [];
     }
   }
