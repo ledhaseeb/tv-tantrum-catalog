@@ -2604,6 +2604,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all themes for the theme selector
+  app.get("/api/themes", async (req: Request, res: Response) => {
+    try {
+      const themes = await storage.getAllThemes();
+      res.json(themes);
+    } catch (error) {
+      console.error("Error fetching themes:", error);
+      res.status(500).json({ message: "Failed to fetch themes" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
