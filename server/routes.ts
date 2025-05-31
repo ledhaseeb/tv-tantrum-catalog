@@ -2517,10 +2517,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Show Submissions
   app.post("/api/show-submissions", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.userId;
-      if (!userId) {
+      if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "You must be logged in to submit shows" });
       }
+      
+      const userId = req.user!.id;
       
       const submission = await storage.addShowSubmission({
         ...req.body,
