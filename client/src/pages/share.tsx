@@ -202,14 +202,22 @@ export default function SharePage() {
                       const urlParams = new URLSearchParams(window.location.search);
                       const referrerId = urlParams.get('ref');
                       
-                      // Build registration URL with referral parameters
-                      let registrationUrl = "/auth?action=register";
-                      if (referrerId) {
-                        registrationUrl += `&ref=${referrerId}`;
-                      }
-                      registrationUrl += `&show=${showId}`;
+                      // Build GHL form URL with referral parameters
+                      let ghlFormUrl = "https://performanceparenting.com/register-for-tv-tantrum";
                       
-                      setLocation(registrationUrl);
+                      // Add referral parameters as URL parameters that GHL can capture
+                      const ghlParams = new URLSearchParams();
+                      if (referrerId) {
+                        ghlParams.set('referrer_id', referrerId);
+                      }
+                      ghlParams.set('referred_show_id', showId.toString());
+                      
+                      if (ghlParams.toString()) {
+                        ghlFormUrl += `?${ghlParams.toString()}`;
+                      }
+                      
+                      // Redirect to GHL form
+                      window.location.href = ghlFormUrl;
                     }}
                   >
                     Join TV Tantrum for Free
