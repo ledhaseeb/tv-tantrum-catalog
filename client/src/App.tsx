@@ -399,8 +399,9 @@ function Router() {
                 </div>
               )} 
             />
-            <Route path="/research/:id">
-              {(params) => (
+            <ApprovedRoute 
+              path="/research/:id" 
+              component={() => (
                 <div className="flex-grow flex flex-col">
                   <Navbar />
                   <div className="flex-grow">
@@ -408,8 +409,8 @@ function Router() {
                   </div>
                   <Footer />
                 </div>
-              )}
-            </Route>
+              )} 
+            />
           </>
         )}
 
