@@ -43,37 +43,10 @@ export default function AuthPage() {
   const [isCheckingStoredAuth, setIsCheckingStoredAuth] = useState(true);
   const [earlyAccessToken, setEarlyAccessToken] = useState<string | null>(null);
   
-  // Check if there's stored authentication on page load
+  // Check authentication on page load - rely on server session only
   useEffect(() => {
-    const checkStoredAuth = () => {
-      try {
-        const storedAuth = localStorage.getItem('tvtantrum_auth');
-        if (storedAuth) {
-          const authData = JSON.parse(storedAuth);
-          
-          // Check if the stored auth is valid (less than 24 hours old)
-          if (authData.isLoggedIn && authData.timestamp) {
-            const storedTime = new Date(authData.timestamp);
-            const now = new Date();
-            const hoursDiff = (now.getTime() - storedTime.getTime()) / (1000 * 60 * 60);
-            
-            if (hoursDiff < 24) {
-              console.log("Found valid stored auth, waiting for user data...");
-              return true;
-            }
-          }
-        }
-        return false;
-      } catch (e) {
-        console.error('Error checking stored auth:', e);
-        return false;
-      } finally {
-        setIsCheckingStoredAuth(false);
-      }
-    };
-    
-    // Perform the check
-    checkStoredAuth();
+    // Skip localStorage checking, rely on server session
+    setIsCheckingStoredAuth(false);
   }, []);
   
   // Check for early access token in localStorage or URL
