@@ -15,35 +15,15 @@ const ResearchDetail = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [research, setResearch] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Direct fetch approach instead of using react-query
-  useEffect(() => {
-    async function fetchResearch() {
-      if (!id) return;
-      
-      try {
-        setIsLoading(true);
-        const response = await fetch(`/api/research/${id}`, {
-          credentials: 'include'
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch research');
-        }
-        
-        const data = await response.json();
-        setResearch(data);
-      } catch (error) {
-        console.error('Error fetching research:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    fetchResearch();
-  }, [id]);
+  // Use React Query for consistent authentication handling
+  const {
+    data: research,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: [`/api/research/${id}`],
+    enabled: !!id,
+  });
 
   const markAsReadMutation = useMutation({
     mutationFn: async () => {
