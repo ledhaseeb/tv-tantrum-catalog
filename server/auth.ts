@@ -162,14 +162,18 @@ export function setupAuth(app: Express) {
 
   passport.deserializeUser(async (id: number, done) => {
     try {
+      console.log('Deserializing user with ID:', id);
       const user = await storage.getUser(id);
       if (!user) {
+        console.log('User not found during deserialization:', id);
         return done(null, false);
       }
       // Don't include password in the user object
       const { password: _, ...safeUser } = user;
+      console.log('User successfully deserialized:', { id: safeUser.id, email: safeUser.email });
       done(null, safeUser as Express.User);
     } catch (error) {
+      console.error('Error during user deserialization:', error);
       done(error);
     }
   });
