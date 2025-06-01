@@ -379,7 +379,7 @@ function Router() {
                 <div className="flex-grow flex flex-col">
                   <Navbar />
                   <div className="flex-grow">
-                    <ResearchDetail />
+                    <ResearchDetail id={parseInt(params.id, 10)} />
                   </div>
                   <Footer />
                 </div>

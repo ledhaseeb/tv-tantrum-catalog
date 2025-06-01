@@ -35,11 +35,11 @@ export function ApprovedRoute({
     );
   }
 
-  // If not logged in, redirect to auth page
+  // If not logged in, redirect to early access page
   if (!user) {
     return (
       <Route path={path}>
-        <Redirect to="/auth" />
+        <Redirect to="/early-access" />
       </Route>
     );
   }
