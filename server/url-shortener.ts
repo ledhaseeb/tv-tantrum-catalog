@@ -38,7 +38,7 @@ export async function createShortUrl(
     if (existing) {
       return {
         shortCode: existing.shortCode,
-        shortUrl: `${process.env.REPLIT_DEV_DOMAIN || 'https://tvtantrum.app'}/s/${existing.shortCode}`
+        shortUrl: `https://tvt.link/${existing.shortCode}`
       };
     }
 
@@ -89,7 +89,7 @@ export async function createShortUrl(
 
     return {
       shortCode: created.shortCode,
-      shortUrl: `${baseUrl}/s/${shortCode}`
+      shortUrl: `https://tvt.link/${shortCode}`
     };
   } catch (error) {
     console.error('Error creating short URL:', error);
