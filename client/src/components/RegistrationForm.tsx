@@ -304,6 +304,31 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
     },
   });
 
+  // Check for referral data on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerId = urlParams.get('ref');
+    const showId = urlParams.get('show');
+    
+    if (referrerId) {
+      localStorage.setItem('referrer_id', referrerId);
+    }
+    if (showId) {
+      localStorage.setItem('referral_show_id', showId);
+    }
+    
+    // Also check localStorage for existing referral data
+    const storedReferrerId = localStorage.getItem('referrer_id');
+    const storedShowId = localStorage.getItem('referral_show_id');
+    
+    console.log('Referral data found:', { 
+      urlReferrer: referrerId, 
+      urlShow: showId,
+      storedReferrer: storedReferrerId, 
+      storedShow: storedShowId 
+    });
+  }, []);
+
   // Username availability check
   useEffect(() => {
     // Debounce username check

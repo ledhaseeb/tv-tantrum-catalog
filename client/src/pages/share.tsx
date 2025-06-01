@@ -197,7 +197,20 @@ export default function SharePage() {
                 <div className="space-y-2">
                   <Button 
                     className="w-full" 
-                    onClick={() => setLocation("/auth?action=register&ref=share")}
+                    onClick={() => {
+                      // Get referrer ID from URL parameters
+                      const urlParams = new URLSearchParams(window.location.search);
+                      const referrerId = urlParams.get('ref');
+                      
+                      // Build registration URL with referral parameters
+                      let registrationUrl = "/auth?action=register";
+                      if (referrerId) {
+                        registrationUrl += `&ref=${referrerId}`;
+                      }
+                      registrationUrl += `&show=${showId}`;
+                      
+                      setLocation(registrationUrl);
+                    }}
                   >
                     Join TV Tantrum for Free
                   </Button>
