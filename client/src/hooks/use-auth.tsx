@@ -31,27 +31,9 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
-  // Check if we have stored authentication state
+  // Remove localStorage auth checking - rely only on server sessions
   const hasStoredAuth = () => {
-    try {
-      const storedAuth = localStorage.getItem('tvtantrum_auth');
-      if (!storedAuth) return false;
-      
-      const authData = JSON.parse(storedAuth);
-      
-      // Check if the stored auth is valid (less than 24 hours old)
-      if (authData.isLoggedIn && authData.timestamp) {
-        const storedTime = new Date(authData.timestamp);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - storedTime.getTime()) / (1000 * 60 * 60);
-        
-        return hoursDiff < 24; // Valid if less than 24 hours old
-      }
-      return false;
-    } catch (e) {
-      console.error('Error reading stored auth:', e);
-      return false;
-    }
+    return false; // Always check with server instead of localStorage
   };
   
   // Fetch current user data
@@ -79,25 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Effect to manage authentication state
   useEffect(() => {
-    // If there's an auth error, clear localStorage
-    if (error && (error.message === "Not authenticated" || error.message?.includes("401"))) {
-      localStorage.removeItem('tvtantrum_auth');
-    }
-    
-    // If we have stored auth but no user, try to refetch user data
-    const checkAndRefetchAuth = async () => {
-      try {
-        if (hasStoredAuth() && !user && !isLoading) {
-          console.log("Detected stored auth but no user, trying to refetch...");
-          await refetch();
-        }
-      } catch (err) {
-        console.error("Error refetching user data:", err);
-      }
-    };
-    
-    checkAndRefetchAuth();
-  }, [error, user, isLoading, refetch]);
+    // Always clear localStorage auth since we're using server sessions only
+    localStorage.removeItem('tvtantrum_auth');
+  }, [user, error]);
 
   // Login mutation
   const loginMutation = useMutation({
@@ -128,19 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: (user: User) => {
-      // Store authentication state in localStorage to maintain login across page refreshes
-      localStorage.setItem('tvtantrum_auth', JSON.stringify({
-        isLoggedIn: true,
-        timestamp: new Date().toISOString()
-      }));
-      
-      // Update React Query cache with user data
+      // Only update React Query cache - no localStorage storage
       queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
-      // Clear any stale auth data
-      localStorage.removeItem('tvtantrum_auth');
-      
       toast({
         title: "Login failed",
         description: error.message,
