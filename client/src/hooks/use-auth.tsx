@@ -52,11 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Always fetch on mount to ensure we have latest auth state
     enabled: true,
     // If auth token is invalid, retry a few times before giving up
-    retry: 3,
-    // Refresh user data every 5 minutes
-    refetchInterval: 5 * 60 * 1000,
-    // Use credentials in fetch
-    refetchOnWindowFocus: true
+    retry: 2,
+    // Refresh user data every 30 minutes to reduce server load
+    refetchInterval: 30 * 60 * 1000,
+    // Only refetch on window focus for important state changes
+    refetchOnWindowFocus: false
   });
   
   // Effect to manage authentication state
