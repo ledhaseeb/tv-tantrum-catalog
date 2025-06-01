@@ -32,6 +32,7 @@ import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
   // Access URL to check for development mode
@@ -399,7 +400,7 @@ function Router() {
                 </div>
               )} 
             />
-            <ApprovedRoute 
+            <ProtectedRoute 
               path="/research/:id" 
               component={() => (
                 <div className="flex-grow flex flex-col">
