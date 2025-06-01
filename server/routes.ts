@@ -2647,20 +2647,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // GHL Webhook endpoints
   
-  // Alternative webhook endpoint (with hyphen)
+  // Alternative webhook endpoint (with hyphen) - this now processes data too
   app.all("/api/ghl-webhook", async (req: Request, res: Response) => {
     console.log('=== GHL WEBHOOK (HYPHEN VERSION) RECEIVED ===');
+    console.log('Timestamp:', new Date().toISOString());
     console.log('Method:', req.method);
     console.log('Headers:', JSON.stringify(req.headers, null, 2));
     console.log('Query:', JSON.stringify(req.query, null, 2));
     console.log('Body:', JSON.stringify(req.body, null, 2));
     console.log('================================================');
     
-    res.status(200).json({ 
-      message: 'Webhook received via hyphen endpoint',
-      method: req.method,
-      receivedData: req.body
-    });
+    try {
+      const { contact } = req.body;
+      if (!contact) {
+        console.log('No contact data found in webhook');
+        return res.status(200).json({ message: 'No contact data found' });
+      }
+
+      const email = contact.email;
+      const firstName = contact.firstName || contact.first_name;
+      const country = contact.country;
+      const contactId = contact.id;
+      const referrerId = contact.referrer_id;
+      const referredShowId = contact.referred_show_id;
+
+      console.log('Processing GHL contact:', { email, firstName, country, contactId, referrerId, referredShowId });
+
+      // Check if user already exists
+      const existingUser = await storage.db
+        .select()
+        .from(storage.schema.tempGhlUsers)
+        .where(sql`email = ${email}`)
+        .limit(1);
+
+      if (existingUser.length === 0) {
+        // Insert new temp user
+        await storage.db.insert(storage.schema.tempGhlUsers).values({
+          email,
+          firstName,
+          country,
+          contactId,
+          referrerId: referrerId || null,
+          referredShowId: referredShowId ? parseInt(referredShowId) : null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        console.log('Created new temp GHL user:', email);
+      } else {
+        console.log('User already exists in temp_ghl_users:', email);
+      }
+
+      res.status(200).json({ 
+        message: 'Webhook processed successfully',
+        email,
+        referrerId,
+        referredShowId
+      });
+    } catch (error) {
+      console.error('Error processing GHL webhook:', error);
+      res.status(200).json({ message: 'Webhook received but processing failed', error: error.message });
+    }
   });
   
   // Debug endpoint to capture any webhook data
