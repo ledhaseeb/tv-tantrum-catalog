@@ -21,6 +21,7 @@ import * as apiDataUpdater from "../api-data-updater.js";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import { createShortUrl, resolveShortUrl } from "./url-shortener";
+import { trackReferral } from "./referral-system";
 import path from "path";
 import bcrypt from "bcrypt";
 
@@ -2726,15 +2727,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        // Insert new user using direct SQL with referral fields
+        // Insert new user using direct SQL - we'll handle referrals separately
         const insertResult = await db.execute(
-          sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, referrer_id, referred_show_id, created_at, updated_at) 
-              VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, ${referrerId || null}, ${referredShowId || null}, NOW(), NOW()) 
+          sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
+              VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, NOW(), NOW()) 
               RETURNING id`
         );
         
         newUser = insertResult.rows[0];
         console.log('GHL user successfully inserted into database:', newUser);
+        
+        // Check for pending referral data
+        await processPendingReferral(email, newUser.id);
         
       } catch (dbError: any) {
         console.error('Database error, but webhook received successfully:', dbError.message);
@@ -2752,6 +2756,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to process webhook' });
     }
   });
+
+  // Store pending referral data when someone visits a shared link
+  app.post("/api/store-referral", async (req: Request, res: Response) => {
+    try {
+      const { email, referrerId, referredShowId } = req.body;
+      
+      if (!email || !referrerId || !referredShowId) {
+        return res.status(400).json({ error: 'Missing required referral data' });
+      }
+      
+      // Store or update pending referral
+      await db.execute(
+        sql`INSERT INTO pending_referrals (email, referrer_id, referred_show_id, created_at) 
+            VALUES (${email}, ${parseInt(referrerId)}, ${parseInt(referredShowId)}, NOW())
+            ON CONFLICT (email) DO UPDATE SET 
+            referrer_id = ${parseInt(referrerId)},
+            referred_show_id = ${parseInt(referredShowId)},
+            created_at = NOW()`
+      );
+      
+      console.log('Stored pending referral:', { email, referrerId, referredShowId });
+      res.json({ success: true });
+      
+    } catch (error) {
+      console.error('Error storing pending referral:', error);
+      res.status(500).json({ error: 'Failed to store referral data' });
+    }
+  });
+
+  // Process pending referral when user completes registration
+  async function processPendingReferral(email: string, ghlUserId: any) {
+    try {
+      // Look for pending referral data
+      const pendingReferral = await db.execute(
+        sql`SELECT referrer_id, referred_show_id FROM pending_referrals WHERE email = ${email} LIMIT 1`
+      );
+      
+      if (pendingReferral.rows.length > 0) {
+        const { referrer_id, referred_show_id } = pendingReferral.rows[0];
+        
+        console.log('Found pending referral for', email, ':', { referrer_id, referred_show_id });
+        
+        // Update the GHL user record with referral data
+        await db.execute(
+          sql`UPDATE temp_ghl_users 
+              SET referrer_id = ${referrer_id}, referred_show_id = ${referred_show_id}, updated_at = NOW()
+              WHERE id = ${ghlUserId}`
+        );
+        
+        // Process the referral if both users exist in main users table
+        const [referrer] = await db.select().from(users).where(eq(users.id, parseInt(referrer_id))).limit(1);
+        const [referred] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        
+        if (referrer && referred) {
+          console.log('Both users found, processing referral:', { referrerId: referrer.id, referredId: referred.id });
+          await trackReferral(referrer.id.toString(), referred.id.toString());
+        } else {
+          console.log('Users not yet in main table, referral will be processed when registration completes');
+        }
+        
+        // Clean up pending referral
+        await db.execute(
+          sql`DELETE FROM pending_referrals WHERE email = ${email}`
+        );
+        
+        console.log('Successfully processed pending referral for', email);
+      } else {
+        console.log('No pending referral found for', email);
+      }
+    } catch (error) {
+      console.error('Error processing pending referral:', error);
+    }
+  }
 
   // Get GHL registrations for admin dashboard
   app.get("/api/admin/ghl-funnel", async (req: Request, res: Response) => {
