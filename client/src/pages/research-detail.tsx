@@ -25,7 +25,9 @@ const ResearchDetail = () => {
       
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/research/${id}`);
+        const response = await fetch(`/api/research/${id}`, {
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch research');
