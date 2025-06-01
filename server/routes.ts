@@ -2647,6 +2647,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // GHL Webhook endpoints
   
+  // Alternative webhook endpoint (with hyphen)
+  app.all("/api/ghl-webhook", async (req: Request, res: Response) => {
+    console.log('=== GHL WEBHOOK (HYPHEN VERSION) RECEIVED ===');
+    console.log('Method:', req.method);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Query:', JSON.stringify(req.query, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('================================================');
+    
+    res.status(200).json({ 
+      message: 'Webhook received via hyphen endpoint',
+      method: req.method,
+      receivedData: req.body
+    });
+  });
+  
   // Debug endpoint to capture any webhook data
   app.all("/api/ghl/debug", async (req: Request, res: Response) => {
     console.log('=== GHL DEBUG ENDPOINT ===');
