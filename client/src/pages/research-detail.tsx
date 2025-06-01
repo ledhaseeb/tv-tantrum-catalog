@@ -21,7 +21,7 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
   const [research, setResearch] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Handle authentication like show detail pages do
+  // Handle authentication - wait longer for auth state to load
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -33,7 +33,9 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
     );
   }
   
-  if (!user) {
+  // Only show authentication required if we're definitely not authenticated
+  // Don't show this immediately if auth is still loading
+  if (!isLoadingAuth && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

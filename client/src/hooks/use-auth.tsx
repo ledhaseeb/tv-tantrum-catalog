@@ -59,7 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refetchOnWindowFocus: false,
     // Keep data for longer to prevent losing auth state during navigation
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000 // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    // Never consider the query as background refetch during navigation
+    refetchOnMount: "always",
+    // Ensure we have a definitive auth state before proceeding
+    networkMode: "always"
   });
   
   // Effect to manage authentication state - removed localStorage dependencies
