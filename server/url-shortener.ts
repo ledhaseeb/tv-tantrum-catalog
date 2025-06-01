@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { shortUrls } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 /**
  * Generate a short, memorable code for URLs
@@ -26,8 +26,8 @@ export async function createShortUrl(
   try {
     // Check if a short URL already exists for this show and user combination
     const existingQuery = userId 
-      ? eq(shortUrls.userId, userId) && eq(shortUrls.showId, showId)
-      : eq(shortUrls.showId, showId) && eq(shortUrls.userId, null);
+      ? and(eq(shortUrls.userId, userId), eq(shortUrls.showId, showId))
+      : and(eq(shortUrls.showId, showId), isNull(shortUrls.userId));
     
     const [existing] = await db
       .select()
@@ -74,9 +74,9 @@ export async function createShortUrl(
     const [created] = await db
       .insert(shortUrls)
       .values({
-        shortCode,
+        shortCode: shortCode,
         originalUrl: finalOriginalUrl,
-        showId,
+        showId: showId,
         userId: userId || null,
         clicks: 0
       })

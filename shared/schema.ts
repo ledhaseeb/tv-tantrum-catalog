@@ -229,7 +229,7 @@ export const shortUrls = pgTable("short_urls", {
   shortCode: text("short_code").notNull().unique(),
   originalUrl: text("original_url").notNull(),
   showId: integer("show_id").notNull().references(() => tvShows.id),
-  userId: text("user_id").references(() => users.id), // Optional - for referral tracking
+  userId: integer("user_id"), // Optional - for referral tracking
   clicks: integer("clicks").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
