@@ -21,37 +21,6 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
   const [research, setResearch] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Handle authentication - wait longer for auth state to load
-  if (isLoadingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Only show authentication required if we're definitely not authenticated
-  // Don't show this immediately if auth is still loading
-  if (!isLoadingAuth && !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">Please log in to view research details.</p>
-          <button 
-            onClick={() => window.location.href = '/early-access'}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-  
   // Direct fetch approach with proper authentication
   useEffect(() => {
     async function fetchResearch() {
@@ -200,6 +169,35 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
       markAsReadMutation.mutate();
     }
   };
+
+  // Handle authentication checks after all hooks are called
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-4">Please log in to view research details.</p>
+          <button 
+            onClick={() => window.location.href = '/early-access'}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
