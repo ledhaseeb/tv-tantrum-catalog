@@ -14,9 +14,6 @@ export function ApprovedRoute({
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   
-  // Debug logging to identify the issue
-  console.log('ApprovedRoute check:', { path, user: !!user, isLoading, userId: user?.id });
-
   useEffect(() => {
     // If user is logged in but not approved, show toast and redirect
     if (user && user.isApproved === false) {
@@ -28,7 +25,8 @@ export function ApprovedRoute({
     }
   }, [user, toast]);
 
-  if (isLoading) {
+  // Show loading state when authenticating OR when we have no user and not done loading
+  if (isLoading || (!user && !isLoading)) {
     return (
       <Route path={path}>
         <div className="flex items-center justify-center min-h-screen">
@@ -38,8 +36,8 @@ export function ApprovedRoute({
     );
   }
 
-  // If not logged in, redirect to early access page
-  if (!user) {
+  // Only redirect if we're definitively not logged in (not loading and no user)
+  if (!isLoading && !user) {
     return (
       <Route path={path}>
         <Redirect to="/early-access" />

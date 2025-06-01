@@ -56,7 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Refresh user data every 30 minutes to reduce server load
     refetchInterval: 30 * 60 * 1000,
     // Only refetch on window focus for important state changes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    // Keep data for longer to prevent losing auth state during navigation
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000 // 10 minutes
   });
   
   // Effect to manage authentication state - removed localStorage dependencies
