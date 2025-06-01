@@ -400,18 +400,22 @@ function Router() {
                 </div>
               )} 
             />
-            <ProtectedRoute 
-              path="/research/:id" 
-              component={() => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <ResearchDetail />
-                  </div>
-                  <Footer />
-                </div>
-              )} 
-            />
+            <Route path="/research/:id">
+              {(params) => (
+                <ApprovedRoute 
+                  path={`/research/${params.id}`} 
+                  component={() => (
+                    <div className="flex-grow flex flex-col">
+                      <Navbar />
+                      <div className="flex-grow">
+                        <ResearchDetail />
+                      </div>
+                      <Footer />
+                    </div>
+                  )} 
+                />
+              )}
+            </Route>
           </>
         )}
 
