@@ -115,7 +115,7 @@ export async function resolveShortUrl(shortCode: string): Promise<string | null>
     // Increment click counter
     await db
       .update(shortUrls)
-      .set({ clicks: shortUrl.clicks + 1 })
+      .set({ clicks: (shortUrl.clicks ?? 0) + 1 })
       .where(eq(shortUrls.id, shortUrl.id));
 
     return shortUrl.originalUrl;
