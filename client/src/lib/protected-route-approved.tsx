@@ -13,6 +13,9 @@ export function ApprovedRoute({
 }) {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  
+  // Debug logging to identify the issue
+  console.log('ApprovedRoute check:', { path, user: !!user, isLoading, userId: user?.id });
 
   useEffect(() => {
     // If user is logged in but not approved, show toast and redirect
