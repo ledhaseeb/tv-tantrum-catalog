@@ -59,11 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refetchOnWindowFocus: false
   });
   
-  // Effect to manage authentication state
-  useEffect(() => {
-    // Always clear localStorage auth since we're using server sessions only
-    localStorage.removeItem('tvtantrum_auth');
-  }, [user, error]);
+  // Effect to manage authentication state - removed localStorage dependencies
 
   // Login mutation
   const loginMutation = useMutation({
@@ -127,12 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: User) => {
-      // Store authentication state in localStorage
-      localStorage.setItem('tvtantrum_auth', JSON.stringify({
-        isLoggedIn: true,
-        timestamp: new Date().toISOString()
-      }));
-      
       // Update React Query cache with user data
       queryClient.setQueryData(["/api/user"], user);
       
@@ -140,8 +130,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refetch();
     },
     onError: (error: Error) => {
-      // Clear any stale auth data
-      localStorage.removeItem('tvtantrum_auth');
       
       toast({
         title: "Registration failed",
@@ -165,9 +153,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: () => {
-      // Clear authentication data from localStorage
-      localStorage.removeItem('tvtantrum_auth');
-      
       // Update React Query cache
       queryClient.setQueryData(["/api/user"], null);
       
