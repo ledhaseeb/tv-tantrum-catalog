@@ -272,7 +272,16 @@ export function setupAuth(app: Express) {
             console.error('Error during login after registration:', err);
             return next(err);
           }
-          res.status(201).json(safeUser);
+          
+          // Force session save to ensure it persists
+          req.session.save((saveErr) => {
+            if (saveErr) {
+              console.error('Error saving session after registration:', saveErr);
+              return next(saveErr);
+            }
+            console.log('Session saved successfully for new user:', { userId: safeUser.id, sessionId: req.sessionID });
+            res.status(201).json(safeUser);
+          });
         });
       } catch (dbError) {
         console.error('Database error during user creation:', dbError);
@@ -310,15 +319,21 @@ export function setupAuth(app: Express) {
       req.login(user, async (err) => {
         if (err) return next(err);
         
-        try {
-          // Award login points if eligible (once per day)
-          await awardLoginPoints(user.id);
+        // Force session save to ensure it persists
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('Error saving session after login:', saveErr);
+            return next(saveErr);
+          }
+          console.log('Session saved successfully after login:', { userId: user.id, sessionId: req.sessionID });
+          
+          // Award login points after session is saved
+          awardLoginPoints(user.id).catch((pointsError) => {
+            console.error('Error awarding login points:', pointsError);
+          });
+          
           res.status(200).json(user);
-        } catch (pointsError) {
-          // If points awarding fails, still complete login but log the error
-          console.error('Error awarding login points:', pointsError);
-          res.status(200).json(user);
-        }
+        });
       });
     })(req, res, next);
   });
