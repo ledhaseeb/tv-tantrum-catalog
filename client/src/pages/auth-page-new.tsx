@@ -336,7 +336,7 @@ export default function AuthPage() {
                 </div>
                 <div className="flex items-start space-x-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
-                  <p>See Reviews</p>
+                  <p>See reviews</p>
                 </div>
               </div>
             </div>
