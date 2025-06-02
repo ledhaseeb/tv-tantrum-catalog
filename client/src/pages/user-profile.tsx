@@ -57,11 +57,11 @@ export default function UserProfile() {
     );
   }
 
-  const user = profileData.user;
-  const totalPoints = profileData.points || 0;
-  const reviews = profileData.reviews || [];
-  const favorites = profileData.favorites || [];
-  const recentActivity = profileData.recentActivity || [];
+  const user = profileData.user || {};
+  const totalPoints = Number(profileData.points) || 0;
+  const reviews = Array.isArray(profileData.reviews) ? profileData.reviews : [];
+  const favorites = Array.isArray(profileData.favorites) ? profileData.favorites : [];
+  const recentActivity = Array.isArray(profileData.pointsHistory) ? profileData.pointsHistory : [];
 
   // Get current badge based on points
   const currentBadge = getCurrentBadge(totalPoints);
@@ -100,7 +100,7 @@ export default function UserProfile() {
             {currentBadge.emoji}
           </div>
           <div>
-            <h1 className="text-3xl font-bold">{user.username}'s Profile</h1>
+            <h1 className="text-3xl font-bold">{String(user.username || 'Unknown User')}'s Profile</h1>
           </div>
         </div>
         
@@ -110,7 +110,7 @@ export default function UserProfile() {
           </Badge>
           <Badge variant="outline" className="text-sm">
             <Trophy className="w-4 h-4 mr-1" />
-            {totalPoints} Points
+            {totalPoints || 0} Points
           </Badge>
         </div>
       </div>
