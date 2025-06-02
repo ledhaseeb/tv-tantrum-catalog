@@ -1367,19 +1367,29 @@ export default function AdminPage() {
                     Manage users and approve early access requests
                   </CardDescription>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={fetchUsers}
-                  disabled={isLoadingUsers}
-                >
-                  {isLoadingUsers ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                  )}
-                  Refresh Users
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setTempPassword('test123')} 
+                    variant="outline" 
+                    size="sm"
+                    className="text-purple-600"
+                  >
+                    Test Dialog
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={fetchUsers}
+                    disabled={isLoadingUsers}
+                  >
+                    {isLoadingUsers ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    Refresh Users
+                  </Button>
+                </div>
               </div>
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -2944,7 +2954,7 @@ function ShowSubmissionsSection() {
       </div>
 
       {/* Password Reset Dialog */}
-      <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword('')}>
+      <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword('')} modal={true}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center">
