@@ -2691,34 +2691,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Headers:', JSON.stringify(req.headers, null, 2));
     console.log('Query:', JSON.stringify(req.query, null, 2));
     console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Raw body keys:', Object.keys(req.body || {}));
     console.log('================================================');
     
     try {
-      const { contact } = req.body;
+      // Handle both possible webhook data structures
+      const webhookData = req.body;
+      const contact = webhookData.contact || webhookData;
+      
       if (!contact) {
         console.log('No contact data found in webhook');
         return res.status(200).json({ message: 'No contact data found' });
       }
 
-      const email = contact.email;
-      const firstName = contact.firstName || contact.first_name;
-      const country = contact.country;
-      const contactId = contact.id;
-      const referrerId = contact.referrer_id;
-      const referredShowId = contact.referred_show_id;
+      console.log('Contact object keys:', Object.keys(contact));
+      console.log('Contact data structure:', JSON.stringify(contact, null, 2));
+
+      // Try multiple possible field names for email
+      const email = contact.email || contact.emailAddress || contact.Email || webhookData.email;
+      const firstName = contact.firstName || contact.first_name || contact.First || webhookData.firstName;
+      const country = contact.country || contact.Country || webhookData.country;
+      const contactId = contact.id || contact.contactId || contact.Id || webhookData.contactId;
+      const referrerId = contact.referrer_id || contact.referrerId || webhookData.referrer_id;
+      const referredShowId = contact.referred_show_id || contact.referredShowId || webhookData.referred_show_id;
 
       console.log('Processing GHL contact:', { email, firstName, country, contactId, referrerId, referredShowId });
 
       // Check if user already exists
-      const existingUser = await storage.db
+      const existingUser = await db
         .select()
-        .from(storage.schema.tempGhlUsers)
-        .where(sql`email = ${email}`)
+        .from(tempGhlUsers)
+        .where(eq(tempGhlUsers.email, email))
         .limit(1);
 
       if (existingUser.length === 0) {
         // Insert new temp user
-        await storage.db.insert(storage.schema.tempGhlUsers).values({
+        await db.insert(tempGhlUsers).values({
           email,
           firstName,
           country,
