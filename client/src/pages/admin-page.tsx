@@ -2953,29 +2953,28 @@ function ShowSubmissionsSection() {
         ))}
       </div>
 
-      {/* Password Reset Dialog */}
-      <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword('')} modal={true}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
+      {/* Password Reset Popup */}
+      {tempPassword && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center mb-4">
               <Key className="h-5 w-5 mr-2 text-blue-600" />
-              Password Reset Successful
-            </DialogTitle>
-            <DialogDescription>
+              <h3 className="text-lg font-semibold">Password Reset Successful</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
               A new temporary password has been generated for the user. Please copy this password and share it with them securely.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="bg-gray-50 p-4 rounded-lg border">
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
+            </p>
+            
+            <div className="bg-gray-50 p-4 rounded-lg border mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
                 Temporary Password:
-              </Label>
+              </label>
               <div className="flex items-center space-x-2">
-                <Input
+                <input
                   value={tempPassword}
                   readOnly
-                  className="font-mono bg-white"
+                  className="flex-1 font-mono bg-white border border-gray-300 rounded px-3 py-2"
                 />
                 <Button
                   variant="outline"
@@ -2993,21 +2992,21 @@ function ShowSubmissionsSection() {
               </div>
             </div>
             
-            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-4">
               <p className="text-sm text-yellow-800">
                 <strong>Important:</strong> The user should change this password immediately after logging in. 
                 This temporary password will work with their existing username.
               </p>
             </div>
+            
+            <div className="flex justify-end">
+              <Button onClick={() => setTempPassword('')}>
+                Close
+              </Button>
+            </div>
           </div>
-          
-          <DialogFooter>
-            <Button onClick={() => setTempPassword('')}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
