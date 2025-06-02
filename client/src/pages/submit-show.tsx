@@ -12,6 +12,7 @@ interface ShowSubmission {
   status: 'pending' | 'approved' | 'rejected';
   requestCount: number;
   createdAt: string;
+  rejectionReason?: string;
 }
 
 export default function SubmitShowPage() {
@@ -100,6 +101,12 @@ export default function SubmitShowPage() {
                           <p className="text-sm text-gray-600 mt-1">
                             {submission.whereTheyWatch}
                           </p>
+                          {submission.status === 'rejected' && submission.rejectionReason && (
+                            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                              <p className="text-xs text-red-700 font-medium">Rejection Reason:</p>
+                              <p className="text-xs text-red-600">{submission.rejectionReason}</p>
+                            </div>
+                          )}
                           <p className="text-xs text-gray-500 mt-2">
                             Submitted {format(new Date(submission.createdAt), 'MMM d, yyyy')}
                           </p>

@@ -2792,8 +2792,25 @@ export class DatabaseStorage implements IStorage {
   async getUserShowSubmissions(userId: string): Promise<any[]> {
     try {
       const submissions = await db
-        .select()
+        .select({
+          id: showSubmissions.id,
+          userId: showSubmissions.userId,
+          showName: showSubmissions.showName,
+          whereTheyWatch: showSubmissions.whereTheyWatch,
+          status: showSubmissions.status,
+          createdAt: showSubmissions.createdAt,
+          normalizedName: showSubmissions.normalizedName,
+          rejectionReason: notifications.message
+        })
         .from(showSubmissions)
+        .leftJoin(
+          notifications,
+          and(
+            eq(notifications.userId, parseInt(userId)),
+            eq(notifications.relatedShowName, showSubmissions.normalizedName),
+            eq(notifications.type, 'show_rejection')
+          )
+        )
         .where(eq(showSubmissions.userId, userId))
         .orderBy(desc(showSubmissions.createdAt));
       
