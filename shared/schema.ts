@@ -406,7 +406,7 @@ export type UserReferral = typeof userReferrals.$inferSelect;
 // --- Notifications table ---
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: text("type").notNull(),
   message: text("message").notNull(),
   isRead: boolean("is_read").default(false),
