@@ -21,22 +21,17 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").unique(),
-  password: text("password"), // Needed for our custom auth
+  password: text("password"),
   firstName: text("first_name"),
-  lastName: text("last_name"),
-  profileImageUrl: text("profile_image_url"),
   username: text("username"),
   isAdmin: boolean("is_admin").default(false),
   country: text("country"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
   isApproved: boolean("is_approved").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   totalPoints: integer("total_points").default(0),
-  lastLoginDate: timestamp("last_login_date"),
-  loginStreak: integer("login_streak").default(0),
   rank: text("rank").default("TV Watcher"),
-  profileBio: text("profile_bio"),
-  referralCode: text("referral_code").unique(),
+  loginStreak: integer("login_streak").default(0),
+  lastLoginDate: timestamp("last_login").defaultNow(),
   backgroundColor: text("background_color").default("bg-purple-500"),
 });
 
