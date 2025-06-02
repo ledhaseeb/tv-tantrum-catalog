@@ -25,6 +25,7 @@ import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
+import CookieConsent from "@/components/CookieConsent";
 import ResearchView from "@/pages/research-view";
 import SharePage from "@/pages/share";
 import AdminResearchLinks from "@/pages/admin-research-links";
@@ -350,6 +351,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <CookieConsent />
           <ColorPaletteCustomizer />
         </TooltipProvider>
       </AuthProvider>
