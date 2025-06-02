@@ -45,16 +45,22 @@ export default function CookieConsent() {
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 p-4">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-1">
-          <p className="text-sm text-gray-700">
-            We use cookies to enhance your experience, analyze site traffic, and serve personalized ads. 
-            By continuing to use our site, you consent to our use of cookies.{" "}
-            <a 
-              href="/privacy-policy" 
-              className="text-primary hover:underline font-medium"
-            >
-              Learn more
-            </a>
-          </p>
+          <div className="mb-2">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Help us improve your experience</h3>
+            <p className="text-sm text-gray-700">
+              We use cookies to show you more relevant content and keep our free service running. 
+              Accepting helps us understand what parents find most useful so we can improve our recommendations.{" "}
+              <a 
+                href="/privacy-policy" 
+                className="text-primary hover:underline font-medium"
+              >
+                Privacy details
+              </a>
+            </p>
+          </div>
+          <div className="text-xs text-gray-600">
+            ✓ Better show recommendations • ✓ Free service stays free • ✓ Data stays anonymous
+          </div>
         </div>
         
         <div className="flex gap-3 flex-shrink-0">
