@@ -47,16 +47,22 @@ export default function ChangePasswordForm() {
     setIsSubmitting(true);
     
     try {
-      await apiRequest('/api/change-password', {
+      const response = await fetch('/api/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to change password');
+      }
 
       toast({
         title: "Password Changed Successfully",
