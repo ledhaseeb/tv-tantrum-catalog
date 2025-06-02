@@ -1706,9 +1706,8 @@ export class DatabaseStorage implements IStorage {
 
   async getHighlyRatedShows(limit: number = 24): Promise<TvShow[]> {
     try {
-      const client = await this.pool.connect();
-      
-      const result = await client.query(`
+      // Use raw SQL with the Drizzle database connection
+      const result = await db.execute(sql`
         SELECT 
           ts.*,
           ROUND(AVG(tr.rating)::numeric, 2) as avg_rating,
@@ -1717,17 +1716,15 @@ export class DatabaseStorage implements IStorage {
         FROM tv_shows ts
         INNER JOIN tv_show_reviews tr ON ts.id = tr.tv_show_id
         GROUP BY ts.id
-        HAVING COUNT(tr.rating) >= 2  -- Minimum 2 reviews for credibility
+        HAVING COUNT(tr.rating) >= 2
         ORDER BY 
-          COUNT(CASE WHEN tr.rating >= 4 THEN 1 END) DESC,  -- High ratings first
-          ROUND(AVG(tr.rating)::numeric, 2) DESC,           -- Then average rating
-          COUNT(tr.rating) DESC                             -- Then total review count
-        LIMIT $1
-      `, [limit]);
+          COUNT(CASE WHEN tr.rating >= 4 THEN 1 END) DESC,
+          ROUND(AVG(tr.rating)::numeric, 2) DESC,
+          COUNT(tr.rating) DESC
+        LIMIT ${limit}
+      `);
       
-      client.release();
-      
-      return result.rows.map(row => ({
+      return result.map(row => ({
         id: row.id,
         name: row.name,
         description: row.description,
@@ -1771,7 +1768,9 @@ export class DatabaseStorage implements IStorage {
         publishedAt: row.published_at,
         hasOmdbData: row.has_omdb_data,
         interactivityLevel: row.interactivity_level,
-        soundFrequency: row.sound_frequency
+        creativityRating: row.creativity_rating,
+        isFeatured: row.is_featured,
+        hasYoutubeData: row.has_youtube_data
       }));
     } catch (error) {
       console.error("Error getting highly rated shows:", error);
