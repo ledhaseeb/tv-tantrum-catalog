@@ -153,10 +153,7 @@ export default function AdminPage() {
   const [resetPasswordUserId, setResetPasswordUserId] = useState<number | null>(null);
   const [tempPassword, setTempPassword] = useState<string>('');
 
-  // GHL registration funnel state
-  const [ghlRegistrations, setGhlRegistrations] = useState<any[]>([]);
-  const [ghlSummary, setGhlSummary] = useState<any>({});
-  const [isLoadingGhl, setIsLoadingGhl] = useState(true);
+
 
   // Form state
   const [formState, setFormState] = useState({
@@ -361,28 +358,7 @@ export default function AdminPage() {
     }
   };
 
-  // Function to fetch GHL registration funnel data
-  const fetchGhlRegistrations = async () => {
-    try {
-      setIsLoadingGhl(true);
-      const response = await fetch('/api/admin/ghl-funnel');
-      if (!response.ok) {
-        throw new Error('Failed to fetch GHL registration data');
-      }
-      const data = await response.json();
-      setGhlRegistrations(data.registrations);
-      setGhlSummary(data.summary);
-    } catch (error) {
-      console.error('Error fetching GHL registrations:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load GHL registration data. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoadingGhl(false);
-    }
-  };
+
 
   // Load all shows
   useEffect(() => {
@@ -406,10 +382,7 @@ export default function AdminPage() {
     loadInitialShows();
   }, [toast]);
 
-  // Load GHL registration data
-  useEffect(() => {
-    fetchGhlRegistrations();
-  }, []);
+
 
   // Handle search
   useEffect(() => {
@@ -1143,7 +1116,6 @@ export default function AdminPage() {
           <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Show Submissions</TabsTrigger>
-          <TabsTrigger value="ghl-funnel">Registration Funnel</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         
