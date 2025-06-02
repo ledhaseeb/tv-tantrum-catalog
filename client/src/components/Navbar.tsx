@@ -24,6 +24,7 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   // Use the original authentication hook
   const { user, isLoading, isAdmin } = useAuth();
 
@@ -183,31 +184,14 @@ export default function Navbar() {
                       <span>Dashboard</span>
                     </Button>
                   </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>Logout</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="z-[60] max-w-sm mx-4">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          You will be redirected to the login page and will need to sign in again to access your account.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleLogout}>
-                          Yes, Logout
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-1 text-white/90 hover:text-white hover:bg-primary-700"
+                    onClick={() => setShowLogoutDialog(true)}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
                 </div>
               ) : (
                 <Link href="/auth">
@@ -327,31 +311,16 @@ export default function Navbar() {
                           <User className="h-5 w-5 mr-2" />
                           Dashboard
                         </Link>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button
-                              onClick={() => setIsNavOpen(false)}
-                              className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                            >
-                              <LogOut className="h-5 w-5 mr-2" />
-                              Logout
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="z-[60] max-w-sm mx-4">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                You will be redirected to the login page and will need to sign in again to access your account.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleLogout}>
-                                Yes, Logout
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <button
+                          onClick={() => {
+                            setIsNavOpen(false);
+                            setShowLogoutDialog(true);
+                          }}
+                          className="flex w-full items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                        >
+                          <LogOut className="h-5 w-5 mr-2" />
+                          Logout
+                        </button>
                       </>
                     ) : (
                       <Link 
@@ -372,6 +341,24 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+      
+      {/* Standalone logout confirmation dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="max-w-sm mx-4">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be redirected to the login page and will need to sign in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout}>
+              Yes, Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }
