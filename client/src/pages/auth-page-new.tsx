@@ -320,7 +320,7 @@ export default function AuthPage() {
           
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-lg mb-2">Free Features:</h3>
+              <h3 className="font-semibold text-lg mb-2">Non-Registered Users Can:</h3>
               <div className="space-y-2">
                 <div className="flex items-start space-x-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
@@ -338,15 +338,15 @@ export default function AuthPage() {
             </div>
             
             <div>
-              <h3 className="font-semibold text-lg mb-2">Premium Features (Requires Account):</h3>
+              <h3 className="font-semibold text-lg mb-2">(FREE) Registered Users Can:</h3>
               <div className="space-y-2">
                 <div className="flex items-start space-x-2">
                   <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
-                  <p>Save favorites and create watchlists</p>
+                  <p>Get personalized recommendations</p>
                 </div>
                 <div className="flex items-start space-x-2">
                   <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
-                  <p>Write and read detailed reviews</p>
+                  <p>Submit new shows for analysis</p>
                 </div>
                 <div className="flex items-start space-x-2">
                   <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
@@ -354,7 +354,7 @@ export default function AuthPage() {
                 </div>
                 <div className="flex items-start space-x-2">
                   <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
-                  <p>Submit new shows for review</p>
+                  <p>Leave reviews</p>
                 </div>
               </div>
             </div>
