@@ -957,6 +957,7 @@ export default function AdminPage() {
 
   // Handle password reset
   const handlePasswordReset = async (userId: number) => {
+    console.log('Reset password button clicked for user ID:', userId); // Debug log
     setIsResettingPassword(true);
     setResetPasswordUserId(userId);
     try {
