@@ -240,33 +240,25 @@ function Router() {
           )} 
         />
 
-        {/* Research Pages - Require authentication */}
-        <ProtectedRoute 
-          path="/research" 
-          component={() => (
+        {/* Research Pages */}
+        <Route path="/research">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Research />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/research/:id">
+          {(params) => (
             <div className="flex-grow flex flex-col">
               <Navbar />
               <div className="flex-grow">
-                <Research />
+                <ResearchDetail id={parseInt(params.id, 10)} />
               </div>
               <Footer />
             </div>
-          )} 
-        />
-        <Route path="/research/:id">
-          {(params) => (
-            <ProtectedRoute 
-              path={`/research/${params.id}`} 
-              component={() => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <ResearchDetail id={parseInt(params.id, 10)} />
-                  </div>
-                  <Footer />
-                </div>
-              )} 
-            />
           )}
         </Route>
 
