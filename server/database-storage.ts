@@ -2129,30 +2129,18 @@ export class DatabaseStorage implements IStorage {
 
   async getUserReviews(userId: number): Promise<any[]> {
     try {
-      // First get all reviews for this user
+      // Get reviews for this user - the reviews table already has show_name column
       const reviews = await db
         .select()
         .from(tvShowReviews)
         .where(eq(tvShowReviews.userId, userId.toString()))
         .orderBy(desc(tvShowReviews.createdAt));
       
-      // Then get show names for each review
-      const reviewsWithShowNames = await Promise.all(
-        reviews.map(async (review) => {
-          const show = await db
-            .select({ name: tvShows.name })
-            .from(tvShows)
-            .where(eq(tvShows.id, review.showId))
-            .limit(1);
-          
-          return {
-            ...review,
-            showName: show[0]?.name || 'Unknown Show'
-          };
-        })
-      );
-      
-      return reviewsWithShowNames;
+      // The reviews already have showName from the database, just return them
+      return reviews.map(review => ({
+        ...review,
+        showName: review.showName || 'Unknown Show'
+      }));
     } catch (error) {
       console.error('Error getting user reviews:', error);
       return [];

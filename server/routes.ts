@@ -2347,6 +2347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const points = await storage.getUserPoints(parsedUserId);
       const pointsHistory = await storage.getUserPointsHistory(parsedUserId);
       const reviews = await storage.getUserReviews(parsedUserId);
+      const favorites = await storage.getUserFavoriteShows(parsedUserId);
       
       res.json({
         user: {
@@ -2357,7 +2358,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         points,
         pointsHistory,
-        reviews: reviews || []
+        reviews: reviews || [],
+        favorites: favorites || []
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
