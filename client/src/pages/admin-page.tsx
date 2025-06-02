@@ -976,7 +976,9 @@ export default function AdminPage() {
 
       const data = await response.json();
       console.log('Password reset response:', data); // Debug log
+      console.log('Setting tempPassword to:', data.temporaryPassword); // Debug log
       setTempPassword(data.temporaryPassword);
+      console.log('tempPassword state after setting:', data.temporaryPassword); // Debug log
       
       toast({
         title: "Password Reset Successfully",
@@ -2941,6 +2943,7 @@ function ShowSubmissionsSection() {
       </div>
 
       {/* Password Reset Dialog */}
+      {console.log('Rendering dialog with tempPassword:', tempPassword)}
       <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword('')}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
