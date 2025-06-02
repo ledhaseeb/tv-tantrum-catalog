@@ -317,18 +317,46 @@ export default function AuthPage() {
           <p className="text-xl text-muted-foreground">
             The ultimate guide for parents to understand the stimulation level of children's TV shows
           </p>
-          <div className="space-y-2">
-            <div className="flex items-start space-x-2">
-              <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
-              <p>Compare shows by stimulation scores</p>
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Free Features:</h3>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
+                  <p>Browse and search all TV shows</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
+                  <p>View stimulation scores and details</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
+                  <p>Compare shows side-by-side</p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-start space-x-2">
-              <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
-              <p>Filter by age range and interests</p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
-              <p>Save favorites and get personalized recommendations</p>
+            
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Premium Features (Requires Account):</h3>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
+                  <p>Save favorites and create watchlists</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
+                  <p>Write and read detailed reviews</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
+                  <p>Access research summaries</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary mt-1" />
+                  <p>Submit new shows for review</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
