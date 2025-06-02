@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import AdContainer from "@/components/AdContainer";
 import {
   Select,
   SelectContent,
@@ -191,6 +192,11 @@ export default function Compare() {
           </Button>
           <h2 className="text-2xl font-heading font-bold">Compare Shows</h2>
         </div>
+      </div>
+
+      {/* Compare Page Ad */}
+      <div className="mb-6">
+        <AdContainer size="leaderboard" className="mx-auto" />
       </div>
       
       {isLoading ? (

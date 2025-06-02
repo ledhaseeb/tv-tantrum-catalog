@@ -4,6 +4,7 @@ import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
 import ShowCard from "@/components/ShowCard";
 import SimpleShowCard from "@/components/SimpleShowCard";
+import AdContainer from "@/components/AdContainer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -407,6 +408,11 @@ export default function Browse() {
         <p className="text-gray-600 mb-6">
           Showing {indexOfFirstShow + 1}-{Math.min(indexOfLastShow, totalShows)} of {totalShows} results
         </p>
+
+        {/* Top Browse Ad */}
+        <div className="mb-6">
+          <AdContainer size="leaderboard" className="mx-auto" />
+        </div>
         
         <div className="flex flex-col md:flex-row gap-6">
           {/* Left Column - Filters */}
