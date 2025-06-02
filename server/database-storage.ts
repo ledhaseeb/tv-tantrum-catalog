@@ -2296,8 +2296,9 @@ export class DatabaseStorage implements IStorage {
           id: users.id,
           username: users.username,
           totalPoints: users.totalPoints,
-          rank: users.rank
-          // Removed profileImageUrl as it doesn't exist in the schema
+          rank: users.rank,
+          backgroundColor: users.backgroundColor,
+          country: users.country
         })
         .from(users)
         .where(sql`${users.totalPoints} > 0`)

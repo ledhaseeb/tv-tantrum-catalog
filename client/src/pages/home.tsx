@@ -783,7 +783,7 @@ export default function Home() {
 function Leaderboard() {
   const { data: leaderboard, isLoading } = useQuery<any[]>({
     queryKey: ['/api/leaderboard'],
-    staleTime: 300000, // 5 minutes
+    staleTime: 30000, // 30 seconds - reduced to see background color changes faster
   });
 
   if (isLoading) {
@@ -829,7 +829,7 @@ function Leaderboard() {
                 >
                   <div className="flex-shrink-0 relative">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg relative ${
-                      user.background_color || 'bg-purple-500'
+                      user.backgroundColor || 'bg-purple-500'
                     }`}>
                       {getBadgeEmoji(user.totalPoints || user.total_points)}
                       
