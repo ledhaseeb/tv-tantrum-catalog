@@ -194,6 +194,10 @@ export class SearchService {
           case 'interactivity-level':
             query += ` ORDER BY interaction_level DESC NULLS LAST`;
             break;
+          case 'popular':
+            // For popularity-based sorting, we'll handle this post-query
+            query += ` ORDER BY LOWER(name) ASC`;
+            break;
           case 'rating':
           case 'rating_desc':
           case 'overall-rating':
@@ -215,6 +219,62 @@ export class SearchService {
       
       // Process the results for theme filtering if necessary
       let shows = result.rows;
+      
+      // Handle popularity-based sorting (post-query with view and search data)
+      if (filters.sortBy === 'popular') {
+        console.log(`Search Service: Starting popularity-based sorting`);
+        try {
+          // Get view statistics for all shows
+          const viewStats = await client.query(`
+            SELECT tv_show_id, view_count FROM tv_show_views
+          `);
+          
+          // Get search statistics for all shows
+          const searchStats = await client.query(`
+            SELECT tv_show_id, search_count FROM tv_show_searches
+          `);
+          
+          console.log(`Search Service: Found ${viewStats.rows.length} shows with views, ${searchStats.rows.length} shows with searches`);
+          
+          // Create maps for popularity data
+          const viewMap = new Map();
+          const searchMap = new Map();
+          
+          viewStats.rows.forEach(row => {
+            viewMap.set(row.tv_show_id, parseInt(row.view_count) || 0);
+          });
+          
+          searchStats.rows.forEach(row => {
+            searchMap.set(row.tv_show_id, parseInt(row.search_count) || 0);
+          });
+          
+          // Sort shows by popularity score (views * 2 + searches)
+          shows.sort((a, b) => {
+            const aViews = viewMap.get(a.id) || 0;
+            const aSearches = searchMap.get(a.id) || 0;
+            const aPopularity = (aViews * 2) + aSearches; // Weight views more heavily
+            
+            const bViews = viewMap.get(b.id) || 0;
+            const bSearches = searchMap.get(b.id) || 0;
+            const bPopularity = (bViews * 2) + bSearches;
+            
+            return bPopularity - aPopularity; // Descending order (highest first)
+          });
+          
+          console.log(`Search Service: Applied popularity-based sorting to ${shows.length} shows`);
+          // Log the first few shows after sorting
+          const topShows = shows.slice(0, 5).map(show => {
+            const views = viewMap.get(show.id) || 0;
+            const searches = searchMap.get(show.id) || 0;
+            const popularity = (views * 2) + searches;
+            return `${show.name} (${views} views, ${searches} searches, score: ${popularity})`;
+          });
+          console.log(`Search Service: Top 5 popular shows: ${topShows.join(', ')}`);
+        } catch (error) {
+          console.error('Search Service: Error applying popularity-based sorting:', error);
+          // Continue with default sorting if popularity sort fails
+        }
+      }
       
       // Handle rating-based sorting (post-query with review data)
       if (filters.sortBy === 'rating' || filters.sortBy === 'rating_desc' || filters.sortBy === 'overall-rating') {
