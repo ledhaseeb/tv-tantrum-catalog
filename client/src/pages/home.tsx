@@ -10,6 +10,7 @@ import { TvShow } from "@shared/schema";
 import { Heart, Search, Star } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import AdContainer from "@/components/AdContainer";
 import {
   Carousel,
   CarouselContent,
@@ -500,6 +501,11 @@ export default function Home() {
         </form>
       </div>
       
+      {/* Top Banner Ad */}
+      <div className="mb-8">
+        <AdContainer size="banner" className="mx-auto" />
+      </div>
+      
       {/* Featured Show */}
       {featuredShow && (
         <div className="bg-indigo-50 rounded-xl overflow-hidden mb-12">
@@ -697,6 +703,11 @@ export default function Home() {
         popularShows, 
         "/browse?sortBy=popular"
       )}
+      
+      {/* Mid-Content Ad */}
+      <div className="my-12">
+        <AdContainer size="rectangle" className="mx-auto" />
+      </div>
       
       {/* Highly Rated */}
       {renderCategorySection(
