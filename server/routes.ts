@@ -2327,6 +2327,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Removed duplicate dashboard endpoint
   
+  // User Profile endpoint
+  app.get("/api/user/profile/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const parsedUserId = parseInt(userId);
+      
+      if (isNaN(parsedUserId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Get user basic info
+      const user = await storage.getUser(parsedUserId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get user's points and activity
+      const points = await storage.getUserPoints(parsedUserId);
+      const pointsHistory = await storage.getUserPointsHistory(parsedUserId);
+      const reviews = await storage.getUserReviews(parsedUserId);
+      
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          backgroundColor: user.backgroundColor,
+          joinedAt: user.createdAt
+        },
+        points,
+        pointsHistory,
+        reviews: reviews || []
+      });
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
   // User Points
   app.get("/api/user/points", async (req: Request, res: Response) => {
     try {

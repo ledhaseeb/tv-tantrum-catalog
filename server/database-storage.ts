@@ -2126,6 +2126,29 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
+
+  async getUserReviews(userId: number): Promise<any[]> {
+    try {
+      const reviews = await db
+        .select({
+          id: tvShowReviews.id,
+          showId: tvShowReviews.showId,
+          showName: tvShows.name,
+          review: tvShowReviews.review,
+          rating: tvShowReviews.rating,
+          createdAt: tvShowReviews.createdAt
+        })
+        .from(tvShowReviews)
+        .leftJoin(tvShows, eq(tvShowReviews.showId, tvShows.id))
+        .where(eq(tvShowReviews.userId, userId.toString()))
+        .orderBy(desc(tvShowReviews.createdAt));
+      
+      return reviews;
+    } catch (error) {
+      console.error('Error getting user reviews:', error);
+      return [];
+    }
+  }
   
   async awardPoints(userId: number, points: number, activityType: string, description?: string): Promise<any> {
     console.log(`ATTEMPTING TO AWARD ${points} POINTS TO USER ${userId} FOR ${activityType}`);
