@@ -203,7 +203,7 @@ export default function SharePage() {
                       const referrerId = urlParams.get('ref');
                       
                       // Build GHL form URL with referral parameters
-                      let ghlFormUrl = "https://uschooler.com/register-for-tv-tantrum";
+                      let ghlFormUrl = "https://www.uschooler.com/widget/form/k1oNtk7bxZaBfdLXDkek";
                       
                       // Add referral parameters as URL parameters that GHL can capture
                       const ghlParams = new URLSearchParams();
