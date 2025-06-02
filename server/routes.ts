@@ -2645,7 +2645,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GHL Webhook endpoints
+  // GHL Webhook endpoints - multiple variations to catch different URL patterns
+  
+  // Try all possible GHL webhook URL patterns
+  app.all("/api/ghl/webhook", async (req: Request, res: Response) => {
+    console.log('=== GHL WEBHOOK (SLASH VERSION) RECEIVED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Method:', req.method);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('================================================');
+    res.status(200).json({ message: 'Slash webhook received' });
+  });
+  
+  app.all("/api/ghlwebhook", async (req: Request, res: Response) => {
+    console.log('=== GHL WEBHOOK (NO SEPARATOR) RECEIVED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Method:', req.method);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('================================================');
+    res.status(200).json({ message: 'No separator webhook received' });
+  });
   
   // Alternative webhook endpoint (with hyphen) - this now processes data too
   app.all("/api/ghl-webhook", async (req: Request, res: Response) => {
