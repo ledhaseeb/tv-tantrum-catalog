@@ -1,7 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect } from "react";
 
 export default function About() {
+  // Load GHL form script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.uschooler.com/js/form_embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-heading font-bold text-center mb-8">About TV Tantrum</h1>
@@ -165,95 +177,27 @@ export default function About() {
           Have a question, suggestion, or want to work with us? Use the form below to get in touch with our team.
         </p>
         
-        <form className="max-w-xl mx-auto">
-          <div className="grid grid-cols-1 gap-6">
-            {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="Your name"
-              />
-            </div>
-            
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="your.email@example.com"
-              />
-            </div>
-            
-            {/* Phone (optional) */}
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number <span className="text-gray-400 text-xs">(Optional)</span>
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="Your phone number"
-              />
-            </div>
-            
-            {/* Enquiry Type */}
-            <div>
-              <label htmlFor="enquiryType" className="block text-sm font-medium text-gray-700 mb-1">
-                Enquiry Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="enquiryType"
-                name="enquiryType"
-                required
-                defaultValue=""
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              >
-                <option value="" disabled>Select an option</option>
-                <option value="feedback">Feedback</option>
-                <option value="add-show">Add a show listing</option>
-                <option value="get-featured">Get featured</option>
-                <option value="press">Press</option>
-                <option value="partnership">Partnership/Collaborate</option>
-              </select>
-            </div>
-            
-            {/* Message */}
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                Message <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="Your message here..."
-              ></textarea>
-            </div>
-            
-            <div>
-              <Button type="submit" className="w-full">
-                Send Message
-              </Button>
-            </div>
+        <div className="max-w-xl mx-auto">
+          <div className="min-h-[576px]">
+            <iframe
+              src="https://www.uschooler.com/widget/form/6CGfRNsfQiXTbIQzwUtH"
+              style={{width:'100%', height:'576px', border:'none', borderRadius:'3px'}}
+              id="inline-6CGfRNsfQiXTbIQzwUtH" 
+              data-layout="{'id':'INLINE'}"
+              data-trigger-type="alwaysShow"
+              data-trigger-value=""
+              data-activation-type="alwaysActivated"
+              data-activation-value=""
+              data-deactivation-type="neverDeactivate"
+              data-deactivation-value=""
+              data-form-name="Tv Tantrum - Contact Us"
+              data-height="576"
+              data-layout-iframe-id="inline-6CGfRNsfQiXTbIQzwUtH"
+              data-form-id="6CGfRNsfQiXTbIQzwUtH"
+              title="Tv Tantrum - Contact Us"
+            />
           </div>
-        </form>
+        </div>
       </div>
     </main>
   );
