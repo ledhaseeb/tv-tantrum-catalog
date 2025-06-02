@@ -1369,7 +1369,11 @@ export default function AdminPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => setTempPassword('test123')} 
+                    onClick={() => {
+                      console.log('Test Dialog button clicked!');
+                      setTempPassword('test123');
+                      console.log('After setting test password');
+                    }} 
                     variant="outline" 
                     size="sm"
                     className="text-purple-600"
