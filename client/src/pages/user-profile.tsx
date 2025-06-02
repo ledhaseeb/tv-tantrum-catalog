@@ -225,13 +225,13 @@ export default function UserProfile() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{formatActivityType(activity.activityType)}</p>
-                        <p className="text-xs text-muted-foreground">{activity.description}</p>
+                        <p className="text-xs text-muted-foreground">{activity.description || ''}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-green-600">+{activity.points}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(activity.createdAt).toLocaleDateString()}
+                        {activity.createdAt ? new Date(activity.createdAt).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
                   </div>
