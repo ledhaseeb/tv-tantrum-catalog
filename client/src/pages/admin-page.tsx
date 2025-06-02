@@ -1323,7 +1323,7 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell>
                             {/* Log value for debugging */}
-                            {console.log(`Show ${show.id} ${show.name} YouTube data:`, show.hasYoutubeData)}
+
                             {show.hasYoutubeData === true ? (
                               <span className="text-red-600 font-medium flex items-center">
                                 <Check className="h-4 w-4 mr-1" /> Yes
