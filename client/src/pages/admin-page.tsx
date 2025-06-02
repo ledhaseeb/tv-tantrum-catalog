@@ -2959,66 +2959,6 @@ function ShowSubmissionsSection() {
           </Card>
         ))}
       </div>
-
-      {/* Password Reset Popup */}
-      <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${
-          tempPassword && tempPassword.length > 0 ? 'block' : 'hidden'
-        }`}
-        style={{ zIndex: 9999 }}
-      >
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border-2 border-blue-500">
-          <div className="flex items-center mb-4">
-            <Key className="h-5 w-5 mr-2 text-blue-600" />
-            <h3 className="text-lg font-semibold">Password Reset Successful</h3>
-          </div>
-          
-          <p className="text-gray-600 mb-4">
-            A new temporary password has been generated for the user. Please copy this password and share it with them securely.
-          </p>
-          
-          <div className="bg-gray-50 p-4 rounded-lg border mb-4">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
-              Temporary Password:
-            </label>
-            <div className="flex items-center space-x-2">
-              <input
-                value={tempPassword || ''}
-                readOnly
-                className="flex-1 font-mono bg-white border border-gray-300 rounded px-3 py-2"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (tempPassword) {
-                    navigator.clipboard.writeText(tempPassword);
-                    toast({
-                      title: "Copied!",
-                      description: "Password copied to clipboard",
-                    });
-                  }
-                }}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-4">
-            <p className="text-sm text-yellow-800">
-              <strong>Important:</strong> The user should change this password immediately after logging in. 
-              This temporary password will work with their existing username.
-            </p>
-          </div>
-          
-          <div className="flex justify-end">
-            <Button onClick={() => setTempPassword('')}>
-              Close
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
