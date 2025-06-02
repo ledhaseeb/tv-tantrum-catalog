@@ -1485,12 +1485,7 @@ export default function AdminPage() {
                                 variant="outline" 
                                 size="sm"
                                 className="h-8 px-2 text-blue-600"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  alert(`Reset password clicked for user ${user.id}`);
-                                  handlePasswordReset(user.id);
-                                }}
+                                onClick={() => handlePasswordReset(user.id)}
                                 disabled={isResettingPassword && resetPasswordUserId === user.id}
                               >
                                 {isResettingPassword && resetPasswordUserId === user.id ? (
