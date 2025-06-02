@@ -3070,16 +3070,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get GHL registrations for admin dashboard
   app.get("/api/admin/ghl-funnel", async (req: Request, res: Response) => {
     try {
+      console.log('GHL funnel request - session data:', {
+        hasSession: !!req.session,
+        userId: req.session?.userId,
+        sessionData: req.session
+      });
+
       if (!req.session?.userId) {
         return res.status(401).json({ message: "Authentication required" });
       }
 
       // Check if user is admin - convert string ID to number for database query
+      const userId = parseInt(req.session.userId);
+      console.log('Looking up user with ID:', userId);
+      
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, parseInt(req.session.userId)))
+        .where(eq(users.id, userId))
         .limit(1);
+
+      console.log('User lookup result:', user);
 
       if (!user?.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
