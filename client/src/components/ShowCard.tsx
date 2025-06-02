@@ -377,6 +377,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   
   // Default card view (grid) - smaller portrait style
   return (
+    <>
     <Card 
       className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col" 
       onClick={() => {
@@ -475,13 +476,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     </Card>
     
     {/* Registration Modal */}
-    {showRegistrationModal && (
-      <FavoriteRegistrationModal 
-        isOpen={showRegistrationModal}
-        onClose={() => setShowRegistrationModal(false)}
-        showName={show.name}
-      />
-    )}
+    <FavoriteRegistrationModal 
+      isOpen={showRegistrationModal}
+      onClose={() => setShowRegistrationModal(false)}
+      showName={show.name}
+    />
     </>
   );
 }
