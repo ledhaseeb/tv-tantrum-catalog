@@ -1724,7 +1724,7 @@ export class DatabaseStorage implements IStorage {
         LIMIT ${limit}
       `);
       
-      return result.map(row => ({
+      return result.rows.map(row => ({
         id: row.id,
         name: row.name,
         description: row.description,
