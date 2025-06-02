@@ -2944,7 +2944,6 @@ function ShowSubmissionsSection() {
       </div>
 
       {/* Password Reset Dialog */}
-      {console.log('Rendering dialog with tempPassword:', tempPassword)}
       <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword('')}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
