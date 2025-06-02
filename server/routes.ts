@@ -21,7 +21,7 @@ import * as apiDataUpdater from "../api-data-updater.js";
 import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import { createShortUrl, resolveShortUrl } from "./url-shortener";
-import { trackReferral } from "./referral-system";
+import { trackReferral, trackReferralClick } from "./referral-system";
 import path from "path";
 import bcrypt from "bcrypt";
 
@@ -3194,6 +3194,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error resolving short URL:", error);
       res.status(500).json({ message: "Failed to resolve short URL" });
+    }
+  });
+
+  // Track referral click and award points
+  app.post("/api/referral/click", async (req: Request, res: Response) => {
+    try {
+      const { referrerId, showId } = req.body;
+      
+      if (!referrerId || !showId) {
+        return res.status(400).json({ message: "Referrer ID and Show ID are required" });
+      }
+
+      // Get client IP address
+      const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+      const userAgent = req.get('User-Agent');
+      
+      const result = await trackReferralClick(
+        parseInt(referrerId), 
+        parseInt(showId), 
+        clientIp, 
+        userAgent
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error tracking referral click:", error);
+      res.status(500).json({ message: "Failed to track referral click" });
     }
   });
 
