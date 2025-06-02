@@ -86,7 +86,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           if (response.ok) {
             const reviews = await response.json();
             if (reviews && reviews.length > 0) {
-              const totalRating = reviews.reduce((sum: number, review: any) => sum + review.overallRating, 0);
+              const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
               const avgRating = totalRating / reviews.length;
               setReviewStats({
                 reviewCount: reviews.length,
