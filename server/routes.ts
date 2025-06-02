@@ -2486,15 +2486,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user background color
   app.put("/api/user/background-color", async (req: Request, res: Response) => {
     try {
-      console.log('=== Background Color Update Debug ===');
-      console.log('Session:', req.session);
-      console.log('Session ID:', req.session?.id);
-      console.log('User ID from session:', req.session?.userId);
-      console.log('Request body:', req.body);
-      
-      const userId = req.session?.userId;
+      const userId = req.session?.passport?.user;
       if (!userId) {
-        console.log('No userId found in session, rejecting request');
         return res.status(401).json({ message: "You must be logged in to update background color" });
       }
       
