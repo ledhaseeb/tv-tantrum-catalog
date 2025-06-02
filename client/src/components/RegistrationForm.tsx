@@ -281,9 +281,6 @@ const formSchema = z.object({
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
   }),
-  country: z.string().min(1, {
-    message: "Please select your country.",
-  }),
 });
 
 export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
@@ -300,7 +297,6 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
       email: "",
       username: "",
       password: "",
-      country: "",
     },
   });
 
@@ -529,34 +525,6 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
               <FormDescription>
                 Must be at least 6 characters.
               </FormDescription>
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="country"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Country</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your country" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="max-h-60">
-                  {countries.map((country) => (
-                    <SelectItem key={country.code} value={country.name}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
             </FormItem>
           )}
         />
