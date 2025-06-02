@@ -3232,6 +3232,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reject show submission endpoint
+  app.post("/api/show-submissions/reject", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Check if user is admin
+    const currentUser = await storage.getUserByUsername(req.user.username);
+    if (!currentUser || !currentUser.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    try {
+      const { normalizedName, rejectionReason } = req.body;
+
+      if (!normalizedName) {
+        return res.status(400).json({ error: "Normalized name is required" });
+      }
+
+      // Get all users who submitted this show request
+      const submissionUsers = await storage.getUsersWhoSubmittedShow(normalizedName);
+      
+      // Create rejection notifications for all users who requested this show
+      const notificationPromises = submissionUsers.map(async (userId: string) => {
+        return storage.createNotification({
+          userId: userId,
+          type: 'show_rejection',
+          message: `Your show request has been reviewed and declined${rejectionReason ? `: ${rejectionReason}` : '.'}`,
+          isRead: false,
+          relatedShowName: normalizedName
+        });
+      });
+
+      // Wait for all notifications to be created
+      await Promise.all(notificationPromises);
+
+      // Remove the submission from pending list
+      await storage.rejectShowSubmission(normalizedName);
+
+      console.log(`Admin ${currentUser.username} rejected submission: ${normalizedName}. Notified ${submissionUsers.length} users.`);
+
+      res.json({ 
+        message: "Show submission rejected successfully",
+        notifiedUsers: submissionUsers.length
+      });
+    } catch (error) {
+      console.error("Error rejecting submission:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get all themes for the theme selector
   app.get("/api/themes", async (req: Request, res: Response) => {
     try {

@@ -2871,6 +2871,75 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // Get users who submitted a specific show
+  async getUsersWhoSubmittedShow(normalizedName: string): Promise<string[]> {
+    try {
+      const result = await db
+        .select({ userId: showSubmissions.userId })
+        .from(showSubmissions)
+        .where(
+          and(
+            eq(showSubmissions.normalizedName, normalizedName),
+            eq(showSubmissions.status, 'pending')
+          )
+        );
+      
+      return result.map(r => r.userId);
+    } catch (error) {
+      console.error('Error getting users who submitted show:', error);
+      return [];
+    }
+  }
+
+  // Reject show submission
+  async rejectShowSubmission(normalizedName: string): Promise<void> {
+    try {
+      await db
+        .update(showSubmissions)
+        .set({ 
+          status: 'rejected',
+          processedAt: new Date()
+        })
+        .where(
+          and(
+            eq(showSubmissions.normalizedName, normalizedName),
+            eq(showSubmissions.status, 'pending')
+          )
+        );
+    } catch (error) {
+      console.error('Error rejecting show submission:', error);
+      throw error;
+    }
+  }
+
+  // Create notification
+  async createNotification(data: {
+    userId: string;
+    type: string;
+    message: string;
+    isRead: boolean;
+    relatedShowName?: string;
+  }): Promise<any> {
+    try {
+      const [notification] = await db
+        .insert(notifications)
+        .values({
+          userId: data.userId,
+          type: data.type,
+          message: data.message,
+          isRead: data.isRead,
+          relatedShowName: data.relatedShowName,
+          createdAt: new Date()
+        })
+        .returning();
+      
+      return notification;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw error;
+    }
+  }
+
   // Update user password
   async updateUserPassword(userId: string, hashedPassword: string): Promise<boolean> {
     try {

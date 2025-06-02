@@ -2776,6 +2776,10 @@ export default function AdminPage() {
 function ShowSubmissionsSection() {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [isRejecting, setIsRejecting] = useState(false);
   const { toast } = useToast();
 
   // Fetch pending submissions grouped by popularity
@@ -2877,6 +2881,60 @@ function ShowSubmissionsSection() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleRejectSubmission = async () => {
+    if (!selectedSubmission) return;
+    
+    try {
+      setIsRejecting(true);
+      
+      const response = await fetch('/api/show-submissions/reject', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          normalizedName: selectedSubmission.normalized_name,
+          rejectionReason: rejectionReason.trim() || undefined
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Show Request Rejected",
+          description: `Successfully rejected "${selectedSubmission.show_name}" and notified ${result.notifiedUsers} user(s).`,
+        });
+        
+        // Reset dialog state
+        setRejectDialogOpen(false);
+        setRejectionReason('');
+        setSelectedSubmission(null);
+        
+        // Refresh submissions list
+        fetchSubmissions();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reject submission');
+      }
+    } catch (error) {
+      console.error('Error rejecting submission:', error);
+      toast({
+        title: "Error",
+        description: `Failed to reject show request: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  const openRejectDialog = (submission: any) => {
+    setSelectedSubmission(submission);
+    setRejectionReason('');
+    setRejectDialogOpen(true);
   };
 
   if (isLoading) {
