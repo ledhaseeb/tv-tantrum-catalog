@@ -186,10 +186,10 @@ export default function SharePage() {
                 <div className="space-y-2">
                   <Button 
                     className="w-full" 
-                    onClick={() => setLocation(`/shows/${show.id}`)}
+                    onClick={() => setLocation("/")}
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    View Full Details
+                    Browse More Shows
                   </Button>
                 </div>
               ) : (
@@ -197,30 +197,9 @@ export default function SharePage() {
                 <div className="space-y-2">
                   <Button 
                     className="w-full" 
-                    onClick={() => {
-                      // Get referrer ID from URL parameters
-                      const urlParams = new URLSearchParams(window.location.search);
-                      const referrerId = urlParams.get('ref');
-                      
-                      // Build GHL form URL with referral parameters
-                      let ghlFormUrl = "https://www.uschooler.com/widget/form/k1oNtk7bxZaBfdLXDkek";
-                      
-                      // Add referral parameters as URL parameters that GHL can capture
-                      const ghlParams = new URLSearchParams();
-                      if (referrerId) {
-                        ghlParams.set('referrer_id', referrerId);
-                      }
-                      ghlParams.set('referred_show_id', showId.toString());
-                      
-                      if (ghlParams.toString()) {
-                        ghlFormUrl += `?${ghlParams.toString()}`;
-                      }
-                      
-                      // Redirect to GHL form
-                      window.location.href = ghlFormUrl;
-                    }}
+                    onClick={() => setLocation("/")}
                   >
-                    Join TV Tantrum for Free
+                    Browse More Shows
                   </Button>
                   <p className="text-xs text-center text-gray-500 mt-1">
                     Already have an account?{" "}

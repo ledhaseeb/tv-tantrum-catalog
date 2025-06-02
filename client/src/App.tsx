@@ -44,8 +44,19 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Pre-Launch Routes */}
+        {/* Home Page - Open to everyone */}
         <Route path="/">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Home />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        
+        {/* Landing Page Route */}
+        <Route path="/landing">
           <LandingPage />
         </Route>
         <Route path="/about">
@@ -74,147 +85,62 @@ function Router() {
           )}
         </Route>
         
-        {/* Main App Routes - Accessible only with approved accounts or in dev mode */}
-        {isDevMode ? (
-          // In dev mode, use regular routes without approval check
-          <Route path="/home">
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <Home />
-              </div>
-              <Footer />
+        {/* Home Page Alias - Open to everyone */}
+        <Route path="/home">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Home />
             </div>
-          </Route>
-        ) : (
-          // In production, use ApprovedRoute that checks for approval status
-          <ApprovedRoute 
-            path="/home" 
-            component={() => (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <Home />
-                </div>
-                <Footer />
-              </div>
-            )} 
-          />
-        )}
+            <Footer />
+          </div>
+        </Route>
         
-        {isDevMode ? (
-          <Route path="/browse">
+        {/* Browse Page - Open to everyone */}
+        <Route path="/browse">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Browse />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+
+        {/* Show Detail Pages - Open to everyone */}
+        <Route path="/shows/:id">
+          {(params) => (
             <div className="flex-grow flex flex-col">
               <Navbar />
               <div className="flex-grow">
-                <Browse />
+                <Detail id={parseInt(params.id, 10)} />
               </div>
               <Footer />
             </div>
-          </Route>
-        ) : (
-          <ApprovedRoute 
-            path="/browse" 
-            component={() => (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <Browse />
-                </div>
-                <Footer />
-              </div>
-            )} 
-          />
-        )}
-
-        {/* Handle both /shows/:id and /detail/:id routes */}
-        {isDevMode ? (
-          <>
-            <Route path="/shows/:id">
-              {(params) => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <Detail id={parseInt(params.id, 10)} />
-                  </div>
-                  <Footer />
-                </div>
-              )}
-            </Route>
-            <Route path="/detail/:id">
-              {(params) => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <Detail id={parseInt(params.id, 10)} />
-                  </div>
-                  <Footer />
-                </div>
-              )}
-            </Route>
-          </>
-        ) : (
-          <>
-            {/* This is a special case since it has a parameter */}
-            <Route path="/shows/:id">
-              {(params) => (
-                <ApprovedRoute 
-                  path={`/shows/${params.id}`} 
-                  component={() => (
-                    <div className="flex-grow flex flex-col">
-                      <Navbar />
-                      <div className="flex-grow">
-                        <Detail id={parseInt(params.id, 10)} />
-                      </div>
-                      <Footer />
-                    </div>
-                  )} 
-                />
-              )}
-            </Route>
-            <Route path="/detail/:id">
-              {(params) => (
-                <ApprovedRoute 
-                  path={`/detail/${params.id}`} 
-                  component={() => (
-                    <div className="flex-grow flex flex-col">
-                      <Navbar />
-                      <div className="flex-grow">
-                        <Detail id={parseInt(params.id, 10)} />
-                      </div>
-                      <Footer />
-                    </div>
-                  )} 
-                />
-              )}
-            </Route>
-          </>
-        )}
-
-        {isDevMode ? (
-          <Route path="/compare">
+          )}
+        </Route>
+        <Route path="/detail/:id">
+          {(params) => (
             <div className="flex-grow flex flex-col">
               <Navbar />
               <div className="flex-grow">
-                <Compare />
+                <Detail id={parseInt(params.id, 10)} />
               </div>
               <Footer />
             </div>
-          </Route>
-        ) : (
-          <ApprovedRoute 
-            path="/compare" 
-            component={() => (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <Compare />
-                </div>
-                <Footer />
-              </div>
-            )} 
-          />
-        )}
+          )}
+        </Route>
+
+        {/* Compare Page - Open to everyone */}
+        <Route path="/compare">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <Compare />
+            </div>
+            <Footer />
+          </div>
+        </Route>
 
         {isDevMode ? (
           <Route path="/app-about">
@@ -263,82 +189,47 @@ function Router() {
           </div>
         </Route>
 
-        {/* User Dashboard - Accessible for logged in users */}
-        {isDevMode ? (
-          <>
-            <Route path="/user-dashboard">
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <UserDashboard />
-                </div>
-                <Footer />
+        {/* User Dashboard - Requires authentication */}
+        <ProtectedRoute 
+          path="/user-dashboard" 
+          component={() => (
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <UserDashboard />
               </div>
-            </Route>
-            <Route path="/dashboard">
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <UserDashboard />
-                </div>
-                <Footer />
+              <Footer />
+            </div>
+          )} 
+        />
+        <ProtectedRoute 
+          path="/dashboard" 
+          component={() => (
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <UserDashboard />
               </div>
-            </Route>
-            <Route path="/user/:userId">
-              {(params) => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <UserProfile />
-                  </div>
-                  <Footer />
-                </div>
-              )}
-            </Route>
-          </>
-        ) : (
-          <>
-            <ApprovedRoute 
-              path="/user-dashboard" 
-              component={() => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <UserDashboard />
-                  </div>
-                  <Footer />
-                </div>
-              )} 
-            />
-            <ApprovedRoute 
-              path="/dashboard" 
-              component={() => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <UserDashboard />
-                  </div>
-                  <Footer />
-                </div>
-              )} 
-            />
-            <Route path="/user/:userId">
-              {(params) => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <UserProfile />
-                  </div>
-                  <Footer />
-                </div>
-              )}
-            </Route>
-          </>
-        )}
+              <Footer />
+            </div>
+          )} 
+        />
+        <Route path="/user/:userId">
+          {(params) => (
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <UserProfile />
+              </div>
+              <Footer />
+            </div>
+          )}
+        </Route>
 
-        {/* Submit Show - Accessible for logged in users */}
-        {isDevMode ? (
-          <Route path="/submit-show">
+        {/* Submit Show - Requires authentication */}
+        <ProtectedRoute 
+          path="/submit-show" 
+          component={() => (
             <div className="flex-grow flex flex-col">
               <Navbar />
               <div className="flex-grow">
@@ -346,73 +237,38 @@ function Router() {
               </div>
               <Footer />
             </div>
-          </Route>
-        ) : (
-          <ApprovedRoute 
-            path="/submit-show" 
-            component={() => (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <SubmitShow />
-                </div>
-                <Footer />
-              </div>
-            )} 
-          />
-        )}
+          )} 
+        />
 
-        {/* Research Page - Accessible for logged in users */}
-        {isDevMode ? (
-          <>
-            <Route path="/research">
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <Research />
-                </div>
-                <Footer />
+        {/* Research Pages - Require authentication */}
+        <ProtectedRoute 
+          path="/research" 
+          component={() => (
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <Research />
               </div>
-            </Route>
-            <Route path="/research/:id">
-              {(params) => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <ResearchDetail id={parseInt(params.id, 10)} />
-                  </div>
-                  <Footer />
-                </div>
-              )}
-            </Route>
-          </>
-        ) : (
-          <>
-            <ApprovedRoute 
-              path="/research" 
+              <Footer />
+            </div>
+          )} 
+        />
+        <Route path="/research/:id">
+          {(params) => (
+            <ProtectedRoute 
+              path={`/research/${params.id}`} 
               component={() => (
                 <div className="flex-grow flex flex-col">
                   <Navbar />
                   <div className="flex-grow">
-                    <Research />
+                    <ResearchDetail id={parseInt(params.id, 10)} />
                   </div>
                   <Footer />
                 </div>
               )} 
             />
-            <Route path="/research/:id">
-              {(params) => (
-                <div className="flex-grow flex flex-col">
-                  <Navbar />
-                  <div className="flex-grow">
-                    <ResearchDetail id={parseInt(params.id, 10)} />
-                  </div>
-                  <Footer />
-                </div>
-              )}
-            </Route>
-          </>
-        )}
+          )}
+        </Route>
 
         {/* Admin route with approval and admin check */}
         {isDevMode ? (

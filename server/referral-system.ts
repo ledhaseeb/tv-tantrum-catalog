@@ -2,7 +2,7 @@ import { db } from "./db";
 import { userReferrals, users, userPointsHistory } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
-const REFERRAL_POINTS = 10; // Points awarded for successful referrals
+const REFERRAL_POINTS = 1; // Points awarded for clicking referral links
 
 /**
  * Track a referral when a user registers via a shared link
