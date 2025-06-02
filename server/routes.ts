@@ -3074,11 +3074,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      // Check if user is admin
+      // Check if user is admin - convert string ID to number for database query
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, req.session.userId))
+        .where(eq(users.id, parseInt(req.session.userId)))
         .limit(1);
 
       if (!user?.isAdmin) {
