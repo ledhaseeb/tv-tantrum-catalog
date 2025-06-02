@@ -26,6 +26,12 @@ import path from "path";
 import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Basic test endpoint to verify routing works
+  app.get('/api/test', (req, res) => {
+    console.log('TEST ENDPOINT HIT');
+    res.json({ message: 'Server routing is working', timestamp: new Date().toISOString() });
+  });
+
   // Add health check endpoint
   app.get('/api/health', (_req, res) => {
     res.status(200).send('OK');
