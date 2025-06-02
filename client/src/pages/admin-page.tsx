@@ -981,6 +981,9 @@ export default function AdminPage() {
       setTempPassword(data.temporaryPassword);
       console.log('tempPassword state after setting:', data.temporaryPassword); // Debug log
       
+      // Temporary alert to show the password until popup is fixed
+      alert(`Password reset successful!\n\nTemporary password: ${data.temporaryPassword}\n\nPlease copy this password and share it with the user securely.`);
+      
       toast({
         title: "Password Reset Successfully",
         description: "A temporary password has been generated. Click to view and copy it.",
