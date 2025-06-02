@@ -2347,7 +2347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const points = await storage.getUserPoints(parsedUserId);
       const pointsHistory = await storage.getUserPointsHistory(parsedUserId);
       const reviews = await storage.getUserReviews(parsedUserId);
-      const favorites = await storage.getUserFavoriteShows(parsedUserId);
+      const favorites = await storage.getUserFavorites(parsedUserId);
       
       res.json({
         user: {
