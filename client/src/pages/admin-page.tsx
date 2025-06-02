@@ -3004,6 +3004,7 @@ function ShowSubmissionsSection() {
                     Approve
                   </Button>
                   <Button
+                    onClick={() => openRejectDialog(submission)}
                     variant="outline"
                     size="sm"
                     className="border-red-300 text-red-600 hover:bg-red-50"
@@ -3017,6 +3018,63 @@ function ShowSubmissionsSection() {
           </Card>
         ))}
       </div>
+
+      {/* Rejection Reason Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Show Request</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to reject the request for "{selectedSubmission?.show_name}"? 
+              You can optionally provide a reason that will be sent to the users who requested this show.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="rejection-reason">Rejection Reason (Optional)</Label>
+              <Textarea
+                id="rejection-reason"
+                placeholder="e.g., Show not suitable for platform, duplicate content, etc."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={3}
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This reason will be included in the notification to users who requested this show.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setRejectDialogOpen(false)}
+              disabled={isRejecting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleRejectSubmission}
+              disabled={isRejecting}
+            >
+              {isRejecting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Rejecting...
+                </>
+              ) : (
+                <>
+                  <X className="h-4 w-4 mr-2" />
+                  Reject Request
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
