@@ -37,6 +37,7 @@ export const users = pgTable("users", {
   rank: text("rank").default("TV Watcher"),
   profileBio: text("profile_bio"),
   referralCode: text("referral_code").unique(),
+  backgroundColor: text("background_color").default("bg-purple-500"),
 });
 
 // --- Core TV Shows Schema ---
