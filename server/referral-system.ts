@@ -134,7 +134,7 @@ async function awardClickPoints(referrerId: number) {
       await tx
         .insert(userPointsHistory)
         .values({
-          userId: referrerId.toString(),
+          userId: referrerId,
           points: REFERRAL_POINTS,
           activityType: "referral_click",
           description: "Points earned for someone clicking your shared link"
