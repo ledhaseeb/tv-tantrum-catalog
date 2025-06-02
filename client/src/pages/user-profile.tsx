@@ -133,7 +133,7 @@ export default function UserProfile() {
                   <div key={review.id} className="border-b border-gray-200 last:border-b-0 pb-3 last:pb-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{review.tvShowName}</h4>
+                        <h4 className="font-medium text-sm">{review.showName || 'Unknown Show'}</h4>
                         <div className="flex items-center gap-1 my-1">
                           {[...Array(5)].map((_, i) => (
                             <Star

@@ -2130,8 +2130,16 @@ export class DatabaseStorage implements IStorage {
   async getUserReviews(userId: number): Promise<any[]> {
     try {
       const reviews = await db
-        .select()
+        .select({
+          id: tvShowReviews.id,
+          showId: tvShowReviews.showId,
+          showName: tvShows.name,
+          review: tvShowReviews.review,
+          rating: tvShowReviews.rating,
+          createdAt: tvShowReviews.createdAt
+        })
         .from(tvShowReviews)
+        .innerJoin(tvShows, eq(tvShowReviews.showId, tvShows.id))
         .where(eq(tvShowReviews.userId, userId.toString()))
         .orderBy(desc(tvShowReviews.createdAt));
       
