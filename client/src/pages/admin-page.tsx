@@ -147,6 +147,9 @@ export default function AdminPage() {
   const [researchSearchTerm, setResearchSearchTerm] = useState('');
   const [isLoadingResearch, setIsLoadingResearch] = useState(true);
   const [isApprovingUser, setIsApprovingUser] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [resetPasswordUserId, setResetPasswordUserId] = useState<number | null>(null);
+  const [tempPassword, setTempPassword] = useState<string>('');
 
   // GHL registration funnel state
   const [ghlRegistrations, setGhlRegistrations] = useState<any[]>([]);
@@ -947,6 +950,44 @@ export default function AdminPage() {
       });
     } finally {
       setIsApprovingUser(false);
+    }
+  };
+
+  // Handle password reset
+  const handlePasswordReset = async (userId: number) => {
+    setIsResettingPassword(true);
+    setResetPasswordUserId(userId);
+    try {
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reset password');
+      }
+
+      const data = await response.json();
+      setTempPassword(data.temporaryPassword);
+      
+      toast({
+        title: "Password Reset Successfully",
+        description: "A temporary password has been generated. Please copy it and share with the user.",
+      });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResettingPassword(false);
     }
   };
   

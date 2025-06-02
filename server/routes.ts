@@ -2693,6 +2693,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin password reset endpoint
+  app.post("/api/admin/reset-password", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Check if user is admin
+    const currentUser = await storage.getUserByUsername(req.user.username);
+    if (!currentUser || !currentUser.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    try {
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      // Generate a secure temporary password (12 characters, mix of letters, numbers, symbols)
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
+      let tempPassword = '';
+      for (let i = 0; i < 12; i++) {
+        tempPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      // Hash the temporary password
+      const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
+
+      // Update password in database
+      const success = await storage.updateUserPassword(userId, hashedTempPassword);
+      
+      if (!success) {
+        return res.status(500).json({ error: "Failed to update password" });
+      }
+
+      // Log the admin action for security auditing
+      console.log(`Admin ${currentUser.username} (ID: ${currentUser.id}) reset password for user ID: ${userId} at ${new Date().toISOString()}`);
+
+      res.json({ 
+        message: "Password reset successfully",
+        temporaryPassword: tempPassword 
+      });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // GHL Webhook endpoints - multiple variations to catch different URL patterns
   
   // Simple test endpoint first
