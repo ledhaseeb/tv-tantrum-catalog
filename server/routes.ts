@@ -2647,8 +2647,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // GHL Webhook endpoints - multiple variations to catch different URL patterns
   
+  // Simple test endpoint first
+  app.all("/api/test-webhook", (req: Request, res: Response) => {
+    console.log('=== TEST WEBHOOK RECEIVED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Method:', req.method);
+    console.log('Body:', req.body);
+    res.status(200).json({ message: 'Test webhook working', timestamp: new Date().toISOString() });
+  });
+  
   // Try all possible GHL webhook URL patterns
-  app.all("/api/ghl/webhook", async (req: Request, res: Response) => {
+  app.all("/api/ghl/webhook", (req: Request, res: Response) => {
     console.log('=== GHL WEBHOOK (SLASH VERSION) RECEIVED ===');
     console.log('Timestamp:', new Date().toISOString());
     console.log('Method:', req.method);
