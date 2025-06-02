@@ -13,7 +13,7 @@ async function hashPassword(password: string) {
 import { 
   users, favorites, tvShows, tvShowReviews, tvShowSearches, tvShowViews, 
   themes, platforms, tvShowThemes, tvShowPlatforms,
-  userPointsHistory, reviewUpvotes, researchSummaries, userReadResearch, showSubmissions, userReferrals,
+  userPointsHistory, reviewUpvotes, researchSummaries, userReadResearch, showSubmissions, userReferrals, notifications,
   type User, type InsertUser, 
   type TvShow, type InsertTvShow, 
   type TvShowReview, type InsertTvShowReview,
@@ -2924,12 +2924,11 @@ export class DatabaseStorage implements IStorage {
       const [notification] = await db
         .insert(notifications)
         .values({
-          userId: data.userId,
+          userId: parseInt(data.userId), // Convert string to integer
           type: data.type,
           message: data.message,
           isRead: data.isRead,
           relatedShowName: data.relatedShowName,
-          createdAt: new Date()
         })
         .returning();
       

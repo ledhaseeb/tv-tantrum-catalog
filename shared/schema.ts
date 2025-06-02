@@ -403,6 +403,25 @@ export type ShowSubmission = typeof showSubmissions.$inferSelect;
 export type InsertUserReferral = z.infer<typeof insertUserReferralSchema>;
 export type UserReferral = typeof userReferrals.$inferSelect;
 
+// --- Notifications table ---
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  relatedShowName: text("related_show_name"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
+
 // --- External data schema for GitHub import ---
 export const tvShowGitHubSchema = z.object({
   name: z.string(),
