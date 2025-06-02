@@ -74,6 +74,36 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     
     checkFavoriteStatus();
   }, [user, show.id]);
+
+  // Fetch review statistics for this show
+  useEffect(() => {
+    if (show?.id) {
+      const fetchReviewStats = async () => {
+        try {
+          const response = await fetch(`/api/reviews/${show.id}`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const reviews = await response.json();
+            if (reviews && reviews.length > 0) {
+              const totalRating = reviews.reduce((sum: number, review: any) => sum + review.overallRating, 0);
+              const avgRating = totalRating / reviews.length;
+              setReviewStats({
+                reviewCount: reviews.length,
+                avgRating: Math.round(avgRating * 10) / 10 // Round to 1 decimal place
+              });
+            } else {
+              setReviewStats({ reviewCount: 0, avgRating: 0 });
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching review stats:', error);
+          setReviewStats({ reviewCount: 0, avgRating: 0 });
+        }
+      };
+      fetchReviewStats();
+    }
+  }, [show?.id]);
   
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -253,6 +283,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           {/* Title with ellipsis */}
           <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
           
+          {/* Review Statistics */}
+          {reviewStats && reviewStats.reviewCount > 0 && (
+            <div className="flex items-center gap-1 mb-2 text-xs">
+              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium">{reviewStats.avgRating}</span>
+              <span className="text-gray-500">({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? 's' : ''})</span>
+            </div>
+          )}
+          
           {/* Age Badge */}
           <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
             Ages {normalizedShow.ageRange}
@@ -316,6 +355,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                     <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs font-medium">
                       {show.availableOn[0]}{show.availableOn.length > 1 ? "+" : ""}
                     </Badge>
+                  )}
+                  {/* Review Statistics */}
+                  {reviewStats && reviewStats.reviewCount > 0 && (
+                    <div className="flex items-center gap-1 text-xs">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{reviewStats.avgRating}</span>
+                      <span className="text-gray-500">({reviewStats.reviewCount})</span>
+                    </div>
                   )}
                 </div>
                 <p className="text-gray-600 text-sm mb-2 line-clamp-2">
