@@ -58,7 +58,7 @@ export default function UserProfile() {
   }
 
   const user = profileData.user || {};
-  const totalPoints = Number(profileData.points) || 0;
+  const totalPoints = Number(profileData.points?.total) || 0;
   const reviews = Array.isArray(profileData.reviews) ? profileData.reviews : [];
   const favorites = Array.isArray(profileData.favorites) ? profileData.favorites : [];
   const recentActivity = Array.isArray(profileData.pointsHistory) ? profileData.pointsHistory : [];
