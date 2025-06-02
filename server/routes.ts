@@ -2483,6 +2483,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Update user background color
+  app.put("/api/user/background-color", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to update background color" });
+      }
+      
+      const { backgroundColor } = req.body;
+      if (!backgroundColor) {
+        return res.status(400).json({ message: "Background color is required" });
+      }
+      
+      // Convert userId to integer for database operations
+      const parsedUserId = parseInt(userId);
+      
+      // Update user's background color in database
+      const updatedUser = await db
+        .update(users)
+        .set({ backgroundColor })
+        .where(eq(users.id, parsedUserId))
+        .returning();
+      
+      if (updatedUser.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ 
+        success: true, 
+        backgroundColor,
+        message: "Background color updated successfully" 
+      });
+    } catch (error) {
+      console.error("Error updating background color:", error);
+      res.status(500).json({ message: "Failed to update background color" });
+    }
+  });
+
   app.get("/api/reviews/:reviewId/upvotes", async (req: Request, res: Response) => {
     try {
       const reviewId = parseInt(req.params.reviewId);
