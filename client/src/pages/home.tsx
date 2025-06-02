@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import ShowCard from "@/components/ShowCard";
 import { TvShow } from "@shared/schema";
-import { Heart, Search } from "lucide-react";
+import { Heart, Search, Star } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -115,6 +115,9 @@ export default function Home() {
   // Track the favorite status of the featured show
   const [isFeaturedShowFavorite, setIsFeaturedShowFavorite] = useState(false);
   
+  // Track the review statistics for the featured show
+  const [featuredShowReviewStats, setFeaturedShowReviewStats] = useState<{reviewCount: number, avgRating: number} | null>(null);
+  
   // Check favorite status when featured show is loaded and user is logged in
   useEffect(() => {
     // Reset favorite status when user logs out
@@ -142,6 +145,36 @@ export default function Home() {
       checkFavoriteStatus();
     }
   }, [featuredShow, user, isFavorite]);
+  
+  // Fetch review statistics for the featured show
+  useEffect(() => {
+    if (featuredShow?.id) {
+      const fetchFeaturedShowReviewStats = async () => {
+        try {
+          const response = await fetch(`/api/reviews/${featuredShow.id}`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const reviews = await response.json();
+            if (reviews && reviews.length > 0) {
+              const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
+              const avgRating = totalRating / reviews.length;
+              setFeaturedShowReviewStats({
+                reviewCount: reviews.length,
+                avgRating: Math.round(avgRating * 10) / 10 // Round to 1 decimal place
+              });
+            } else {
+              setFeaturedShowReviewStats({ reviewCount: 0, avgRating: 0 });
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching featured show review stats:', error);
+          setFeaturedShowReviewStats({ reviewCount: 0, avgRating: 0 });
+        }
+      };
+      fetchFeaturedShowReviewStats();
+    }
+  }, [featuredShow?.id]);
   
   // Helper function to check if property exists with different case formats
   const getShowProperty = (show: any, propertyNames: string[]) => {
@@ -498,6 +531,16 @@ export default function Home() {
                 <Badge variant="outline" className="bg-green-100 text-green-800 mr-2">
                   Ages {featuredShow.ageRange}
                 </Badge>
+                
+                {/* Review Statistics */}
+                {featuredShowReviewStats && featuredShowReviewStats.reviewCount > 0 && (
+                  <div className="inline-flex items-center gap-1 mr-2">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium text-sm">{featuredShowReviewStats.avgRating}</span>
+                    <span className="text-gray-500 text-sm">({featuredShowReviewStats.reviewCount} review{featuredShowReviewStats.reviewCount !== 1 ? 's' : ''})</span>
+                  </div>
+                )}
+                
                 <div className="inline-flex items-center">
                   <div className="flex items-center mr-2">
                     {Array(5).fill(0).map((_, i) => {
