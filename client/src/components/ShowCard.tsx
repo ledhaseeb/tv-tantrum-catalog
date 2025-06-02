@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Heart } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { FavoriteRegistrationModal } from "@/components/FavoriteRegistrationModal";
 
 interface ShowCardProps {
   show: TvShow;
@@ -20,6 +21,7 @@ interface ShowCardProps {
 export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
   // Ensure we have valid show data
@@ -80,12 +82,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     
     // Check if user is logged in
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in or register to save shows to your favorites.",
-        variant: "default",
-      });
-      navigate("/auth");
+      setShowRegistrationModal(true);
       return;
     }
     
@@ -476,5 +473,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         </div>
       </CardContent>
     </Card>
+    
+    {/* Registration Modal */}
+    {showRegistrationModal && (
+      <FavoriteRegistrationModal 
+        isOpen={showRegistrationModal}
+        onClose={() => setShowRegistrationModal(false)}
+        showName={show.name}
+      />
+    )}
+    </>
   );
 }
