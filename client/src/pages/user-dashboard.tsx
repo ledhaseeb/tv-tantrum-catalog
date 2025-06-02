@@ -384,7 +384,7 @@ const UserDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <UserPlus className="w-4 h-4 mr-2 text-pink-500" />
-                    <span>Referrals</span>
+                    <span>Referral Clicks</span>
                   </div>
                   <span className="font-medium">{pointsBreakdown.referrals} points</span>
                 </div>

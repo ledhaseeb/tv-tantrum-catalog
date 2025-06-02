@@ -2116,7 +2116,7 @@ export class DatabaseStorage implements IStorage {
       const loginStreakPoints = await this.getPointsByActivityType(userId, 'login_streak');
       const loginRewardPoints = await this.getPointsByActivityType(userId, 'login_reward');
       const sharePoints = await this.getPointsByActivityType(userId, 'share');
-      const referralPoints = await this.getPointsByActivityType(userId, 'referral');
+      const referralClickPoints = await this.getPointsByActivityType(userId, 'referral_click');
       const submissionPoints = await this.getPointsByActivityType(userId, 'show_submission');
       const submissionApprovedPoints = await this.getPointsByActivityType(userId, 'show_submission_approved');
       const totalSubmissionPoints = submissionPoints + submissionApprovedPoints;
@@ -2131,7 +2131,7 @@ export class DatabaseStorage implements IStorage {
           consecutiveLogins: loginStreakPoints,
           loginRewards: loginRewardPoints,
           shares: sharePoints,
-          referrals: referralPoints,
+          referrals: referralClickPoints,
           showSubmissions: totalSubmissionPoints,
           researchRead: researchPoints
         },
