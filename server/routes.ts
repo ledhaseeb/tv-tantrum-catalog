@@ -2352,7 +2352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user: {
           id: user.id,
           username: user.username,
-          backgroundColor: user.backgroundColor,
+          backgroundColor: user.backgroundColor || '#6366f1',
           joinedAt: user.createdAt
         },
         points,
