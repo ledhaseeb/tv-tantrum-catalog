@@ -1717,7 +1717,7 @@ export class DatabaseStorage implements IStorage {
         FROM tv_shows ts
         INNER JOIN tv_show_reviews tr ON ts.id = tr.tv_show_id
         GROUP BY ts.id
-        HAVING COUNT(tr.rating) >= 3  -- Minimum 3 reviews for credibility
+        HAVING COUNT(tr.rating) >= 2  -- Minimum 2 reviews for credibility
         ORDER BY 
           COUNT(CASE WHEN tr.rating >= 4 THEN 1 END) DESC,  -- High ratings first
           ROUND(AVG(tr.rating)::numeric, 2) DESC,           -- Then average rating
