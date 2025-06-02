@@ -393,9 +393,9 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
         
         <div className="text-center text-xs text-gray-500 px-2 mb-4">
           {user ? (
-            "Download and share these images with your referral link to earn points when new users register!"
+            "Download and share these images with your referral link to earn points when people click your link!"
           ) : (
-            "Register for a free account to get your own referral link and earn points when others sign up through your shares."
+            "Anyone can share, but only registered users earn points when people click their referral links. Register now to start earning!"
           )}
         </div>
         
@@ -408,15 +408,15 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
             <ol className="text-xs text-gray-600 list-decimal pl-5">
               <li>Download your preferred image format using the buttons above</li>
               <li>Share the image on your social media accounts</li>
-              <li>Include your referral link in your post - you earn points when new users register through your link:</li>
+              <li>Include your referral link in your post - you earn points when people click your link:</li>
             </ol>
           ) : (
             <div className="text-xs text-gray-600 space-y-1">
-              <p>To earn referral points:</p>
+              <p>Anyone can share, but only registered users earn points:</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>Register for a free account to get your referral link</li>
                 <li>Share images with your referral link</li>
-                <li>Earn points when others register through your links</li>
+                <li>Earn points when people click your links</li>
               </ol>
             </div>
           )}
