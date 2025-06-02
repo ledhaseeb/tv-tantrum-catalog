@@ -1724,7 +1724,10 @@ export class DatabaseStorage implements IStorage {
         LIMIT ${limit}
       `);
       
-      return result.rows.map(row => ({
+      // Check if result is array or has rows property
+      const rows = Array.isArray(result) ? result : result.rows || [];
+      
+      return rows.map(row => ({
         id: row.id,
         name: row.name,
         description: row.description,
