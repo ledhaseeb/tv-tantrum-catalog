@@ -193,7 +193,7 @@ export default function Navbar() {
                         <span>Logout</span>
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="z-[60] max-w-sm mx-4">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -337,7 +337,7 @@ export default function Navbar() {
                               Logout
                             </button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="z-[60] max-w-sm mx-4">
                             <AlertDialogHeader>
                               <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
                               <AlertDialogDescription>
