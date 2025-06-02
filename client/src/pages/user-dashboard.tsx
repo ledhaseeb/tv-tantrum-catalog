@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import ShowCard from '@/components/ShowCard';
 import { useLocation } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
+import ChangePasswordForm from '@/components/ChangePasswordForm';
 
 // Badge progression system
 const BADGE_PROGRESSION = [
@@ -289,10 +290,11 @@ const UserDashboard = () => {
       </Card>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="content">Your Content</TabsTrigger>
+          <TabsTrigger value="settings">Account Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -560,6 +562,20 @@ const UserDashboard = () => {
                   <p>You haven't added any favorites yet.</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Settings</CardTitle>
+              <CardDescription>
+                Manage your account preferences and security settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm />
             </CardContent>
           </Card>
         </TabsContent>
