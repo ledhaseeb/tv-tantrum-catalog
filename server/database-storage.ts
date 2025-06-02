@@ -2872,4 +2872,21 @@ function getDefaultImageUrl(title: string | undefined, image_filename: string | 
   return `https://raw.githubusercontent.com/ledhaseeb/tvtantrum/main/client/public/images/${formattedTitle}.jpg`;
 }
 
+  // Update user password
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<boolean> {
+    try {
+      await db
+        .update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, userId));
+      
+      console.log(`Password updated successfully for user ${userId}`);
+      return true;
+    } catch (error) {
+      console.error('Error updating user password:', error);
+      return false;
+    }
+  }
+}
+
 export const storage = new DatabaseStorage();
