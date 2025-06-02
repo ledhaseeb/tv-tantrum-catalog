@@ -392,7 +392,11 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
         </div>
         
         <div className="text-center text-xs text-gray-500 px-2 mb-4">
-          Download this image to share on social media. You'll earn points when others sign up using your referral link, not just for sharing!
+          {user ? (
+            "Download and share these images with your referral link to earn points when new users register!"
+          ) : (
+            "Register for a free account to get your own referral link and earn points when others sign up through your shares."
+          )}
         </div>
         
         {/* We've moved the share link input to the instruction section */}
@@ -400,11 +404,22 @@ export default function ShareModal({ open, onOpenChange, show }: ShareModalProps
         {/* Referral link explanation */}
         <div className="flex flex-col space-y-2 bg-gray-50 p-3 rounded-md">
           <p className="text-center text-sm font-medium">How to share and earn referral points</p>
-          <ol className="text-xs text-gray-600 list-decimal pl-5">
-            <li>Download the image above using the download button</li>
-            <li>Share the image on your social media accounts</li>
-            <li>Include your referral link in your post - you only earn points when new users register using your link:</li>
-          </ol>
+          {user ? (
+            <ol className="text-xs text-gray-600 list-decimal pl-5">
+              <li>Download your preferred image format using the buttons above</li>
+              <li>Share the image on your social media accounts</li>
+              <li>Include your referral link in your post - you earn points when new users register through your link:</li>
+            </ol>
+          ) : (
+            <div className="text-xs text-gray-600 space-y-1">
+              <p>To earn referral points:</p>
+              <ol className="list-decimal pl-5 space-y-1">
+                <li>Register for a free account to get your referral link</li>
+                <li>Share images with your referral link</li>
+                <li>Earn points when others register through your links</li>
+              </ol>
+            </div>
+          )}
           <div className="flex mt-1 items-center">
             <Input
               value={displayUrl}
