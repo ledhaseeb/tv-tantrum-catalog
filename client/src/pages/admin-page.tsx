@@ -975,11 +975,12 @@ export default function AdminPage() {
       }
 
       const data = await response.json();
+      console.log('Password reset response:', data); // Debug log
       setTempPassword(data.temporaryPassword);
       
       toast({
         title: "Password Reset Successfully",
-        description: "A temporary password has been generated. Please copy it and share with the user.",
+        description: "A temporary password has been generated. Click to view and copy it.",
       });
     } catch (error) {
       console.error('Error resetting password:', error);
