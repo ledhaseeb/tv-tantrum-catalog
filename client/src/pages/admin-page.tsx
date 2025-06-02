@@ -2963,7 +2963,7 @@ function ShowSubmissionsSection() {
       {/* Password Reset Popup */}
       <div 
         className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${
-          tempPassword ? 'block' : 'hidden'
+          tempPassword && tempPassword.length > 0 ? 'block' : 'hidden'
         }`}
         style={{ zIndex: 9999 }}
       >
