@@ -482,6 +482,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             </div>
           </div>
           
+          {/* Review Statistics */}
+          {reviewStats && reviewStats.reviewCount > 0 && (
+            <div className="flex items-center gap-1 text-xs">
+              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium">{reviewStats.avgRating}</span>
+              <span className="text-gray-500">({reviewStats.reviewCount})</span>
+            </div>
+          )}
+          
           {/* Stimulation score indicator */}
           <div className="flex items-center gap-1">
             <div className="flex items-center scale-75">
