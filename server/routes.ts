@@ -12,7 +12,7 @@ import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
-import { setupAuth } from "./auth";
+import { setupAuth, comparePasswords } from "./auth";
 // Use the new consolidated utility files
 import * as imageOptimizer from "../image-optimizer.js";
 import * as imageManager from "../image-manager.js";
@@ -2674,8 +2674,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      // Verify current password using the same method as login
+      const isCurrentPasswordValid = await comparePasswords(currentPassword, currentUser.password);
       if (!isCurrentPasswordValid) {
         return res.status(400).json({ error: "Current password is incorrect" });
       }
