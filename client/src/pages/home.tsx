@@ -652,7 +652,7 @@ export default function Home() {
         "Popular Shows", 
         "Most-viewed shows across all age groups", 
         popularShows, 
-        "/browse"
+        "/browse?sortBy=popular"
       )}
       
       {/* Highly Rated */}
