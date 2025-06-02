@@ -6,7 +6,7 @@ import RatingBar from "@/components/RatingBar";
 import { TvShow } from "@shared/schema";
 import { getStimulationScoreColor } from "@/lib/showUtils";
 import { useAuth } from "@/hooks/use-auth";
-import { Heart } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { FavoriteRegistrationModal } from "@/components/FavoriteRegistrationModal";
@@ -22,6 +22,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [reviewStats, setReviewStats] = useState<{reviewCount: number, avgRating: number} | null>(null);
   const { user, toggleFavorite: toggleFav } = useAuth();
   
   // Ensure we have valid show data

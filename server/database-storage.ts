@@ -1234,6 +1234,7 @@ export class DatabaseStorage implements IStorage {
           break;
         case 'rating_desc':
         case 'rating':
+        case 'overall-rating':
           // For rating-based sorting, we need to use direct SQL
           // Fall through to regular query and handle rating sort post-query
           query = query.orderBy(tvShows.name); // Default order, will be overridden
@@ -1251,7 +1252,7 @@ export class DatabaseStorage implements IStorage {
     let shows = await query;
     
     // Handle rating-based sorting (post-query with review data)
-    if (filters.sortBy === 'rating' || filters.sortBy === 'rating_desc') {
+    if (filters.sortBy === 'rating' || filters.sortBy === 'rating_desc' || filters.sortBy === 'overall-rating') {
       try {
         // Get review statistics for all shows
         const client = await pool.connect();
