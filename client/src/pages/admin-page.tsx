@@ -62,7 +62,9 @@ import {
   Image,
   Trash2,
   Info,
-  Video
+  Video,
+  Key,
+  Copy
 } from 'lucide-react';
 import { ImageUpload } from '@/components/image-upload';
 import { TvShow, User as UserType } from '@shared/schema';
@@ -1475,6 +1477,20 @@ export default function AdminPage() {
                                   )}
                                 </>
                               )}
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="h-8 px-2 text-blue-600"
+                                onClick={() => handlePasswordReset(user.id)}
+                                disabled={isResettingPassword && resetPasswordUserId === user.id}
+                              >
+                                {isResettingPassword && resetPasswordUserId === user.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Key className="h-4 w-4" />
+                                )}
+                                <span className="ml-1">Reset Password</span>
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -2922,6 +2938,62 @@ function ShowSubmissionsSection() {
           </Card>
         ))}
       </div>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword('')}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Key className="h-5 w-5 mr-2 text-blue-600" />
+              Password Reset Successful
+            </DialogTitle>
+            <DialogDescription>
+              A new temporary password has been generated for the user. Please copy this password and share it with them securely.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                Temporary Password:
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  value={tempPassword}
+                  readOnly
+                  className="font-mono bg-white"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(tempPassword);
+                    toast({
+                      title: "Copied!",
+                      description: "Password copied to clipboard",
+                    });
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+              <p className="text-sm text-yellow-800">
+                <strong>Important:</strong> The user should change this password immediately after logging in. 
+                This temporary password will work with their existing username.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button onClick={() => setTempPassword('')}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
