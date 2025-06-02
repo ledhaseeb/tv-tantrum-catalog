@@ -23,6 +23,8 @@ import UserProfile from "@/pages/user-profile";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
 import ResearchView from "@/pages/research-view";
 import SharePage from "@/pages/share";
 import AdminResearchLinks from "@/pages/admin-research-links";
@@ -312,6 +314,27 @@ function Router() {
             />
           </>
         )}
+
+        {/* Legal Pages - Open to everyone */}
+        <Route path="/privacy-policy">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <PrivacyPolicy />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/terms-of-service">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <TermsOfService />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+
         <Route>
           <NotFound />
         </Route>

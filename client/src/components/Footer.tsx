@@ -36,6 +36,14 @@ export default function Footer() {
                 <li><Link href={aboutPageUrl} className="text-white/80 hover:text-white">About Us</Link></li>
               </ul>
             </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li><Link href="/privacy-policy" className="text-white/80 hover:text-white">Privacy Policy</Link></li>
+                <li><Link href="/terms-of-service" className="text-white/80 hover:text-white">Terms of Service</Link></li>
+              </ul>
+            </div>
             
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Connect</h3>
