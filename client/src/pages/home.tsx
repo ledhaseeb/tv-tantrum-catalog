@@ -660,7 +660,7 @@ export default function Home() {
         "Highly Rated Shows",
         "Top-rated shows across all categories", 
         highlyRatedShows,
-        "/browse?sortBy=stimulationScore&sortDirection=asc"
+        "/browse?sortBy=rating&sortDirection=desc"
       )}
       
       {/* Lower Stimulation */}

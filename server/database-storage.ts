@@ -1232,6 +1232,12 @@ export class DatabaseStorage implements IStorage {
         case 'year_desc':
           query = query.orderBy(desc(tvShows.releaseYear));
           break;
+        case 'rating_desc':
+        case 'rating':
+          // For rating-based sorting, we need to use direct SQL
+          // Fall through to regular query and handle rating sort post-query
+          query = query.orderBy(tvShows.name); // Default order, will be overridden
+          break;
         default:
           // Default to name ascending
           query = query.orderBy(tvShows.name);
@@ -1243,6 +1249,52 @@ export class DatabaseStorage implements IStorage {
     
     // Execute query
     let shows = await query;
+    
+    // Handle rating-based sorting (post-query with review data)
+    if (filters.sortBy === 'rating' || filters.sortBy === 'rating_desc') {
+      try {
+        // Get review statistics for all shows
+        const client = await pool.connect();
+        try {
+          const reviewStats = await client.query(`
+            SELECT 
+              tv_show_id,
+              AVG(rating) as avg_rating,
+              COUNT(rating) as review_count
+            FROM tv_show_reviews 
+            GROUP BY tv_show_id
+          `);
+          
+          // Create a map of show ratings
+          const ratingMap = new Map();
+          reviewStats.rows.forEach(row => {
+            ratingMap.set(row.tv_show_id, {
+              avgRating: parseFloat(row.avg_rating) || 0,
+              reviewCount: parseInt(row.review_count) || 0
+            });
+          });
+          
+          // Sort shows by rating (highest first)
+          shows.sort((a, b) => {
+            const aStats = ratingMap.get(a.id) || { avgRating: 0, reviewCount: 0 };
+            const bStats = ratingMap.get(b.id) || { avgRating: 0, reviewCount: 0 };
+            
+            // Sort by average rating first, then by review count as tiebreaker
+            if (bStats.avgRating !== aStats.avgRating) {
+              return bStats.avgRating - aStats.avgRating;
+            }
+            return bStats.reviewCount - aStats.reviewCount;
+          });
+          
+          console.log(`Applied rating-based sorting to ${shows.length} shows`);
+        } finally {
+          client.release();
+        }
+      } catch (error) {
+        console.error('Error applying rating-based sorting:', error);
+        // Continue with default sorting if rating sort fails
+      }
+    }
     
     // Handle theme filtering (post-query for better control)
     if (filters.themes && filters.themes.length > 0) {
