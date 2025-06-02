@@ -141,6 +141,7 @@ export const tvShowReviews = pgTable("tv_show_reviews", {
   userName: text("user_name").notNull(),
   rating: integer("rating").notNull(), // 1-5 scale
   review: text("review").notNull(),
+  showName: text("show_name"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

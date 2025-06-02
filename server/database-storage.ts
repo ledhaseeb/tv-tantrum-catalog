@@ -2136,10 +2136,10 @@ export class DatabaseStorage implements IStorage {
         .where(eq(tvShowReviews.userId, userId.toString()))
         .orderBy(desc(tvShowReviews.createdAt));
       
-      // The reviews already have show_name from the database, map it correctly
+      // The reviews now have the showName column properly mapped from the schema
       return reviews.map(review => ({
         ...review,
-        showName: review.showName || review.show_name || 'Unknown Show'
+        showName: review.showName || 'Unknown Show'
       }));
     } catch (error) {
       console.error('Error getting user reviews:', error);
