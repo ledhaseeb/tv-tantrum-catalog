@@ -138,16 +138,31 @@ function RegisterForm({
       if (event.origin !== window.location.origin) return;
       
       if (event.data.type === 'GHL_FORM_COMPLETED') {
+        // Store the email for the complete registration page
+        if (event.data.email) {
+          localStorage.setItem('ghl_user_email', event.data.email);
+        }
+        
         toast({
           title: "Email Verification Sent!",
-          description: "Please check your email and click the verification link to continue.",
+          description: "Please check your email and click the verification link to continue registration.",
         });
+        
+        // Redirect to complete registration page after a short delay
+        setTimeout(() => {
+          const email = event.data.email || localStorage.getItem('ghl_user_email');
+          if (email) {
+            navigate(`/complete-registration?email=${encodeURIComponent(email)}`);
+          } else {
+            navigate('/complete-registration');
+          }
+        }, 2000);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [toast]);
+  }, [toast, navigate]);
 
   return (
     <Card>

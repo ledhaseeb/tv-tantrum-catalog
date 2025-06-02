@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Loader2, CheckCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,7 +23,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, CheckCircle } from "lucide-react";
 import { useLocation } from "wouter";
 
 const countries = [
@@ -287,6 +287,8 @@ type CompleteRegistrationForm = z.infer<typeof completeRegistrationSchema>;
 export default function CompleteRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const [usernameCheckTimeout, setUsernameCheckTimeout] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -319,6 +321,51 @@ export default function CompleteRegistration() {
     },
   });
 
+  // Function to check username availability
+  const checkUsernameAvailability = async (username: string) => {
+    if (username.length < 3) {
+      setUsernameStatus('invalid');
+      return;
+    }
+
+    setUsernameStatus('checking');
+    
+    try {
+      const response = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUsernameStatus(data.available ? 'available' : 'taken');
+      } else {
+        setUsernameStatus('idle');
+      }
+    } catch (error) {
+      console.error('Error checking username:', error);
+      setUsernameStatus('idle');
+    }
+  };
+
+  // Debounced username checker
+  const handleUsernameChange = (username: string) => {
+    // Clear existing timeout
+    if (usernameCheckTimeout) {
+      clearTimeout(usernameCheckTimeout);
+    }
+
+    // Reset status if username is empty
+    if (!username.trim()) {
+      setUsernameStatus('idle');
+      return;
+    }
+
+    // Set new timeout
+    const timeout = setTimeout(() => {
+      checkUsernameAvailability(username);
+    }, 500); // Wait 500ms after user stops typing
+
+    setUsernameCheckTimeout(timeout);
+  };
+
   // Update form when component mounts or URL changes
   useEffect(() => {
     const prefilledEmail = getPrefilledEmail();
@@ -326,6 +373,15 @@ export default function CompleteRegistration() {
       form.setValue('email', prefilledEmail);
     }
   }, [form]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (usernameCheckTimeout) {
+        clearTimeout(usernameCheckTimeout);
+      }
+    };
+  }, [usernameCheckTimeout]);
 
   const onSubmit = async (data: CompleteRegistrationForm) => {
     setIsSubmitting(true);
@@ -421,11 +477,51 @@ export default function CompleteRegistration() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Choose a unique username" 
-                        {...field} 
-                      />
+                      <div className="relative">
+                        <Input 
+                          placeholder="Choose a unique username" 
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            handleUsernameChange(e.target.value);
+                          }}
+                          className={`pr-10 ${
+                            usernameStatus === 'available' ? 'border-green-500' :
+                            usernameStatus === 'taken' ? 'border-red-500' :
+                            usernameStatus === 'invalid' ? 'border-yellow-500' :
+                            ''
+                          }`}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                          {usernameStatus === 'checking' && (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          )}
+                          {usernameStatus === 'available' && (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                          {usernameStatus === 'taken' && (
+                            <span className="text-red-500 text-xs font-medium">✗</span>
+                          )}
+                          {usernameStatus === 'invalid' && (
+                            <span className="text-yellow-500 text-xs font-medium">!</span>
+                          )}
+                        </div>
+                      </div>
                     </FormControl>
+                    <div className="space-y-1">
+                      {usernameStatus === 'available' && (
+                        <p className="text-xs text-green-600">✓ Username is available</p>
+                      )}
+                      {usernameStatus === 'taken' && (
+                        <p className="text-xs text-red-600">Username is already taken</p>
+                      )}
+                      {usernameStatus === 'invalid' && (
+                        <p className="text-xs text-yellow-600">Username must be at least 3 characters</p>
+                      )}
+                      {usernameStatus === 'checking' && (
+                        <p className="text-xs text-muted-foreground">Checking availability...</p>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
