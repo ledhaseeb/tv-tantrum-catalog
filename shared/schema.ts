@@ -19,7 +19,7 @@ export const sessions = pgTable(
 );
 
 export const users = pgTable("users", {
-  id: text("id").primaryKey().notNull(),
+  id: serial("id").primaryKey(),
   email: text("email").unique(),
   password: text("password"), // Needed for our custom auth
   firstName: text("first_name"),
@@ -163,11 +163,12 @@ export const tvShowViews = pgTable("tv_show_views", {
 // --- Gamification Tables ---
 export const userPointsHistory = pgTable("user_points_history", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   points: integer("points").notNull(),
   activityType: text("activity_type").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  referenceId: integer("reference_id"),
 });
 
 export const reviewUpvotes = pgTable("review_upvotes", {
@@ -219,15 +220,15 @@ export const showSubmissions = pgTable("show_submissions", {
 
 export const userReferrals = pgTable("user_referrals", {
   id: serial("id").primaryKey(),
-  referrerId: text("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  referredId: text("referred_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referrerId: integer("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referredId: integer("referred_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Track unique clicks on referral links for points
 export const referralClicks = pgTable("referral_clicks", {
   id: serial("id").primaryKey(),
-  referrerId: text("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referrerId: integer("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   showId: integer("show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
   clickerIp: text("clicker_ip").notNull(), // To prevent duplicate clicks from same IP
   clickerUserAgent: text("clicker_user_agent"), // Additional uniqueness check

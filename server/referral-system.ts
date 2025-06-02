@@ -117,6 +117,39 @@ export async function trackReferral(referrerId: string, referredId: string) {
 }
 
 /**
+ * Award points to the referrer for a click
+ */
+async function awardClickPoints(referrerId: number) {
+  try {
+    await db.transaction(async (tx) => {
+      // Add points to referrer's total using SQL expression
+      await tx
+        .update(users)
+        .set({
+          totalPoints: sql`${users.totalPoints} + ${REFERRAL_POINTS}`
+        })
+        .where(eq(users.id, referrerId));
+      
+      // Record points history for referrer
+      await tx
+        .insert(userPointsHistory)
+        .values({
+          userId: referrerId.toString(),
+          points: REFERRAL_POINTS,
+          activityType: "referral_click",
+          description: "Points earned for someone clicking your shared link"
+        });
+    });
+    
+    console.log(`Successfully awarded ${REFERRAL_POINTS} points to user ${referrerId} for referral click`);
+    return true;
+  } catch (error) {
+    console.error("Error awarding click points:", error);
+    return false;
+  }
+}
+
+/**
  * Award points to both the referrer and the referred user
  */
 async function awardReferralPoints(referrerId: number, referredId: number) {
