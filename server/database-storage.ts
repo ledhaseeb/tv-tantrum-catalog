@@ -1253,6 +1253,7 @@ export class DatabaseStorage implements IStorage {
     
     // Handle rating-based sorting (post-query with review data)
     if (filters.sortBy === 'rating' || filters.sortBy === 'rating_desc' || filters.sortBy === 'overall-rating') {
+      console.log(`Starting rating-based sorting for sortBy: ${filters.sortBy}`);
       try {
         // Get review statistics for all shows
         const client = await pool.connect();
@@ -1266,13 +1267,18 @@ export class DatabaseStorage implements IStorage {
             GROUP BY tv_show_id
           `);
           
+          console.log(`Found ${reviewStats.rows.length} shows with reviews`);
+          
           // Create a map of show ratings
           const ratingMap = new Map();
           reviewStats.rows.forEach(row => {
+            const avgRating = parseFloat(row.avg_rating) || 0;
+            const reviewCount = parseInt(row.review_count) || 0;
             ratingMap.set(row.tv_show_id, {
-              avgRating: parseFloat(row.avg_rating) || 0,
-              reviewCount: parseInt(row.review_count) || 0
+              avgRating,
+              reviewCount
             });
+            console.log(`Show ID ${row.tv_show_id}: ${avgRating} stars (${reviewCount} reviews)`);
           });
           
           // Sort shows by rating (highest first)
@@ -1288,6 +1294,12 @@ export class DatabaseStorage implements IStorage {
           });
           
           console.log(`Applied rating-based sorting to ${shows.length} shows`);
+          // Log the first few shows after sorting
+          const topShows = shows.slice(0, 5).map(show => {
+            const stats = ratingMap.get(show.id) || { avgRating: 0, reviewCount: 0 };
+            return `${show.name} (${stats.avgRating} stars, ${stats.reviewCount} reviews)`;
+          });
+          console.log(`Top 5 shows after rating sort: ${topShows.join(', ')}`);
         } finally {
           client.release();
         }

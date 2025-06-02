@@ -194,6 +194,12 @@ export class SearchService {
           case 'interactivity-level':
             query += ` ORDER BY interaction_level DESC NULLS LAST`;
             break;
+          case 'rating':
+          case 'rating_desc':
+          case 'overall-rating':
+            // For rating-based sorting, we'll handle this post-query
+            query += ` ORDER BY LOWER(name) ASC`;
+            break;
           default:
             query += ` ORDER BY LOWER(name) ASC`;
         }
@@ -209,6 +215,59 @@ export class SearchService {
       
       // Process the results for theme filtering if necessary
       let shows = result.rows;
+      
+      // Handle rating-based sorting (post-query with review data)
+      if (filters.sortBy === 'rating' || filters.sortBy === 'rating_desc' || filters.sortBy === 'overall-rating') {
+        console.log(`Search Service: Starting rating-based sorting for sortBy: ${filters.sortBy}`);
+        try {
+          // Get review statistics for all shows
+          const reviewStats = await client.query(`
+            SELECT 
+              tv_show_id,
+              AVG(rating) as avg_rating,
+              COUNT(rating) as review_count
+            FROM tv_show_reviews 
+            GROUP BY tv_show_id
+          `);
+          
+          console.log(`Search Service: Found ${reviewStats.rows.length} shows with reviews`);
+          
+          // Create a map of show ratings
+          const ratingMap = new Map();
+          reviewStats.rows.forEach(row => {
+            const avgRating = parseFloat(row.avg_rating) || 0;
+            const reviewCount = parseInt(row.review_count) || 0;
+            ratingMap.set(row.tv_show_id, {
+              avgRating,
+              reviewCount
+            });
+            console.log(`Search Service: Show ID ${row.tv_show_id}: ${avgRating} stars (${reviewCount} reviews)`);
+          });
+          
+          // Sort shows by rating (highest first)
+          shows.sort((a, b) => {
+            const aStats = ratingMap.get(a.id) || { avgRating: 0, reviewCount: 0 };
+            const bStats = ratingMap.get(b.id) || { avgRating: 0, reviewCount: 0 };
+            
+            // Sort by average rating first, then by review count as tiebreaker
+            if (bStats.avgRating !== aStats.avgRating) {
+              return bStats.avgRating - aStats.avgRating;
+            }
+            return bStats.reviewCount - aStats.reviewCount;
+          });
+          
+          console.log(`Search Service: Applied rating-based sorting to ${shows.length} shows`);
+          // Log the first few shows after sorting
+          const topShows = shows.slice(0, 5).map(show => {
+            const stats = ratingMap.get(show.id) || { avgRating: 0, reviewCount: 0 };
+            return `${show.name} (${stats.avgRating} stars, ${stats.reviewCount} reviews)`;
+          });
+          console.log(`Search Service: Top 5 shows after rating sort: ${topShows.join(', ')}`);
+        } catch (error) {
+          console.error('Search Service: Error applying rating-based sorting:', error);
+          // Continue with default sorting if rating sort fails
+        }
+      }
       
       // Handle theme filtering (post-query for better control)
       if (filters.themes && filters.themes.length > 0) {
