@@ -2594,10 +2594,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Complete registration endpoint
   app.post("/api/complete-registration", async (req: Request, res: Response) => {
     try {
-      const { email, username, password } = req.body;
+      const { email, username, password, country } = req.body;
       
-      if (!email || !username || !password) {
-        return res.status(400).json({ error: "Email, username, and password are required" });
+      if (!email || !username || !password || !country) {
+        return res.status(400).json({ error: "Email, username, password, and country are required" });
       }
 
       // Check if user already exists
@@ -2631,7 +2631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         password: hashedPassword,
         firstName: tempUser.first_name,
-        country: tempUser.country,
+        country: country, // Use country from request body
         isApproved: true, // Auto-approve GHL users
       });
 
