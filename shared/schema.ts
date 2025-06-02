@@ -224,6 +224,17 @@ export const userReferrals = pgTable("user_referrals", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Track unique clicks on referral links for points
+export const referralClicks = pgTable("referral_clicks", {
+  id: serial("id").primaryKey(),
+  referrerId: text("referrer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  showId: integer("show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
+  clickerIp: text("clicker_ip").notNull(), // To prevent duplicate clicks from same IP
+  clickerUserAgent: text("clicker_user_agent"), // Additional uniqueness check
+  pointsAwarded: boolean("points_awarded").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Short URLs for sharing - makes referral links look more professional
 export const shortUrls = pgTable("short_urls", {
   id: serial("id").primaryKey(),

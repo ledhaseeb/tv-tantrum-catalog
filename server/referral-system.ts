@@ -1,8 +1,62 @@
 import { db } from "./db";
-import { userReferrals, users, userPointsHistory } from "@shared/schema";
+import { userReferrals, users, userPointsHistory, referralClicks } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 const REFERRAL_POINTS = 1; // Points awarded for clicking referral links
+
+/**
+ * Track a referral click and award points to the referrer
+ * @param referrerId The ID of the user who shared the link
+ * @param showId The ID of the show being shared
+ * @param clickerIp The IP address of the person clicking
+ * @param userAgent The user agent of the person clicking
+ */
+export async function trackReferralClick(referrerId: number, showId: number, clickerIp: string, userAgent?: string) {
+  try {
+    // Check if this IP has already clicked this referrer's link for this show
+    const [existingClick] = await db
+      .select()
+      .from(referralClicks)
+      .where(
+        and(
+          eq(referralClicks.referrerId, referrerId),
+          eq(referralClicks.showId, showId),
+          eq(referralClicks.clickerIp, clickerIp)
+        )
+      );
+    
+    if (existingClick) {
+      console.log("Click already recorded for this IP");
+      return { success: false, reason: "already_clicked" };
+    }
+    
+    // Record the click
+    const [click] = await db
+      .insert(referralClicks)
+      .values({
+        referrerId,
+        showId,
+        clickerIp,
+        clickerUserAgent: userAgent,
+        pointsAwarded: true
+      })
+      .returning();
+    
+    if (!click) {
+      console.error("Failed to record referral click");
+      return { success: false, reason: "database_error" };
+    }
+    
+    // Award points to the referrer only
+    await awardClickPoints(referrerId);
+    
+    console.log(`Successfully recorded click and awarded ${REFERRAL_POINTS} points to user ${referrerId}`);
+    return { success: true, pointsAwarded: REFERRAL_POINTS };
+  } catch (error) {
+    console.error("Error tracking referral click:", error);
+    return { success: false, reason: "error" };
+  }
+}
 
 /**
  * Track a referral when a user registers via a shared link
