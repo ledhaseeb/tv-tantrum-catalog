@@ -701,7 +701,8 @@ export default function Detail({ id }: DetailProps) {
                 </div>
               )}
               
-              <div>
+              {/* Overall Stimulation Score - Desktop only */}
+              <div className="hidden md:block">
                 <h3 className="text-sm font-semibold text-gray-700">Overall Stimulation Score:</h3>
                 <div className="flex items-center space-x-2 mt-1">
                   {Array.from({ length: 5 }).map((_, i) => {
@@ -788,6 +789,43 @@ export default function Detail({ id }: DetailProps) {
                   <Share2 className="w-5 h-5 mr-1" />
                   Share
                 </Button>
+              </div>
+              
+              {/* Overall Stimulation Score - Mobile only (below favorites/share buttons) */}
+              <div className="md:hidden mt-4 mb-6">
+                <h3 className="text-sm font-semibold text-gray-700">Overall Stimulation Score:</h3>
+                <div className="flex items-center space-x-2 mt-1">
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const score = i + 1; // 1-5 score range
+                    const bgColor = 
+                      score === 1 ? 'bg-green-500' : // green for 1
+                      score === 2 ? 'bg-yellow-500' : // yellow for 2
+                      score === 3 ? 'bg-orange-500' : // orange for 3
+                      score === 4 ? 'bg-orange-600' : // redish orange for 4
+                      'bg-red-500'; // red for 5
+                    
+                    const borderColor = 
+                      score === 1 ? 'border-green-500' : // green for 1
+                      score === 2 ? 'border-yellow-500' : // yellow for 2
+                      score === 3 ? 'border-orange-500' : // orange for 3
+                      score === 4 ? 'border-orange-600' : // redish orange for 4
+                      'border-red-500'; // red for 5
+                    
+                    return (
+                      <div 
+                        key={i} 
+                        className={`w-4 h-4 rounded-full ${
+                          // Active dots show their own color
+                          i < showDetail.stimulationScore 
+                            ? bgColor 
+                            // Inactive dots are outlined with their corresponding color
+                            : `border-2 ${borderColor} bg-white`
+                        }`} 
+                      />
+                    );
+                  })}
+                  <span className="text-sm font-medium">{showDetail.stimulationScore}/5</span>
+                </div>
               </div>
               
               {/* Sensory Details Section */}
