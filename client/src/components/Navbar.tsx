@@ -199,7 +199,7 @@ export default function Navbar() {
                     variant="ghost" 
                     className="text-white/90 hover:text-white hover:bg-primary-700"
                   >
-                    Login
+                    Login/Register
                   </Button>
                 </Link>
               )}
@@ -329,7 +329,7 @@ export default function Navbar() {
                         className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                       >
                         <User className="h-5 w-5 mr-2" />
-                        Login
+                        Login/Register
                       </Link>
                     )}
                   </div>
