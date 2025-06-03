@@ -2236,6 +2236,29 @@ export class DatabaseStorage implements IStorage {
     // Get user's points history
     const pointsHistory = await this.getUserPointsHistory(userId);
 
+    // Transform favorites data to match frontend expectations
+    const transformedFavorites = favoritesWithShows.map((fav: any) => ({
+      id: fav.showId,
+      name: fav.showName,
+      imageUrl: fav.showImageUrl,
+      ageRange: fav.showAgeRange,
+      stimulationScore: fav.showStimulationScore,
+      createdAt: fav.createdAt
+    }));
+
+    // Transform reviews data to match frontend expectations
+    const transformedReviews = reviewsWithShows.map((review: any) => ({
+      id: review.id,
+      rating: review.rating,
+      review: review.review,
+      createdAt: review.createdAt,
+      tvShow: {
+        id: review.showId,
+        name: review.showName,
+        imageUrl: review.showImageUrl
+      }
+    }));
+
     return {
       user: {
         id: user.id,
@@ -2245,8 +2268,8 @@ export class DatabaseStorage implements IStorage {
       },
       points: pointsResult,
       pointsHistory: pointsHistory || [],
-      reviews: reviewsWithShows || [],
-      favorites: favoritesWithShows || []
+      reviews: transformedReviews || [],
+      favorites: transformedFavorites || []
     };
   }
   
