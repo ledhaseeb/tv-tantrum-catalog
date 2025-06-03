@@ -25,7 +25,15 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
-const countries = [
+// Top user countries first, then alphabetical
+const topCountries = [
+  { name: "United Kingdom", code: "GB" },
+  { name: "United States", code: "US" },
+  { name: "Australia", code: "AU" },
+  { name: "Canada", code: "CA" },
+];
+
+const otherCountries = [
   { name: "Afghanistan", code: "AF" },
   { name: "Åland Islands", code: "AX" },
   { name: "Albania", code: "AL" },
@@ -39,7 +47,6 @@ const countries = [
   { name: "Argentina", code: "AR" },
   { name: "Armenia", code: "AM" },
   { name: "Aruba", code: "AW" },
-  { name: "Australia", code: "AU" },
   { name: "Austria", code: "AT" },
   { name: "Azerbaijan", code: "AZ" },
   { name: "Bahamas", code: "BS" },
@@ -64,7 +71,6 @@ const countries = [
   { name: "Burundi", code: "BI" },
   { name: "Cambodia", code: "KH" },
   { name: "Cameroon", code: "CM" },
-  { name: "Canada", code: "CA" },
   { name: "Cape Verde", code: "CV" },
   { name: "Cayman Islands", code: "KY" },
   { name: "Central African Republic", code: "CF" },
@@ -254,8 +260,6 @@ const countries = [
   { name: "Uganda", code: "UG" },
   { name: "Ukraine", code: "UA" },
   { name: "United Arab Emirates", code: "AE" },
-  { name: "United Kingdom", code: "GB" },
-  { name: "United States", code: "US" },
   { name: "United States Minor Outlying Islands", code: "UM" },
   { name: "Uruguay", code: "UY" },
   { name: "Uzbekistan", code: "UZ" },
@@ -270,6 +274,9 @@ const countries = [
   { name: "Zambia", code: "ZM" },
   { name: "Zimbabwe", code: "ZW" }
 ];
+
+// Combine top countries first, then other countries
+const countries = [...topCountries, ...otherCountries];
 
 const completeRegistrationSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
