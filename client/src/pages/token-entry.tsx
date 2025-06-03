@@ -71,19 +71,6 @@ export default function TokenEntryPage() {
               <strong>Waiting List Closed:</strong> We've reached 5,000 members! If you have a token code, enter it below to access the platform.
             </p>
           </div>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
-            <h3 className="text-sm font-semibold text-blue-900 mb-2">What you get with TV Tantrum:</h3>
-            <ul className="text-xs text-blue-800 space-y-1">
-              <li>• Select favourites for personalized recommendations</li>
-              <li>• Submit shows for analysis and build our database</li>
-              <li>• Access research articles</li>
-              <li>• Rate shows and leave reviews</li>
-            </ul>
-            <p className="text-xs text-blue-700 mt-3 font-medium">
-              Become a contributor to the TV Tantrum project and help make screen time safer for families
-            </p>
-          </div>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -114,6 +101,34 @@ export default function TokenEntryPage() {
           </CardFooter>
         </form>
       </Card>
+      
+      {/* Benefits section below the card */}
+      <div className="w-full max-w-md space-y-4 mt-6">
+        <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Upon entry you will be able to:</h3>
+          <ul className="text-xs text-gray-700 space-y-1 mb-4">
+            <li>- Browse and search all TV shows</li>
+            <li>- View stimulation scores and details</li>
+            <li>- Compare shows side-by-side</li>
+            <li>- See reviews</li>
+          </ul>
+          
+          <p className="text-xs text-gray-800 font-medium mb-3">
+            However, we encourage you to register for free for all these added benefits
+          </p>
+          
+          <ul className="text-xs text-blue-800 space-y-1 mb-3">
+            <li>• Select favourites for personalized recommendations</li>
+            <li>• Submit shows for analysis and build our database</li>
+            <li>• Access research articles</li>
+            <li>• Rate shows and leave reviews</li>
+          </ul>
+          
+          <p className="text-xs text-blue-700 font-medium">
+            Become a contributor to the TV Tantrum project and help make screen time safer for families
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
