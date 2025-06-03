@@ -1,0 +1,53 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml"
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "attached_assets/**",
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".git/**",
+      ".local/**",
+      "postgres/**",
+      "migrations/**",
+      "backup/**",
+      "temp_*/**",
+      "tmp_*/**",
+      "*.png",
+      "*.jpg",
+      "*.jpeg",
+      "*.gif",
+      "*.zip",
+      "*.avif",
+      "*.webp",
+      "*.bin",
+      "*.log",
+      "public/custom-images/**",
+      "public/media/**",
+      "public/uploads/**",
+      "extracted_research/**",
+      "data/**",
+      "*.csv"
+    ]
+  },
+  "include": [
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts",
+    "tailwind.config.ts",
+    "drizzle.config.ts",
+    "shared/**/*.ts",
+    "server/**/*.ts",
+    "client/src/**/*.ts",
+    "client/src/**/*.tsx",
+    "client/index.html",
+    "*.md",
+    "*.js",
+    "*.mjs"
+  ]
+}
