@@ -24,12 +24,11 @@ export default function TokenEntryPage() {
 
   // Enable automatic redirect when a valid token exists
   useEffect(() => {
-    // Temporarily disabled for demo purposes
-    // const storedToken = localStorage.getItem("earlyAccessToken");
-    // if (storedToken === expectedToken) {
-    //   // Redirect to home page when token is already stored
-    //   setLocation("/home");
-    // }
+    const storedToken = localStorage.getItem("earlyAccessToken");
+    if (storedToken === expectedToken) {
+      // Redirect to home page when token is already stored
+      setLocation("/home");
+    }
   }, [setLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -71,6 +70,17 @@ export default function TokenEntryPage() {
             <p className="text-sm text-orange-800">
               <strong>Waiting List Closed:</strong> We've reached 5,000 members! If you have a token code, enter it below to access the platform.
             </p>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">What you get with TV Tantrum:</h3>
+            <ul className="text-xs text-blue-800 space-y-1">
+              <li>• Smart stimulation scores to find the right content intensity</li>
+              <li>• Advanced filtering by age, themes, and sensory details</li>
+              <li>• Community reviews from real parents</li>
+              <li>• Personalized recommendations based on your preferences</li>
+              <li>• Access to 500+ curated children's shows and channels</li>
+            </ul>
           </div>
         </CardHeader>
         <form onSubmit={handleSubmit}>
