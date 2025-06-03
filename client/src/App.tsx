@@ -36,8 +36,14 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { useEffect } from "react";
+import { initGA } from "./lib/analytics";
+import { useAnalytics } from "./hooks/use-analytics";
 
 function Router() {
+  // Track page views when routes change
+  useAnalytics();
+  
   // Access URL to check for development mode
   const isDevMode = window.location.search.includes('dev=true');
   
@@ -338,6 +344,16 @@ function Router() {
 }
 
 function App() {
+  // Initialize Google Analytics when app loads
+  useEffect(() => {
+    // Verify required environment variable is present
+    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    } else {
+      initGA();
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 // Schema for login form
 const loginSchema = z.object({
