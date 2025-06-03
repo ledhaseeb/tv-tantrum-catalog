@@ -2850,6 +2850,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint to verify webhook is reachable
+  app.get("/api/webhook-test", (req: Request, res: Response) => {
+    res.json({ 
+      message: 'Webhook endpoint is reachable',
+      timestamp: new Date().toISOString(),
+      url: req.url 
+    });
+  });
+
   // Single dedicated GHL webhook endpoint
   app.post("/api/ghl-webhook", async (req: Request, res: Response) => {
     try {
