@@ -354,10 +354,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error getting user points history:', error);
       }
       
-      // Get similar shows based on user preferences
+      // Get similar shows with metadata (reviews, favorites) in a single query
       let recommendedShows = [];
       try {
-        recommendedShows = await storage.getSimilarShows(userId, 5) || [];
+        if (typeof storage.getSimilarShowsWithMetadata === 'function') {
+          recommendedShows = await storage.getSimilarShowsWithMetadata(userId, 5) || [];
+        } else {
+          recommendedShows = await storage.getSimilarShows(userId, 5) || [];
+        }
       } catch (error) {
         console.error('Error getting recommended shows:', error);
       }

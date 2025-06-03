@@ -2079,6 +2079,108 @@ export class DatabaseStorage implements IStorage {
       .slice(0, limit)
       .map(item => item.show);
   }
+
+  async getSimilarShowsWithMetadata(userId: number, limit: number = 5): Promise<any[]> {
+    const favoriteIds = await db
+      .select({ showId: favorites.tvShowId })
+      .from(favorites)
+      .where(eq(favorites.userId, userId))
+      .then(rows => rows.map(row => row.showId));
+
+    // Get user's average stimulation score preference
+    const avgStimResult = favoriteIds.length > 0 
+      ? await db
+          .select({ avgStim: sql<number>`AVG(${tvShows.stimulationScore})` })
+          .from(tvShows)
+          .where(sql`${tvShows.id} IN (${sql.join(favoriteIds)})`)
+      : null;
+
+    const avgStimulationScore = avgStimResult?.[0]?.avgStim ?? 3;
+
+    // Get common themes from user's favorites
+    const commonThemes = favoriteIds.length > 0
+      ? await db
+          .select({ themes: tvShows.themes })
+          .from(tvShows)
+          .where(sql`${tvShows.id} IN (${sql.join(favoriteIds)})`)
+          .then(rows => 
+            rows
+              .flatMap(row => row.themes || [])
+              .reduce((acc, theme) => {
+                acc[theme] = (acc[theme] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>)
+          )
+          .then(themeCounts => 
+            Object.entries(themeCounts)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 5)
+              .map(([theme]) => theme)
+          )
+      : [];
+
+    const stimScoreRange = { min: Math.max(1, avgStimulationScore - 1), max: Math.min(5, avgStimulationScore + 1) };
+    
+    // Get recommended shows with aggregated review and favorite data
+    const showsWithMetadata = await db
+      .select({
+        id: tvShows.id,
+        name: tvShows.name,
+        description: tvShows.description,
+        ageRange: tvShows.ageRange,
+        episodeLength: tvShows.episodeLength,
+        creator: tvShows.creator,
+        releaseYear: tvShows.releaseYear,
+        endYear: tvShows.endYear,
+        isOngoing: tvShows.isOngoing,
+        stimulationScore: tvShows.stimulationScore,
+        interactivityLevel: tvShows.interactivityLevel,
+        themes: tvShows.themes,
+        imageUrl: tvShows.imageUrl,
+        videoUrl: tvShows.videoUrl,
+        platforms: tvShows.platforms,
+        tags: tvShows.tags,
+        averageRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+        reviewCount: sql<number>`COUNT(DISTINCT ${reviews.id})`,
+        isFavorite: sql<boolean>`BOOL_OR(${favorites.userId} = ${userId})`,
+      })
+      .from(tvShows)
+      .leftJoin(reviews, eq(reviews.tvShowId, tvShows.id))
+      .leftJoin(favorites, eq(favorites.tvShowId, tvShows.id))
+      .where(
+        and(
+          sql`${tvShows.stimulationScore} >= ${stimScoreRange.min} AND ${tvShows.stimulationScore} <= ${stimScoreRange.max}`,
+          favoriteIds.length > 0 
+            ? sql`NOT (${tvShows.id} IN (${sql.join(favoriteIds)}))`
+            : sql`1=1`
+        )
+      )
+      .groupBy(tvShows.id)
+      .orderBy(desc(tvShows.stimulationScore))
+      .limit(limit * 2);
+
+    // Score and sort the shows
+    const scoredShows = showsWithMetadata.map(show => {
+      let score = 0;
+      
+      const stimDiff = Math.abs(show.stimulationScore - avgStimulationScore);
+      score += (5 - stimDiff);
+      
+      if (show.themes) {
+        commonThemes.forEach(theme => {
+          if (show.themes?.includes(theme)) {
+            score += 3;
+          }
+        });
+      }
+      
+      return { ...show, score };
+    });
+
+    return scoredShows
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+  }
   
   // -------------------------------------------------------------------------
   // Gamification Methods

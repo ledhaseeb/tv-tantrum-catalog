@@ -12,7 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 import { FavoriteRegistrationModal } from "@/components/FavoriteRegistrationModal";
 
 interface ShowCardProps {
-  show: TvShow;
+  show: TvShow & {
+    averageRating?: number;
+    reviewCount?: number;
+    isFavorite?: boolean;
+  };
   viewMode: "grid" | "list";
   onClick: () => void;
   isMobile?: boolean;
@@ -39,8 +43,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     stimulationScore: show.stimulationScore || 0
   };
   
-  // Check if show is in favorites when component mounts or user changes
+  // Initialize favorite status from props if available
   useEffect(() => {
+    if (show.isFavorite !== undefined) {
+      setIsFavorite(show.isFavorite);
+      return;
+    }
+    
     // Reset favorite status when user logs out
     if (!user) {
       setIsFavorite(false);
