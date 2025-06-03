@@ -98,7 +98,8 @@ export function setupAuth(app: Express) {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       sameSite: 'lax', // Add sameSite for better compatibility
-      domain: process.env.NODE_ENV === 'production' ? '.tvtantrum.com' : undefined // Set domain for production
+      // Don't set domain to allow cookies to work on any domain (Replit deployment)
+      domain: undefined
     }
   };
 
