@@ -114,9 +114,18 @@ const UserDashboard = () => {
     },
   });
 
-  const { data: dashboardData, isLoading: isLoadingDashboard } = useQuery({
+  const { data: dashboardData, isLoading: isLoadingDashboard, error: dashboardError } = useQuery({
     queryKey: ['/api/user/dashboard'],
     enabled: !!user,
+  });
+  
+  // Debug logging to understand what's happening with dashboard data
+  console.log('Dashboard query state:', {
+    user: !!user,
+    dashboardData,
+    isLoadingDashboard,
+    dashboardError,
+    userEnabled: !!user
   });
   
   // Extract data from dashboard response
