@@ -196,46 +196,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Toggle favorite status for a show
-  const toggleFavorite = async (showId: number): Promise<void> => {
+  // Toggle favorite status for a show with optimistic updates
+  const toggleFavorite = async (showId: number, currentStatus?: boolean): Promise<void> => {
     if (!user) {
       throw new Error("User must be logged in to manage favorites");
     }
     
-    // Check current favorite status
-    const isFav = await isFavorite(showId);
-    
-    if (isFav) {
-      // If already favorited, remove from favorites
-      const res = await fetch(`/api/favorites/${showId}`, {
-        method: "DELETE",
-        credentials: "include"
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Failed to remove from favorites");
-      }
-    } else {
-      // If not favorited, add to favorites
-      const res = await fetch("/api/favorites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tvShowId: showId }),
-        credentials: "include"
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Failed to add to favorites");
-      }
+    // Use provided status or check current status
+    let isFav = currentStatus;
+    if (isFav === undefined) {
+      isFav = await isFavorite(showId);
     }
     
-    // Invalidate relevant queries
-    queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
-    
-    // Also invalidate the dashboard query to update the favorites list in real-time
-    queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
+    try {
+      if (isFav) {
+        // Remove from favorites
+        const res = await fetch(`/api/favorites/${showId}`, {
+          method: "DELETE",
+          credentials: "include"
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || "Failed to remove from favorites");
+        }
+      } else {
+        // Add to favorites
+        const res = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tvShowId: showId }),
+          credentials: "include"
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || "Failed to add to favorites");
+        }
+      }
+      
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
+      
+    } catch (error) {
+      // Re-throw error for components to handle
+      throw error;
+    }
   };
 
   // Check if the user has admin privileges

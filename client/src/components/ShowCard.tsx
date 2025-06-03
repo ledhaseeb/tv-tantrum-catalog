@@ -126,17 +126,20 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       return;
     }
     
-    // Use the auth context toggle favorite function
-    toggleFav(show.id).then(() => {
-      // Update local state (optimistic update)
-      setIsFavorite(!isFavorite);
-      
+    // Optimistic update - update UI immediately
+    const newFavoriteStatus = !isFavorite;
+    setIsFavorite(newFavoriteStatus);
+    
+    // Use the auth context toggle favorite function with current status
+    toggleFav(show.id, isFavorite).then(() => {
       toast({
-        title: isFavorite ? "Removed from favorites" : "Added to favorites",
-        description: isFavorite ? `${show.name} has been removed from your favorites.` : `${show.name} has been added to your favorites.`,
+        title: newFavoriteStatus ? "Added to favorites" : "Removed from favorites",
+        description: newFavoriteStatus ? `${show.name} has been added to your favorites.` : `${show.name} has been removed from your favorites.`,
         variant: "default",
       });
     }).catch(error => {
+      // Revert optimistic update on error
+      setIsFavorite(!newFavoriteStatus);
       toast({
         title: "Error",
         description: "There was an error updating your favorites. Please try again.",
