@@ -521,6 +521,7 @@ export default function CompleteRegistration() {
                       {usernameStatus === 'checking' && (
                         <p className="text-xs text-muted-foreground">Checking availability...</p>
                       )}
+                      <p className="text-xs text-muted-foreground">Note: Usernames are case-sensitive</p>
                     </div>
                     <FormMessage />
                   </FormItem>

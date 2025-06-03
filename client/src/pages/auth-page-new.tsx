@@ -83,6 +83,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
                       disabled={loginMutation.isPending}
                     />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground">Note: Usernames are case-sensitive</p>
                   <FormMessage />
                 </FormItem>
               )}
