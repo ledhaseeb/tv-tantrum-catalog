@@ -2906,10 +2906,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Contact object keys:', Object.keys(contact));
       console.log('Contact data structure:', JSON.stringify(contact, null, 2));
 
-      // Try multiple possible field names for email and first name only
-      const email = contact.email || contact.emailAddress || contact.Email || webhookData.email;
-      const firstName = contact.firstName || contact.first_name || contact.First || webhookData.firstName;
-      const contactId = contact.id || contact.contactId || contact.Id || webhookData.contactId;
+      // Extract data from multiple possible locations in the webhook payload
+      const email = webhookData.email || webhookData.customData?.email || contact.email || contact.emailAddress;
+      const firstName = webhookData.first_name || webhookData.customData?.first_name || contact.firstName || contact.first_name;
+      const contactId = webhookData.contact_id || contact.id || contact.contactId;
 
       console.log('Processing GHL contact:', { email, firstName, contactId });
 
@@ -2925,9 +2925,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await db.insert(tempGhlUsers).values({
           email,
           firstName,
-          contactId,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          ghlContactId: contactId,
+          createdAt: new Date()
         });
         console.log('Created new temp GHL user:', email);
       } else {
