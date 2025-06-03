@@ -1,19 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function About() {
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
+
   // Load GHL form script
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://www.uschooler.com/js/form_embed.js';
     script.async = true;
+    script.onerror = () => setIframeError(true);
     document.body.appendChild(script);
+
+    // Set a timeout to show error if iframe doesn't load within 10 seconds
+    const timeout = setTimeout(() => {
+      if (!iframeLoaded) {
+        setIframeError(true);
+      }
+    }, 10000);
 
     return () => {
       document.body.removeChild(script);
+      clearTimeout(timeout);
     };
-  }, []);
+  }, [iframeLoaded]);
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-heading font-bold text-center mb-8">About TV Tantrum</h1>
@@ -179,23 +191,50 @@ export default function About() {
         
         <div className="max-w-xl mx-auto">
           <div className="min-h-[576px]">
-            <iframe
-              src="https://www.uschooler.com/widget/form/6CGfRNsfQiXTbIQzwUtH"
-              style={{width:'100%', height:'576px', border:'none', borderRadius:'3px'}}
-              id="inline-6CGfRNsfQiXTbIQzwUtH" 
-              data-layout="{'id':'INLINE'}"
-              data-trigger-type="alwaysShow"
-              data-trigger-value=""
-              data-activation-type="alwaysActivated"
-              data-activation-value=""
-              data-deactivation-type="neverDeactivate"
-              data-deactivation-value=""
-              data-form-name="Tv Tantrum - Contact Us"
-              data-height="576"
-              data-layout-iframe-id="inline-6CGfRNsfQiXTbIQzwUtH"
-              data-form-id="6CGfRNsfQiXTbIQzwUtH"
-              title="Tv Tantrum - Contact Us"
-            />
+            {!iframeError ? (
+              <iframe
+                src="https://www.uschooler.com/widget/form/6CGfRNsfQiXTbIQzwUtH"
+                style={{width:'100%', height:'576px', border:'none', borderRadius:'3px'}}
+                id="inline-6CGfRNsfQiXTbIQzwUtH" 
+                data-layout="{'id':'INLINE'}"
+                data-trigger-type="alwaysShow"
+                data-trigger-value=""
+                data-activation-type="alwaysActivated"
+                data-activation-value=""
+                data-deactivation-type="neverDeactivate"
+                data-deactivation-value=""
+                data-form-name="Tv Tantrum - Contact Us"
+                data-height="576"
+                data-layout-iframe-id="inline-6CGfRNsfQiXTbIQzwUtH"
+                data-form-id="6CGfRNsfQiXTbIQzwUtH"
+                title="Tv Tantrum - Contact Us"
+                onLoad={() => setIframeLoaded(true)}
+                onError={() => setIframeError(true)}
+              />
+            ) : (
+              <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+                <h3 className="text-xl font-semibold mb-4">Get In Touch</h3>
+                <p className="text-gray-600 mb-6">
+                  We'd love to hear from you! Reach out to us through any of the following methods:
+                </p>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-800">Email</h4>
+                    <p className="text-blue-600">hello@tvtantrum.com</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">Social Media</h4>
+                    <p className="text-gray-600">Follow us @tvtantrum on social platforms</p>
+                  </div>
+                  <Button 
+                    onClick={() => setIframeError(false)} 
+                    className="mt-4"
+                  >
+                    Try Loading Form Again
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
