@@ -6,6 +6,41 @@ import { setupVite, serveStatic, log } from "./vite";
 import { checkDatabaseConnection } from "./db";
 import multer from 'multer';
 import * as fs from 'fs';
+import axios from 'axios';
+
+async function askClaude(prompt: string): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-API-Key': apiKey,
+    'anthropic-version': '2023-06-01',
+  };
+
+  const body = {
+    model: 'claude-opus-4-20250514',
+    max_tokens: 1000,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  };
+
+  try {
+    const response = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      body,
+      { headers }
+    );
+    return response.data.content[0].text;
+  } catch (error: any) {
+    console.error('Error talking to Claude:', error.response?.data || error.message);
+    return 'Sorry, Claude couldn’t respond.';
+  }
+}
+
 
 const app = express();
 app.use(express.json());
