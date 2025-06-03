@@ -292,11 +292,11 @@ const UserDashboard = () => {
       </Card>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="grid grid-cols-4 mb-8">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="content">Your Content</TabsTrigger>
-          <TabsTrigger value="settings">Account Settings</TabsTrigger>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 gap-1 mb-8 h-auto p-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-2">Overview</TabsTrigger>
+          <TabsTrigger value="activity" className="text-xs sm:text-sm px-2 py-2">Activity</TabsTrigger>
+          <TabsTrigger value="content" className="text-xs sm:text-sm px-2 py-2">Your Content</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-2">Account Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
