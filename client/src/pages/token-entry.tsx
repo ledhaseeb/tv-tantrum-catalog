@@ -104,27 +104,27 @@ export default function TokenEntryPage() {
       
       {/* Benefits section below the card */}
       <div className="w-full max-w-lg space-y-4 mt-6">
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Upon entry you will be able to:</h3>
-          <ul className="text-xs text-gray-700 space-y-1 mb-4">
+        <div className="bg-gray-50 border border-gray-200 rounded-md p-6 min-h-[320px] flex flex-col">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Upon entry you will be able to:</h3>
+          <ul className="text-sm text-gray-700 space-y-2 mb-6">
             <li>- Browse and search all TV shows</li>
             <li>- View stimulation scores and details</li>
             <li>- Compare shows side-by-side</li>
             <li>- See reviews</li>
           </ul>
           
-          <p className="text-xs text-gray-800 font-medium mb-3">
+          <p className="text-sm text-gray-800 font-medium mb-4">
             However, we encourage you to register for free for all these added benefits
           </p>
           
-          <ul className="text-xs text-blue-800 space-y-1 mb-3">
+          <ul className="text-sm text-blue-800 space-y-2 mb-4 flex-grow">
             <li>• Select favourites for personalized recommendations</li>
             <li>• Submit shows for analysis and build our database</li>
             <li>• Access research articles</li>
             <li>• Rate shows and leave reviews</li>
           </ul>
           
-          <p className="text-xs text-blue-700 font-medium">
+          <p className="text-sm text-blue-700 font-medium mt-auto">
             Become a contributor to the TV Tantrum project and help make screen time safer for families
           </p>
         </div>
