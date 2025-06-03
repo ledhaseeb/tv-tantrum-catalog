@@ -26,8 +26,8 @@ export default function TokenEntryPage() {
   useEffect(() => {
     const storedToken = localStorage.getItem("earlyAccessToken");
     if (storedToken === expectedToken) {
-      // Redirect to early access auth page when token is already stored
-      setLocation("/early-access");
+      // Redirect to home page when token is already stored
+      setLocation("/home");
     }
   }, [setLocation]);
 
@@ -42,11 +42,11 @@ export default function TokenEntryPage() {
         localStorage.setItem("earlyAccessToken", expectedToken);
         toast({
           title: "Success!",
-          description: "Your early access token has been verified.",
+          description: "Your access token has been verified. Welcome to TV Tantrum!",
           variant: "default"
         });
-        // Redirect to early access login/registration page after successful verification
-        setLocation("/early-access");
+        // Redirect to home page after successful verification
+        setLocation("/home");
       } else {
         toast({
           title: "Invalid Token",
@@ -62,17 +62,22 @@ export default function TokenEntryPage() {
     <div className="min-h-screen bg-gradient-to-b from-primary to-primary-800 flex items-center justify-center p-4">
       <Card className="max-w-md w-full shadow-xl">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Early Access</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to TV Tantrum</CardTitle>
           <CardDescription>
-            Enter your early access token to proceed
+            The waiting list is now closed. Enter your exclusive access token to continue.
           </CardDescription>
+          <div className="bg-orange-50 border border-orange-200 rounded-md p-3 mt-4">
+            <p className="text-sm text-orange-800">
+              <strong>Waiting List Closed:</strong> We've reached 5,000 members! If you have a token code, enter it below to access the platform.
+            </p>
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Input
                 id="token"
-                placeholder="Enter your early access token"
+                placeholder="Enter your access token"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 className="w-full"
@@ -89,8 +94,8 @@ export default function TokenEntryPage() {
               {isLoading ? "Verifying..." : "Verify Token"}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              <span className="hover:underline cursor-pointer" onClick={() => setLocation("/")}>
-                ← Return to landing page
+              <span className="hover:underline cursor-pointer" onClick={() => setLocation("/about")}>
+                Learn more about TV Tantrum
               </span>
             </div>
           </CardFooter>

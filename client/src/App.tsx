@@ -47,8 +47,24 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Home Page - Open to everyone */}
+        {/* Token Entry Page - Main landing page */}
         <Route path="/">
+          <TokenEntryPage />
+        </Route>
+        
+        {/* About Page - Open to everyone */}
+        <Route path="/about">
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <About />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        
+        {/* Home Page - Accessible after token entry */}
+        <Route path="/home">
           <div className="flex-grow flex flex-col">
             <Navbar />
             <div className="flex-grow">
@@ -56,20 +72,6 @@ function Router() {
             </div>
             <Footer />
           </div>
-        </Route>
-        
-        {/* Landing Page Route */}
-        <Route path="/landing">
-          <LandingPage />
-        </Route>
-        <Route path="/about">
-          <PreLaunchAbout />
-        </Route>
-        <Route path="/faq">
-          <PreLaunchFAQ />
-        </Route>
-        <Route path="/token-entry">
-          <TokenEntryPage />
         </Route>
         <Route path="/early-access">
           <AuthPage />
@@ -88,16 +90,7 @@ function Router() {
           )}
         </Route>
         
-        {/* Home Page Alias - Open to everyone */}
-        <Route path="/home">
-          <div className="flex-grow flex flex-col">
-            <Navbar />
-            <div className="flex-grow">
-              <Home />
-            </div>
-            <Footer />
-          </div>
-        </Route>
+
         
         {/* Browse Page - Open to everyone */}
         <Route path="/browse">
