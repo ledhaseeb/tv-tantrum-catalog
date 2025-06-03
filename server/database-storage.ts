@@ -2392,14 +2392,23 @@ export class DatabaseStorage implements IStorage {
 
   async getUserReviews(userId: number): Promise<any[]> {
     try {
-      // Get reviews for this user - the reviews table already has show_name column
+      // Get reviews for this user with proper show names from tv_shows table
       const reviews = await db
-        .select()
+        .select({
+          id: tvShowReviews.id,
+          tvShowId: tvShowReviews.tvShowId,
+          userId: tvShowReviews.userId,
+          userName: tvShowReviews.userName,
+          rating: tvShowReviews.rating,
+          review: tvShowReviews.review,
+          createdAt: tvShowReviews.createdAt,
+          showName: tvShows.name
+        })
         .from(tvShowReviews)
+        .leftJoin(tvShows, eq(tvShowReviews.tvShowId, tvShows.id))
         .where(eq(tvShowReviews.userId, userId.toString()))
         .orderBy(desc(tvShowReviews.createdAt));
       
-      // The reviews now have the showName column properly mapped from the schema
       return reviews.map(review => ({
         ...review,
         showName: review.showName || 'Unknown Show'
