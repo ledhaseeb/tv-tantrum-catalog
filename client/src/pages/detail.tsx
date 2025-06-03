@@ -1316,11 +1316,20 @@ export default function Detail({ id }: DetailProps) {
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center">
-                        <Link href={`/user/${review.userId}`}>
-                          <h4 className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer underline">
+                        {user ? (
+                          <Link href={`/user/${review.userId}`}>
+                            <h4 className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer underline">
+                              {review.userName}
+                            </h4>
+                          </Link>
+                        ) : (
+                          <h4 
+                            className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer underline"
+                            onClick={() => setLocation("/auth")}
+                          >
                             {review.userName}
                           </h4>
-                        </Link>
+                        )}
                         <div className="ml-2 flex">
                           {[...Array(5)].map((_, i) => (
                             <i key={i} className={`${i < review.rating ? 'fas' : 'far'} fa-star text-yellow-500`}></i>
