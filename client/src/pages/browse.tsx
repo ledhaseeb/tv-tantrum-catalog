@@ -405,7 +405,8 @@ export default function Browse() {
         <h1 className="text-2xl font-heading font-bold text-primary-800 mb-4">
           Browse Shows
         </h1>
-        <p className="text-gray-600 mb-6">
+        {/* Results count - only show on desktop */}
+        <p className="text-gray-600 mb-6 hidden md:block">
           Showing {indexOfFirstShow + 1}-{Math.min(indexOfLastShow, totalShows)} of {totalShows} results
         </p>
 
@@ -422,6 +423,13 @@ export default function Browse() {
               onFilterChange={handleFilterChange}
               onClearFilters={clearFilters}
             />
+          </div>
+          
+          {/* Mobile Results Count - shown below filters on mobile */}
+          <div className="md:hidden">
+            <p className="text-gray-600 text-sm mb-4">
+              Showing {indexOfFirstShow + 1}-{Math.min(indexOfLastShow, totalShows)} of {totalShows} results
+            </p>
           </div>
           
           {/* Right Column - Show Grid */}
