@@ -8,12 +8,12 @@ interface AdContainerProps {
 }
 
 const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label = 'Advertisement' }) => {
-  // AdSense ad slot IDs - you'll need to create these in your AdSense account
+  // AdSense ad slot IDs - using auto ads format for now
   const adSlots = {
-    banner: '1234567890', // Replace with your actual ad slot ID
-    rectangle: '1234567891', // Replace with your actual ad slot ID  
-    leaderboard: '1234567892', // Replace with your actual ad slot ID
-    'mobile-banner': '1234567893' // Replace with your actual ad slot ID
+    banner: 'auto', // Auto ads - AdSense will optimize placement
+    rectangle: 'auto', // Auto ads - AdSense will optimize placement  
+    leaderboard: 'auto', // Auto ads - AdSense will optimize placement
+    'mobile-banner': 'auto' // Auto ads - AdSense will optimize placement
   };
 
   const adDimensions = {
