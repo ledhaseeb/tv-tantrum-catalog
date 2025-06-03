@@ -24,6 +24,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import ShowCard from "@/components/ShowCard";
+import AdContainer from "@/components/AdContainer";
 import { Link } from "wouter";
 
 // Define OMDb data type
@@ -1215,6 +1216,11 @@ export default function Detail({ id }: DetailProps) {
 
             </div>
           </div>
+        </div>
+        
+        {/* Detail Page Ad */}
+        <div className="border-t border-gray-200 p-6">
+          <AdContainer size="leaderboard" className="mx-auto mb-6" />
         </div>
         
         <div className="border-t border-gray-200 p-6">
