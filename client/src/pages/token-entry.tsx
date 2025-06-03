@@ -93,11 +93,7 @@ export default function TokenEntryPage() {
             >
               {isLoading ? "Verifying..." : "Verify Token"}
             </Button>
-            <div className="text-center text-sm text-muted-foreground">
-              <span className="hover:underline cursor-pointer" onClick={() => setLocation("/about")}>
-                Learn more about TV Tantrum
-              </span>
-            </div>
+
           </CardFooter>
         </form>
       </Card>
@@ -126,6 +122,25 @@ export default function TokenEntryPage() {
           
           <p className="text-sm text-blue-700 font-medium mt-auto">
             Become a contributor to the TV Tantrum project and help make screen time safer for families
+          </p>
+        </div>
+        
+        {/* About section */}
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-6 min-h-[320px] flex flex-col">
+          <h3 className="text-lg font-semibold text-blue-900 mb-4">About TV Tantrum</h3>
+          <p className="text-sm text-blue-800 mb-4">
+            TV Tantrum helps parents make informed decisions about children's TV shows. We understand that screen time is inevitable, so why not make it count?
+          </p>
+          
+          <h4 className="text-md font-semibold text-blue-900 mb-3">Our Rating System</h4>
+          <ul className="text-sm text-blue-800 space-y-2 mb-4 flex-grow">
+            <li><span className="font-semibold">Stimulation Score</span> - Measure of how visually and audibly stimulating the content is</li>
+            <li><span className="font-semibold">Themes</span> - Topics covered from adventure and creativity to social-emotional learning</li>
+            <li><span className="font-semibold">Interactivity Level</span> - How engaging and interactive the content is for children</li>
+          </ul>
+          
+          <p className="text-sm text-blue-700 font-medium mt-auto">
+            Join thousands of parents making smarter screen time choices for their families
           </p>
         </div>
       </div>
