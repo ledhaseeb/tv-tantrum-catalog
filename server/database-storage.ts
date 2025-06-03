@@ -1153,7 +1153,7 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    if (filters.interactionLevel) {
+    if (filters.interactionLevel && filters.interactionLevel !== 'Any') {
       // Map frontend 'interactionLevel' to database 'interactivityLevel' field
       console.log("Filtering by interaction level:", filters.interactionLevel);
       
@@ -1225,6 +1225,9 @@ export class DatabaseStorage implements IStorage {
           break;
         case 'stimulation_desc':
           query = query.orderBy(desc(tvShows.stimulationScore));
+          break;
+        case 'stimulation-score':
+          query = query.orderBy(tvShows.stimulationScore);
           break;
         case 'year_asc':
           query = query.orderBy(tvShows.releaseYear);

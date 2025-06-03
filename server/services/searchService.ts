@@ -157,11 +157,18 @@ export class SearchService {
       }
       
       // Interaction level filter (updated field name)
-      if (filters.interactionLevel) {
+      if (filters.interactionLevel && filters.interactionLevel !== 'Any') {
         console.log('Filtering by interaction level:', filters.interactionLevel);
-        query += ` AND interactivity_level = $${paramIndex}`;
-        params.push(filters.interactionLevel);
-        paramIndex++;
+        
+        if (filters.interactionLevel === 'High') {
+          query += ` AND (interactivity_level = $${paramIndex} OR interactivity_level ILIKE $${paramIndex + 1} OR interactivity_level ILIKE $${paramIndex + 2})`;
+          params.push('High', '%High%', '%to High%');
+          paramIndex += 3;
+        } else {
+          query += ` AND interactivity_level = $${paramIndex}`;
+          params.push(filters.interactionLevel);
+          paramIndex++;
+        }
       }
       
       if (filters.dialogueIntensity) {
