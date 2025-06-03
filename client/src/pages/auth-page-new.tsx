@@ -50,6 +50,9 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const onSubmit = (data: LoginFormValues) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
+        // Track successful login event
+        trackEvent('login', 'user', 'login_success');
+        
         toast({
           title: "Login successful!",
           description: "Welcome back to TV Tantrum",
