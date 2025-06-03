@@ -43,6 +43,7 @@ export default function About() {
             <li><span className="font-semibold">Stimulation Score</span> - Measure of how visually and audibly stimulating the content is.</li>
             <li><span className="font-semibold">Themes</span> - Understand what topics and concepts are covered in each show, from adventure and creativity to social-emotional learning and problem-solving.</li>
             <li><span className="font-semibold">Interactivity Level</span> - How engaging and interactive is the content for children?</li>
+            <li><span className="font-semibold">Target Ages</span> - We inform you on what age group the show's content targets</li>
           </ul>
         </div>
         

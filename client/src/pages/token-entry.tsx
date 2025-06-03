@@ -137,6 +137,7 @@ export default function TokenEntryPage() {
             <li><span className="font-semibold">Stimulation Score</span> - Measure of how visually and audibly stimulating the content is</li>
             <li><span className="font-semibold">Themes</span> - Topics covered from adventure and creativity to social-emotional learning</li>
             <li><span className="font-semibold">Interactivity Level</span> - How engaging and interactive the content is for children</li>
+            <li><span className="font-semibold">Target Ages</span> - We inform you on what age group the show's content targets</li>
           </ul>
           
           <p className="text-sm text-blue-700 font-medium">
