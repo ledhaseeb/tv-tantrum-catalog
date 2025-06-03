@@ -94,7 +94,7 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     store: sessionStore, // Use PostgreSQL store for both dev and production
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Secure cookies for HTTPS in production
+      secure: false, // Allow cookies to work without strict HTTPS requirements for Replit deployment
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       sameSite: 'lax', // Add sameSite for better compatibility
