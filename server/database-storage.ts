@@ -2249,14 +2249,13 @@ export class DatabaseStorage implements IStorage {
     // Transform reviews data to match frontend expectations
     const transformedReviews = reviewsWithShows.map((review: any) => ({
       id: review.id,
+      tvShowId: review.showId,
+      userId: userId.toString(),
+      userName: user.username,
       rating: review.rating,
       review: review.review,
       createdAt: review.createdAt,
-      tvShow: {
-        id: review.showId,
-        name: review.showName,
-        imageUrl: review.showImageUrl
-      }
+      showName: review.showName || 'Unknown Show'
     }));
 
     return {
