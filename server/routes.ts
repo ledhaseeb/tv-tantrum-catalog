@@ -2419,30 +2419,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid user ID" });
       }
       
-      // Get user basic info
-      const user = await storage.getUser(parsedUserId);
-      if (!user) {
+      // Use optimized method that gets all data in fewer queries
+      let profileData;
+      if (typeof storage.getUserProfileWithMetadata === 'function') {
+        profileData = await storage.getUserProfileWithMetadata(parsedUserId);
+      } else {
+        // Fallback to individual queries
+        const user = await storage.getUser(parsedUserId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        
+        const points = await storage.getUserPoints(parsedUserId);
+        const pointsHistory = await storage.getUserPointsHistory(parsedUserId);
+        const reviews = await storage.getUserReviews(parsedUserId);
+        const favorites = await storage.getUserFavorites(parsedUserId);
+        
+        profileData = {
+          user: {
+            id: user.id,
+            username: user.username,
+            backgroundColor: user.backgroundColor || '#6366f1',
+            joinedAt: user.createdAt
+          },
+          points,
+          pointsHistory,
+          reviews: reviews || [],
+          favorites: favorites || []
+        };
+      }
+      
+      if (!profileData) {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Get user's points and activity
-      const points = await storage.getUserPoints(parsedUserId);
-      const pointsHistory = await storage.getUserPointsHistory(parsedUserId);
-      const reviews = await storage.getUserReviews(parsedUserId);
-      const favorites = await storage.getUserFavorites(parsedUserId);
-      
-      res.json({
-        user: {
-          id: user.id,
-          username: user.username,
-          backgroundColor: user.backgroundColor || '#6366f1',
-          joinedAt: user.createdAt
-        },
-        points,
-        pointsHistory,
-        reviews: reviews || [],
-        favorites: favorites || []
-      });
+      res.json(profileData);
     } catch (error) {
       console.error("Error fetching user profile:", error);
       res.status(500).json({ message: "Failed to fetch user profile" });

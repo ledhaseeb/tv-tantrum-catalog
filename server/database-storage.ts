@@ -2181,6 +2181,74 @@ export class DatabaseStorage implements IStorage {
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
   }
+
+  async getUserProfileWithMetadata(userId: number): Promise<any> {
+    // Get user basic info
+    const userResult = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (userResult.length === 0) {
+      return null;
+    }
+
+    const user = userResult[0];
+
+    // Get user's points
+    const pointsResult = await this.getUserPoints(userId);
+
+    // Get user's reviews with show information
+    const reviewsWithShows = await db
+      .select({
+        id: reviews.id,
+        rating: reviews.rating,
+        review: reviews.review,
+        createdAt: reviews.createdAt,
+        showId: reviews.tvShowId,
+        showName: tvShows.name,
+        showImageUrl: tvShows.imageUrl,
+      })
+      .from(reviews)
+      .leftJoin(tvShows, eq(reviews.tvShowId, tvShows.id))
+      .where(eq(reviews.userId, userId))
+      .orderBy(desc(reviews.createdAt))
+      .limit(20);
+
+    // Get user's favorites with show information
+    const favoritesWithShows = await db
+      .select({
+        id: favorites.id,
+        createdAt: favorites.createdAt,
+        showId: favorites.tvShowId,
+        showName: tvShows.name,
+        showImageUrl: tvShows.imageUrl,
+        showAgeRange: tvShows.ageRange,
+        showStimulationScore: tvShows.stimulationScore,
+      })
+      .from(favorites)
+      .leftJoin(tvShows, eq(favorites.tvShowId, tvShows.id))
+      .where(eq(favorites.userId, userId))
+      .orderBy(desc(favorites.createdAt))
+      .limit(20);
+
+    // Get user's points history
+    const pointsHistory = await this.getUserPointsHistory(userId);
+
+    return {
+      user: {
+        id: user.id,
+        username: user.username,
+        backgroundColor: user.backgroundColor || '#6366f1',
+        joinedAt: user.createdAt
+      },
+      points: pointsResult,
+      pointsHistory: pointsHistory || [],
+      reviews: reviewsWithShows || [],
+      favorites: favoritesWithShows || []
+    };
+  }
   
   // -------------------------------------------------------------------------
   // Gamification Methods
