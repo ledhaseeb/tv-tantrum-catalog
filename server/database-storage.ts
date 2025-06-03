@@ -2092,7 +2092,7 @@ export class DatabaseStorage implements IStorage {
       ? await db
           .select({ avgStim: sql<number>`AVG(${tvShows.stimulationScore})` })
           .from(tvShows)
-          .where(sql`${tvShows.id} IN (${sql.join(favoriteIds)})`)
+          .where(inArray(tvShows.id, favoriteIds))
       : null;
 
     const avgStimulationScore = avgStimResult?.[0]?.avgStim ?? 3;
@@ -2102,7 +2102,7 @@ export class DatabaseStorage implements IStorage {
       ? await db
           .select({ themes: tvShows.themes })
           .from(tvShows)
-          .where(sql`${tvShows.id} IN (${sql.join(favoriteIds)})`)
+          .where(inArray(tvShows.id, favoriteIds))
           .then(rows => 
             rows
               .flatMap(row => row.themes || [])
@@ -2140,18 +2140,18 @@ export class DatabaseStorage implements IStorage {
         videoUrl: tvShows.videoUrl,
         platforms: tvShows.platforms,
         tags: tvShows.tags,
-        averageRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
-        reviewCount: sql<number>`COUNT(DISTINCT ${reviews.id})`,
+        averageRating: sql<number>`COALESCE(AVG(${tvShowReviews.rating}), 0)`,
+        reviewCount: sql<number>`COUNT(DISTINCT ${tvShowReviews.id})`,
         isFavorite: sql<boolean>`BOOL_OR(${favorites.userId} = ${userId})`,
       })
       .from(tvShows)
-      .leftJoin(reviews, eq(reviews.tvShowId, tvShows.id))
+      .leftJoin(tvShowReviews, eq(tvShowReviews.tvShowId, tvShows.id))
       .leftJoin(favorites, eq(favorites.tvShowId, tvShows.id))
       .where(
         and(
           sql`${tvShows.stimulationScore} >= ${stimScoreRange.min} AND ${tvShows.stimulationScore} <= ${stimScoreRange.max}`,
           favoriteIds.length > 0 
-            ? sql`NOT (${tvShows.id} IN (${sql.join(favoriteIds)}))`
+            ? not(inArray(tvShows.id, favoriteIds))
             : sql`1=1`
         )
       )
