@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { Award, Star as StarIcon, Trophy, Timer, LineChart, Flame, Users, Calendar as CalendarIcon, Send, Share, UserPlus, FilePlus2, BookOpen, Heart, X, Camera, Upload, Palette } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ShowCard from '@/components/ShowCard';
@@ -60,7 +60,7 @@ const getNextBadge = (points: number) => {
 };
 
 const UserDashboard = () => {
-  const { user, toggleFavorite } = useAuth();
+  const { user, toggleFavorite, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -145,12 +145,13 @@ const UserDashboard = () => {
   const dashboardUser = dashboardData?.user;
   const userBackgroundColor = dashboardUser?.background_color || dashboardUser?.backgroundColor || 'bg-purple-500';
 
-  if (isLoadingDashboard) {
+  // Show loading state while authentication or dashboard data is loading
+  if (isAuthLoading || isLoadingDashboard) {
     return (
       <div className="container max-w-4xl py-8">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold mb-2">Please wait while your dashboard loads</h2>
-          <p className="text-gray-500">We're gathering your latest activity and points...</p>
+          <h2 className="text-2xl font-bold mb-2">Loading Dashboard</h2>
+          <p className="text-gray-500">Please wait while we gather your latest activity and points...</p>
         </div>
         <div className="space-y-4">
           <Skeleton className="h-12 w-[250px]" />
@@ -165,7 +166,8 @@ const UserDashboard = () => {
     );
   }
   
-  if (!user) {
+  // Only show login prompt if auth is definitely finished loading and user is not authenticated
+  if (!isAuthLoading && !user) {
     return (
       <div className="container max-w-4xl py-8">
         <div className="text-center py-12">
