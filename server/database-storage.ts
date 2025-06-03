@@ -2202,18 +2202,18 @@ export class DatabaseStorage implements IStorage {
     // Get user's reviews with show information
     const reviewsWithShows = await db
       .select({
-        id: reviews.id,
-        rating: reviews.rating,
-        review: reviews.review,
-        createdAt: reviews.createdAt,
-        showId: reviews.tvShowId,
+        id: tvShowReviews.id,
+        rating: tvShowReviews.rating,
+        review: tvShowReviews.review,
+        createdAt: tvShowReviews.createdAt,
+        showId: tvShowReviews.tvShowId,
         showName: tvShows.name,
         showImageUrl: tvShows.imageUrl,
       })
-      .from(reviews)
-      .leftJoin(tvShows, eq(reviews.tvShowId, tvShows.id))
-      .where(eq(reviews.userId, userId))
-      .orderBy(desc(reviews.createdAt))
+      .from(tvShowReviews)
+      .leftJoin(tvShows, eq(tvShowReviews.tvShowId, tvShows.id))
+      .where(eq(tvShowReviews.userId, userId))
+      .orderBy(desc(tvShowReviews.createdAt))
       .limit(20);
 
     // Get user's favorites with show information
