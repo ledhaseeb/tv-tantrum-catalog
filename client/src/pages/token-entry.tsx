@@ -24,11 +24,12 @@ export default function TokenEntryPage() {
 
   // Enable automatic redirect when a valid token exists
   useEffect(() => {
-    const storedToken = localStorage.getItem("earlyAccessToken");
-    if (storedToken === expectedToken) {
-      // Redirect to home page when token is already stored
-      setLocation("/home");
-    }
+    // Temporarily disabled for demo purposes
+    // const storedToken = localStorage.getItem("earlyAccessToken");
+    // if (storedToken === expectedToken) {
+    //   // Redirect to home page when token is already stored
+    //   setLocation("/home");
+    // }
   }, [setLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
