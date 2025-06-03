@@ -146,7 +146,7 @@ export default function TermsOfService() {
               If you have any questions about these Terms of Service, please contact us at:
             </p>
             <p className="mt-2 font-medium">
-              Email: legal@tvtantrum.com
+              Email: hello@tvtantrum.com
             </p>
           </section>
         </div>
