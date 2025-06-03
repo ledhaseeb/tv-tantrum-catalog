@@ -781,6 +781,8 @@ export default function Home() {
 
 // Leaderboard Component
 function Leaderboard() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const { data: leaderboard, isLoading } = useQuery<any[]>({
     queryKey: ['/api/leaderboard'],
     staleTime: 30000, // 30 seconds - reduced to see background color changes faster
@@ -814,9 +816,9 @@ function Leaderboard() {
           <p className="text-gray-600">Top contributors earning points through reviews, referrals, and community engagement</p>
         </div>
         
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto relative">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6 ${!user ? 'blur-sm' : ''}`}>
               {leaderboard.slice(0, 9).map((user, index) => (
                 <div 
                   key={user.id} 
@@ -875,13 +877,45 @@ function Leaderboard() {
             </div>
             
             {leaderboard.length > 9 && (
-              <div className="bg-gray-50 px-6 py-3 text-center">
+              <div className={`bg-gray-50 px-6 py-3 text-center ${!user ? 'blur-sm' : ''}`}>
                 <p className="text-sm text-gray-600">
                   And {leaderboard.length - 9} more amazing community members!
                 </p>
               </div>
             )}
           </div>
+
+          {/* Registration Call-to-Action Overlay for Non-Registered Users */}
+          {!user && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-lg">
+              <div className="text-center p-8 max-w-md">
+                <div className="mb-4">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <Star className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Join Our Community</h3>
+                  <p className="text-gray-600 mb-6">
+                    Register to see community rankings, earn points through reviews, and compete with other parents for the top spots!
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <Button 
+                    onClick={() => setLocation("/auth")}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    Register Now
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setLocation("/auth")}
+                    className="w-full"
+                  >
+                    Already have an account? Sign In
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
