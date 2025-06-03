@@ -2850,189 +2850,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GHL Webhook endpoints - multiple variations to catch different URL patterns
-  
-  // Simple test endpoint first
-  app.all("/api/test-webhook", (req: Request, res: Response) => {
-    console.log('=== TEST WEBHOOK RECEIVED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Method:', req.method);
-    console.log('Body:', req.body);
-    res.status(200).json({ message: 'Test webhook working', timestamp: new Date().toISOString() });
-  });
-  
-  // Try all possible GHL webhook URL patterns
-  app.all("/api/ghl/webhook", (req: Request, res: Response) => {
-    console.log('=== GHL WEBHOOK (SLASH VERSION) RECEIVED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Method:', req.method);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('================================================');
-    res.status(200).json({ message: 'Slash webhook received' });
-  });
-  
-  app.all("/api/ghlwebhook", async (req: Request, res: Response) => {
-    console.log('=== GHL WEBHOOK (NO SEPARATOR) RECEIVED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Method:', req.method);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('================================================');
-    res.status(200).json({ message: 'No separator webhook received' });
-  });
-  
-  // Alternative webhook endpoint (with hyphen) - this now processes data too
-  app.all("/api/ghl-webhook", async (req: Request, res: Response) => {
-    console.log('=== GHL WEBHOOK (HYPHEN VERSION) RECEIVED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Method:', req.method);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Query:', JSON.stringify(req.query, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('Raw body keys:', Object.keys(req.body || {}));
-    console.log('================================================');
-    
-    try {
-      // Handle both possible webhook data structures
-      const webhookData = req.body;
-      const contact = webhookData.contact || webhookData;
-      
-      if (!contact) {
-        console.log('No contact data found in webhook');
-        return res.status(200).json({ message: 'No contact data found' });
-      }
-
-      console.log('Contact object keys:', Object.keys(contact));
-      console.log('Contact data structure:', JSON.stringify(contact, null, 2));
-
-      // Extract data from multiple possible locations in the webhook payload
-      const email = webhookData.email || webhookData.customData?.email || contact.email || contact.emailAddress;
-      const firstName = webhookData.first_name || webhookData.customData?.first_name || contact.firstName || contact.first_name;
-      const contactId = webhookData.contact_id || contact.id || contact.contactId;
-
-      console.log('Processing GHL contact:', { email, firstName, contactId });
-
-      // Check if user already exists
-      const existingUser = await db
-        .select()
-        .from(tempGhlUsers)
-        .where(eq(tempGhlUsers.email, email))
-        .limit(1);
-
-      if (existingUser.length === 0) {
-        // Insert new temp user
-        await db.insert(tempGhlUsers).values({
-          email,
-          firstName,
-          ghlContactId: contactId,
-          createdAt: new Date()
-        });
-        console.log('Created new temp GHL user:', email);
-      } else {
-        console.log('User already exists in temp_ghl_users:', email);
-      }
-
-      res.status(200).json({ 
-        message: 'Webhook processed successfully',
-        email
-      });
-    } catch (error) {
-      console.error('Error processing GHL webhook:', error);
-      res.status(200).json({ message: 'Webhook received but processing failed', error: error.message });
-    }
-  });
-  
-  // Debug endpoint to capture any webhook data
-  app.all("/api/ghl/debug", async (req: Request, res: Response) => {
-    console.log('=== GHL DEBUG ENDPOINT ===');
-    console.log('Method:', req.method);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Query:', JSON.stringify(req.query, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('========================');
-    
-    res.status(200).json({ 
-      message: 'Debug data received',
-      method: req.method,
-      headers: req.headers,
-      query: req.query,
-      body: req.body
-    });
-  });
-  
-  // Webhook to receive GHL form submissions
-  app.post("/api/ghl/webhook", async (req: Request, res: Response) => {
+  // Single dedicated GHL webhook endpoint
+  app.post("/api/ghl-webhook", async (req: Request, res: Response) => {
     try {
       console.log('=== GHL WEBHOOK RECEIVED ===');
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('Method:', req.method);
       console.log('Headers:', JSON.stringify(req.headers, null, 2));
       console.log('Body:', JSON.stringify(req.body, null, 2));
-      console.log('Method:', req.method);
-      console.log('URL:', req.url);
       console.log('================================');
       
       const formData = req.body;
       
-      // Extract only email and first name from GHL webhook payload
+      // Extract email and first name from GHL webhook payload
       const email = formData.email || formData.customData?.email || formData.contact?.email || formData.contact?.emailAddress;
       const firstName = formData.first_name || formData.customData?.first_name || formData.contact?.firstName || formData.contact?.first_name;
       const contactId = formData.contact_id || formData.contact?.id || formData.contactId;
       
-      console.log('Parsed webhook data:', {
-        email,
-        firstName,
-        contactId
-      });
+      console.log('Extracted data:', { email, firstName, contactId });
+      console.log('Available form fields:', Object.keys(formData));
 
       if (!email) {
-        console.error('No email found in GHL webhook payload');
-        console.error('Available fields:', Object.keys(formData));
-        return res.status(400).json({ error: 'Email is required' });
+        console.error('No email found in webhook payload');
+        return res.status(200).json({ 
+          message: 'Webhook received but processing failed',
+          error: 'Email is required' 
+        });
       }
       
-      // Try database insertion with error handling
-      let newUser;
+      // Database insertion with error handling
       try {
-        // First check if user already exists using direct SQL
+        // Check if user already exists
         const existingCheck = await db.execute(
           sql`SELECT id FROM temp_ghl_users WHERE email = ${email} LIMIT 1`
         );
         
         if (existingCheck.rows.length > 0) {
-          console.log('GHL user already exists:', email);
+          console.log('User already exists:', email);
           return res.status(200).json({ 
             message: 'User already exists',
             userId: existingCheck.rows[0].id 
           });
         }
         
-        // Insert new user using direct SQL
+        // Insert new user
         const insertResult = await db.execute(
           sql`INSERT INTO temp_ghl_users (email, first_name, contact_id, created_at, updated_at) 
               VALUES (${email}, ${firstName || null}, ${contactId || null}, NOW(), NOW()) 
               RETURNING id`
         );
         
-        newUser = insertResult.rows[0];
-        console.log('GHL user successfully inserted into database:', newUser);
+        const newUser = insertResult.rows[0];
+        console.log('Successfully inserted new user:', newUser);
         
-        // Check for pending referral data
+        // Process any pending referral data
         await processPendingReferral(email, newUser.id);
         
+        res.status(200).json({ 
+          message: 'Webhook processed successfully',
+          userId: newUser.id 
+        });
+        
       } catch (dbError: any) {
-        console.error('Database error, but webhook received successfully:', dbError.message);
-        // Still return success to GHL so they don't retry
-        newUser = { id: Date.now() };
+        console.error('Database error:', dbError.message);
+        console.error('Full error:', dbError);
+        
+        // Return success to GHL to prevent retries
+        res.status(200).json({ 
+          message: 'Webhook received but processing failed',
+          error: dbError.message 
+        });
       }
       
+    } catch (error: any) {
+      console.error('Webhook processing error:', error);
       res.status(200).json({ 
-        message: 'GHL user recorded successfully',
-        userId: newUser.id 
+        message: 'Webhook received but processing failed',
+        error: error.message 
       });
-      
-    } catch (error) {
-      console.error('Error processing GHL webhook:', error);
-      res.status(500).json({ error: 'Failed to process webhook' });
     }
   });
 
