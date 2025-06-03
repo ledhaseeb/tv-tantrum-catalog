@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 export default function Footer() {
   const { user, isApproved } = useAuth();
   
-  // Determine the about page URL based on login and approval status
-  const aboutPageUrl = user && isApproved ? "/app-about" : "/about";
+  // Use the standard about page URL for all users
+  const aboutPageUrl = "/about";
   
   return (
     <footer className="bg-primary text-white py-8 mt-12">
