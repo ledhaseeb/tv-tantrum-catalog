@@ -199,7 +199,7 @@ export class SearchService {
             query += ` ORDER BY stimulation_score ASC NULLS LAST`;
             break;
           case 'interactivity-level':
-            query += ` ORDER BY interaction_level DESC NULLS LAST`;
+            query += ` ORDER BY interactivity_level DESC NULLS LAST`;
             break;
           case 'popular':
             // For popularity-based sorting, we'll handle this post-query
