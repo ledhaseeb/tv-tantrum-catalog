@@ -201,21 +201,51 @@ const Research = () => {
 
       {/* Content display for both mobile and desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {activeCategory === 'all'
-          ? (summaries && Array.isArray(summaries) ? summaries.map((summary: any) => (
-              <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
-            )) : null)
-          : (categorizedSummaries[activeCategory] && Array.isArray(categorizedSummaries[activeCategory]) 
-              ? categorizedSummaries[activeCategory].map((summary: any) => (
-                  <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
-                ))
-              : (
-                <div className="col-span-full text-center py-12 text-gray-500">
-                  <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                  <p>No research summaries found in this category</p>
-                </div>
-              )
-            )}
+        {isLoadingSummaries ? (
+          // Loading placeholder for research cards
+          <>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={`skeleton-${index}`} className="h-[280px]">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                  </div>
+                  <Skeleton className="h-6 w-full mb-1" />
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Skeleton className="h-9 w-full" />
+                </CardFooter>
+              </Card>
+            ))}
+          </>
+        ) : activeCategory === 'all' ? (
+          summaries && Array.isArray(summaries) ? summaries.map((summary: any) => (
+            <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+          )) : (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+              <p>No research summaries available</p>
+            </div>
+          )
+        ) : (
+          categorizedSummaries[activeCategory] && Array.isArray(categorizedSummaries[activeCategory]) 
+            ? categorizedSummaries[activeCategory].map((summary: any) => (
+                <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+              ))
+            : (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No research summaries found in this category</p>
+              </div>
+            )
+        )}
       </div>
     </div>
   );
