@@ -39,6 +39,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
+import { initAdSense } from "./lib/adsense";
 
 function Router() {
   // Track page views when routes change
@@ -344,13 +345,20 @@ function Router() {
 }
 
 function App() {
-  // Initialize Google Analytics when app loads
+  // Initialize Google Analytics and AdSense when app loads
   useEffect(() => {
-    // Verify required environment variable is present
+    // Initialize Google Analytics
     if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
       console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
     } else {
       initGA();
+    }
+
+    // Initialize Google AdSense
+    if (!import.meta.env.VITE_GOOGLE_ADSENSE_ID) {
+      console.warn('Missing required Google AdSense key: VITE_GOOGLE_ADSENSE_ID');
+    } else {
+      initAdSense();
     }
   }, []);
 

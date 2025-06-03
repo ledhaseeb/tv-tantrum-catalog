@@ -1,4 +1,5 @@
 import React from 'react';
+import GoogleAd from './GoogleAd';
 
 interface AdContainerProps {
   size: 'banner' | 'rectangle' | 'leaderboard' | 'mobile-banner';
@@ -7,19 +8,52 @@ interface AdContainerProps {
 }
 
 const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label = 'Advertisement' }) => {
-  const sizeClasses = {
-    banner: 'w-full h-24 md:h-32', // 728x90 leaderboard or mobile banner
-    rectangle: 'w-full max-w-sm h-64', // 300x250 medium rectangle
-    leaderboard: 'w-full h-24', // 728x90 leaderboard
-    'mobile-banner': 'w-full h-16' // 320x50 mobile banner
+  // AdSense ad slot IDs - you'll need to create these in your AdSense account
+  const adSlots = {
+    banner: '1234567890', // Replace with your actual ad slot ID
+    rectangle: '1234567891', // Replace with your actual ad slot ID  
+    leaderboard: '1234567892', // Replace with your actual ad slot ID
+    'mobile-banner': '1234567893' // Replace with your actual ad slot ID
   };
 
-  return (
-    <div className={`${sizeClasses[size]} ${className} bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center`}>
-      <div className="text-center">
-        <div className="text-xs text-gray-400 uppercase tracking-wide">{label}</div>
-        <div className="text-xs text-gray-300 mt-1">Ad Space Ready</div>
+  const adDimensions = {
+    banner: { width: 728, height: 90 },
+    rectangle: { width: 300, height: 250 },
+    leaderboard: { width: 728, height: 90 },
+    'mobile-banner': { width: 320, height: 50 }
+  };
+
+  // Check if AdSense is configured
+  const adsenseId = import.meta.env.VITE_GOOGLE_ADSENSE_ID;
+  
+  if (!adsenseId) {
+    // Fallback to placeholder when AdSense not configured
+    const sizeClasses = {
+      banner: 'w-full h-24 md:h-32',
+      rectangle: 'w-full max-w-sm h-64',
+      leaderboard: 'w-full h-24',
+      'mobile-banner': 'w-full h-16'
+    };
+
+    return (
+      <div className={`${sizeClasses[size]} ${className} bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center`}>
+        <div className="text-center">
+          <div className="text-xs text-gray-400 uppercase tracking-wide">{label}</div>
+          <div className="text-xs text-gray-300 mt-1">Ad Space Ready</div>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      <GoogleAd
+        slot={adSlots[size]}
+        width={adDimensions[size].width}
+        height={adDimensions[size].height}
+        format="auto"
+        responsive={true}
+      />
     </div>
   );
 };

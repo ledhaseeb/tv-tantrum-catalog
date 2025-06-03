@@ -704,7 +704,10 @@ export default function Home() {
         "/browse?sortBy=popular"
       )}
       
-
+      {/* Mid-Content Ad */}
+      <div className="my-8">
+        <AdContainer size="rectangle" className="mx-auto" />
+      </div>
       
       {/* Highly Rated */}
       {renderCategorySection(
