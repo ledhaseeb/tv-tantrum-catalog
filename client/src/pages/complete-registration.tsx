@@ -405,9 +405,9 @@ export default function CompleteRegistration() {
         description: "Your account has been created successfully. You can now sign in.",
       });
 
-      // Redirect to login after a short delay
+      // Redirect to login tab after a short delay
       setTimeout(() => {
-        setLocation("/auth");
+        setLocation("/auth?tab=login");
       }, 2000);
 
     } catch (error: any) {

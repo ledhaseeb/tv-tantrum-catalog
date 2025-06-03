@@ -230,15 +230,25 @@ export default function AuthPage() {
     // Skip localStorage checking, rely on server session
     setIsCheckingStoredAuth(false);
     
-    // Check for early access token from URL
+    // Check for URL parameters
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get('token');
+    const tabParam = params.get('tab');
+    
+    // Handle tab parameter for direct navigation
+    if (tabParam === 'login') {
+      setActiveTab('login');
+    } else if (tabParam === 'register') {
+      setActiveTab('register');
+    }
+    
+    // Check for early access token from URL
     if (urlToken) {
       setEarlyAccessToken(urlToken);
       localStorage.setItem("earlyAccessToken", urlToken);
       
-      // Switch to register tab when token is present
-      if (urlToken === "2025") {
+      // Switch to register tab when token is present (unless tab param overrides)
+      if (urlToken === "2025" && !tabParam) {
         setActiveTab("register");
       }
     } else {
@@ -247,8 +257,8 @@ export default function AuthPage() {
       if (storedToken) {
         setEarlyAccessToken(storedToken);
         
-        // Switch to register tab when token is present and valid
-        if (storedToken === "2025") {
+        // Switch to register tab when token is present and valid (unless tab param overrides)
+        if (storedToken === "2025" && !tabParam) {
           setActiveTab("register");
         }
       }
