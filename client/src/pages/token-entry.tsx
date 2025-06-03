@@ -75,12 +75,14 @@ export default function TokenEntryPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">What you get with TV Tantrum:</h3>
             <ul className="text-xs text-blue-800 space-y-1">
-              <li>• Smart stimulation scores to find the right content intensity</li>
-              <li>• Advanced filtering by age, themes, and sensory details</li>
-              <li>• Community reviews from real parents</li>
-              <li>• Personalized recommendations based on your preferences</li>
-              <li>• Access to 500+ curated children's shows and channels</li>
+              <li>• Select favourites for personalized recommendations</li>
+              <li>• Submit shows for analysis and build our database</li>
+              <li>• Access research articles</li>
+              <li>• Rate shows and leave reviews</li>
             </ul>
+            <p className="text-xs text-blue-700 mt-3 font-medium">
+              Become a contributor to the TV Tantrum project and help make screen time safer for families
+            </p>
           </div>
         </CardHeader>
         <form onSubmit={handleSubmit}>
