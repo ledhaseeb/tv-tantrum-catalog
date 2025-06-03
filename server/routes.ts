@@ -2973,32 +2973,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const formData = req.body;
       
-      // Extract relevant fields from GHL webhook payload with more comprehensive parsing
-      const email = formData.email || formData.contact?.email || formData.contact?.emailAddress;
-      const firstName = formData.first_name || formData.contact?.first_name || formData.firstName || formData.contact?.firstName;
-      const lastName = formData.last_name || formData.contact?.last_name || formData.lastName || formData.contact?.lastName;
-      const phone = formData.phone || formData.contact?.phone;
-      const country = formData.country || formData.contact?.country;
+      // Extract only email and first name from GHL webhook payload
+      const email = formData.email || formData.customData?.email || formData.contact?.email || formData.contact?.emailAddress;
+      const firstName = formData.first_name || formData.customData?.first_name || formData.contact?.firstName || formData.contact?.first_name;
       const contactId = formData.contact_id || formData.contact?.id || formData.contactId;
-      
-      // Extract referral information from various possible fields
-      const referrerId = formData.referrer_id || formData.referrer || formData.ref || formData.referral_code || 
-                        formData.contact?.referrer_id || formData.contact?.referrer || formData.contact?.ref;
-      const referredShowIdRaw = formData.referred_show_id || formData.show_id || formData.from_show || 
-                               formData.contact?.referred_show_id || formData.contact?.show_id;
-      
-      // Convert referred_show_id to integer if present
-      const referredShowId = referredShowIdRaw ? parseInt(referredShowIdRaw, 10) : null;
       
       console.log('Parsed webhook data:', {
         email,
         firstName,
-        lastName,
-        phone,
-        country,
-        contactId,
-        referrerId,
-        referredShowId
+        contactId
       });
 
       if (!email) {
@@ -3023,10 +3006,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        // Insert new user using direct SQL - we'll handle referrals separately
+        // Insert new user using direct SQL
         const insertResult = await db.execute(
-          sql`INSERT INTO temp_ghl_users (email, first_name, country, contact_id, created_at, updated_at) 
-              VALUES (${email}, ${firstName || null}, ${country || null}, ${contactId || null}, NOW(), NOW()) 
+          sql`INSERT INTO temp_ghl_users (email, first_name, contact_id, created_at, updated_at) 
+              VALUES (${email}, ${firstName || null}, ${contactId || null}, NOW(), NOW()) 
               RETURNING id`
         );
         
