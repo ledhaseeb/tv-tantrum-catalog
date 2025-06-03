@@ -37,6 +37,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).send('OK');
   });
 
+  // GHL webhook endpoint for form submissions
+  app.post('/api/ghl-webhook', async (req: Request, res: Response) => {
+    try {
+      console.log('=== GHL WEBHOOK RECEIVED ===');
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('Body:', JSON.stringify(req.body, null, 2));
+      console.log('================================');
+      
+      const { email, first_name } = req.body;
+      
+      if (!email) {
+        console.error('No email in webhook payload');
+        return res.status(200).json({ message: 'Email required' });
+      }
+      
+      // Check if user exists
+      const existing = await db.execute(
+        sql`SELECT id FROM temp_ghl_users WHERE email = ${email} LIMIT 1`
+      );
+      
+      if (existing.rows.length > 0) {
+        console.log('User already exists:', email);
+        return res.status(200).json({ message: 'User exists' });
+      }
+      
+      // Insert new user
+      await db.execute(
+        sql`INSERT INTO temp_ghl_users (email, first_name, created_at, updated_at) 
+            VALUES (${email}, ${first_name || null}, NOW(), NOW())`
+      );
+      
+      console.log('Successfully inserted user:', email);
+      res.status(200).json({ message: 'Success' });
+      
+    } catch (error: any) {
+      console.error('Webhook error:', error);
+      res.status(200).json({ message: 'Error', error: error.message });
+    }
+  });
+
+  // Test endpoint
+  app.get('/api/webhook-test', (req: Request, res: Response) => {
+    res.json({ 
+      message: 'Webhook endpoint reachable',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Set up authentication
   setupAuth(app);
   
