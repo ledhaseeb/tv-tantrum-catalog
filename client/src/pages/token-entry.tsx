@@ -41,10 +41,20 @@ export default function TokenEntryPage() {
         // Store token in localStorage for persistence
         localStorage.setItem("earlyAccessToken", expectedToken);
         toast({
-          title: "Success!",
-          description: "Your access token has been verified. Welcome to TV Tantrum!",
+          title: "Welcome to TV Tantrum!",
+          description: "Your access token has been verified. You can now browse our content!",
           variant: "default"
         });
+        
+        // Show additional welcome notification encouraging registration
+        setTimeout(() => {
+          toast({
+            title: "💡 Pro Tip: Register for FREE!",
+            description: "Create an account to save favorites, leave reviews, earn points, and get personalized recommendations!",
+            variant: "default"
+          });
+        }, 2000);
+        
         // Redirect to home page after successful verification
         setLocation("/home");
       } else {

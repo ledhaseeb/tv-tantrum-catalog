@@ -24,6 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
 // Top user countries first, then alphabetical
 const topCountries = [
@@ -298,6 +299,7 @@ export default function CompleteRegistration() {
   const [usernameCheckTimeout, setUsernameCheckTimeout] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { loginMutation } = useAuth();
 
   // Function to get email from URL parameters or localStorage
   const getPrefilledEmail = () => {
@@ -409,13 +411,35 @@ export default function CompleteRegistration() {
       setIsComplete(true);
       toast({
         title: "Registration Completed!",
-        description: "Your account has been created successfully. You can now sign in.",
+        description: "Your account has been created successfully. Logging you in...",
       });
 
-      // Redirect to login tab after a short delay
-      setTimeout(() => {
-        setLocation("/auth?tab=login");
-      }, 2000);
+      // Automatically log the user in with their new credentials
+      loginMutation.mutate({
+        identifier: data.username, // Use username for login
+        password: data.password
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Welcome to TV Tantrum!",
+            description: "You've been automatically logged in.",
+          });
+          // Redirect to home page after successful login
+          setTimeout(() => {
+            setLocation("/home");
+          }, 1500);
+        },
+        onError: () => {
+          // If auto-login fails, redirect to login page
+          toast({
+            title: "Registration successful!",
+            description: "Please log in with your new credentials.",
+          });
+          setTimeout(() => {
+            setLocation("/auth?tab=login");
+          }, 2000);
+        }
+      });
 
     } catch (error: any) {
       console.error("Registration completion error:", error);
