@@ -103,8 +103,8 @@ export default function TokenEntryPage() {
       </Card>
       
       {/* Benefits section below the card */}
-      <div className="w-full max-w-md space-y-4 mt-6">
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+      <div className="w-full max-w-lg space-y-4 mt-6">
+        <div className="bg-gray-50 border border-gray-200 rounded-md p-6">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Upon entry you will be able to:</h3>
           <ul className="text-xs text-gray-700 space-y-1 mb-4">
             <li>- Browse and search all TV shows</li>
