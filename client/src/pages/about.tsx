@@ -53,13 +53,13 @@ export default function About() {
             Our comprehensive database aggregates ratings and information from:
           </p>
           <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+            <li>Content analysis by our proprietary stimulation measurement technology</li>
             <li>Parent surveys and reviews</li>
             <li>Child development expert assessments</li>
-            <li>Content analysis by our team</li>
             <li>User contributions and feedback</li>
           </ul>
           <p className="text-gray-700">
-            We're constantly updating our database as new shows emerge and more parents contribute their experiences.
+            We're constantly updating our database as new shows emerge and more parents contribute their experiences. Any score could be subject to change as we improve the accuracy of our service.
           </p>
         </div>
       </div>
