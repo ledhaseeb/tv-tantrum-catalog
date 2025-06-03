@@ -2906,15 +2906,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Contact object keys:', Object.keys(contact));
       console.log('Contact data structure:', JSON.stringify(contact, null, 2));
 
-      // Try multiple possible field names for email
+      // Try multiple possible field names for email and first name only
       const email = contact.email || contact.emailAddress || contact.Email || webhookData.email;
       const firstName = contact.firstName || contact.first_name || contact.First || webhookData.firstName;
-      const country = contact.country || contact.Country || webhookData.country;
       const contactId = contact.id || contact.contactId || contact.Id || webhookData.contactId;
-      const referrerId = contact.referrer_id || contact.referrerId || webhookData.referrer_id;
-      const referredShowId = contact.referred_show_id || contact.referredShowId || webhookData.referred_show_id;
 
-      console.log('Processing GHL contact:', { email, firstName, country, contactId, referrerId, referredShowId });
+      console.log('Processing GHL contact:', { email, firstName, contactId });
 
       // Check if user already exists
       const existingUser = await db
@@ -2928,10 +2925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await db.insert(tempGhlUsers).values({
           email,
           firstName,
-          country,
           contactId,
-          referrerId: referrerId || null,
-          referredShowId: referredShowId ? parseInt(referredShowId) : null,
           createdAt: new Date(),
           updatedAt: new Date()
         });
@@ -2942,9 +2936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(200).json({ 
         message: 'Webhook processed successfully',
-        email,
-        referrerId,
-        referredShowId
+        email
       });
     } catch (error) {
       console.error('Error processing GHL webhook:', error);
