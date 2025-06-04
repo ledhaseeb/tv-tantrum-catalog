@@ -5,16 +5,9 @@ import { dirname, join } from 'path';
 import session from 'express-session';
 import { setupVite, serveStatic } from './vite';
 import { catalogStorage } from './catalog-storage';
-import { Pool } from 'pg';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// Original database connection for image proxy
-const originalDb = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_ZH3VF9BEjlyk@ep-small-cloud-a46us4xp.us-east-1.aws.neon.tech/neondb?sslmode=require',
-  ssl: { rejectUnauthorized: false }
-});
 
 const app = express();
 const server = createServer(app);
@@ -172,41 +165,6 @@ router.get('/image-proxy', async (req, res) => {
   } catch (error) {
     console.error("Error proxying image:", error);
     res.status(500).json({ message: "Failed to proxy image" });
-  }
-});
-
-// Image proxy route for serving images from original database
-app.get('/media/tv-shows/:filename', async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    
-    // Check if the image exists in the original database
-    const result = await originalDb.query(
-      'SELECT image_url FROM tv_shows WHERE image_url = $1',
-      [`/media/tv-shows/${filename}`]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).send('Image not found');
-    }
-    
-    // Serve the generic TV show image for authentic media paths
-    const genericImagePath = join(__dirname, '../public/images/generic-tv-show.jpg');
-    
-    try {
-      res.sendFile(genericImagePath);
-    } catch (fileError) {
-      // If generic image doesn't exist, serve a simple SVG placeholder
-      res.setHeader('Content-Type', 'image/svg+xml');
-      res.send(`<svg width="400" height="600" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="600" fill="#285161"/>
-        <text x="200" y="300" text-anchor="middle" fill="#F6CB59" font-family="Arial" font-size="24">TV Show</text>
-      </svg>`);
-    }
-    
-  } catch (error) {
-    console.error('Image proxy error:', error);
-    res.status(500).send('Internal server error');
   }
 });
 
