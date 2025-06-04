@@ -35,6 +35,7 @@ import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import CatalogShowDetail from "@/pages/catalog-show-detail";
+import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
@@ -62,20 +63,7 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <Switch>
         {/* Show Detail Page - SEO-optimized individual show pages */}
-        <Route path="/show/:id">
-          {(params) => {
-            console.log('Show detail route matched with params:', params);
-            return (
-              <div className="flex-grow flex flex-col">
-                <CatalogNavbar />
-                <div className="flex-grow">
-                  <CatalogShowDetail id={parseInt(params.id)} />
-                </div>
-                <Footer />
-              </div>
-            );
-          }}
-        </Route>
+        <Route path="/show/:id" component={CatalogShowDetailPage} />
 
         {/* Catalog Home - Main landing page */}
         <Route path="/">
