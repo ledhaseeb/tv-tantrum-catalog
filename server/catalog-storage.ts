@@ -58,22 +58,11 @@ export class CatalogStorage {
         }
       }
       
-      // Age group filtering
+      // Age group filtering - simplified to avoid parsing errors
       if (filters.ageGroup) {
-        const [minAge, maxAge] = filters.ageGroup.split('-').map(Number);
-        whereConditions.push(`(
-          CASE 
-            WHEN ts.age_range LIKE '%-%' THEN
-              (CAST(SPLIT_PART(ts.age_range, '-', 1) AS INTEGER) <= $${paramIndex} AND 
-               CAST(SPLIT_PART(ts.age_range, '-', 2) AS INTEGER) >= $${paramIndex + 1})
-            WHEN ts.age_range LIKE '%+' THEN
-              CAST(REPLACE(ts.age_range, '+', '') AS INTEGER) <= $${paramIndex}
-            ELSE
-              CAST(ts.age_range AS INTEGER) BETWEEN $${paramIndex + 1} AND $${paramIndex}
-          END
-        )`);
-        queryParams.push(maxAge, minAge);
-        paramIndex += 2;
+        whereConditions.push(`ts.age_range = $${paramIndex}`);
+        queryParams.push(filters.ageGroup);
+        paramIndex++;
       }
       
       // Stimulation score range filtering
