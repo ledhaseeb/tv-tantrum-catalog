@@ -3375,24 +3375,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const notion = new Client({ auth: token });
       
-      // Extract database ID
+      // Extract page ID
       const match = pageUrl.match(/([a-f0-9]{32})/i);
-      const databaseId = match ? match[1] : null;
+      const pageId = match ? match[1] : null;
       
-      if (!databaseId) {
-        throw new Error('Could not extract database ID from URL');
+      if (!pageId) {
+        throw new Error('Could not extract page ID from URL');
       }
 
+      // First, create the database in the Notion page
+      console.log('Creating TV Shows database in Notion...');
+      const database = await notion.databases.create({
+        parent: {
+          type: "page_id",
+          page_id: pageId
+        },
+        title: [
+          {
+            type: "text",
+            text: {
+              content: "TV Tantrum Shows Database"
+            }
+          }
+        ],
+        properties: {
+          "Name": {
+            title: {}
+          },
+          "Description": {
+            rich_text: {}
+          },
+          "Age Range": {
+            rich_text: {}
+          },
+          "Creator": {
+            rich_text: {}
+          },
+          "Release Year": {
+            number: {}
+          },
+          "Stimulation Score": {
+            number: {}
+          },
+          "Episode Length": {
+            number: {}
+          },
+          "Seasons": {
+            number: {}
+          },
+          "Animation Style": {
+            rich_text: {}
+          },
+          "Featured": {
+            checkbox: {}
+          },
+          "YouTube Channel": {
+            checkbox: {}
+          },
+          "Sync Date": {
+            date: {}
+          }
+        }
+      });
+
+      console.log('Database created successfully! Now syncing TV shows...');
+
       // Get TV shows to sync
-      const shows = await storage.getTvShows();
-      const showsToSync = shows.slice(0, 5); // Sync first 5 shows for testing
+      const shows = await storage.getAllTvShows();
+      const showsToSync = shows.slice(0, 10); // Sync first 10 shows
       
       let syncedCount = 0;
       
       for (const show of showsToSync) {
         try {
           await notion.pages.create({
-            parent: { database_id: databaseId },
+            parent: { database_id: database.id },
             properties: {
               "Name": {
                 title: [{ text: { content: show.name || "Untitled Show" } }]
@@ -3417,11 +3474,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               },
               "Seasons": {
                 number: show.seasons
+              },
+              "Animation Style": {
+                rich_text: [{ text: { content: show.animationStyle || "" } }]
+              },
+              "Featured": {
+                checkbox: show.isFeatured || false
+              },
+              "YouTube Channel": {
+                checkbox: show.isYouTubeChannel || false
+              },
+              "Sync Date": {
+                date: { start: new Date().toISOString().split('T')[0] }
               }
             }
           });
           
           syncedCount++;
+          console.log(`Synced: ${show.name}`);
           
           // Small delay to avoid rate limits
           await new Promise(resolve => setTimeout(resolve, 200));
@@ -3433,12 +3503,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        message: `Successfully synced ${syncedCount} TV shows to Notion`,
+        message: `Successfully created database and synced ${syncedCount} TV shows to Notion`,
         synced: syncedCount,
-        total: showsToSync.length
+        total: showsToSync.length,
+        databaseId: database.id
       });
       
     } catch (error) {
+      console.error('Sync error:', error);
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
