@@ -30,14 +30,21 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
   const { data: show, isLoading, error } = useQuery({
     queryKey: ['/api/tv-shows', id],
     queryFn: async () => {
+      console.log('Fetching show with ID:', id);
       const response = await fetch(`/api/tv-shows/${id}`);
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Show not found');
+        const errorText = await response.text();
+        console.error('API Error:', response.status, errorText);
+        throw new Error(`Failed to fetch show: ${response.status}`);
       }
+      
       const rawData = await response.json();
+      console.log('Raw show data:', rawData);
       
       // Normalize API response to match expected format
-      return {
+      const normalizedData = {
         ...rawData,
         ageRange: rawData.age_range || rawData.ageRange,
         imageUrl: rawData.image_url || rawData.imageUrl,
@@ -65,6 +72,9 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
         hasOmdbData: rawData.has_omdb_data || rawData.hasOmdbData,
         hasYoutubeData: rawData.has_youtube_data || rawData.hasYoutubeData,
       } as TvShow;
+      
+      console.log('Normalized show data:', normalizedData);
+      return normalizedData;
     },
   });
 
