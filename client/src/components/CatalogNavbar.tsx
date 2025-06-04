@@ -156,7 +156,7 @@ export default function CatalogNavbar() {
               </Link>
               <Link 
                 href="/research"
-                className={`${location === '/research' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
+                className={`${location === '/research' || location?.startsWith('/research/') ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Research
@@ -365,9 +365,9 @@ export default function CatalogNavbar() {
       <AlertDialog open={showAdminLogin} onOpenChange={setShowAdminLogin}>
         <AlertDialogContent className="max-w-sm mx-4">
           <AlertDialogHeader>
-            <AlertDialogTitle>Admin Access</AlertDialogTitle>
+            <AlertDialogTitle>Admin Login</AlertDialogTitle>
             <AlertDialogDescription>
-              Enter the admin password to access the management panel.
+              This login is for administrators only. Enter the admin password to access the content management panel.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-4">

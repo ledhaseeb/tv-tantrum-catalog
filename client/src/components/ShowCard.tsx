@@ -37,10 +37,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
     ...show,
-    // Type-safe normalization for field names that might come in different formats
-    imageUrl: show.imageUrl || '',
-    ageRange: show.ageRange || 'Unknown',
-    stimulationScore: show.stimulationScore || 0
+    // Handle both camelCase and snake_case field naming from database
+    imageUrl: show.imageUrl || (show as any).image_url || '',
+    ageRange: show.ageRange || (show as any).age_range || 'Unknown',
+    stimulationScore: show.stimulationScore || (show as any).stimulation_score || 0
   };
   
   // Initialize favorite status from props if available
