@@ -34,11 +34,26 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return null;
   }
   
+  // Helper function to get proper image URL
+  const getImageUrl = (url: string) => {
+    if (!url || url === '/placeholder-show.svg' || url === '/api/placeholder-image.svg') {
+      return '/placeholder-show.svg';
+    }
+    
+    // If it's an external URL (starts with http), use the proxy
+    if (url.startsWith('http')) {
+      return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    }
+    
+    // Local images can be used directly
+    return url;
+  };
+
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
     ...show,
     // Handle both camelCase and snake_case field naming from database
-    imageUrl: show.imageUrl || (show as any).image_url || '/placeholder-show.svg',
+    imageUrl: getImageUrl(show.imageUrl || (show as any).image_url || '/placeholder-show.svg'),
     ageRange: show.ageRange || (show as any).age_range || 'Unknown',
     stimulationScore: show.stimulationScore || (show as any).stimulation_score || 0
   };
