@@ -7,7 +7,7 @@ import { omdbService } from "./omdb";
 import { youtubeService, extractYouTubeReleaseYear, getCleanDescription } from "./youtube";
 import { searchService } from "./services/searchService";
 import { ZodError } from "zod";
-import { insertTvShowReviewSchema, insertFavoriteSchema, TvShowGitHub, tempGhlUsers, users, insertTempGhlUserSchema } from "@shared/schema";
+// Removed shared schema imports for Next.js compatibility
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 import fs from 'fs';
