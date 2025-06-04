@@ -54,6 +54,10 @@ function Router() {
   // Check if user has early access token stored in localStorage
   const hasEarlyAccess = localStorage.getItem("earlyAccessShown") === "true";
 
+  // Debug current location
+  console.log('Current window location:', window.location.pathname);
+  console.log('Current window href:', window.location.href);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
