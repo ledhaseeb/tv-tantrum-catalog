@@ -34,7 +34,8 @@ export function ShowCard({ show, compact = false }: ShowCardProps) {
                 alt={show.name}
                 width={400}
                 height={compact ? 128 : 192}
-                className="object-cover w-full h-full"
+                className="object-cover"
+                style={{ width: '100%', height: 'auto' }}
                 sizes={compact ? '(max-width: 768px) 100vw, 25vw' : '(max-width: 768px) 100vw, 33vw'}
               />
             </div>
