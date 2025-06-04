@@ -14,8 +14,8 @@ export default function BrowsePage() {
   const [shows, setShows] = useState<Show[]>([])
   const [filteredShows, setFilteredShows] = useState<Show[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedAge, setSelectedAge] = useState('')
-  const [selectedStimulation, setSelectedStimulation] = useState('')
+  const [selectedAge, setSelectedAge] = useState('all')
+  const [selectedStimulation, setSelectedStimulation] = useState('all')
   const [selectedSort, setSelectedSort] = useState('name')
   const [loading, setLoading] = useState(true)
 
@@ -37,18 +37,21 @@ export default function BrowsePage() {
   }, [])
 
   useEffect(() => {
+    if (!Array.isArray(shows)) {
+      setFilteredShows([])
+      return
+    }
+
     let filtered = shows.filter(show => {
       const matchesSearch = show.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           show.description?.toLowerCase().includes(searchTerm.toLowerCase())
       
-      const matchesAge = !selectedAge
-      
-      const matchesStimulation = !selectedStimulation ||
+      const matchesStimulation = !selectedStimulation || selectedStimulation === 'all' ||
                                 (selectedStimulation === 'low' && show.stimulationScore <= 3) ||
                                 (selectedStimulation === 'medium' && show.stimulationScore > 3 && show.stimulationScore <= 6) ||
                                 (selectedStimulation === 'high' && show.stimulationScore > 6)
 
-      return matchesSearch && matchesAge && matchesStimulation
+      return matchesSearch && matchesStimulation
     })
 
     // Apply sorting
@@ -58,20 +61,18 @@ export default function BrowsePage() {
           return a.name.localeCompare(b.name)
         case 'stimulation':
           return b.stimulationScore - a.stimulationScore
-        case 'age':
-          return a.minAge - b.minAge
         default:
           return 0
       }
     })
 
     setFilteredShows(filtered)
-  }, [shows, searchTerm, selectedAge, selectedStimulation, selectedSort])
+  }, [shows, searchTerm, selectedStimulation, selectedSort])
 
   const clearFilters = () => {
     setSearchTerm('')
-    setSelectedAge('')
-    setSelectedStimulation('')
+    setSelectedAge('all')
+    setSelectedStimulation('all')
     setSelectedSort('name')
   }
 
@@ -130,7 +131,7 @@ export default function BrowsePage() {
                     <SelectValue placeholder="Any age" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any age</SelectItem>
+                    <SelectItem value="all">Any age</SelectItem>
                     <SelectItem value="2">2+ years</SelectItem>
                     <SelectItem value="3">3+ years</SelectItem>
                     <SelectItem value="4">4+ years</SelectItem>
@@ -150,7 +151,7 @@ export default function BrowsePage() {
                     <SelectValue placeholder="Any level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any level</SelectItem>
+                    <SelectItem value="all">Any level</SelectItem>
                     <SelectItem value="low">Low (1-3)</SelectItem>
                     <SelectItem value="medium">Medium (4-6)</SelectItem>
                     <SelectItem value="high">High (7-10)</SelectItem>
