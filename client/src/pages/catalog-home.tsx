@@ -414,7 +414,7 @@ export default function CatalogHome() {
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {calmShows?.map((show) => (
                     <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <ShowCard show={show} />
+                      <ShowCard show={show} viewMode="grid" onClick={() => {}} />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -453,7 +453,7 @@ export default function CatalogHome() {
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {activeShows?.map((show) => (
                     <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <ShowCard show={show} />
+                      <ShowCard show={show} viewMode="grid" onClick={() => {}} />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
