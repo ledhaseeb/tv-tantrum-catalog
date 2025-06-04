@@ -1,7 +1,7 @@
 import { pgTable, text, serial, integer, boolean, jsonb, timestamp, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { sql, eq, asc, desc, and, or, like, inArray, isNull, notInArray, relations } from "drizzle-orm";
+import { sql, eq, asc, desc, and, or, like, inArray, isNull, notInArray } from "drizzle-orm";
 
 // --- User-related tables ---
 
@@ -12,7 +12,10 @@ export const sessions = pgTable(
     sid: text("sid").primaryKey(),
     sess: jsonb("sess").notNull(),
     expire: timestamp("expire").notNull(),
-  }
+  },
+  (table) => ({
+    expireIdx: primaryKey({ columns: [table.expire] }),
+  })
 );
 
 export const users = pgTable("users", {
@@ -86,7 +89,7 @@ export const tvShows = pgTable("tv_shows", {
 // --- Favorites table ---
 export const favorites = pgTable("favorites", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -130,7 +133,7 @@ export const youtubeChannels = pgTable("youtube_channels", {
 export const tvShowReviews = pgTable("tv_show_reviews", {
   id: serial("id").primaryKey(),
   tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   userName: text("user_name").notNull(),
   rating: integer("rating").notNull(), // 1-5 scale
   review: text("review").notNull(),
@@ -167,7 +170,7 @@ export const userPointsHistory = pgTable("user_points_history", {
 export const reviewUpvotes = pgTable("review_upvotes", {
   id: serial("id").primaryKey(),
   reviewId: integer("review_id").notNull().references(() => tvShowReviews.id, { onDelete: 'cascade' }),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -190,7 +193,7 @@ export const researchSummaries = pgTable("research_summaries", {
 
 export const userReadResearch = pgTable("user_read_research", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   researchId: integer("research_id").notNull().references(() => researchSummaries.id, { onDelete: 'cascade' }),
   readAt: timestamp("read_at").notNull().defaultNow(),
 });
@@ -198,7 +201,7 @@ export const userReadResearch = pgTable("user_read_research", {
 // NEW: Show submissions table with smart duplicate detection and priority system
 export const showSubmissions = pgTable("show_submissions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   showName: text("show_name").notNull(),
   normalizedName: text("normalized_name").notNull(), // For duplicate detection
   whereTheyWatch: text("where_they_watch").notNull(),
@@ -207,7 +210,7 @@ export const showSubmissions = pgTable("show_submissions", {
   priorityScore: integer("priority_score").notNull().default(1), // For admin sorting
   createdAt: timestamp("created_at").notNull().defaultNow(),
   processedAt: timestamp("processed_at"),
-  processedBy: integer("processed_by").references(() => users.id),
+  processedBy: text("processed_by").references(() => users.id),
   linkedShowId: integer("linked_show_id").references(() => tvShows.id), // When approved and added
 });
 
@@ -354,81 +357,6 @@ export const insertTempGhlUserSchema = createInsertSchema(tempGhlUsers).omit({
   verifiedAt: true,
   registrationCompletedAt: true,
 });
-
-// --- Relations ---
-
-export const usersRelations = relations(users, ({ many }) => ({
-  favorites: many(favorites),
-  reviews: many(tvShowReviews),
-  pointsHistory: many(userPointsHistory),
-  upvotes: many(reviewUpvotes),
-  readResearch: many(userReadResearch),
-  submissions: many(showSubmissions),
-  referrals: many(userReferrals),
-  notifications: many(notifications),
-}));
-
-export const tvShowsRelations = relations(tvShows, ({ many }) => ({
-  favorites: many(favorites),
-  reviews: many(tvShowReviews),
-  searches: many(tvShowSearches),
-  views: many(tvShowViews),
-  themes: many(tvShowThemes),
-  platforms: many(tvShowPlatforms),
-}));
-
-export const favoritesRelations = relations(favorites, ({ one }) => ({
-  user: one(users, {
-    fields: [favorites.userId],
-    references: [users.id],
-  }),
-  tvShow: one(tvShows, {
-    fields: [favorites.tvShowId],
-    references: [tvShows.id],
-  }),
-}));
-
-export const tvShowReviewsRelations = relations(tvShowReviews, ({ one, many }) => ({
-  tvShow: one(tvShows, {
-    fields: [tvShowReviews.tvShowId],
-    references: [tvShows.id],
-  }),
-  user: one(users, {
-    fields: [tvShowReviews.userId],
-    references: [users.id],
-  }),
-  upvotes: many(reviewUpvotes),
-}));
-
-export const themesRelations = relations(themes, ({ many }) => ({
-  tvShows: many(tvShowThemes),
-}));
-
-export const platformsRelations = relations(platforms, ({ many }) => ({
-  tvShows: many(tvShowPlatforms),
-}));
-
-export const tvShowThemesRelations = relations(tvShowThemes, ({ one }) => ({
-  tvShow: one(tvShows, {
-    fields: [tvShowThemes.tvShowId],
-    references: [tvShows.id],
-  }),
-  theme: one(themes, {
-    fields: [tvShowThemes.themeId],
-    references: [themes.id],
-  }),
-}));
-
-export const tvShowPlatformsRelations = relations(tvShowPlatforms, ({ one }) => ({
-  tvShow: one(tvShows, {
-    fields: [tvShowPlatforms.tvShowId],
-    references: [tvShows.id],
-  }),
-  platform: one(platforms, {
-    fields: [tvShowPlatforms.platformId],
-    references: [platforms.id],
-  }),
-}));
 
 // --- TypeScript types for database entities ---
 export type InsertUser = z.infer<typeof insertUserSchema>;

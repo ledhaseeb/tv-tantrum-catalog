@@ -1,23 +1,143 @@
-// TV Tantrum Next.js Catalog Server
-import { exec } from 'child_process';
+import express, { type Request, Response, NextFunction } from "express";
+import { createServer, type Server } from "http";
+import path from "path";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { checkDatabaseConnection } from "./db";
+import multer from 'multer';
+import * as fs from 'fs';
 
-console.log('Starting TV Tantrum Next.js Catalog...');
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Start Next.js development server
-const nextProcess = exec('npx next dev --port 5000 --hostname 0.0.0.0');
+// Serve TV show images from the primary media directory
+app.use('/media/tv-shows', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
 
-nextProcess.stdout?.on('data', (data) => {
-  console.log(data.toString());
+// Keep serving from the old locations for backward compatibility
+app.use('/custom-images', express.static(path.join(process.cwd(), 'client/public/custom-images')));
+app.use('/custom-images', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
+
+// Serve research files
+app.use('/research', express.static(path.join(process.cwd(), 'public/research')));
+
+// Make sure research directory exists
+const researchDir = path.join(process.cwd(), 'public/research');
+if (!fs.existsSync(researchDir)) {
+  fs.mkdirSync(researchDir, { recursive: true });
+}
+
+// Configure file upload for research images
+const researchStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, researchDir);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const safeName = file.originalname.replace(/\s+/g, '-');
+    cb(null, `${timestamp}-${safeName}`);
+  }
 });
 
-nextProcess.stderr?.on('data', (data) => {
-  console.error(data.toString());
+// Create the upload middleware
+const researchUpload = multer({ 
+  storage: researchStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-nextProcess.on('exit', (code) => {
-  console.log(`Next.js process exited with code ${code}`);
-  process.exit(code || 0);
+// Setup direct file upload endpoint
+app.post('/api/upload', researchUpload.single('file'), (req, res) => {
+  try {
+    console.log('Research file upload request received');
+    
+    if (!req.file) {
+      console.log('No file in request');
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    // Return URL to uploaded file
+    const fileUrl = `/research/${req.file.filename}`;
+    console.log(`File uploaded successfully to ${fileUrl}`);
+    
+    return res.json({ url: fileUrl });
+  } catch (error) {
+    console.error('Upload error:', error);
+    return res.status(500).json({ error: 'Upload failed' });
+  }
 });
 
-process.on('SIGTERM', () => nextProcess.kill('SIGTERM'));
-process.on('SIGINT', () => nextProcess.kill('SIGINT'));
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+
+(async () => {
+  // Check database connection before starting the server
+  await checkDatabaseConnection();
+  
+  const server = await registerRoutes(app);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const port = 5000;
+  
+  // Try to close any existing connections
+  const existingServer = await new Promise<Server>((resolve) => {
+    const testServer = createServer();
+    testServer.listen(port, "0.0.0.0", () => {
+      testServer.close(() => resolve(server));
+    });
+    testServer.on('error', () => resolve(server));
+  });
+
+  existingServer.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
