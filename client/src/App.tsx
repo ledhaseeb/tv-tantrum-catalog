@@ -34,6 +34,7 @@ import CompleteRegistration from "@/pages/complete-registration";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
 import CatalogNavbar from "@/components/CatalogNavbar";
+import CatalogShowDetail from "@/pages/catalog-show-detail";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
@@ -110,12 +111,25 @@ function Router() {
         {/* Browse Page - Open to everyone */}
         <Route path="/browse">
           <div className="flex-grow flex flex-col">
-            <Navbar />
+            <CatalogNavbar />
             <div className="flex-grow">
               <Browse />
             </div>
             <Footer />
           </div>
+        </Route>
+
+        {/* Catalog Show Detail Pages - SEO Optimized */}
+        <Route path="/show/:id">
+          {(params) => (
+            <div className="flex-grow flex flex-col">
+              <CatalogNavbar />
+              <div className="flex-grow">
+                <CatalogShowDetail id={parseInt(params.id, 10)} />
+              </div>
+              <Footer />
+            </div>
+          )}
         </Route>
 
         {/* Show Detail Pages - Open to everyone */}
