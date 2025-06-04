@@ -10,6 +10,7 @@ import { Heart, Star } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { FavoriteRegistrationModal } from "@/components/FavoriteRegistrationModal";
+import { TvShowCardImage, TvShowThumbnail } from "@/components/ui/tv-show-image";
 
 interface ShowCardProps {
   show: TvShow & {
@@ -34,26 +35,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return null;
   }
   
-  // Helper function to get proper image URL
-  const getImageUrl = (url: string) => {
-    if (!url || url === '/placeholder-show.svg' || url === '/api/placeholder-image.svg') {
-      return '/placeholder-show.svg';
-    }
-    
-    // If it's an external URL (starts with http), use the proxy
-    if (url.startsWith('http')) {
-      return `/api/image-proxy?url=${encodeURIComponent(url)}`;
-    }
-    
-    // Local images can be used directly
-    return url;
-  };
-
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
     ...show,
     // Handle both camelCase and snake_case field naming from database
-    imageUrl: getImageUrl(show.imageUrl || (show as any).image_url || '/placeholder-show.svg'),
+    imageUrl: show.imageUrl || (show as any).image_url,
     ageRange: show.ageRange || (show as any).age_range || 'Unknown',
     stimulationScore: show.stimulationScore || (show as any).stimulation_score || 0
   };

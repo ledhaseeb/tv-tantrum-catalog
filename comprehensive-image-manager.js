@@ -39,6 +39,7 @@ const IMAGE_CONFIG = {
 
 // Directories
 const IMAGES_DIR = path.join(__dirname, 'client', 'public', 'images', 'tv-shows');
+const SOURCE_IMAGES_DIR = path.join(__dirname, 'attached_assets', 'downloaded-show-images');
 const MANIFEST_PATH = path.join(__dirname, 'attached_assets', 'show-images-manifest.json');
 const OUTPUT_MANIFEST_PATH = path.join(__dirname, 'optimized-images-manifest.json');
 
@@ -95,51 +96,47 @@ async function downloadImage(url, retries = 3) {
 }
 
 /**
- * Get image from local path or URL
+ * Get image from extracted files or download from URL
  */
-async function getImageData(imageUrl, showName) {
+async function getImageData(show) {
+  const { id, name, imageUrl, filename } = show;
+  
   try {
-    // Check if it's a local path
-    if (imageUrl.startsWith('/media/tv-shows/') || imageUrl.startsWith('/images/')) {
-      // Try to find the image in attached assets first
-      const localImageName = path.basename(imageUrl);
-      const attachedAssetPath = path.join(__dirname, 'attached_assets', localImageName);
-      
-      if (fs.existsSync(attachedAssetPath)) {
-        console.log(`Found local image: ${attachedAssetPath}`);
-        return fs.readFileSync(attachedAssetPath);
-      }
-      
-      // Try alternative names in attached assets
-      const possibleNames = [
-        `${showName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`,
-        `${showName.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
-        `${showName.replace(/[^a-zA-Z0-9]/g, '_')}.jpeg`,
-        `${showName}.jpg`,
-        `${showName}.png`
-      ];
-      
-      for (const name of possibleNames) {
-        const altPath = path.join(__dirname, 'attached_assets', name);
-        if (fs.existsSync(altPath)) {
-          console.log(`Found alternative local image: ${altPath}`);
-          return fs.readFileSync(altPath);
-        }
-      }
-      
-      console.log(`Local image not found, skipping: ${imageUrl}`);
-      return null;
+    // First try to find the extracted image file
+    const extractedImagePath = path.join(SOURCE_IMAGES_DIR, filename);
+    
+    if (fs.existsSync(extractedImagePath)) {
+      console.log(`Found extracted image: ${filename}`);
+      return fs.readFileSync(extractedImagePath);
     }
     
-    // Download from external URL
-    if (imageUrl.startsWith('http')) {
+    // Try alternative filenames based on show ID and name
+    const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, '_');
+    const possibleFiles = [
+      `show-${id}-${sanitizedName}.jpg`,
+      `show-${id}-${sanitizedName}.png`,
+      `show-${id}-${sanitizedName}.jpeg`,
+      `show-${id}-${sanitizedName}.webp`
+    ];
+    
+    for (const possibleFile of possibleFiles) {
+      const possiblePath = path.join(SOURCE_IMAGES_DIR, possibleFile);
+      if (fs.existsSync(possiblePath)) {
+        console.log(`Found alternative extracted image: ${possibleFile}`);
+        return fs.readFileSync(possiblePath);
+      }
+    }
+    
+    // If not found locally and it's an external URL, download it
+    if (imageUrl && imageUrl.startsWith('http')) {
+      console.log(`Downloading from external URL: ${imageUrl}`);
       return await downloadImage(imageUrl);
     }
     
-    console.log(`Invalid image URL format: ${imageUrl}`);
+    console.log(`No image found for ${name} (ID: ${id})`);
     return null;
   } catch (error) {
-    console.error(`Error getting image data for ${showName}:`, error.message);
+    console.error(`Error getting image data for ${name}:`, error.message);
     return null;
   }
 }
@@ -263,8 +260,8 @@ async function processShowImage(show) {
   console.log(`\n--- Processing ${name} (ID: ${id}) ---`);
   
   try {
-    // Get image data
-    const imageData = await getImageData(imageUrl, name);
+    // Get image data from extracted files or download
+    const imageData = await getImageData(show);
     
     let optimizedUrl;
     if (imageData) {
