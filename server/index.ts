@@ -4,7 +4,7 @@ import { exec } from 'child_process';
 console.log('Starting TV Tantrum Next.js Catalog...');
 
 // Start Next.js development server
-const nextProcess = exec('npx next dev --port 3000 --hostname 0.0.0.0');
+const nextProcess = exec('npx next dev --port 5000 --hostname 0.0.0.0');
 
 nextProcess.stdout?.on('data', (data) => {
   console.log(data.toString());

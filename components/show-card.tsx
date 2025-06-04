@@ -32,8 +32,9 @@ export function ShowCard({ show, compact = false }: ShowCardProps) {
               <Image
                 src={show.imageUrl}
                 alt={show.name}
-                fill
-                className="object-cover"
+                width={400}
+                height={compact ? 128 : 192}
+                className="object-cover w-full h-full"
                 sizes={compact ? '(max-width: 768px) 100vw, 25vw' : '(max-width: 768px) 100vw, 33vw'}
               />
             </div>
