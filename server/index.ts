@@ -5,6 +5,7 @@ import { dirname, join } from 'path';
 import session from 'express-session';
 import { setupVite, serveStatic } from './vite';
 import { catalogStorage } from './catalog-storage';
+import { Pool } from 'pg';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
