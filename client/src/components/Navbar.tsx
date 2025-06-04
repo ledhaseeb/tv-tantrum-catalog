@@ -132,8 +132,8 @@ export default function Navbar() {
                 Compare
               </Link>
               <Link 
-                href="/app-about"
-                className={`${location === '/app-about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
+                href="/about"
+                className={`${location === '/about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <Info className="w-4 h-4 mr-2" />
                 About

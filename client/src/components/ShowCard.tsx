@@ -38,7 +38,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const normalizedShow = {
     ...show,
     // Handle both camelCase and snake_case field naming from database
-    imageUrl: show.imageUrl || (show as any).image_url || '',
+    imageUrl: show.imageUrl || (show as any).image_url || '/placeholder-show.svg',
     ageRange: show.ageRange || (show as any).age_range || 'Unknown',
     stimulationScore: show.stimulationScore || (show as any).stimulation_score || 0
   };
