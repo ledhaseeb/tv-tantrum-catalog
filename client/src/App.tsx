@@ -32,6 +32,8 @@ import AdminResearchLinks from "@/pages/admin-research-links";
 import AdminResearchManager from "@/pages/admin-research-manager";
 import CompleteRegistration from "@/pages/complete-registration";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
+import CatalogHome from "@/pages/catalog-home";
+import CatalogNavbar from "@/components/CatalogNavbar";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
@@ -54,9 +56,15 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Token Entry Page - Main landing page */}
+        {/* Catalog Home - Main landing page */}
         <Route path="/">
-          <TokenEntryPage />
+          <div className="flex-grow flex flex-col">
+            <CatalogNavbar />
+            <div className="flex-grow">
+              <CatalogHome />
+            </div>
+            <Footer />
+          </div>
         </Route>
         
         {/* About Page - Open to everyone */}

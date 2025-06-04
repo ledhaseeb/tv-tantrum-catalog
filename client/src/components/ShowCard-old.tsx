@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import RatingBar from "@/components/RatingBar";
 import { TvShow } from "@shared/schema";
+import { getStimulationScoreColor } from "@/lib/showUtils";
 import { Star } from "lucide-react";
-import { TvShowCardImage } from "@/components/ui/tv-show-image";
+import { useLocation } from "wouter";
+import { TvShowCardImage, TvShowThumbnail } from "@/components/ui/tv-show-image";
 
 interface ShowCardProps {
   show: TvShow & {
@@ -16,6 +19,7 @@ interface ShowCardProps {
 }
 
 export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
+  const [imageError, setImageError] = useState(false);
   const [reviewStats, setReviewStats] = useState<{reviewCount: number, avgRating: number} | null>(null);
   
   // Ensure we have valid show data
@@ -32,10 +36,47 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     stimulationScore: show.stimulationScore || (show as any).stimulation_score || 0
   };
   
+
+
   // Catalog version doesn't use reviews - set default values
   useEffect(() => {
     setReviewStats({ reviewCount: 0, avgRating: 0 });
   }, []);
+  
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Check if user is logged in
+    if (!user) {
+      setShowRegistrationModal(true);
+      return;
+    }
+    
+    // Optimistic update - update UI immediately
+    const newFavoriteStatus = !isFavorite;
+    setIsFavorite(newFavoriteStatus);
+    
+    // Use the auth context toggle favorite function
+    toggleFav(show.id, isFavorite).then(() => {
+      toast({
+        title: newFavoriteStatus ? "Added to favorites" : "Removed from favorites",
+        description: newFavoriteStatus ? `${show.name} has been added to your favorites.` : `${show.name} has been removed from your favorites.`,
+        variant: "default",
+      });
+    }).catch(error => {
+      // Revert optimistic update on error
+      setIsFavorite(!newFavoriteStatus);
+      toast({
+        title: "Error",
+        description: "There was an error updating your favorites. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error toggling favorite:", error);
+    });
+  };
   
   // Format release year range
   const releaseYears = show.releaseYear ? (
@@ -62,6 +103,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   
   // Get stimulation score colors based on index
   const getStimulationDotColor = (index: number) => {
+    // Match the colors from details page
     const bgColors = [
       'bg-green-500',    // green for 1
       'bg-yellow-500',   // yellow for 2
@@ -112,8 +154,22 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
            score === 4 ? 'Medium-High' : 
            'High';
   };
+  
+  // Format the stimulation score text (used for circular badge in mobile view)
+  const getStimulationScoreText = (score: number) => {
+    return `${score}/5`;
+  };
+  
+  // Get color for circular stimulation score
+  const getStimulationCircleColor = (score: number) => {
+    if (score <= 1) return 'border-green-500 text-green-500';
+    if (score <= 2) return 'border-green-400 text-green-500';
+    if (score <= 3) return 'border-yellow-500 text-yellow-600';
+    if (score <= 4) return 'border-orange-500 text-orange-600';
+    return 'border-red-500 text-red-600';
+  };
 
-  // Mobile portrait style card - clean design without favorite buttons
+  // Mobile portrait style card - clean design as in screenshot
   if (isMobile && viewMode === "grid") {
     const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
     
@@ -121,6 +177,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       <Card 
         className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col" 
         onClick={() => {
+          // Scroll to top before triggering the onClick action
           window.scrollTo(0, 0);
           onClick();
         }}
@@ -134,6 +191,19 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             className="w-full aspect-[2/3]"
             isInteractive={false}
           />
+          
+          {/* Favorite button */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className={`absolute top-1 right-1 p-1 bg-black/30 text-white rounded-full hover:bg-black/50 h-7 w-7 flex items-center justify-center`}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(e);
+            }}
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          </Button>
         </div>
         
         <CardContent className="p-3 flex flex-col flex-grow">
@@ -170,12 +240,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   }
 
-  // List view card without favorite buttons
+  // Original list view card
   if (viewMode === "list") {
     return (
       <Card 
         className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
         onClick={() => {
+          // Scroll to top before triggering the onClick action
           window.scrollTo(0, 0);
           onClick();
         }}>
@@ -244,87 +315,148 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                   {getStimulationText(show.stimulationScore)} Stimulation
                 </span>
               </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className={`${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                  onClick={toggleFavorite}
+                >
+                  <Heart className={`w-4 h-4 mr-1 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                  {isFavorite ? 'Saved' : 'Save'}
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-secondary hover:bg-secondary/90 text-white"
+                  style={{fontWeight: 'bold'}}
+                >
+                  Learn More
+                </Button>
+              </div>
             </div>
           </CardContent>
         </div>
       </Card>
     );
   }
-
-  // Desktop grid view
+  
+  // Default card view (grid) - smaller portrait style
   return (
+    <>
     <Card 
-      className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
+      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col" 
       onClick={() => {
+        // Scroll to top before triggering the onClick action
         window.scrollTo(0, 0);
         onClick();
-      }}
-    >
+      }}>
       <div className="relative">
-        <TvShowCardImage
-          showId={show.id}
-          showName={show.name}
-          originalUrl={normalizedShow.imageUrl}
-          className="w-full aspect-[2/3]"
-          isInteractive={false}
-        />
-      </div>
-      
-      <CardContent className="p-4 flex-grow flex flex-col">
-        <h3 className="text-base font-heading font-bold mb-2 line-clamp-2">{show.name}</h3>
-        
-        {/* Review Statistics */}
-        {reviewStats && reviewStats.reviewCount > 0 && (
-          <div className="flex items-center gap-1 mb-2 text-sm">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-medium">{reviewStats.avgRating}</span>
-            <span className="text-gray-500">({reviewStats.reviewCount})</span>
+        {normalizedShow.imageUrl && !imageError ? (
+          <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden flex items-center justify-center">
+            <div className="w-full h-full relative">
+              <img 
+                className="absolute inset-0 w-full h-full object-cover"
+                src={normalizedShow.imageUrl}
+                alt={show.name}
+                style={{ objectPosition: 'center top' }}
+                onError={() => {
+                  // If image fails to load, set state to show placeholder
+                  setImageError(true);
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="w-full aspect-[2/3] bg-gray-200 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
           </div>
         )}
         
-        <div className="flex items-center flex-wrap gap-2 mb-2">
-          <Badge variant="outline" className="bg-green-100 text-green-800 text-xs font-medium">
-            Ages {show.ageRange}
-          </Badge>
-          {show.availableOn && show.availableOn.length > 0 && (
-            <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs font-medium">
-              {show.availableOn[0]}{show.availableOn.length > 1 ? "+" : ""}
-            </Badge>
+        {/* Favorite button overlay */}
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className={`absolute top-1 right-1 p-0.5 bg-black/30 text-white rounded-full hover:bg-black/50 h-6 w-6 flex items-center justify-center`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite(e);
+          }}
+        >
+          <Heart className={`w-3 h-3 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+        </Button>
+      </div>
+      
+      <CardContent className="p-2 flex-grow flex flex-col">
+        <div className="flex-grow space-y-1">
+          {/* Title and age */}
+          <div>
+            <h3 className="text-sm font-semibold line-clamp-1">{show.name}</h3>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-xs text-gray-500">Ages {normalizedShow.ageRange}</span>
+            </div>
+          </div>
+          
+          {/* Review Statistics */}
+          {reviewStats && reviewStats.reviewCount > 0 && (
+            <div className="flex items-center gap-1 text-xs">
+              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium">{reviewStats.avgRating}</span>
+              <span className="text-gray-500">({reviewStats.reviewCount})</span>
+            </div>
+          )}
+          
+          {/* Stimulation score indicator */}
+          <div className="flex items-center gap-1">
+            <div className="flex items-center scale-75">
+              {renderStimulationDots()}
+            </div>
+            <span className="text-xs text-gray-600">
+              {getStimulationText(normalizedShow.stimulationScore)}
+            </span>
+          </div>
+          
+          {/* Theme tags - limited to 1 for smaller cards */}
+          {show.themes && show.themes.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {show.themes.slice(0, 1).map((theme, index) => (
+                <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs py-0 px-1.5`}>
+                  {theme}
+                </Badge>
+              ))}
+              {show.themes.length > 1 && (
+                <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs py-0 px-1.5">
+                  +{show.themes.length - 1}
+                </Badge>
+              )}
+            </div>
           )}
         </div>
         
-        <p className="text-gray-600 text-sm mb-3 line-clamp-3 flex-grow">
-          {show.description}
-        </p>
-        
-        {/* Theme tags */}
-        {show.themes && show.themes.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {show.themes.slice(0, 3).map((theme, index) => (
-              <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs`}>
-                {theme}
-              </Badge>
-            ))}
-            {show.themes.length > 3 && (
-              <Badge variant="outline" className="bg-gray-100 text-gray-800 text-xs">
-                +{show.themes.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
-        
-        {/* Stimulation Score */}
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center">
-            <div className="flex items-center mr-2">
-              {renderStimulationDots()}
-            </div>
-            <span className="text-sm text-gray-600">
-              {getStimulationText(show.stimulationScore)}
-            </span>
-          </div>
+        {/* Learn More button */}
+        <div className="mt-auto pt-1">
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="w-full bg-secondary hover:bg-secondary/90 text-white text-xs py-0.5 h-7"
+            style={{fontWeight: 'bold'}}
+          >
+            Learn More
+          </Button>
         </div>
       </CardContent>
     </Card>
+    
+    {/* Registration Modal */}
+    <FavoriteRegistrationModal 
+      isOpen={showRegistrationModal}
+      onClose={() => setShowRegistrationModal(false)}
+      showName={show.name}
+    />
+    </>
   );
 }
