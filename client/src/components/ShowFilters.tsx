@@ -351,8 +351,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
           case 'name': return 'Sorted by Name';
           case 'stimulation-score': return 'Sorted by Stimulation Score';
           case 'interactivity-level': return 'Sorted by Interactivity Level';
-          case 'overall-rating': return 'Sorted by Rating';
-          case 'popular': return 'Sorted by Popularity';
           default: return value;
         }
       case 'search':
@@ -698,8 +696,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                 <SelectItem value="name">Name (A-Z)</SelectItem>
                 <SelectItem value="stimulation-score">Stimulation Score (Low to High)</SelectItem>
                 <SelectItem value="interactivity-level">Interactivity Level (Low to High)</SelectItem>
-                <SelectItem value="overall-rating">Rating (High to Low)</SelectItem>
-                <SelectItem value="popular">Popular</SelectItem>
               </SelectContent>
             </Select>
           </div>
