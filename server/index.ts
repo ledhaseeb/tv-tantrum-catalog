@@ -4,6 +4,7 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkDatabaseConnection } from "./db";
+import { startPeriodicSync, validateNotionSetup } from "./notion-auto-sync";
 import multer from "multer";
 import * as fs from "fs";
 import axios from "axios";
@@ -186,8 +187,27 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     },
-    () => {
+    async () => {
       log(`serving on port ${port}`);
+      
+      // Initialize Notion auto-sync if credentials are available
+      if (process.env.NOTION_INTEGRATION_SECRET && process.env.NOTION_PAGE_URL) {
+        log("Starting Notion auto-sync...");
+        try {
+          const validation = await validateNotionSetup();
+          if (validation.connected) {
+            log(`Notion connected: ${validation.databaseTitle}`);
+            startPeriodicSync();
+            log("Notion auto-sync started (every 5 minutes)");
+          } else {
+            log(`Notion connection failed: ${validation.error}`);
+          }
+        } catch (error) {
+          log(`Notion setup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      } else {
+        log("Notion credentials not found, skipping auto-sync");
+      }
     },
   );
 })();
