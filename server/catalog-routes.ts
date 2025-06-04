@@ -1,0 +1,286 @@
+import express, { Express, Request, Response } from "express";
+import { catalogStorage } from "./catalog-storage";
+import { insertTvShowSchema } from "@shared/catalog-schema";
+import bcrypt from "bcrypt";
+import session from "express-session";
+
+export function registerCatalogRoutes(app: Express) {
+  // Session middleware for admin authentication
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'catalog-session-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Health check
+  app.get('/api/health', (req, res) => {
+    res.status(200).send('OK');
+  });
+
+  // Get all TV shows with filtering
+  app.get("/api/tv-shows", async (req: Request, res: Response) => {
+    try {
+      const filters: any = {};
+      
+      // Parse query parameters
+      if (req.query.search) filters.search = req.query.search;
+      if (req.query.ageGroup) filters.ageGroup = req.query.ageGroup;
+      if (req.query.sortBy) filters.sortBy = req.query.sortBy;
+      if (req.query.themeMatchMode) filters.themeMatchMode = req.query.themeMatchMode;
+      
+      // Handle themes
+      if (req.query.themes) {
+        filters.themes = typeof req.query.themes === 'string'
+          ? req.query.themes.split(',').map((theme: string) => theme.trim())
+          : (req.query.themes as string[]).map((theme: string) => theme.trim());
+      }
+      
+      // Handle stimulation score range
+      if (req.query.stimulationScoreRange) {
+        try {
+          filters.stimulationScoreRange = typeof req.query.stimulationScoreRange === 'string'
+            ? JSON.parse(req.query.stimulationScoreRange as string)
+            : req.query.stimulationScoreRange;
+        } catch (error) {
+          console.error('Error parsing stimulationScoreRange:', error);
+        }
+      }
+      
+      // Handle pagination
+      if (req.query.limit) filters.limit = parseInt(req.query.limit as string);
+      if (req.query.offset) filters.offset = parseInt(req.query.offset as string);
+      
+      const shows = await catalogStorage.getTvShows(filters);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching TV shows:", error);
+      res.status(500).json({ message: "Failed to fetch TV shows" });
+    }
+  });
+
+  // Get single TV show by ID
+  app.get("/api/tv-shows/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const show = await catalogStorage.getTvShowById(id);
+      
+      if (!show) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+      
+      res.json(show);
+    } catch (error) {
+      console.error("Error fetching TV show:", error);
+      res.status(500).json({ message: "Failed to fetch TV show" });
+    }
+  });
+
+  // Get featured show
+  app.get("/api/shows/featured", async (req: Request, res: Response) => {
+    try {
+      const show = await catalogStorage.getFeaturedShow();
+      
+      if (!show) {
+        return res.status(404).json({ message: "No featured show found" });
+      }
+      
+      res.json(show);
+    } catch (error) {
+      console.error("Error fetching featured show:", error);
+      res.status(500).json({ message: "Failed to fetch featured show" });
+    }
+  });
+
+  // Get popular shows
+  app.get("/api/shows/popular", async (req: Request, res: Response) => {
+    try {
+      const limitStr = req.query.limit;
+      const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
+      
+      const shows = await catalogStorage.getPopularShows(limit);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching popular shows:", error);
+      res.status(500).json({ message: "Failed to fetch popular shows" });
+    }
+  });
+
+  // Search shows
+  app.get("/api/search", async (req: Request, res: Response) => {
+    try {
+      const searchTerm = req.query.q as string;
+      if (!searchTerm) {
+        return res.status(400).json({ message: "Search term required" });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const shows = await catalogStorage.searchShows(searchTerm, limit);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error searching shows:", error);
+      res.status(500).json({ message: "Failed to search shows" });
+    }
+  });
+
+  // Get themes
+  app.get("/api/themes", async (req: Request, res: Response) => {
+    try {
+      const themes = await catalogStorage.getThemes();
+      res.json(themes);
+    } catch (error) {
+      console.error("Error fetching themes:", error);
+      res.status(500).json({ message: "Failed to fetch themes" });
+    }
+  });
+
+  // Get platforms
+  app.get("/api/platforms", async (req: Request, res: Response) => {
+    try {
+      const platforms = await catalogStorage.getPlatforms();
+      res.json(platforms);
+    } catch (error) {
+      console.error("Error fetching platforms:", error);
+      res.status(500).json({ message: "Failed to fetch platforms" });
+    }
+  });
+
+  // Get research summaries
+  app.get("/api/research", async (req: Request, res: Response) => {
+    try {
+      const category = req.query.category as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      const research = await catalogStorage.getResearchSummaries(category, limit);
+      res.json(research);
+    } catch (error) {
+      console.error("Error fetching research summaries:", error);
+      res.status(500).json({ message: "Failed to fetch research summaries" });
+    }
+  });
+
+  // Get single research summary
+  app.get("/api/research/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const research = await catalogStorage.getResearchSummaryById(id);
+      
+      if (!research) {
+        return res.status(404).json({ message: "Research summary not found" });
+      }
+      
+      res.json(research);
+    } catch (error) {
+      console.error("Error fetching research summary:", error);
+      res.status(500).json({ message: "Failed to fetch research summary" });
+    }
+  });
+
+  // Admin authentication routes
+  app.post("/api/auth/admin-login", async (req: Request, res: Response) => {
+    try {
+      const { password } = req.body;
+      
+      // Simple password check for admin access
+      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+      
+      if (password === adminPassword) {
+        (req.session as any).isAdmin = true;
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ message: "Invalid password" });
+      }
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.get("/api/auth/admin-check", (req: Request, res: Response) => {
+    if ((req.session as any)?.isAdmin) {
+      res.json({ isAdmin: true });
+    } else {
+      res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  // Admin-only routes (protected)
+  function requireAdmin(req: Request, res: Response, next: any) {
+    if (!(req.session as any)?.isAdmin) {
+      return res.status(401).json({ message: "Admin access required" });
+    }
+    next();
+  }
+
+  // Admin: Create TV show
+  app.post("/api/admin/tv-shows", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const showData = insertTvShowSchema.parse(req.body);
+      const newShow = await catalogStorage.createTvShow(showData);
+      res.status(201).json(newShow);
+    } catch (error) {
+      console.error("Error creating TV show:", error);
+      res.status(500).json({ message: "Failed to create TV show" });
+    }
+  });
+
+  // Admin: Update TV show
+  app.put("/api/admin/tv-shows/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedShow = await catalogStorage.updateTvShow(id, updates);
+      
+      if (!updatedShow) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+      
+      res.json(updatedShow);
+    } catch (error) {
+      console.error("Error updating TV show:", error);
+      res.status(500).json({ message: "Failed to update TV show" });
+    }
+  });
+
+  // Admin: Delete TV show
+  app.delete("/api/admin/tv-shows/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await catalogStorage.deleteTvShow(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Show not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting TV show:", error);
+      res.status(500).json({ message: "Failed to delete TV show" });
+    }
+  });
+
+  // Admin: Get all shows (no filtering for management)
+  app.get("/api/admin/tv-shows", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const shows = await catalogStorage.getTvShows(); // No filters for admin
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching admin TV shows:", error);
+      res.status(500).json({ message: "Failed to fetch TV shows" });
+    }
+  });
+}
