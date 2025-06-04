@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { notion, syncTvShowsToNotion, syncReviewsToNotion, syncUsersToNotion, findDatabaseByTitle } from "./notion.js";
 import { db } from "./db.js";
-import { tvShows, reviews, users } from "../shared/schema.js";
+import { tvShows, tvShowReviews, users } from "../shared/schema.js";
 import { eq, sql } from "drizzle-orm";
 
 // Sync all data to Notion
@@ -13,19 +13,17 @@ export async function syncAllToNotion(req: Request, res: Response) {
         const tvShowsData = await db.select().from(tvShows);
         const reviewsData = await db
             .select({
-                id: reviews.id,
-                rating: reviews.rating,
-                comment: reviews.comment,
-                createdAt: reviews.createdAt,
-                upvoteCount: reviews.upvoteCount,
-                tvShowId: reviews.tvShowId,
-                userId: reviews.userId,
-                showName: tvShows.name,
-                userName: users.username
+                id: tvShowReviews.id,
+                rating: tvShowReviews.rating,
+                comment: tvShowReviews.review,
+                createdAt: tvShowReviews.createdAt,
+                upvoteCount: sql`0`.as('upvoteCount'),
+                tvShowId: tvShowReviews.tvShowId,
+                userId: tvShowReviews.userId,
+                showName: tvShowReviews.showName,
+                userName: tvShowReviews.userName
             })
-            .from(reviews)
-            .leftJoin(tvShows, eq(reviews.tvShowId, tvShows.id))
-            .leftJoin(users, eq(reviews.userId, users.id));
+            .from(tvShowReviews);
 
         const usersData = await db
             .select({
@@ -148,20 +146,18 @@ export async function syncRecentToNotion(req: Request, res: Response) {
         // Get recent reviews
         const recentReviews = await db
             .select({
-                id: reviews.id,
-                rating: reviews.rating,
-                comment: reviews.comment,
-                createdAt: reviews.createdAt,
-                upvoteCount: reviews.upvoteCount,
-                tvShowId: reviews.tvShowId,
-                userId: reviews.userId,
-                showName: tvShows.name,
-                userName: users.username
+                id: tvShowReviews.id,
+                rating: tvShowReviews.rating,
+                comment: tvShowReviews.review,
+                createdAt: tvShowReviews.createdAt,
+                upvoteCount: sql`0`.as('upvoteCount'),
+                tvShowId: tvShowReviews.tvShowId,
+                userId: tvShowReviews.userId,
+                showName: tvShowReviews.showName,
+                userName: tvShowReviews.userName
             })
-            .from(reviews)
-            .leftJoin(tvShows, eq(reviews.tvShowId, tvShows.id))
-            .leftJoin(users, eq(reviews.userId, users.id))
-            .where(sql`${reviews.createdAt} >= ${yesterday}`);
+            .from(tvShowReviews)
+            .where(sql`${tvShowReviews.createdAt} >= ${yesterday}`);
 
         // Get recent users
         const recentUsers = await db

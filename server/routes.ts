@@ -22,6 +22,7 @@ import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import { createShortUrl, resolveShortUrl } from "./url-shortener";
 import { trackReferral, trackReferralClick } from "./referral-system";
+import { syncAllToNotion, syncShowToNotion, getNotionStatus, syncRecentToNotion, clearAndResyncNotion } from "./notion-sync";
 import path from "path";
 import bcrypt from "bcrypt";
 
@@ -3342,6 +3343,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // Notion integration endpoints
+  app.get("/api/notion/status", getNotionStatus);
+  app.post("/api/notion/sync", syncAllToNotion);
+  app.post("/api/notion/sync/recent", syncRecentToNotion);
+  app.post("/api/notion/sync/show/:showId", syncShowToNotion);
+  app.post("/api/notion/clear-resync", clearAndResyncNotion);
 
   return httpServer;
 }
