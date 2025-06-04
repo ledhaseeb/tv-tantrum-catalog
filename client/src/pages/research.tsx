@@ -17,16 +17,20 @@ const Research = () => {
 
   const { data: summaries, isLoading: isLoadingSummaries, error } = useQuery({
     queryKey: ['/api/research'],
+    queryFn: async () => {
+      const response = await fetch('/api/research', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
     enabled: true, // Always fetch research data for all users
     staleTime: 0, // Always fetch fresh data to show read status updates
   });
 
-  // Debug logging
-  console.log('Research Query Debug:', {
-    summaries: summaries ? summaries.length : 'undefined',
-    isLoading: isLoadingSummaries,
-    error: error ? error.message : 'none'
-  });
+
 
   // Define categories based on actual database categories
   const categories = [

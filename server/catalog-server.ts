@@ -98,7 +98,7 @@ router.get('/shows/featured', async (req, res) => {
 router.get('/tv-shows/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const show = await catalogStorage.getTvShow(id);
+    const show = await catalogStorage.getTvShowById(id);
     
     if (!show) {
       return res.status(404).json({ message: "Show not found" });
@@ -137,7 +137,7 @@ router.get('/research', async (req, res) => {
 router.get('/research/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const summary = await catalogStorage.getResearchSummary(id);
+    const summary = await catalogStorage.getResearchSummaryById(id);
     
     if (!summary) {
       return res.status(404).json({ message: "Research summary not found" });
