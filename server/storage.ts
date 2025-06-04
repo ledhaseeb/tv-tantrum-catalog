@@ -1322,6 +1322,9 @@ export class MemStorage implements IStorage {
   }
 }
 
-import { DatabaseStorage } from './database-storage';
+// For now, we're keeping the memory storage to maintain all current functionality
+// We'll implement the database storage once we've fixed the schema issues
+// import { DatabaseStorage } from './database-storage';
 
-export const storage = new DatabaseStorage();
+// Using in-memory storage for development
+export const storage = new MemStorage();
