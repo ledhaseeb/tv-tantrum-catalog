@@ -57,6 +57,22 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
+        {/* Show Detail Page - SEO-optimized individual show pages */}
+        <Route path="/show/:id">
+          {(params) => {
+            console.log('Show detail route matched with params:', params);
+            return (
+              <div className="flex-grow flex flex-col">
+                <CatalogNavbar />
+                <div className="flex-grow">
+                  <CatalogShowDetail id={parseInt(params.id)} />
+                </div>
+                <Footer />
+              </div>
+            );
+          }}
+        </Route>
+
         {/* Catalog Home - Main landing page */}
         <Route path="/">
           <div className="flex-grow flex flex-col">
@@ -356,22 +372,6 @@ function Router() {
             </div>
             <Footer />
           </div>
-        </Route>
-
-        {/* Show Detail Page - SEO-optimized individual show pages */}
-        <Route path="/show/:id">
-          {(params) => {
-            console.log('Show detail route matched with params:', params);
-            return (
-              <div className="flex-grow flex flex-col">
-                <CatalogNavbar />
-                <div className="flex-grow">
-                  <CatalogShowDetail id={parseInt(params.id)} />
-                </div>
-                <Footer />
-              </div>
-            );
-          }}
         </Route>
 
         <Route>
