@@ -15,10 +15,17 @@ const Research = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   // Using Link component for navigation instead of useLocation
 
-  const { data: summaries, isLoading: isLoadingSummaries } = useQuery({
+  const { data: summaries, isLoading: isLoadingSummaries, error } = useQuery({
     queryKey: ['/api/research'],
     enabled: true, // Always fetch research data for all users
     staleTime: 0, // Always fetch fresh data to show read status updates
+  });
+
+  // Debug logging
+  console.log('Research Query Debug:', {
+    summaries: summaries ? summaries.length : 'undefined',
+    isLoading: isLoadingSummaries,
+    error: error ? error.message : 'none'
   });
 
   // Define categories based on actual database categories
