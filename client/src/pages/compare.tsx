@@ -220,11 +220,11 @@ export default function Compare() {
                             <img
                               src={show.image_url}
                               alt={`${show.name} TV show cover`}
-                              className="w-20 h-20 object-cover rounded-lg"
+                              className="w-24 h-36 object-cover rounded-lg"
                               loading="lazy"
                             />
                           ) : (
-                            <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <div className="w-24 h-36 bg-gray-200 rounded-lg flex items-center justify-center">
                               <i className="fas fa-tv text-gray-400 text-xl"></i>
                             </div>
                           )}
