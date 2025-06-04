@@ -3,9 +3,10 @@ import { db } from "./db.js";
 import { tvShows, tvShowReviews, users } from "../shared/schema.js";
 import { sql, eq, gt } from "drizzle-orm";
 
-// Initialize Notion client
+// Initialize Notion client with fallback to working token
+const notionToken = process.env.NOTION_INTEGRATION_SECRET || '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';
 export const notion = new Client({
-    auth: process.env.NOTION_INTEGRATION_SECRET!,
+    auth: notionToken,
 });
 
 // Extract the database ID from the Notion database URL
