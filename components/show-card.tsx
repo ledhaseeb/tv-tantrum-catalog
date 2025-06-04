@@ -2,11 +2,11 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { TvShow } from '@/lib/schema'
+import { Show } from '@/lib/schema'
 import { Clock, Users, Star } from 'lucide-react'
 
 interface ShowCardProps {
-  show: TvShow
+  show: Show
   compact?: boolean
 }
 

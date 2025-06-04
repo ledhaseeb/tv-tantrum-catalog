@@ -1,39 +1,28 @@
 import React from 'react'
 import Link from 'next/link'
-import { db } from '@/lib/db'
-import { tvShows, tvShowThemes, themes, tvShowPlatforms, platforms } from '@/lib/schema'
-import { eq, desc } from 'drizzle-orm'
+import { sql } from '@/lib/db'
+import { TvShow, normalizeShow } from '@/lib/schema'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShowCard } from '@/components/show-card'
 import { ArrowRight, Star, TrendingUp } from 'lucide-react'
 
 async function getFeaturedShows() {
   try {
-    const featured = await db
-      .select()
-      .from(tvShows)
-      .where(eq(tvShows.isFeatured, true))
-      .limit(6);
-    
-    return featured;
+    const result = await sql`SELECT * FROM tv_shows WHERE is_featured = true LIMIT 6`
+    return result.map((row: any) => normalizeShow(row as TvShow))
   } catch (error) {
-    console.error('Database connection failed, using fallback data');
-    return [];
+    console.error('Database connection failed:', error)
+    return []
   }
 }
 
 async function getPopularShows() {
   try {
-    const popular = await db
-      .select()
-      .from(tvShows)
-      .orderBy(desc(tvShows.stimulationScore))
-      .limit(8);
-    
-    return popular;
+    const result = await sql`SELECT * FROM tv_shows ORDER BY stimulation_score DESC LIMIT 8`
+    return result.map((row: any) => normalizeShow(row as TvShow))
   } catch (error) {
-    console.error('Database connection failed, using fallback data');
-    return [];
+    console.error('Database connection failed:', error)
+    return []
   }
 }
 

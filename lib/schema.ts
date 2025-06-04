@@ -1,149 +1,117 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+// Direct database interface using existing table structure
+export interface TvShow {
+  id: number;
+  name: string;
+  description: string;
+  age_range: string;
+  episode_length: number;
+  creator?: string;
+  release_year?: number;
+  end_year?: number;
+  is_ongoing?: boolean;
+  seasons?: number;
+  stimulation_score: number;
+  interactivity_level?: string;
+  dialogue_intensity?: string;
+  sound_effects_level?: string;
+  music_tempo?: string;
+  total_music_level?: string;
+  total_sound_effect_time_level?: string;
+  scene_frequency?: string;
+  creativity_rating?: number;
+  animation_style?: string;
+  image_url?: string;
+  is_featured?: boolean;
+  subscriber_count?: string;
+  video_count?: string;
+  channel_id?: string;
+  is_youtube_channel?: boolean;
+  published_at?: string;
+  available_on?: string[];
+  themes?: string[];
+}
 
-// Simplified admin authentication - just password-protected access
-export const adminUsers = pgTable("admin_users", {
-  id: serial("id").primaryKey(),
-  username: text("username").unique().notNull(),
-  password: text("password").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export interface ResearchSummary {
+  id: number;
+  title: string;
+  summary?: string;
+  full_text?: string;
+  category: string;
+  image_url?: string;
+  source?: string;
+  original_url?: string;
+  published_date?: string;
+  headline?: string;
+  sub_headline?: string;
+  key_findings?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
-// Core TV Shows Schema - streamlined for catalog use
-export const tvShows = pgTable("tv_shows", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  ageRange: text("age_range").notNull(),
-  episodeLength: integer("episode_length").notNull(),
-  creator: text("creator"),
-  releaseYear: integer("release_year"),
-  endYear: integer("end_year"),
-  isOngoing: boolean("is_ongoing").default(true),
-  seasons: integer("seasons"),
-  
-  // Core stimulation metrics
-  stimulationScore: integer("stimulation_score").notNull(),
-  interactivityLevel: text("interactivity_level"),
-  dialogueIntensity: text("dialogue_intensity"), 
-  soundEffectsLevel: text("sound_effects_level"),
-  musicTempo: text("music_tempo"),
-  totalMusicLevel: text("total_music_level"),
-  totalSoundEffectTimeLevel: text("total_sound_effect_time_level"),
-  sceneFrequency: text("scene_frequency"),
-  creativityRating: integer("creativity_rating"),
-  
-  // Visual and content details
-  animationStyle: text("animation_style"),
-  imageUrl: text("image_url"),
-  isFeatured: boolean("is_featured").default(false),
-  
-  // YouTube channel info (for existing data)
-  subscriberCount: text("subscriber_count"),
-  videoCount: text("video_count"),
-  channelId: text("channel_id"),
-  isYouTubeChannel: boolean("is_youtube_channel").default(false),
-  publishedAt: text("published_at"),
-  
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+// Normalized interface for frontend
+export interface Show {
+  id: number;
+  name: string;
+  description: string;
+  ageRange: string;
+  episodeLength: number;
+  creator?: string;
+  releaseYear?: number;
+  endYear?: number;
+  isOngoing?: boolean;
+  seasons?: number;
+  stimulationScore: number;
+  interactivityLevel?: string;
+  dialogueIntensity?: string;
+  soundEffectsLevel?: string;
+  musicTempo?: string;
+  totalMusicLevel?: string;
+  totalSoundEffectTimeLevel?: string;
+  sceneFrequency?: string;
+  creativityRating?: number;
+  animationStyle?: string;
+  imageUrl?: string;
+  isFeatured?: boolean;
+  subscriberCount?: string;
+  videoCount?: string;
+  channelId?: string;
+  isYouTubeChannel?: boolean;
+  publishedAt?: string;
+  availableOn?: string[];
+  themes?: string[];
+}
 
-// Theme categorization
-export const themes = pgTable("themes", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-});
-
-// Streaming platforms
-export const platforms = pgTable("platforms", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  url: text("url"),
-  iconUrl: text("icon_url"),
-});
-
-// Show-theme relationships
-export const tvShowThemes = pgTable("tv_show_themes", {
-  id: serial("id").primaryKey(),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  themeId: integer("theme_id").notNull().references(() => themes.id, { onDelete: 'cascade' }),
-});
-
-// Show-platform relationships
-export const tvShowPlatforms = pgTable("tv_show_platforms", {
-  id: serial("id").primaryKey(),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }),
-  platformId: integer("platform_id").notNull().references(() => platforms.id, { onDelete: 'cascade' }),
-});
-
-// YouTube-specific metadata (keep for existing data)
-export const youtubeChannels = pgTable("youtube_channels", {
-  id: serial("id").primaryKey(),
-  tvShowId: integer("tv_show_id").notNull().references(() => tvShows.id, { onDelete: 'cascade' }).unique(),
-  channelId: text("channel_id"),
-  subscriberCount: text("subscriber_count"),
-  videoCount: text("video_count"),
-  publishedAt: text("published_at"),
-});
-
-// Research content (read-only)
-export const researchSummaries = pgTable("research_summaries", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  summary: text("summary"),
-  fullText: text("full_text"),
-  category: text("category").notNull(),
-  imageUrl: text("image_url"),
-  source: text("source"),
-  originalUrl: text("original_url"),
-  publishedDate: text("published_date"),
-  headline: text("headline"),
-  subHeadline: text("sub_headline"),
-  keyFindings: text("key_findings"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// Zod schemas for data validation
-export const insertTvShowSchema = createInsertSchema(tvShows).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertThemeSchema = createInsertSchema(themes).omit({
-  id: true,
-});
-
-export const insertPlatformSchema = createInsertSchema(platforms).omit({
-  id: true,
-});
-
-export const insertResearchSummarySchema = createInsertSchema(researchSummaries).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
-  id: true,
-  createdAt: true,
-});
-
-// TypeScript types
-export type TvShow = typeof tvShows.$inferSelect;
-export type InsertTvShow = z.infer<typeof insertTvShowSchema>;
-export type Theme = typeof themes.$inferSelect;
-export type Platform = typeof platforms.$inferSelect;
-export type ResearchSummary = typeof researchSummaries.$inferSelect;
-export type AdminUser = typeof adminUsers.$inferSelect;
-
-// Show with relations type
-export type TvShowWithRelations = TvShow & {
-  themes: Theme[];
-  platforms: Platform[];
-  youtubeChannel?: typeof youtubeChannels.$inferSelect;
-};
+// Convert database row to frontend interface
+export function normalizeShow(dbShow: TvShow): Show {
+  return {
+    id: dbShow.id,
+    name: dbShow.name,
+    description: dbShow.description,
+    ageRange: dbShow.age_range,
+    episodeLength: dbShow.episode_length,
+    creator: dbShow.creator,
+    releaseYear: dbShow.release_year,
+    endYear: dbShow.end_year,
+    isOngoing: dbShow.is_ongoing,
+    seasons: dbShow.seasons,
+    stimulationScore: dbShow.stimulation_score,
+    interactivityLevel: dbShow.interactivity_level,
+    dialogueIntensity: dbShow.dialogue_intensity,
+    soundEffectsLevel: dbShow.sound_effects_level,
+    musicTempo: dbShow.music_tempo,
+    totalMusicLevel: dbShow.total_music_level,
+    totalSoundEffectTimeLevel: dbShow.total_sound_effect_time_level,
+    sceneFrequency: dbShow.scene_frequency,
+    creativityRating: dbShow.creativity_rating,
+    animationStyle: dbShow.animation_style,
+    imageUrl: dbShow.image_url,
+    isFeatured: dbShow.is_featured,
+    subscriberCount: dbShow.subscriber_count,
+    videoCount: dbShow.video_count,
+    channelId: dbShow.channel_id,
+    isYouTubeChannel: dbShow.is_youtube_channel,
+    publishedAt: dbShow.published_at,
+    availableOn: dbShow.available_on,
+    themes: dbShow.themes,
+  };
+}

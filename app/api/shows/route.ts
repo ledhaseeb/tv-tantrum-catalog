@@ -1,64 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { tvShows, tvShowThemes, themes, tvShowPlatforms, platforms } from '@/lib/schema'
-import { eq, desc, asc, like, and, or, inArray } from 'drizzle-orm'
+import { sql } from '@/lib/db'
+import { TvShow, normalizeShow } from '@/lib/schema'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const ageRange = searchParams.get('ageRange')
-    const platform = searchParams.get('platform')
-    const theme = searchParams.get('theme')
     const sort = searchParams.get('sort') || 'name'
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    let query = db.select().from(tvShows)
-
-    // Apply filters
+    // Build query conditions
     const conditions = []
+    const params = []
     
     if (search) {
-      conditions.push(
-        or(
-          like(tvShows.name, `%${search}%`),
-          like(tvShows.description, `%${search}%`),
-          like(tvShows.creator, `%${search}%`)
-        )
-      )
+      conditions.push(`(name ILIKE $${params.length + 1} OR description ILIKE $${params.length + 1} OR creator ILIKE $${params.length + 1})`)
+      params.push(`%${search}%`)
     }
 
     if (ageRange) {
-      conditions.push(eq(tvShows.ageRange, ageRange))
+      conditions.push(`age_range = $${params.length + 1}`)
+      params.push(ageRange)
     }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions))
-    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
-    // Apply sorting
+    // Build order clause
+    let orderClause = 'ORDER BY name ASC'
     switch (sort) {
-      case 'name':
-        query = query.orderBy(asc(tvShows.name))
-        break
       case 'stimulation':
-        query = query.orderBy(desc(tvShows.stimulationScore))
+        orderClause = 'ORDER BY stimulation_score DESC'
         break
       case 'creativity':
-        query = query.orderBy(desc(tvShows.creativityRating))
+        orderClause = 'ORDER BY creativity_rating DESC'
         break
       case 'year':
-        query = query.orderBy(desc(tvShows.releaseYear))
+        orderClause = 'ORDER BY release_year DESC'
         break
-      default:
-        query = query.orderBy(asc(tvShows.name))
+      case 'popular':
+        orderClause = 'ORDER BY stimulation_score DESC, creativity_rating DESC'
+        break
     }
 
-    // Apply pagination
-    query = query.limit(limit).offset(offset)
+    const query = `
+      SELECT * FROM tv_shows 
+      ${whereClause} 
+      ${orderClause}
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `
+    params.push(limit, offset)
 
-    const shows = await query
+    const result = await sql(query, params)
+    const shows = result.map((row: any) => normalizeShow(row as TvShow))
 
     return NextResponse.json({
       shows,
