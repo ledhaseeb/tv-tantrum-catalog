@@ -84,35 +84,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     checkFavoriteStatus();
   }, [user, show.id]);
 
-  // Fetch review statistics for this show
+  // Catalog version doesn't use reviews - set default values
   useEffect(() => {
-    if (show?.id) {
-      const fetchReviewStats = async () => {
-        try {
-          const response = await fetch(`/api/reviews/${show.id}`, {
-            credentials: 'include'
-          });
-          if (response.ok) {
-            const reviews = await response.json();
-            if (reviews && reviews.length > 0) {
-              const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
-              const avgRating = totalRating / reviews.length;
-              setReviewStats({
-                reviewCount: reviews.length,
-                avgRating: Math.round(avgRating * 10) / 10 // Round to 1 decimal place
-              });
-            } else {
-              setReviewStats({ reviewCount: 0, avgRating: 0 });
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching review stats:', error);
-          setReviewStats({ reviewCount: 0, avgRating: 0 });
-        }
-      };
-      fetchReviewStats();
-    }
-  }, [show?.id]);
+    setReviewStats({ reviewCount: 0, avgRating: 0 });
+  }, []);
   
   const [, navigate] = useLocation();
   const { toast } = useToast();
