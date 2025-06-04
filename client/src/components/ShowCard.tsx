@@ -106,7 +106,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     const newFavoriteStatus = !isFavorite;
     setIsFavorite(newFavoriteStatus);
     
-    // Use the auth context toggle favorite function with current status
+    // Use the auth context toggle favorite function
     toggleFav(show.id, isFavorite).then(() => {
       toast({
         title: newFavoriteStatus ? "Added to favorites" : "Removed from favorites",
@@ -231,27 +231,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       >
         {/* Image */}
         <div className="relative">
-          {normalizedShow.imageUrl && !imageError ? (
-            <div className="w-full aspect-[2/3] bg-gray-100 overflow-hidden">
-              <img 
-                className="w-full h-full object-cover"
-                src={normalizedShow.imageUrl}
-                alt={show.name}
-                style={{ objectPosition: 'center top' }}
-                onError={() => {
-                  // If image fails to load, set state to show placeholder
-                  setImageError(true);
-                }}
-              />
-            </div>
-          ) : (
-            <div className="w-full aspect-[2/3] bg-gray-200 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                <polyline points="17 2 12 7 7 2"></polyline>
-              </svg>
-            </div>
-          )}
+          <TvShowCardImage
+            showId={show.id}
+            showName={show.name}
+            originalUrl={normalizedShow.imageUrl}
+            className="w-full aspect-[2/3]"
+            isInteractive={false}
+          />
           
           {/* Favorite button */}
           <Button 
@@ -313,22 +299,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         }}>
         <div className="flex">
           <div className="flex-shrink-0 w-32 sm:w-48">
-            {show.imageUrl ? (
-              <div className="h-full w-full bg-gray-100 overflow-hidden flex items-center justify-center">
-                <div className="w-full h-full relative">
-                  <img 
-                    className="absolute inset-0 w-full h-full object-cover"
-                    src={show.imageUrl}
-                    alt={show.name}
-                    style={{ objectPosition: 'center top' }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-                <i className="fas fa-tv text-gray-400 text-2xl"></i>
-              </div>
-            )}
+            <TvShowCardImage
+              showId={show.id}
+              showName={show.name}
+              originalUrl={normalizedShow.imageUrl}
+              className="h-full w-full"
+              aspectRatio="portrait"
+              isInteractive={false}
+            />
           </div>
           
           <CardContent className="p-4 w-full">
