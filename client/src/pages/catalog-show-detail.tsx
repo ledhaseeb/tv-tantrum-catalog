@@ -26,9 +26,11 @@ interface CatalogShowDetailProps {
 }
 
 export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
+  console.log('CatalogShowDetail component mounted with ID:', id);
+  
   // Fetch show details
   const { data: show, isLoading, error } = useQuery({
-    queryKey: ['/api/tv-shows', id],
+    queryKey: ['tv-show', id],
     queryFn: async () => {
       console.log('Fetching show with ID:', id);
       const response = await fetch(`/api/tv-shows/${id}`);
@@ -41,9 +43,9 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
       }
       
       const rawData = await response.json();
-      console.log('Raw show data:', rawData);
+      console.log('Raw show data received:', rawData);
       
-      // Normalize API response to match expected format
+      // Normalize snake_case to camelCase
       const normalizedData = {
         ...rawData,
         ageRange: rawData.age_range || rawData.ageRange,
@@ -71,136 +73,117 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
         publishedAt: rawData.published_at || rawData.publishedAt,
         hasOmdbData: rawData.has_omdb_data || rawData.hasOmdbData,
         hasYoutubeData: rawData.has_youtube_data || rawData.hasYoutubeData,
-      } as TvShow;
+      };
       
       console.log('Normalized show data:', normalizedData);
       return normalizedData;
     },
+    enabled: !!id,
   });
 
-  // Fetch similar shows
-  const { data: similarShows } = useQuery({
-    queryKey: ['/api/tv-shows/similar', id],
-    queryFn: async () => {
-      if (!show) return [];
-      const response = await fetch(`/api/tv-shows/similar/${id}?limit=6`);
-      if (!response.ok) return [];
-      return response.json() as Promise<TvShow[]>;
-    },
-    enabled: !!show,
-  });
+  console.log('Query state - isLoading:', isLoading, 'error:', error, 'show:', !!show);
 
-  // SEO optimization - Update page title and meta tags
+  // SEO optimization
   useEffect(() => {
     if (show) {
-      // Update page title
       document.title = `${show.name} - TV Show Details | TV Tantrum`;
-      
-      // Update meta description
-      const metaDescription = document.querySelector('meta[name="description"]');
-      const description = `${show.name}: ${show.description?.substring(0, 150)}... Age range: ${show.ageRange}. Stimulation level: ${show.stimulationScore}/5.`;
-      if (metaDescription) {
-        metaDescription.setAttribute('content', description);
-      } else {
-        const meta = document.createElement('meta');
-        meta.name = 'description';
-        meta.content = description;
-        document.head.appendChild(meta);
-      }
-
-      // Update Open Graph tags
-      const updateOrCreateMeta = (property: string, content: string) => {
-        let meta = document.querySelector(`meta[property="${property}"]`);
-        if (meta) {
-          meta.setAttribute('content', content);
-        } else {
-          meta = document.createElement('meta');
-          meta.setAttribute('property', property);
-          meta.setAttribute('content', content);
-          document.head.appendChild(meta);
-        }
-      };
-
-      updateOrCreateMeta('og:title', `${show.name} - TV Show Details`);
-      updateOrCreateMeta('og:description', description);
-      updateOrCreateMeta('og:type', 'website');
-      updateOrCreateMeta('og:url', window.location.href);
-      if (show.imageUrl) {
-        updateOrCreateMeta('og:image', show.imageUrl);
-      }
-
-      // Update structured data for SEO
-      const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "TVSeries",
-        "name": show.name,
-        "description": show.description,
-        "image": show.imageUrl,
-        "creator": show.creator ? {
-          "@type": "Person",
-          "name": show.creator
-        } : undefined,
-        "datePublished": show.releaseYear?.toString(),
-        "genre": show.themes,
-        "audience": {
-          "@type": "PeopleAudience",
-          "suggestedMinAge": show.ageRange?.split('-')[0] || "0",
-          "suggestedMaxAge": show.ageRange?.split('-')[1] || "18"
-        },
-        "aggregateRating": show.stimulationScore ? {
-          "@type": "AggregateRating",
-          "ratingValue": show.stimulationScore,
-          "ratingCount": "1",
-          "bestRating": "5",
-          "worstRating": "1"
-        } : undefined
-      };
-
-      // Remove existing structured data
-      const existingScript = document.querySelector('script[type="application/ld+json"]');
-      if (existingScript) {
-        existingScript.remove();
-      }
-
-      // Add new structured data
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.textContent = JSON.stringify(structuredData);
-      document.head.appendChild(script);
     }
-
-    // Cleanup function to reset title when component unmounts
     return () => {
       document.title = 'TV Tantrum - Children\'s TV Show Catalog';
     };
   }, [show]);
 
   if (isLoading) {
-    return <ShowDetailSkeleton />;
-  }
-
-  if (error || !show) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Show Not Found</h1>
-          <p className="text-gray-600 mb-6">The TV show you're looking for doesn't exist.</p>
-          <Link href="/browse">
-            <Button>Browse All Shows</Button>
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <Skeleton className="h-8 w-32 mb-6" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <Skeleton className="w-full aspect-[2/3] rounded-lg" />
+            </div>
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  const formatAvailability = (availability: string[] | string | null) => {
-    if (!availability) return 'Not specified';
-    if (Array.isArray(availability)) {
-      return availability.join(', ');
-    }
-    return availability;
-  };
+  if (error) {
+    console.error('Error in CatalogShowDetail:', error);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <Link href="/">
+            <Button variant="outline" className="mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Shows
+            </Button>
+          </Link>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-red-600">Error Loading Show</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-red-600 mb-4">
+                Failed to load show details. Please try again later.
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Error: {error.message}
+              </p>
+              <Link href="/">
+                <Button variant="outline" className="w-full">
+                  Return to Browse
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
+  if (!show) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <Link href="/">
+            <Button variant="outline" className="mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Shows
+            </Button>
+          </Link>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Show Not Found</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                The TV show you're looking for doesn't exist.
+              </p>
+              <Link href="/">
+                <Button variant="outline" className="w-full">
+                  Return to Browse
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper functions
   const getStimulationLabel = (score: number) => {
     switch (score) {
       case 1: return 'Very Calm';
@@ -212,118 +195,113 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
     }
   };
 
+  const renderStimulationDots = (score: number) => {
+    const dots = [];
+    for (let i = 1; i <= 5; i++) {
+      dots.push(
+        <div
+          key={i}
+          className={`w-2 h-2 rounded-full ${
+            i <= score ? 'bg-orange-500' : 'bg-gray-300'
+          }`}
+        />
+      );
+    }
+    return dots;
+  };
+
+  const formatAvailability = (availability: string[] | string | null) => {
+    if (!availability) return 'Not specified';
+    if (Array.isArray(availability)) {
+      return availability.join(', ');
+    }
+    return availability;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Navigation */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/browse">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Browse
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Back to Shows */}
+        <Link href="/">
+          <Button variant="outline" className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Shows
+          </Button>
+        </Link>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Show Image */}
+          {/* Show Image */}
           <div className="lg:col-span-1">
             <Card className="overflow-hidden">
-              {show.imageUrl ? (
-                <img 
-                  src={show.imageUrl} 
-                  alt={`${show.name} poster`}
-                  className="w-full h-96 object-cover"
-                />
-              ) : (
-                <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
-                  <Play className="h-16 w-16 text-gray-400" />
-                </div>
-              )}
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Info</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Age Range</span>
-                  <Badge variant="outline">{show.ageRange}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Episode Length</span>
-                  <span className="text-sm font-medium">{show.episodeLength} min</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Stimulation Level</span>
-                  <div className="flex items-center">
-                    <span className="text-sm font-medium mr-2">{getStimulationLabel(show.stimulationScore)}</span>
-                    <Badge variant={show.stimulationScore <= 2 ? 'secondary' : show.stimulationScore <= 3 ? 'default' : 'destructive'}>
-                      {show.stimulationScore}/5
-                    </Badge>
-                  </div>
-                </div>
-                {show.releaseYear && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Release Year</span>
-                    <span className="text-sm font-medium">{show.releaseYear}</span>
+              <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center">
+                {show.imageUrl ? (
+                  <img 
+                    src={show.imageUrl} 
+                    alt={show.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = `
+                        <div class="flex items-center justify-center h-full text-gray-500">
+                          <div class="text-center">
+                            <svg class="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                            </svg>
+                            <p class="text-sm">No Image Available</p>
+                          </div>
+                        </div>
+                      `;
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="text-center">
+                      <Play className="w-16 h-16 mx-auto mb-2" />
+                      <p className="text-sm">No Image Available</p>
+                    </div>
                   </div>
                 )}
-                {show.seasons && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Seasons</span>
-                    <span className="text-sm font-medium">{show.seasons}</span>
-                  </div>
-                )}
-              </CardContent>
+              </div>
             </Card>
           </div>
 
-          {/* Right Column - Show Details */}
-          <div className="lg:col-span-2">
-            {/* Show Title and Basic Info */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{show.name}</h1>
-              
+          {/* Show Details */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
               {show.creator && (
-                <p className="text-lg text-gray-600 mb-4">
-                  Created by <span className="font-medium">{show.creator}</span>
-                </p>
+                <p className="text-lg text-gray-600">Created by {show.creator}</p>
               )}
+            </div>
 
-              <div className="flex flex-wrap gap-2 mb-6">
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  <Users className="h-3 w-3 mr-1" />
-                  Ages {show.ageRange}
+            {/* Key Info Badges */}
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Users className="w-3 h-3 mr-1" />
+                Ages {show.ageRange}
+              </Badge>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <Clock className="w-3 h-3 mr-1" />
+                {show.episodeLength} min episodes
+              </Badge>
+              {show.releaseYear && (
+                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {show.endYear && show.endYear !== show.releaseYear 
+                    ? `${show.releaseYear}-${show.endYear}` 
+                    : show.releaseYear}
                 </Badge>
-                <Badge className="bg-blue-50 text-blue-700 border-blue-200">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {show.episodeLength} minutes
-                </Badge>
-                <Badge className="bg-green-50 text-green-700 border-green-200">
-                  <Zap className="h-3 w-3 mr-1" />
-                  {getStimulationLabel(show.stimulationScore)}
-                </Badge>
-                {show.isOngoing && (
-                  <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                    <Star className="h-3 w-3 mr-1" />
-                    Ongoing
-                  </Badge>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Description */}
-            <Card className="mb-6">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <BookOpen className="h-5 w-5 mr-2" />
-                  Description
+                  <BookOpen className="w-5 h-5 mr-2" />
+                  About This Show
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -331,19 +309,42 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
               </CardContent>
             </Card>
 
+            {/* Stimulation Level */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Zap className="w-5 h-5 mr-2" />
+                  Stimulation Level
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <div className="flex gap-1">
+                    {renderStimulationDots(show.stimulationScore || 0)}
+                  </div>
+                  <span className="text-lg font-medium">
+                    {getStimulationLabel(show.stimulationScore || 0)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ({show.stimulationScore || 0}/5)
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Themes */}
             {show.themes && show.themes.length > 0 && (
-              <Card className="mb-6">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Sparkles className="h-5 w-5 mr-2" />
+                    <Sparkles className="w-5 h-5 mr-2" />
                     Themes & Topics
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {show.themes.map((theme, index) => (
-                      <Badge key={index} variant="outline" className="text-sm">
+                      <Badge key={index} variant="secondary" className="text-sm">
                         {theme}
                       </Badge>
                     ))}
@@ -352,165 +353,16 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
               </Card>
             )}
 
-            {/* Detailed Information */}
-            <Card className="mb-6">
+            {/* Where to Watch */}
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Eye className="h-5 w-5 mr-2" />
-                  Show Details
+                  <Play className="w-5 h-5 mr-2" />
+                  Where to Watch
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Technical Details</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Animation Style:</span>
-                        <span className="font-medium">{show.animationStyle || 'Not specified'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Interactivity Level:</span>
-                        <span className="font-medium">{show.interactivityLevel || 'Not specified'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Available On:</span>
-                        <span className="font-medium">{formatAvailability(show.availableOn)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Audio & Visual</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Dialogue Intensity:</span>
-                        <span className="font-medium">{show.dialogueIntensity || 'Not specified'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Sound Effects:</span>
-                        <span className="font-medium">{show.soundEffectsLevel || 'Not specified'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Music Tempo:</span>
-                        <span className="font-medium">{show.musicTempo || 'Not specified'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Scene Frequency:</span>
-                        <span className="font-medium">{show.sceneFrequency || 'Not specified'}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* YouTube Channel Info (if available) */}
-            {show.subscriberCount && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <ExternalLink className="h-5 w-5 mr-2" />
-                    Channel Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-primary">{parseInt(show.subscriberCount).toLocaleString()}</div>
-                      <div className="text-sm text-gray-600">Subscribers</div>
-                    </div>
-                    {show.videoCount && (
-                      <div>
-                        <div className="text-2xl font-bold text-primary">{parseInt(show.videoCount).toLocaleString()}</div>
-                        <div className="text-sm text-gray-600">Videos</div>
-                      </div>
-                    )}
-                    <div>
-                      <div className="text-2xl font-bold text-primary">Active</div>
-                      <div className="text-sm text-gray-600">Status</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* Similar Shows Section */}
-        {similarShows && similarShows.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Shows</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {similarShows.map((similarShow) => (
-                <Link key={similarShow.id} href={`/show/${similarShow.id}`}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
-                    {similarShow.imageUrl ? (
-                      <img 
-                        src={similarShow.imageUrl} 
-                        alt={similarShow.name}
-                        className="w-full h-48 object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                        <Play className="h-8 w-8 text-gray-400" />
-                      </div>
-                    )}
-                    <CardContent className="p-4">
-                      <h3 className="font-medium text-sm mb-2 line-clamp-2">{similarShow.name}</h3>
-                      <div className="flex items-center justify-between text-xs text-gray-600">
-                        <span>Ages {similarShow.ageRange}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {similarShow.stimulationScore}/5
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ShowDetailSkeleton() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Skeleton className="h-10 w-32" />
-        </div>
-      </div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <Skeleton className="w-full h-96 rounded-lg" />
-            <Card className="mt-6">
-              <CardContent className="p-6 space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="lg:col-span-2">
-            <Skeleton className="h-8 w-3/4 mb-4" />
-            <Skeleton className="h-4 w-1/2 mb-6" />
-            <div className="flex gap-2 mb-6">
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-20" />
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-3/4" />
+              <CardContent>
+                <p className="text-gray-700">{formatAvailability(show.availableOn)}</p>
               </CardContent>
             </Card>
           </div>
