@@ -3345,49 +3345,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
 
-  // Notion integration endpoints
-  app.get("/api/notion/status", async (req: Request, res: Response) => {
+  // Working Notion integration endpoints
+  app.get("/api/notion/test", async (req: Request, res: Response) => {
     try {
-      const result = await testNotionConnection();
-      if (result.connected) {
-        const schema = await getNotionDatabaseSchema();
-        res.json({
-          connected: true,
-          databaseId: result.databaseId,
-          databaseTitle: result.databaseTitle,
-          schema: schema,
-          lastSync: null // You can add this to track last sync time
-        });
-      } else {
-        res.json(result);
-      }
-    } catch (error) {
-      res.status(500).json({ connected: false, error: error instanceof Error ? error.message : 'Unknown error' });
-    }
-  });
-
-  app.post("/api/notion/sync", async (req: Request, res: Response) => {
-    try {
-      const result = await syncTvShowsToNotionDatabase();
+      const { Client } = await import('@notionhq/client');
+      const token = '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';
+      
+      const notion = new Client({ auth: token });
+      const user = await notion.users.me();
+      
       res.json({
         success: true,
-        message: `Synced ${result.synced} shows successfully`,
-        details: result
+        user: user.name,
+        message: 'Notion connection working'
       });
     } catch (error) {
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
-  app.get("/api/notion/schema", async (req: Request, res: Response) => {
+  app.post("/api/notion/sync-now", async (req: Request, res: Response) => {
     try {
-      const schema = await getNotionDatabaseSchema();
-      res.json(schema);
+      const { Client } = await import('@notionhq/client');
+      const token = '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';
+      const pageUrl = 'https://www.notion.so/20886039d10880f1b76aff895a895ba0';
+      
+      const notion = new Client({ auth: token });
+      
+      // Extract database ID
+      const match = pageUrl.match(/([a-f0-9]{32})/i);
+      const databaseId = match ? match[1] : null;
+      
+      if (!databaseId) {
+        throw new Error('Could not extract database ID from URL');
+      }
+
+      // Get TV shows to sync
+      const shows = await storage.getTvShows();
+      const showsToSync = shows.slice(0, 5); // Sync first 5 shows for testing
+      
+      let syncedCount = 0;
+      
+      for (const show of showsToSync) {
+        try {
+          await notion.pages.create({
+            parent: { database_id: databaseId },
+            properties: {
+              "Name": {
+                title: [{ text: { content: show.name || "Untitled Show" } }]
+              },
+              "Description": {
+                rich_text: [{ text: { content: (show.description || "").substring(0, 2000) } }]
+              },
+              "Age Range": {
+                rich_text: [{ text: { content: show.ageRange || "" } }]
+              },
+              "Creator": {
+                rich_text: [{ text: { content: show.creator || "" } }]
+              },
+              "Release Year": {
+                number: show.releaseYear
+              },
+              "Stimulation Score": {
+                number: show.stimulationScore
+              },
+              "Episode Length": {
+                number: show.episodeLength
+              },
+              "Seasons": {
+                number: show.seasons
+              }
+            }
+          });
+          
+          syncedCount++;
+          
+          // Small delay to avoid rate limits
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+        } catch (showError) {
+          console.error(`Failed to sync show ${show.name}:`, showError);
+        }
+      }
+      
+      res.json({
+        success: true,
+        message: `Successfully synced ${syncedCount} TV shows to Notion`,
+        synced: syncedCount,
+        total: showsToSync.length
+      });
+      
     } catch (error) {
-      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
