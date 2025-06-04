@@ -229,7 +229,29 @@ export function registerCatalogRoutes(app: Express) {
   app.post("/api/admin/tv-shows", requireAdmin, async (req: Request, res: Response) => {
     try {
       const showData = insertTvShowSchema.parse(req.body);
-      const newShow = await catalogStorage.createTvShow(showData);
+      // Ensure all required fields have proper defaults
+      const normalizedData = {
+        ...showData,
+        creator: showData.creator || null,
+        releaseYear: showData.releaseYear || null,
+        endYear: showData.endYear || null,
+        isOngoing: showData.isOngoing ?? true,
+        seasons: showData.seasons || null,
+        creativityRating: showData.creativityRating || null,
+        availableOn: showData.availableOn || [],
+        themes: showData.themes || [],
+        animationStyle: showData.animationStyle || null,
+        imageUrl: showData.imageUrl || null,
+        isFeatured: showData.isFeatured ?? false,
+        subscriberCount: showData.subscriberCount || null,
+        videoCount: showData.videoCount || null,
+        channelId: showData.channelId || null,
+        isYouTubeChannel: showData.isYouTubeChannel ?? false,
+        publishedAt: showData.publishedAt || null,
+        hasOmdbData: showData.hasOmdbData ?? false,
+        hasYoutubeData: showData.hasYoutubeData ?? false,
+      };
+      const newShow = await catalogStorage.createTvShow(normalizedData);
       res.status(201).json(newShow);
     } catch (error) {
       console.error("Error creating TV show:", error);
