@@ -59,14 +59,16 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const getThemeColor = (theme: string) => {
     const lowerTheme = theme.toLowerCase();
     if (lowerTheme.includes('friendship')) return 'bg-cyan-100 text-cyan-800';
-    if (lowerTheme.includes('problem solving')) return 'bg-green-100 text-green-800';
-    if (lowerTheme.includes('emotional intelligence')) return 'bg-rose-100 text-rose-800';
-    if (lowerTheme.includes('creativity') || lowerTheme.includes('imagination')) return 'bg-purple-100 text-purple-800';
-    if (lowerTheme.includes('adventure')) return 'bg-amber-100 text-amber-800';
-    if (lowerTheme.includes('science') || lowerTheme.includes('stem')) return 'bg-sky-100 text-sky-800';
+    if (lowerTheme.includes('family')) return 'bg-green-100 text-green-800';
+    if (lowerTheme.includes('adventure')) return 'bg-orange-100 text-orange-800';
+    if (lowerTheme.includes('learning')) return 'bg-blue-100 text-blue-800';
+    if (lowerTheme.includes('creativity')) return 'bg-purple-100 text-purple-800';
+    if (lowerTheme.includes('problem')) return 'bg-red-100 text-red-800';
+    if (lowerTheme.includes('music')) return 'bg-pink-100 text-pink-800';
+    if (lowerTheme.includes('science')) return 'bg-teal-100 text-teal-800';
     if (lowerTheme.includes('nature')) return 'bg-emerald-100 text-emerald-800';
-    if (lowerTheme.includes('mechanic') || lowerTheme.includes('engineering')) return 'bg-orange-100 text-orange-800';
-    if (lowerTheme.includes('cultural') || lowerTheme.includes('social')) return 'bg-pink-100 text-pink-800';
+    if (lowerTheme.includes('social')) return 'bg-violet-100 text-violet-800';
+    if (lowerTheme.includes('emotional')) return 'bg-rose-100 text-rose-800';
     if (lowerTheme.includes('entertainment')) return 'bg-indigo-100 text-indigo-800';
     return 'bg-gray-100 text-gray-800';
   };
@@ -124,17 +126,150 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
            'High';
   };
 
+  const showSlug = createShowSlug(show.name);
+
   // Mobile portrait style card - clean design without favorite buttons
   if (isMobile && viewMode === "grid") {
     const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
-    const showSlug = createShowSlug(show.name);
     
     return (
       <Link href={`/show/${showSlug}`} className="block h-full">
         <Card 
           className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow duration-200" 
         >
-        {/* Image */}
+          {/* Image */}
+          <div className="relative">
+            <TvShowCardImage
+              showId={show.id}
+              showName={show.name}
+              originalUrl={normalizedShow.imageUrl}
+              className="w-full aspect-[2/3]"
+              isInteractive={false}
+            />
+          </div>
+          
+          <CardContent className="p-3 flex flex-col flex-grow">
+            {/* Title with ellipsis */}
+            <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
+            
+            {/* Review Statistics */}
+            {reviewStats && reviewStats.reviewCount > 0 && (
+              <div className="flex items-center gap-1 mb-2 text-xs">
+                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                <span className="font-medium">{reviewStats.avgRating}</span>
+                <span className="text-gray-500">({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? 's' : ''})</span>
+              </div>
+            )}
+            
+            {/* Age Badge */}
+            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
+              Ages {normalizedShow.ageRange}
+            </Badge>
+            
+            {/* Stimulation score dots and label */}
+            <div className="mt-auto">
+              <div className="flex flex-col items-center">
+                <div className="flex items-center justify-center mb-1">
+                  {renderStimulationDots()}
+                </div>
+                <div className="text-xs text-gray-600 text-center">
+                  {stimulationLabel} Stimulation
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
+
+  // List view card without favorite buttons
+  if (viewMode === "list") {
+    return (
+      <Link href={`/show/${showSlug}`} className="block">
+        <Card 
+          className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
+        >
+          <div className="flex">
+            <div className="flex-shrink-0 w-32 sm:w-48">
+              <TvShowCardImage
+                showId={show.id}
+                showName={show.name}
+                originalUrl={normalizedShow.imageUrl}
+                className="w-full h-full object-cover"
+                isInteractive={false}
+              />
+            </div>
+            
+            <CardContent className="flex-1 p-4 sm:p-6">
+              <div className="flex flex-col h-full justify-between">
+                <div>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2 flex-1">
+                      {show.name} {releaseYears}
+                    </h3>
+                  </div>
+                  
+                  {/* Review Statistics */}
+                  {reviewStats && reviewStats.reviewCount > 0 && (
+                    <div className="flex items-center gap-1 mb-3">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium text-sm">{reviewStats.avgRating}</span>
+                      <span className="text-gray-500 text-sm">({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? 's' : ''})</span>
+                    </div>
+                  )}
+                  
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{show.description}</p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100">
+                      Ages {normalizedShow.ageRange}
+                    </Badge>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
+                      {show.episodeLength} min
+                    </Badge>
+                  </div>
+                  
+                  {/* Themes - Show first 3 on mobile, first 4 on desktop */}
+                  {show.themes && show.themes.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {show.themes.slice(0, isMobile ? 2 : 3).map((theme, index) => (
+                        <Badge key={index} variant="secondary" className={`text-xs ${getThemeColor(theme)}`}>
+                          {theme}
+                        </Badge>
+                      ))}
+                      {show.themes.length > (isMobile ? 2 : 3) && (
+                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                          +{show.themes.length - (isMobile ? 2 : 3)} more
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Stimulation Score */}
+                <div className="flex items-center">
+                  <div className="flex items-center mr-2">
+                    {renderStimulationDots()}
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {getStimulationText(show.stimulationScore)} Stimulation
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
+
+  // Desktop grid view
+  return (
+    <Link href={`/show/${showSlug}`} className="block h-full">
+      <Card 
+        className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
+      >
         <div className="relative">
           <TvShowCardImage
             showId={show.id}
@@ -145,196 +280,59 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           />
         </div>
         
-        <CardContent className="p-3 flex flex-col flex-grow">
-          {/* Title with ellipsis */}
-          <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
+        <CardContent className="p-4 flex flex-col flex-grow">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-base font-bold text-gray-900 line-clamp-2 flex-1">
+              {show.name}
+            </h3>
+          </div>
           
           {/* Review Statistics */}
           {reviewStats && reviewStats.reviewCount > 0 && (
-            <div className="flex items-center gap-1 mb-2 text-xs">
-              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium">{reviewStats.avgRating}</span>
-              <span className="text-gray-500">({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? 's' : ''})</span>
+            <div className="flex items-center gap-1 mb-3">
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium text-sm">{reviewStats.avgRating}</span>
+              <span className="text-gray-500 text-sm">({reviewStats.reviewCount})</span>
             </div>
           )}
           
-          {/* Age Badge */}
-          <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
-            Ages {normalizedShow.ageRange}
-          </Badge>
+          <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow">{show.description}</p>
           
-          {/* Stimulation score dots and label */}
-          <div className="mt-auto">
-            <div className="flex flex-col items-center">
-              <div className="flex items-center justify-center mb-1">
-                {renderStimulationDots()}
-              </div>
-              <div className="text-xs text-gray-600 text-center">
-                {stimulationLabel} Stimulation
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        </Card>
-      </Link>
-    );
-  }
-
-  // List view card without favorite buttons
-  if (viewMode === "list") {
-    const showSlug = createShowSlug(show.name);
-    
-    return (
-      <Link href={`/show/${showSlug}`} className="block">
-        <Card 
-          className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
-        >
-        <div className="flex">
-          <div className="flex-shrink-0 w-32 sm:w-48">
-            <TvShowCardImage
-              showId={show.id}
-              showName={show.name}
-              originalUrl={normalizedShow.imageUrl}
-              className="h-full w-full"
-              aspectRatio="portrait"
-              isInteractive={false}
-            />
-          </div>
-          
-          <CardContent className="p-4 w-full">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-heading font-bold mb-1">{show.name}</h3>
-                <div className="flex items-center flex-wrap gap-2 mb-2">
-                  <Badge variant="outline" className="bg-green-100 text-green-800 text-xs font-medium">
-                    Ages {show.ageRange}
-                  </Badge>
-                  {show.availableOn && show.availableOn.length > 0 && (
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs font-medium">
-                      {show.availableOn[0]}{show.availableOn.length > 1 ? "+" : ""}
-                    </Badge>
-                  )}
-                  {/* Review Statistics */}
-                  {reviewStats && reviewStats.reviewCount > 0 && (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{reviewStats.avgRating}</span>
-                      <span className="text-gray-500">({reviewStats.reviewCount})</span>
-                    </div>
-                  )}
-                </div>
-                <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                  {show.description}
-                </p>
-                
-                {/* Theme tags */}
-                {show.themes && show.themes.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2 mb-3">
-                    {show.themes.slice(0, 5).map((theme, index) => (
-                      <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs`}>
-                        {theme}
-                      </Badge>
-                    ))}
-                    {show.themes.length > 5 && (
-                      <Badge variant="outline" className="bg-gray-100 text-gray-800 text-xs">
-                        +{show.themes.length - 5}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center mt-2">
-              <div className="flex items-center">
-                <div className="flex items-center mr-2">
-                  {renderStimulationDots()}
-                </div>
-                <span className="text-sm text-gray-600">
-                  {getStimulationText(show.stimulationScore)} Stimulation
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </div>
-        </Card>
-      </Link>
-    );
-  }
-
-  // Desktop grid view
-  const showSlug = createShowSlug(show.name);
-  
-  return (
-    <Link href={`/show/${showSlug}`} className="block h-full">
-      <Card 
-        className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
-      >
-      <div className="relative">
-        <TvShowCardImage
-          showId={show.id}
-          showName={show.name}
-          originalUrl={normalizedShow.imageUrl}
-          className="w-full aspect-[2/3]"
-          isInteractive={false}
-        />
-      </div>
-      
-      <CardContent className="p-4 flex-grow flex flex-col">
-        <h3 className="text-base font-heading font-bold mb-2 line-clamp-2">{show.name}</h3>
-        
-        {/* Review Statistics */}
-        {reviewStats && reviewStats.reviewCount > 0 && (
-          <div className="flex items-center gap-1 mb-2 text-sm">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-medium">{reviewStats.avgRating}</span>
-            <span className="text-gray-500">({reviewStats.reviewCount})</span>
-          </div>
-        )}
-        
-        <div className="flex items-center flex-wrap gap-2 mb-2">
-          <Badge variant="outline" className="bg-green-100 text-green-800 text-xs font-medium">
-            Ages {show.ageRange}
-          </Badge>
-          {show.availableOn && show.availableOn.length > 0 && (
-            <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs font-medium">
-              {show.availableOn[0]}{show.availableOn.length > 1 ? "+" : ""}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 text-xs">
+              Ages {normalizedShow.ageRange}
             </Badge>
-          )}
-        </div>
-        
-        <p className="text-gray-600 text-sm mb-3 line-clamp-3 flex-grow">
-          {show.description}
-        </p>
-        
-        {/* Theme tags */}
-        {show.themes && show.themes.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {show.themes.slice(0, 3).map((theme, index) => (
-              <Badge key={index} variant="outline" className={`${getThemeColor(theme)} text-xs`}>
-                {theme}
-              </Badge>
-            ))}
-            {show.themes.length > 3 && (
-              <Badge variant="outline" className="bg-gray-100 text-gray-800 text-xs">
-                +{show.themes.length - 3}
-              </Badge>
-            )}
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 text-xs">
+              {show.episodeLength} min
+            </Badge>
           </div>
-        )}
-        
-        {/* Stimulation Score */}
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center">
-            <div className="flex items-center mr-2">
+          
+          {/* Themes - Show first 2 themes */}
+          {show.themes && show.themes.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {show.themes.slice(0, 2).map((theme, index) => (
+                <Badge key={index} variant="secondary" className={`text-xs ${getThemeColor(theme)}`}>
+                  {theme}
+                </Badge>
+              ))}
+              {show.themes.length > 2 && (
+                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                  +{show.themes.length - 2} more
+                </Badge>
+              )}
+            </div>
+          )}
+          
+          {/* Stimulation Score at bottom */}
+          <div className="mt-auto flex flex-col items-center">
+            <div className="flex items-center justify-center mb-1">
               {renderStimulationDots()}
             </div>
             <span className="text-sm text-gray-600">
               {getStimulationText(show.stimulationScore)}
             </span>
           </div>
-        </div>
-      </CardContent>
+        </CardContent>
       </Card>
     </Link>
   );
