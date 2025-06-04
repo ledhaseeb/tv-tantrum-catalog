@@ -3346,11 +3346,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // Notion integration endpoints
-  app.get("/api/notion/status", getNotionStatus);
-  app.post("/api/notion/sync", syncAllToNotion);
-  app.post("/api/notion/sync/recent", syncRecentToNotion);
-  app.post("/api/notion/sync/show/:showId", syncShowToNotion);
-  app.post("/api/notion/clear-resync", clearAndResyncNotion);
+  app.get("/api/notion/status", async (req: Request, res: Response) => {
+    try {
+      const result = await testNotionConnection();
+      if (result.connected) {
+        const schema = await getNotionDatabaseSchema();
+        res.json({
+          connected: true,
+          databaseId: result.databaseId,
+          databaseTitle: result.databaseTitle,
+          schema: schema,
+          lastSync: null // You can add this to track last sync time
+        });
+      } else {
+        res.json(result);
+      }
+    } catch (error) {
+      res.status(500).json({ connected: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post("/api/notion/sync", async (req: Request, res: Response) => {
+    try {
+      const result = await syncTvShowsToNotionDatabase();
+      res.json({
+        success: true,
+        message: `Synced ${result.synced} shows successfully`,
+        details: result
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  app.get("/api/notion/schema", async (req: Request, res: Response) => {
+    try {
+      const schema = await getNotionDatabaseSchema();
+      res.json(schema);
+    } catch (error) {
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
 
   return httpServer;
 }

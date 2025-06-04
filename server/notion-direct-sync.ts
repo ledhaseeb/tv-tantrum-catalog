@@ -89,26 +89,38 @@ export async function syncTvShowsToNotionDatabase() {
                         "Release Year": {
                             number: show.releaseYear
                         },
-                        "IMDB Rating": {
-                            number: show.imdbRating
+                        "Stimulation Score": {
+                            number: show.stimulationScore
                         },
-                        "Stimulation Level": {
-                            number: show.stimulationLevel
+                        "Creativity Rating": {
+                            number: show.creativityRating
                         },
-                        "Educational Value": {
-                            number: show.educationalValue
+                        "Interactivity Level": {
+                            rich_text: [
+                                {
+                                    text: {
+                                        content: show.interactivityLevel || ""
+                                    }
+                                }
+                            ]
                         },
-                        "Positive Messaging": {
-                            number: show.positiveMessaging
+                        "Animation Style": {
+                            rich_text: [
+                                {
+                                    text: {
+                                        content: show.animationStyle || ""
+                                    }
+                                }
+                            ]
                         },
-                        "Positive Role Models": {
-                            number: show.positiveRoleModels
+                        "Seasons": {
+                            number: show.seasons
                         },
-                        "Consumerism": {
-                            number: show.consumerism
+                        "Episode Length": {
+                            number: show.episodeLength
                         },
-                        "Violence": {
-                            number: show.violence
+                        "Featured": {
+                            checkbox: show.isFeatured || false
                         }
                     }
                 };
