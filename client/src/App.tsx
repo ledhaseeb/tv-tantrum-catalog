@@ -127,18 +127,7 @@ function Router() {
           </div>
         </Route>
 
-        {/* Catalog Show Detail Pages - SEO Optimized */}
-        <Route path="/show/:id">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <CatalogNavbar />
-              <div className="flex-grow">
-                <CatalogShowDetail id={parseInt(params.id, 10)} />
-              </div>
-              <Footer />
-            </div>
-          )}
-        </Route>
+
 
         {/* Show Detail Pages - Open to everyone */}
         <Route path="/shows/:id">
