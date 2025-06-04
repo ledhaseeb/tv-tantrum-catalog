@@ -216,9 +216,9 @@ export default function Compare() {
                     {show ? (
                       <>
                         <div className="relative mb-2">
-                          {show.image_url ? (
+                          {show.imageUrl ? (
                             <img
-                              src={show.image_url}
+                              src={show.imageUrl}
                               alt={`${show.name} TV show cover`}
                               className="w-24 h-36 object-cover rounded-lg"
                               loading="lazy"
