@@ -34,8 +34,6 @@ import CompleteRegistration from "@/pages/complete-registration";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
 import CatalogNavbar from "@/components/CatalogNavbar";
-import CatalogShowDetail from "@/pages/catalog-show-detail";
-import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
@@ -55,16 +53,9 @@ function Router() {
   // Check if user has early access token stored in localStorage
   const hasEarlyAccess = localStorage.getItem("earlyAccessShown") === "true";
 
-  // Debug current location
-  console.log('Current window location:', window.location.pathname);
-  console.log('Current window href:', window.location.href);
-
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Show Detail Page - SEO-optimized individual show pages */}
-        <Route path="/show/:id" component={CatalogShowDetailPage} />
-
         {/* Catalog Home - Main landing page */}
         <Route path="/">
           <div className="flex-grow flex flex-col">
@@ -119,15 +110,13 @@ function Router() {
         {/* Browse Page - Open to everyone */}
         <Route path="/browse">
           <div className="flex-grow flex flex-col">
-            <CatalogNavbar />
+            <Navbar />
             <div className="flex-grow">
               <Browse />
             </div>
             <Footer />
           </div>
         </Route>
-
-
 
         {/* Show Detail Pages - Open to everyone */}
         <Route path="/shows/:id">

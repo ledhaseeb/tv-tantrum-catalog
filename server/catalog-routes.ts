@@ -152,45 +152,6 @@ export function registerCatalogRoutes(app: Express) {
     }
   });
 
-  // Get individual TV show by ID
-  app.get("/api/tv-shows/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid show ID" });
-      }
-      
-      const show = await catalogStorage.getTvShowById(id);
-      
-      if (!show) {
-        return res.status(404).json({ message: "TV show not found" });
-      }
-      
-      res.json(show);
-    } catch (error) {
-      console.error("Error fetching TV show:", error);
-      res.status(500).json({ message: "Failed to fetch TV show" });
-    }
-  });
-
-  // Get similar shows based on themes and age range
-  app.get("/api/tv-shows/similar/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid show ID" });
-      }
-      
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
-      const similarShows = await catalogStorage.getSimilarShows(id, limit);
-      
-      res.json(similarShows);
-    } catch (error) {
-      console.error("Error fetching similar shows:", error);
-      res.status(500).json({ message: "Failed to fetch similar shows" });
-    }
-  });
-
   // Get research summaries
   app.get("/api/research", async (req: Request, res: Response) => {
     try {

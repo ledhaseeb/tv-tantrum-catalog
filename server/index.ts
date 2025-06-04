@@ -96,7 +96,8 @@ router.get('/shows/featured', async (req, res) => {
 router.get('/tv-shows/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const show = await catalogStorage.getTvShowById(id);
+    const shows = await catalogStorage.getTvShows({});
+    const show = shows.find(s => s.id === id);
     
     if (!show) {
       return res.status(404).json({ message: "Show not found" });
