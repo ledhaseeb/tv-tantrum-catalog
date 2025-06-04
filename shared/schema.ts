@@ -1,7 +1,7 @@
 import { pgTable, text, serial, integer, boolean, jsonb, timestamp, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { sql, eq, asc, desc, and, or, like, inArray, isNull, notInArray } from "drizzle-orm";
+import { sql, eq, asc, desc, and, or, like, inArray, isNull, notInArray, relations } from "drizzle-orm";
 
 // --- User-related tables ---
 
@@ -357,6 +357,81 @@ export const insertTempGhlUserSchema = createInsertSchema(tempGhlUsers).omit({
   verifiedAt: true,
   registrationCompletedAt: true,
 });
+
+// --- Relations ---
+
+export const usersRelations = relations(users, ({ many }) => ({
+  favorites: many(favorites),
+  reviews: many(tvShowReviews),
+  pointsHistory: many(userPointsHistory),
+  upvotes: many(reviewUpvotes),
+  readResearch: many(userReadResearch),
+  submissions: many(showSubmissions),
+  referrals: many(userReferrals),
+  notifications: many(notifications),
+}));
+
+export const tvShowsRelations = relations(tvShows, ({ many }) => ({
+  favorites: many(favorites),
+  reviews: many(tvShowReviews),
+  searches: many(tvShowSearches),
+  views: many(tvShowViews),
+  themes: many(tvShowThemes),
+  platforms: many(tvShowPlatforms),
+}));
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(users, {
+    fields: [favorites.userId],
+    references: [users.id],
+  }),
+  tvShow: one(tvShows, {
+    fields: [favorites.tvShowId],
+    references: [tvShows.id],
+  }),
+}));
+
+export const tvShowReviewsRelations = relations(tvShowReviews, ({ one, many }) => ({
+  tvShow: one(tvShows, {
+    fields: [tvShowReviews.tvShowId],
+    references: [tvShows.id],
+  }),
+  user: one(users, {
+    fields: [tvShowReviews.userId],
+    references: [users.id],
+  }),
+  upvotes: many(reviewUpvotes),
+}));
+
+export const themesRelations = relations(themes, ({ many }) => ({
+  tvShows: many(tvShowThemes),
+}));
+
+export const platformsRelations = relations(platforms, ({ many }) => ({
+  tvShows: many(tvShowPlatforms),
+}));
+
+export const tvShowThemesRelations = relations(tvShowThemes, ({ one }) => ({
+  tvShow: one(tvShows, {
+    fields: [tvShowThemes.tvShowId],
+    references: [tvShows.id],
+  }),
+  theme: one(themes, {
+    fields: [tvShowThemes.themeId],
+    references: [themes.id],
+  }),
+}));
+
+export const tvShowPlatformsRelations = relations(tvShowPlatforms, ({ one }) => ({
+  tvShow: one(tvShows, {
+    fields: [tvShowPlatforms.tvShowId],
+    references: [tvShows.id],
+  }),
+  platform: one(platforms, {
+    fields: [tvShowPlatforms.platformId],
+    references: [platforms.id],
+  }),
+}));
 
 // --- TypeScript types for database entities ---
 export type InsertUser = z.infer<typeof insertUserSchema>;
