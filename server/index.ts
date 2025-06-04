@@ -143,6 +143,31 @@ router.get('/research/:id', async (req, res) => {
   }
 });
 
+// Image proxy route for external images
+router.get('/image-proxy', async (req, res) => {
+  try {
+    const imageUrl = req.query.url as string;
+    if (!imageUrl) {
+      return res.status(400).json({ message: "URL parameter required" });
+    }
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      return res.status(404).json({ message: "Image not found" });
+    }
+
+    const imageBuffer = await response.arrayBuffer();
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.send(Buffer.from(imageBuffer));
+  } catch (error) {
+    console.error("Error proxying image:", error);
+    res.status(500).json({ message: "Failed to proxy image" });
+  }
+});
+
 app.use('/api', router);
 
 const port = Number(process.env.PORT) || 5000;
