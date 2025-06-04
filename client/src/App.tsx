@@ -360,15 +360,18 @@ function Router() {
 
         {/* Show Detail Page - SEO-optimized individual show pages */}
         <Route path="/show/:id">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <CatalogNavbar />
-              <div className="flex-grow">
-                <CatalogShowDetail id={parseInt(params.id)} />
+          {(params) => {
+            console.log('Show detail route matched with params:', params);
+            return (
+              <div className="flex-grow flex flex-col">
+                <CatalogNavbar />
+                <div className="flex-grow">
+                  <CatalogShowDetail id={parseInt(params.id)} />
+                </div>
+                <Footer />
               </div>
-              <Footer />
-            </div>
-          )}
+            );
+          }}
         </Route>
 
         <Route>
