@@ -135,21 +135,7 @@ export class CatalogStorage {
     }
   }
   
-  /**
-   * Get a single TV show by ID
-   */
-  async getTvShowById(id: number): Promise<TvShow | null> {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(
-        'SELECT * FROM catalog_tv_shows WHERE id = $1',
-        [id]
-      );
-      return result.rows[0] || null;
-    } finally {
-      client.release();
-    }
-  }
+
   
   /**
    * Get featured show
@@ -349,22 +335,6 @@ export class CatalogStorage {
     }
   }
   
-  /**
-   * Get TV show by ID
-   */
-  async getTvShowById(id: number): Promise<TvShow | null> {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(
-        'SELECT * FROM catalog_tv_shows WHERE id = $1',
-        [id]
-      );
-      return result.rows[0] || null;
-    } finally {
-      client.release();
-    }
-  }
-
   /**
    * Get similar shows based on themes and age range
    */
