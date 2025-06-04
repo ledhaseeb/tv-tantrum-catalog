@@ -4,6 +4,10 @@ import { insertTvShowSchema } from "@shared/catalog-schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
 
+const router = express.Router();
+
+export { router };
+
 export function registerCatalogRoutes(app: Express) {
   // Session middleware for admin authentication
   app.use(session({
@@ -17,12 +21,12 @@ export function registerCatalogRoutes(app: Express) {
   }));
 
   // Health check
-  app.get('/api/health', (req, res) => {
+  router.get('/health', (req, res) => {
     res.status(200).send('OK');
   });
 
   // Get all TV shows with filtering
-  app.get("/api/tv-shows", async (req: Request, res: Response) => {
+  router.get("/tv-shows", async (req: Request, res: Response) => {
     try {
       const filters: any = {};
       
