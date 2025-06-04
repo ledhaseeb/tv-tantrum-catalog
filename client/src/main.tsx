@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import CatalogApp from "./App-catalog";
 import "./index.css";
 
 // Load Google Fonts for matching design reference
@@ -19,4 +19,4 @@ const titleElement = document.createElement('title');
 titleElement.textContent = 'TV Tantrum - Children\'s TV Show Comparison';
 document.head.appendChild(titleElement);
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(<CatalogApp />);
