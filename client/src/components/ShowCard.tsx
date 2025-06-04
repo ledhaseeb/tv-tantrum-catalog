@@ -4,6 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TvShow } from "@shared/schema";
 import { Star } from "lucide-react";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
+import { Link } from "wouter";
+
+// Helper function to create slug from show name
+const createShowSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim();
+};
 
 interface ShowCardProps {
   show: TvShow & {
@@ -116,15 +127,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // Mobile portrait style card - clean design without favorite buttons
   if (isMobile && viewMode === "grid") {
     const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
+    const showSlug = createShowSlug(show.name);
     
     return (
-      <Card 
-        className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col" 
-        onClick={() => {
-          window.scrollTo(0, 0);
-          onClick();
-        }}
-      >
+      <Link href={`/show/${showSlug}`} className="block h-full">
+        <Card 
+          className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow duration-200" 
+        >
         {/* Image */}
         <div className="relative">
           <TvShowCardImage
@@ -166,19 +175,20 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </Link>
     );
   }
 
   // List view card without favorite buttons
   if (viewMode === "list") {
+    const showSlug = createShowSlug(show.name);
+    
     return (
-      <Card 
-        className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
-        onClick={() => {
-          window.scrollTo(0, 0);
-          onClick();
-        }}>
+      <Link href={`/show/${showSlug}`} className="block">
+        <Card 
+          className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
+        >
         <div className="flex">
           <div className="flex-shrink-0 w-32 sm:w-48">
             <TvShowCardImage
@@ -247,19 +257,19 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             </div>
           </CardContent>
         </div>
-      </Card>
+        </Card>
+      </Link>
     );
   }
 
   // Desktop grid view
+  const showSlug = createShowSlug(show.name);
+  
   return (
-    <Card 
-      className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
-      onClick={() => {
-        window.scrollTo(0, 0);
-        onClick();
-      }}
-    >
+    <Link href={`/show/${showSlug}`} className="block h-full">
+      <Card 
+        className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
+      >
       <div className="relative">
         <TvShowCardImage
           showId={show.id}
@@ -325,6 +335,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           </div>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </Link>
   );
 }
