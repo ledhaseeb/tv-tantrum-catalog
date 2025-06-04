@@ -170,30 +170,13 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
     }
   };
 
-  // Handle authentication checks after all hooks are called
-  if (isLoadingAuth) {
+  // Show loading while fetching research data
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">Please log in to view research details.</p>
-          <button 
-            onClick={() => window.location.href = '/early-access'}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Go to Login
-          </button>
+          <p className="mt-2 text-gray-600">Loading research...</p>
         </div>
       </div>
     );
@@ -235,13 +218,17 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
               )}
             </div>
 
-            {research.hasRead ? (
+            {user && research.hasRead ? (
               <Badge variant="secondary" className="bg-green-50 text-green-600 border-green-200">
                 <BookOpen className="w-3 h-3 mr-1" /> Read
               </Badge>
-            ) : (
+            ) : user ? (
               <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
                 <Award className="w-3 h-3 mr-1" /> Earn 5 points by reading
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                <BookOpen className="w-3 h-3 mr-1" /> Free research access
               </Badge>
             )}
           </div>

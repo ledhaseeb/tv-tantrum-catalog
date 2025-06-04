@@ -17,7 +17,7 @@ const Research = () => {
 
   const { data: summaries, isLoading: isLoadingSummaries } = useQuery({
     queryKey: ['/api/research'],
-    enabled: !!user,
+    enabled: true, // Always fetch research data for all users
     staleTime: 0, // Always fetch fresh data to show read status updates
   });
 
@@ -32,37 +32,7 @@ const Research = () => {
     { id: 'Social Development', name: 'Social Development' },
   ];
 
-  if (isLoadingAuth) {
-    return (
-      <div className="container py-8">
-        <div className="space-y-4">
-          <Skeleton className="h-12 w-[250px]" />
-          <Skeleton className="h-[200px] w-full" />
-          <Skeleton className="h-[200px] w-full" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="container py-12">
-        <Card className="max-w-md mx-auto text-center">
-          <CardHeader>
-            <Lock className="w-12 h-12 mx-auto text-gray-400 mb-2" />
-            <CardTitle>Exclusive Content</CardTitle>
-            <CardDescription>
-              Research summaries are available only to registered users.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center">
-            <Button onClick={() => window.location.href = '/api/login'}>Sign In to Access</Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
+  // Show loading while fetching research data
   if (isLoadingSummaries) {
     return (
       <div className="container py-8">
@@ -132,7 +102,8 @@ const Research = () => {
           </p>
         </div>
         <Badge variant="outline" className="bg-blue-50 text-blue-500 border-blue-200">
-          <BookOpen className="w-3 h-3 mr-1" /> Earn 5 points for each summary you read
+          <BookOpen className="w-3 h-3 mr-1" /> 
+          {user ? 'Earn 5 points for each summary you read' : 'Free access to research summaries'}
         </Badge>
       </div>
 
