@@ -23,6 +23,7 @@ import { lookupRouter } from "./lookup-api";
 import { createShortUrl, resolveShortUrl } from "./url-shortener";
 import { trackReferral, trackReferralClick } from "./referral-system";
 import { syncAllToNotion, syncShowToNotion, getNotionStatus, syncRecentToNotion, clearAndResyncNotion } from "./notion-sync";
+import { testNotionConnection, syncTvShowsToNotionDatabase, getNotionDatabaseSchema } from "./notion-direct-sync";
 import path from "path";
 import bcrypt from "bcrypt";
 

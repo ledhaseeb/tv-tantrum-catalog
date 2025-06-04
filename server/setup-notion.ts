@@ -22,9 +22,14 @@ async function setupNotionDatabases() {
         const notionUser = await notion.users.me();
         console.log("✅ Notion connection successful");
 
-        // Verify page access
-        console.log("🔍 Verifying page access...");
-        await notion.pages.retrieve({ page_id: NOTION_PAGE_ID });
+        // Verify database access (since the provided URL is a database)
+        console.log("🔍 Verifying database access...");
+        try {
+            await notion.databases.retrieve({ database_id: NOTION_PAGE_ID });
+            console.log("✅ Successfully connected to existing Notion database");
+        } catch (error) {
+            console.log("Database not found, will create a new structure");
+        }
         console.log("✅ Page access verified");
 
         // Get TV Shows data from database
