@@ -34,7 +34,37 @@ export default function CatalogShowDetail({ id }: CatalogShowDetailProps) {
       if (!response.ok) {
         throw new Error('Show not found');
       }
-      return response.json() as Promise<TvShow>;
+      const rawData = await response.json();
+      
+      // Normalize API response to match expected format
+      return {
+        ...rawData,
+        ageRange: rawData.age_range || rawData.ageRange,
+        imageUrl: rawData.image_url || rawData.imageUrl,
+        episodeLength: rawData.episode_length || rawData.episodeLength,
+        releaseYear: rawData.release_year || rawData.releaseYear,
+        endYear: rawData.end_year || rawData.endYear,
+        isOngoing: rawData.is_ongoing || rawData.isOngoing,
+        stimulationScore: rawData.stimulation_score || rawData.stimulationScore,
+        interactivityLevel: rawData.interactivity_level || rawData.interactivityLevel,
+        dialogueIntensity: rawData.dialogue_intensity || rawData.dialogueIntensity,
+        soundEffectsLevel: rawData.sound_effects_level || rawData.soundEffectsLevel,
+        musicTempo: rawData.music_tempo || rawData.musicTempo,
+        totalMusicLevel: rawData.total_music_level || rawData.totalMusicLevel,
+        totalSoundEffectTimeLevel: rawData.total_sound_effect_time_level || rawData.totalSoundEffectTimeLevel,
+        sceneFrequency: rawData.scene_frequency || rawData.sceneFrequency,
+        creativityRating: rawData.creativity_rating || rawData.creativityRating,
+        availableOn: rawData.available_on || rawData.availableOn,
+        animationStyle: rawData.animation_style || rawData.animationStyle,
+        isFeatured: rawData.is_featured || rawData.isFeatured,
+        subscriberCount: rawData.subscriber_count || rawData.subscriberCount,
+        videoCount: rawData.video_count || rawData.videoCount,
+        channelId: rawData.channel_id || rawData.channelId,
+        isYoutubeChannel: rawData.is_youtube_channel || rawData.isYoutubeChannel,
+        publishedAt: rawData.published_at || rawData.publishedAt,
+        hasOmdbData: rawData.has_omdb_data || rawData.hasOmdbData,
+        hasYoutubeData: rawData.has_youtube_data || rawData.hasYoutubeData,
+      } as TvShow;
     },
   });
 
