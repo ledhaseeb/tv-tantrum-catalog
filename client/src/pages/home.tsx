@@ -147,33 +147,10 @@ export default function Home() {
     }
   }, [featuredShow, user, isFavorite]);
   
-  // Fetch review statistics for the featured show
+  // Catalog version doesn't use reviews - set default stats
   useEffect(() => {
     if (featuredShow?.id) {
-      const fetchFeaturedShowReviewStats = async () => {
-        try {
-          const response = await fetch(`/api/reviews/${featuredShow.id}`, {
-            credentials: 'include'
-          });
-          if (response.ok) {
-            const reviews = await response.json();
-            if (reviews && reviews.length > 0) {
-              const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
-              const avgRating = totalRating / reviews.length;
-              setFeaturedShowReviewStats({
-                reviewCount: reviews.length,
-                avgRating: Math.round(avgRating * 10) / 10 // Round to 1 decimal place
-              });
-            } else {
-              setFeaturedShowReviewStats({ reviewCount: 0, avgRating: 0 });
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching featured show review stats:', error);
-          setFeaturedShowReviewStats({ reviewCount: 0, avgRating: 0 });
-        }
-      };
-      fetchFeaturedShowReviewStats();
+      setFeaturedShowReviewStats({ reviewCount: 0, avgRating: 0 });
     }
   }, [featuredShow?.id]);
   
