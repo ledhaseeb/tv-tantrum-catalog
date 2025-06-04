@@ -1,13 +1,23 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { createServer, type Server } from "http";
-import path from "path";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { checkDatabaseConnection } from "./db";
-import multer from 'multer';
-import * as fs from 'fs';
+// Next.js startup redirect for TV Tantrum Catalog
+import { exec } from 'child_process';
 
-const app = express();
+console.log('Redirecting to Next.js TV Tantrum Catalog...');
+
+const nextProcess = exec('npx next dev --port 3000 --hostname 0.0.0.0', {
+  stdio: 'inherit',
+  env: process.env
+});
+
+nextProcess.on('error', (error) => {
+  console.error('Failed to start Next.js:', error);
+  process.exit(1);
+});
+
+process.on('SIGTERM', () => nextProcess.kill('SIGTERM'));
+process.on('SIGINT', () => nextProcess.kill('SIGINT'));
+
+// Exit after starting Next.js to prevent Express from starting
+process.exit = () => {};
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
