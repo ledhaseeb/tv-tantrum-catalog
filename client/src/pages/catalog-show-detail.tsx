@@ -19,7 +19,7 @@ import {
   ArrowLeft,
   ExternalLink
 } from "lucide-react";
-import type { TvShow } from "../../../shared/catalog-schema";
+import type { TvShow } from "@shared/schema";
 
 interface CatalogShowDetailProps {
   id: number;
