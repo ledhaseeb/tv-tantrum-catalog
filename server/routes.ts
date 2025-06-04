@@ -3371,74 +3371,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { Client } = await import('@notionhq/client');
       const token = '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';
-      const pageUrl = 'https://www.notion.so/20886039d10880f1b76aff895a895ba0';
+      const databaseUrl = 'https://www.notion.so/20886039d10880f1b76aff895a895ba0';
       
       const notion = new Client({ auth: token });
       
-      // Extract page ID
-      const match = pageUrl.match(/([a-f0-9]{32})/i);
-      const pageId = match ? match[1] : null;
+      // Extract database ID from the URL
+      const match = databaseUrl.match(/([a-f0-9]{32})/i);
+      const databaseId = match ? match[1] : null;
       
-      if (!pageId) {
-        throw new Error('Could not extract page ID from URL');
+      if (!databaseId) {
+        throw new Error('Could not extract database ID from URL');
       }
 
-      // First, create the database in the Notion page
-      console.log('Creating TV Shows database in Notion...');
-      const database = await notion.databases.create({
-        parent: {
-          type: "page_id",
-          page_id: pageId
-        },
-        title: [
-          {
-            type: "text",
-            text: {
-              content: "TV Tantrum Shows Database"
-            }
-          }
-        ],
-        properties: {
-          "Name": {
-            title: {}
-          },
-          "Description": {
-            rich_text: {}
-          },
-          "Age Range": {
-            rich_text: {}
-          },
-          "Creator": {
-            rich_text: {}
-          },
-          "Release Year": {
-            number: {}
-          },
-          "Stimulation Score": {
-            number: {}
-          },
-          "Episode Length": {
-            number: {}
-          },
-          "Seasons": {
-            number: {}
-          },
-          "Animation Style": {
-            rich_text: {}
-          },
-          "Featured": {
-            checkbox: {}
-          },
-          "YouTube Channel": {
-            checkbox: {}
-          },
-          "Sync Date": {
-            date: {}
-          }
-        }
-      });
+      console.log(`Syncing TV shows to existing Notion database: ${databaseId}`);
 
-      console.log('Database created successfully! Now syncing TV shows...');
+      // First, check the existing database structure
+      const database = await notion.databases.retrieve({
+        database_id: databaseId
+      });
+      
+      console.log('Database found, starting sync...');
 
       // Get TV shows to sync
       const shows = await storage.getAllTvShows();
@@ -3448,53 +3400,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const show of showsToSync) {
         try {
+          // Create a page in the existing database with available properties
+          const pageProperties: any = {};
+          
+          // Check which properties exist in the database and map accordingly
+          const dbProperties = database.properties;
+          
+          if (dbProperties['Name'] || dbProperties['Title']) {
+            const titleProp = dbProperties['Name'] ? 'Name' : 'Title';
+            pageProperties[titleProp] = {
+              title: [{ text: { content: show.name || "Untitled Show" } }]
+            };
+          }
+          
+          if (dbProperties['Description']) {
+            pageProperties['Description'] = {
+              rich_text: [{ text: { content: (show.description || "").substring(0, 2000) } }]
+            };
+          }
+          
+          if (dbProperties['Age Range']) {
+            pageProperties['Age Range'] = {
+              rich_text: [{ text: { content: show.ageRange || "" } }]
+            };
+          }
+          
+          if (dbProperties['Creator']) {
+            pageProperties['Creator'] = {
+              rich_text: [{ text: { content: show.creator || "" } }]
+            };
+          }
+          
+          if (dbProperties['Release Year'] || dbProperties['Year']) {
+            const yearProp = dbProperties['Release Year'] ? 'Release Year' : 'Year';
+            pageProperties[yearProp] = {
+              number: show.releaseYear
+            };
+          }
+          
+          if (dbProperties['Stimulation Score']) {
+            pageProperties['Stimulation Score'] = {
+              number: show.stimulationScore
+            };
+          }
+          
+          if (dbProperties['Episode Length']) {
+            pageProperties['Episode Length'] = {
+              number: show.episodeLength
+            };
+          }
+          
+          if (dbProperties['Seasons']) {
+            pageProperties['Seasons'] = {
+              number: show.seasons
+            };
+          }
+
           await notion.pages.create({
-            parent: { database_id: database.id },
-            properties: {
-              "Name": {
-                title: [{ text: { content: show.name || "Untitled Show" } }]
-              },
-              "Description": {
-                rich_text: [{ text: { content: (show.description || "").substring(0, 2000) } }]
-              },
-              "Age Range": {
-                rich_text: [{ text: { content: show.ageRange || "" } }]
-              },
-              "Creator": {
-                rich_text: [{ text: { content: show.creator || "" } }]
-              },
-              "Release Year": {
-                number: show.releaseYear
-              },
-              "Stimulation Score": {
-                number: show.stimulationScore
-              },
-              "Episode Length": {
-                number: show.episodeLength
-              },
-              "Seasons": {
-                number: show.seasons
-              },
-              "Animation Style": {
-                rich_text: [{ text: { content: show.animationStyle || "" } }]
-              },
-              "Featured": {
-                checkbox: show.isFeatured || false
-              },
-              "YouTube Channel": {
-                checkbox: show.isYouTubeChannel || false
-              },
-              "Sync Date": {
-                date: { start: new Date().toISOString().split('T')[0] }
-              }
-            }
+            parent: { database_id: databaseId },
+            properties: pageProperties
           });
           
           syncedCount++;
           console.log(`Synced: ${show.name}`);
           
           // Small delay to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 300));
           
         } catch (showError) {
           console.error(`Failed to sync show ${show.name}:`, showError);
@@ -3503,10 +3474,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        message: `Successfully created database and synced ${syncedCount} TV shows to Notion`,
+        message: `Successfully synced ${syncedCount} TV shows to your existing Notion database`,
         synced: syncedCount,
         total: showsToSync.length,
-        databaseId: database.id
+        databaseId: databaseId
       });
       
     } catch (error) {
