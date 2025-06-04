@@ -25,6 +25,7 @@ export default function CatalogShowDetailPage() {
   const id = parseInt(params.id || "0");
   
   console.log('CatalogShowDetailPage mounted with params:', params, 'parsed ID:', id);
+  console.log('Current URL pathname:', window.location.pathname);
   
   // Fetch show details
   const { data: show, isLoading, error } = useQuery({
