@@ -4,75 +4,25 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkDatabaseConnection } from "./db";
-import { startPeriodicSync, validateNotionSetup } from "./notion-auto-sync";
-import multer from "multer";
-import * as fs from "fs";
-import axios from "axios";
-
-async function askClaude(prompt: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  const headers = {
-    "Content-Type": "application/json",
-    "X-API-Key": apiKey,
-    "anthropic-version": "2023-06-01",
-  };
-
-  const body = {
-    model: "claude-opus-4-20250514",
-    max_tokens: 1000,
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-  };
-
-  try {
-    const response = await axios.post(
-      "https://api.anthropic.com/v1/messages",
-      body,
-      { headers },
-    );
-    return response.data.content[0].text;
-  } catch (error: any) {
-    console.error(
-      "Error talking to Claude:",
-      error.response?.data || error.message,
-    );
-    return "Sorry, Claude couldn’t respond.";
-  }
-}
+import multer from 'multer';
+import * as fs from 'fs';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Serve TV show images from the primary media directory
-app.use(
-  "/media/tv-shows",
-  express.static(path.join(process.cwd(), "public/media/tv-shows")),
-);
+app.use('/media/tv-shows', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
 
 // Keep serving from the old locations for backward compatibility
-app.use(
-  "/custom-images",
-  express.static(path.join(process.cwd(), "client/public/custom-images")),
-);
-app.use(
-  "/custom-images",
-  express.static(path.join(process.cwd(), "public/media/tv-shows")),
-);
+app.use('/custom-images', express.static(path.join(process.cwd(), 'client/public/custom-images')));
+app.use('/custom-images', express.static(path.join(process.cwd(), 'public/media/tv-shows')));
 
 // Serve research files
-app.use(
-  "/research",
-  express.static(path.join(process.cwd(), "public/research")),
-);
+app.use('/research', express.static(path.join(process.cwd(), 'public/research')));
 
 // Make sure research directory exists
-const researchDir = path.join(process.cwd(), "public/research");
+const researchDir = path.join(process.cwd(), 'public/research');
 if (!fs.existsSync(researchDir)) {
   fs.mkdirSync(researchDir, { recursive: true });
 }
@@ -84,44 +34,38 @@ const researchStorage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const timestamp = Date.now();
-    const safeName = file.originalname.replace(/\s+/g, "-");
+    const safeName = file.originalname.replace(/\s+/g, '-');
     cb(null, `${timestamp}-${safeName}`);
-  },
-});
-
-const researchUpload = multer({
-  storage: researchStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-});
-
-// Upload endpoint
-app.post("/api/upload", researchUpload.single("file"), (req, res) => {
-  try {
-    console.log("Research file upload request received");
-
-    if (!req.file) {
-      console.log("No file in request");
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const fileUrl = `/research/${req.file.filename}`;
-    console.log(`File uploaded successfully to ${fileUrl}`);
-
-    return res.json({ url: fileUrl });
-  } catch (error) {
-    console.error("Upload error:", error);
-    return res.status(500).json({ error: "Upload failed" });
   }
 });
 
-// ✅ Claude integration endpoint
-app.get("/ask-claude", async (req: Request, res: Response) => {
-  const question = (req.query.q as string) || "Say hello!";
-  const answer = await askClaude(question);
-  res.json({ answer });
+// Create the upload middleware
+const researchUpload = multer({ 
+  storage: researchStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// Request/response logger
+// Setup direct file upload endpoint
+app.post('/api/upload', researchUpload.single('file'), (req, res) => {
+  try {
+    console.log('Research file upload request received');
+    
+    if (!req.file) {
+      console.log('No file in request');
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    // Return URL to uploaded file
+    const fileUrl = `/research/${req.file.filename}`;
+    console.log(`File uploaded successfully to ${fileUrl}`);
+    
+    return res.json({ url: fileUrl });
+  } catch (error) {
+    console.error('Upload error:', error);
+    return res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -155,7 +99,7 @@ app.use((req, res, next) => {
 (async () => {
   // Check database connection before starting the server
   await checkDatabaseConnection();
-
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -166,48 +110,34 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
   const port = 5000;
+  
+  // Try to close any existing connections
   const existingServer = await new Promise<Server>((resolve) => {
     const testServer = createServer();
     testServer.listen(port, "0.0.0.0", () => {
       testServer.close(() => resolve(server));
     });
-    testServer.on("error", () => resolve(server));
+    testServer.on('error', () => resolve(server));
   });
 
-  existingServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    async () => {
-      log(`serving on port ${port}`);
-      
-      // Initialize Notion auto-sync if credentials are available
-      if (process.env.NOTION_INTEGRATION_SECRET && process.env.NOTION_PAGE_URL) {
-        log("Starting Notion auto-sync...");
-        try {
-          const validation = await validateNotionSetup();
-          if (validation.connected) {
-            log(`Notion connected: ${validation.databaseTitle}`);
-            startPeriodicSync();
-            log("Notion auto-sync started (every 5 minutes)");
-          } else {
-            log(`Notion connection failed: ${validation.error}`);
-          }
-        } catch (error) {
-          log(`Notion setup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      } else {
-        log("Notion credentials not found, skipping auto-sync");
-      }
-    },
-  );
+  existingServer.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
 })();

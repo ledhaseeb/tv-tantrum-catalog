@@ -31,7 +31,6 @@ import SharePage from "@/pages/share";
 import AdminResearchLinks from "@/pages/admin-research-links";
 import AdminResearchManager from "@/pages/admin-research-manager";
 import CompleteRegistration from "@/pages/complete-registration";
-import NotionSyncPage from "@/pages/notion-sync";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
