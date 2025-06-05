@@ -111,6 +111,16 @@ router.get('/tv-shows/:id', async (req, res) => {
   }
 });
 
+// Helper function to create slug from show name
+const createShowSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim();
+};
+
 // Get single TV show by slug
 router.get('/shows/by-slug/:slug', async (req, res) => {
   try {
@@ -131,36 +141,6 @@ router.get('/shows/by-slug/:slug', async (req, res) => {
   } catch (error) {
     console.error("Error fetching TV show by slug:", error);
     res.status(500).json({ message: "Failed to fetch TV show" });
-  }
-});
-
-// Helper function to create slug from show name
-const createShowSlug = (name: string): string => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .trim();
-};
-
-// Get show by slug
-router.get('/shows/by-slug/:slug', async (req, res) => {
-  try {
-    const slug = req.params.slug;
-    
-    // Get all shows and find the one that matches the slug
-    const allShows = await catalogStorage.getTvShows({});
-    const show = allShows.find(s => createShowSlug(s.name) === slug);
-    
-    if (!show) {
-      return res.status(404).json({ message: "Show not found" });
-    }
-    
-    res.json({ id: show.id });
-  } catch (error) {
-    console.error("Error fetching show by slug:", error);
-    res.status(500).json({ message: "Failed to fetch show" });
   }
 });
 
