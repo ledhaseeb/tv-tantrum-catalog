@@ -398,10 +398,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Dialogue Intensity:</span>
                         <span className="text-sm text-gray-600">{show.dialogueIntensity || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.dialogueIntensity)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.dialogueIntensity)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -412,10 +415,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Scene Frequency:</span>
                         <span className="text-sm text-gray-600">{show.sceneFrequency || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.sceneFrequency)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.sceneFrequency)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -426,10 +432,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Sound Effects Level:</span>
                         <span className="text-sm text-gray-600">{show.soundEffectsLevel || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.soundEffectsLevel)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.soundEffectsLevel)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -440,10 +449,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Total Sound Effect Time:</span>
                         <span className="text-sm text-gray-600">{show.totalSoundEffectTimeLevel || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.totalSoundEffectTimeLevel)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.totalSoundEffectTimeLevel)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -454,10 +466,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Music Tempo:</span>
                         <span className="text-sm text-gray-600">{show.musicTempo || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.musicTempo)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.musicTempo)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -468,10 +483,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Total Music Level:</span>
                         <span className="text-sm text-gray-600">{show.totalMusicLevel || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.totalMusicLevel)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.totalMusicLevel)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -482,10 +500,13 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Interaction Level:</span>
                         <span className="text-sm text-gray-600">{show.interactivityLevel || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                          style={{ width: `${getSensoryLevelPercentage(show.interactivityLevel)}%` }}
+                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                        ></div>
+                        <div 
+                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
+                          style={{ width: `${100 - getSensoryLevelPercentage(show.interactivityLevel)}%` }}
                         ></div>
                       </div>
                     </div>
