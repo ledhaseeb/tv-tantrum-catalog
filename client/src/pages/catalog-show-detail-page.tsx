@@ -186,70 +186,58 @@ export default function CatalogShowDetailPage() {
   };
 
   const LoadingSkeleton = () => (
-    <div className="flex-grow flex flex-col">
-      <CatalogNavbar />
-      <div className="flex-grow">
-        <div className="min-h-screen bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 py-8">
-            <Skeleton className="h-8 w-32 mb-6" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1">
-                <Skeleton className="w-full aspect-[2/3] rounded-lg" />
-              </div>
-              <div className="lg:col-span-2 space-y-4">
-                <Skeleton className="h-10 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 w-20" />
-                  <Skeleton className="h-8 w-24" />
-                </div>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <Skeleton className="h-8 w-32 mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            <Skeleton className="w-full aspect-[2/3] rounded-lg" />
+          </div>
+          <div className="lg:col-span-2 space-y-4">
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-24" />
             </div>
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 
   const ErrorState = () => (
-    <div className="flex-grow flex flex-col">
-      <CatalogNavbar />
-      <div className="flex-grow">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <Link href="/">
+          <Button variant="outline" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Shows
+          </Button>
+        </Link>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600">Error Loading Show</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-red-600 mb-4">
+              Failed to load show details. Please try again later.
+            </p>
+            {error && (
+              <p className="text-sm text-gray-500 mb-4">
+                Error: {error.message}
+              </p>
+            )}
             <Link href="/">
-              <Button variant="outline" className="mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Shows
+              <Button variant="outline" className="w-full">
+                Return to Browse
               </Button>
             </Link>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-red-600">Error Loading Show</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-red-600 mb-4">
-                  Failed to load show details. Please try again later.
-                </p>
-                {error && (
-                  <p className="text-sm text-gray-500 mb-4">
-                    Error: {error.message}
-                  </p>
-                )}
-                <Link href="/">
-                  <Button variant="outline" className="w-full">
-                    Return to Browse
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-      <Footer />
     </div>
   );
 
@@ -267,11 +255,8 @@ export default function CatalogShowDetailPage() {
   }
 
   return (
-    <div className="flex-grow flex flex-col">
-      <CatalogNavbar />
-      <div className="flex-grow">
-        <div className="min-h-screen bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
             {/* Back to Shows */}
             <Link href="/">
               <Button variant="outline" className="mb-6">
@@ -548,7 +533,6 @@ export default function CatalogShowDetailPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

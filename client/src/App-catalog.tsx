@@ -9,7 +9,7 @@ import Compare from "@/pages/compare";
 import About from "@/pages/about";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
-import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
+import CatalogShowDetailPage from "@/pages/catalog-show-detail-page-fixed";
 import AdminPage from "@/pages/admin-page";
 import NotFound from "@/pages/not-found";
 
