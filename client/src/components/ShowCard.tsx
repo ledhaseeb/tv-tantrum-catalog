@@ -6,8 +6,6 @@ import { Star } from "lucide-react";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
 import { Link } from "wouter";
 
-
-
 interface ShowCardProps {
   show: TvShow & {
     averageRating?: number;
@@ -53,69 +51,41 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     if (lowerTheme.includes('friendship')) return 'bg-cyan-100 text-cyan-800';
     if (lowerTheme.includes('family')) return 'bg-green-100 text-green-800';
     if (lowerTheme.includes('adventure')) return 'bg-orange-100 text-orange-800';
-    if (lowerTheme.includes('learning')) return 'bg-blue-100 text-blue-800';
-    if (lowerTheme.includes('creativity')) return 'bg-purple-100 text-purple-800';
-    if (lowerTheme.includes('problem')) return 'bg-red-100 text-red-800';
-    if (lowerTheme.includes('music')) return 'bg-pink-100 text-pink-800';
-    if (lowerTheme.includes('science')) return 'bg-teal-100 text-teal-800';
-    if (lowerTheme.includes('nature')) return 'bg-emerald-100 text-emerald-800';
-    if (lowerTheme.includes('social')) return 'bg-violet-100 text-violet-800';
-    if (lowerTheme.includes('emotional')) return 'bg-rose-100 text-rose-800';
-    if (lowerTheme.includes('entertainment')) return 'bg-indigo-100 text-indigo-800';
+    if (lowerTheme.includes('music')) return 'bg-purple-100 text-purple-800';
+    if (lowerTheme.includes('science')) return 'bg-blue-100 text-blue-800';
+    if (lowerTheme.includes('art')) return 'bg-pink-100 text-pink-800';
+    if (lowerTheme.includes('problem')) return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
   };
   
-  // Get stimulation score colors based on index
-  const getStimulationDotColor = (index: number) => {
-    const bgColors = [
-      'bg-green-500',    // green for 1
-      'bg-yellow-500',   // yellow for 2
-      'bg-orange-500',   // orange for 3
-      'bg-orange-600',   // dark orange for 4
-      'bg-red-500'       // red for 5
-    ];
-    
-    const borderColors = [
-      'border-green-500',    // green for 1
-      'border-yellow-500',   // yellow for 2
-      'border-orange-500',   // orange for 3
-      'border-orange-600',   // dark orange for 4
-      'border-red-500'       // red for 5
-    ];
-    
-    return { bgColor: bgColors[index], borderColor: borderColors[index] };
+  // Get stimulation text
+  const getStimulationText = (score: number) => {
+    switch (score) {
+      case 1: return 'Very Calm';
+      case 2: return 'Calm';
+      case 3: return 'Moderate';
+      case 4: return 'Active';
+      case 5: return 'High Energy';
+      default: return 'Unknown';
+    }
   };
-  
-  // Render stimulation score dots
+
+  // Render stimulation dots
   const renderStimulationDots = () => {
     const dots = [];
-    const score = normalizedShow.stimulationScore;
-    
-    for (let i = 0; i < 5; i++) {
-      const { bgColor, borderColor } = getStimulationDotColor(i);
+    for (let i = 1; i <= 5; i++) {
       dots.push(
-        <div 
-          key={i} 
-          className={`w-3 h-3 rounded-full mx-0.5 ${
-            // Active dots show their own color
-            i < score 
-              ? bgColor 
-              // Inactive dots are outlined with their corresponding color
-              : `border-2 ${borderColor} bg-white`
-          }`} 
+        <div
+          key={i}
+          className={`w-1.5 h-1.5 rounded-full mx-0.5 ${
+            i <= normalizedShow.stimulationScore 
+              ? 'bg-orange-500' 
+              : 'bg-gray-300'
+          }`}
         />
       );
     }
     return dots;
-  };
-  
-  // Get the stimulation score text representation
-  const getStimulationText = (score: number) => {
-    return score === 1 ? 'Low' : 
-           score === 2 ? 'Low-Medium' : 
-           score === 3 ? 'Medium' : 
-           score === 4 ? 'Medium-High' : 
-           'High';
   };
 
   // Mobile portrait style card - clean design without favorite buttons
@@ -123,10 +93,8 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
     
     return (
-      <Link href={`/shows/${show.id}`} className="block h-full">
-        <Card 
-          className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow duration-200" 
-        >
+      <Link href={`/show/${show.id}`}>
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
           {/* Image */}
           <div className="relative">
             <TvShowCardImage
@@ -173,93 +141,95 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   }
 
-  // List view card without favorite buttons
+  // List view card
   if (viewMode === "list") {
     return (
-      <Link href={`/shows/${show.id}`} className="block">
-        <Card 
-          className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
-        >
-          <div className="flex">
-            <div className="flex-shrink-0 w-32 sm:w-48">
-              <TvShowCardImage
-                showId={show.id}
-                showName={show.name}
-                originalUrl={normalizedShow.imageUrl}
-                className="w-full h-full object-cover"
-                isInteractive={false}
-              />
-            </div>
-            
-            <CardContent className="flex-1 p-4 sm:p-6">
-              <div className="flex flex-col h-full justify-between">
-                <div>
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2 flex-1">
-                      {show.name} {releaseYears}
-                    </h3>
-                  </div>
-                  
-                  {/* Review Statistics */}
-                  {reviewStats && reviewStats.reviewCount > 0 && (
-                    <div className="flex items-center gap-1 mb-3">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-sm">{reviewStats.avgRating}</span>
-                      <span className="text-gray-500 text-sm">({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? 's' : ''})</span>
-                    </div>
-                  )}
-                  
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{show.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
+      <Link href={`/show/${show.id}`}>
+        <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Show image */}
+              <div className="flex-shrink-0">
+                <TvShowCardImage
+                  showId={show.id}
+                  showName={show.name}
+                  originalUrl={normalizedShow.imageUrl}
+                  className="w-full sm:w-24 h-32 sm:h-36"
+                  isInteractive={false}
+                />
+              </div>
+              
+              {/* Show details */}
+              <div className="flex-grow min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{show.name}</h3>
+                  <div className="flex items-center gap-2">
+                    {/* Age badge */}
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100">
                       Ages {normalizedShow.ageRange}
                     </Badge>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
-                      {show.episodeLength} min
-                    </Badge>
                   </div>
-                  
-                  {/* Themes - Show first 3 on mobile, first 4 on desktop */}
-                  {show.themes && show.themes.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {show.themes.slice(0, isMobile ? 2 : 3).map((theme, index) => (
-                        <Badge key={index} variant="secondary" className={`text-xs ${getThemeColor(theme)}`}>
-                          {theme}
-                        </Badge>
-                      ))}
-                      {show.themes.length > (isMobile ? 2 : 3) && (
-                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                          +{show.themes.length - (isMobile ? 2 : 3)} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
                 </div>
                 
-                {/* Stimulation Score */}
-                <div className="flex items-center">
-                  <div className="flex items-center mr-2">
-                    {renderStimulationDots()}
+                {/* Creator and year */}
+                <p className="text-sm text-gray-600 mb-2">
+                  {show.creator && (
+                    <span>Created by {show.creator}</span>
+                  )}
+                  {show.creator && releaseYears && <span> • </span>}
+                  {releaseYears && <span>{releaseYears}</span>}
+                </p>
+                
+                {/* Description */}
+                <p className="text-sm text-gray-700 line-clamp-2 mb-3">
+                  {show.description}
+                </p>
+                
+                {/* Stimulation and episode info */}
+                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mb-3">
+                  <div className="flex items-center">
+                    <span className="mr-1">Stimulation:</span>
+                    <div className="flex items-center mr-1">
+                      {renderStimulationDots()}
+                    </div>
+                    <span>{getStimulationText(normalizedShow.stimulationScore)}</span>
                   </div>
-                  <span className="text-sm text-gray-600">
-                    {getStimulationText(show.stimulationScore)} Stimulation
-                  </span>
+                  <span>•</span>
+                  <span>{show.episodeLength} min episodes</span>
                 </div>
+                
+                {/* Themes */}
+                {show.themes && show.themes.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {show.themes.slice(0, 4).map((theme, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="secondary" 
+                        className={`text-xs ${getThemeColor(theme)}`}
+                      >
+                        {theme}
+                      </Badge>
+                    ))}
+                    {show.themes.length > 4 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{show.themes.length - 4} more
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </div>
+            </div>
+          </CardContent>
         </Card>
       </Link>
     );
   }
 
-  // Desktop grid view
+  // Default grid view card
   return (
-    <Link href={`/shows/${show.id}`} className="block h-full">
-      <Card 
-        className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
-      >
+    <Link href={`/show/${show.id}`}>
+      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
+        {/* Image */}
         <div className="relative">
           <TvShowCardImage
             showId={show.id}
@@ -271,56 +241,37 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         </div>
         
         <CardContent className="p-4 flex flex-col flex-grow">
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-base font-bold text-gray-900 line-clamp-2 flex-1">
-              {show.name}
-            </h3>
-          </div>
+          {/* Title */}
+          <h3 className="text-sm font-bold mb-2 line-clamp-2">{show.name}</h3>
           
-          {/* Review Statistics */}
-          {reviewStats && reviewStats.reviewCount > 0 && (
-            <div className="flex items-center gap-1 mb-3">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium text-sm">{reviewStats.avgRating}</span>
-              <span className="text-gray-500 text-sm">({reviewStats.reviewCount})</span>
-            </div>
+          {/* Creator and year */}
+          {(show.creator || releaseYears) && (
+            <p className="text-xs text-gray-600 mb-2">
+              {show.creator && <span>By {show.creator}</span>}
+              {show.creator && releaseYears && <span> • </span>}
+              {releaseYears}
+            </p>
           )}
           
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow">{show.description}</p>
-          
-          <div className="flex flex-wrap gap-2 mb-3">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 text-xs">
+          {/* Age and episode length */}
+          <div className="flex items-center justify-between mb-2">
+            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100">
               Ages {normalizedShow.ageRange}
             </Badge>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 text-xs">
-              {show.episodeLength} min
-            </Badge>
+            <span className="text-xs text-gray-600">{show.episodeLength} min</span>
           </div>
           
-          {/* Themes - Show first 2 themes */}
-          {show.themes && show.themes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {show.themes.slice(0, 2).map((theme, index) => (
-                <Badge key={index} variant="secondary" className={`text-xs ${getThemeColor(theme)}`}>
-                  {theme}
-                </Badge>
-              ))}
-              {show.themes.length > 2 && (
-                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                  +{show.themes.length - 2} more
-                </Badge>
-              )}
+          {/* Stimulation score */}
+          <div className="mt-auto">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-gray-600">Stimulation</span>
+              <div className="flex items-center">
+                {renderStimulationDots()}
+              </div>
             </div>
-          )}
-          
-          {/* Stimulation Score at bottom */}
-          <div className="mt-auto flex flex-col items-center">
-            <div className="flex items-center justify-center mb-1">
-              {renderStimulationDots()}
+            <div className="text-xs text-gray-600 text-center">
+              {getStimulationText(normalizedShow.stimulationScore)}
             </div>
-            <span className="text-sm text-gray-600">
-              {getStimulationText(show.stimulationScore)}
-            </span>
           </div>
         </CardContent>
       </Card>

@@ -128,14 +128,6 @@ export default function Detail({ id }: DetailProps) {
   
   const { data: showDetail, isLoading, error } = useQuery<ShowDetailResponse>({
     queryKey: [`/api/shows/${id}`],
-    queryFn: async () => {
-      const response = await fetch(`/api/shows/${id}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch show: ${response.status}`);
-      }
-      return response.json();
-    },
-    enabled: !!id
   });
   
   // Review form

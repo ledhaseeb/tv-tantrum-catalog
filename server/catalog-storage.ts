@@ -135,6 +135,8 @@ export class CatalogStorage {
     }
   }
   
+
+  
   /**
    * Get a single TV show by ID
    */
@@ -150,7 +152,7 @@ export class CatalogStorage {
       client.release();
     }
   }
-  
+
   /**
    * Get featured show
    */
@@ -349,6 +351,49 @@ export class CatalogStorage {
     }
   }
   
+  /**
+   * Get similar shows based on themes and age range
+   */
+  async getSimilarShows(showId: number, limit: number = 6): Promise<TvShow[]> {
+    const client = await pool.connect();
+    try {
+      // First get the target show to find similar shows
+      const targetShowResult = await client.query(
+        'SELECT * FROM catalog_tv_shows WHERE id = $1',
+        [showId]
+      );
+      
+      if (targetShowResult.rows.length === 0) {
+        return [];
+      }
+      
+      const targetShow = targetShowResult.rows[0];
+      
+      // Find shows with similar themes and age range
+      const result = await client.query(`
+        SELECT DISTINCT ts.*, 
+          CASE 
+            WHEN ts.age_range = $2 THEN 3
+            WHEN ts.stimulation_score = $3 THEN 2
+            ELSE 1
+          END as similarity_score
+        FROM catalog_tv_shows ts
+        WHERE ts.id != $1
+          AND (
+            ts.themes && $4::text[] OR
+            ts.age_range = $2 OR
+            ts.stimulation_score = $3
+          )
+        ORDER BY similarity_score DESC, ts.name
+        LIMIT $5
+      `, [showId, targetShow.age_range, targetShow.stimulation_score, targetShow.themes || [], limit]);
+      
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
   /**
    * Delete TV show
    */

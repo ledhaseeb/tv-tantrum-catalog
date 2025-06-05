@@ -34,7 +34,8 @@ import CompleteRegistration from "@/pages/complete-registration";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
 import CatalogNavbar from "@/components/CatalogNavbar";
-import ShowDetail from "@/pages/show-detail";
+import CatalogShowDetail from "@/pages/catalog-show-detail";
+import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
@@ -54,9 +55,16 @@ function Router() {
   // Check if user has early access token stored in localStorage
   const hasEarlyAccess = localStorage.getItem("earlyAccessShown") === "true";
 
+  // Debug current location
+  console.log('Current window location:', window.location.pathname);
+  console.log('Current window href:', window.location.href);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
+        {/* Show Detail Page - SEO-optimized individual show pages */}
+        <Route path="/show/:id" component={CatalogShowDetailPage} />
+
         {/* Catalog Home - Main landing page */}
         <Route path="/">
           <div className="flex-grow flex flex-col">
@@ -66,19 +74,6 @@ function Router() {
             </div>
             <Footer />
           </div>
-        </Route>
-
-        {/* Show Detail Pages */}
-        <Route path="/show/:slug">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <CatalogNavbar />
-              <div className="flex-grow">
-                <ShowDetail />
-              </div>
-              <Footer />
-            </div>
-          )}
         </Route>
         
         {/* About Page - Open to everyone */}
@@ -124,7 +119,7 @@ function Router() {
         {/* Browse Page - Open to everyone */}
         <Route path="/browse">
           <div className="flex-grow flex flex-col">
-            <Navbar />
+            <CatalogNavbar />
             <div className="flex-grow">
               <Browse />
             </div>
@@ -132,21 +127,19 @@ function Router() {
           </div>
         </Route>
 
+
+
         {/* Show Detail Pages - Open to everyone */}
         <Route path="/shows/:id">
-          {(params) => {
-            const showId = parseInt(params.id, 10);
-            console.log("Show detail route matched, ID:", showId);
-            return (
-              <div className="flex-grow flex flex-col">
-                <Navbar />
-                <div className="flex-grow">
-                  <Detail id={showId} />
-                </div>
-                <Footer />
+          {(params) => (
+            <div className="flex-grow flex flex-col">
+              <Navbar />
+              <div className="flex-grow">
+                <Detail id={parseInt(params.id, 10)} />
               </div>
-            );
-          }}
+              <Footer />
+            </div>
+          )}
         </Route>
         <Route path="/detail/:id">
           {(params) => (
