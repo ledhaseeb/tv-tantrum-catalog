@@ -63,7 +63,9 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <Switch>
         {/* Show Detail Page - SEO-optimized individual show pages */}
-        <Route path="/show/:id" component={CatalogShowDetailPage} />
+        <Route path="/show/:id">
+          {(params) => <CatalogShowDetailPage />}
+        </Route>
 
         {/* Catalog Home - Main landing page */}
         <Route path="/">
