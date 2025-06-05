@@ -8,7 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Home from "@/pages/home";
 import Browse from "@/pages/browse";
-import Detail from "@/pages/detail";
+// import Detail from "@/pages/detail"; // REMOVED - using catalog version only
 import Compare from "@/pages/compare";
 import About from "@/pages/about";
 import AuthPage from "@/pages/auth-page-new";

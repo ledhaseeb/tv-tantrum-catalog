@@ -9,7 +9,7 @@ import Compare from "@/pages/compare";
 import About from "@/pages/about";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
-import Detail from "@/pages/detail";
+import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
 import AdminPage from "@/pages/admin-page";
 import NotFound from "@/pages/not-found";
 
@@ -38,7 +38,7 @@ export default function CatalogApp() {
                 <Route path="/about" component={About} />
                 <Route path="/research" component={Research} />
                 <Route path="/research/:id" component={ResearchDetail} />
-                <Route path="/show/:id" component={Detail} />
+                <Route path="/show/:id" component={CatalogShowDetailPage} />
                 <Route path="/admin" component={AdminPage} />
                 <Route component={NotFound} />
               </Switch>
