@@ -31,14 +31,19 @@ export default function CatalogShowDetailPage() {
   const { data: show, isLoading, error } = useQuery({
     queryKey: ['catalog-tv-show', id],
     queryFn: async () => {
-      console.log('Fetching catalog show with ID:', id);
+      console.log('=== FETCHING SHOW DETAILS ===');
+      console.log('Show ID:', id);
+      console.log('Request URL:', `/api/tv-shows/${id}`);
+      console.log('Full URL:', `${window.location.origin}/api/tv-shows/${id}`);
+      
       const response = await fetch(`/api/tv-shows/${id}`);
       console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error:', response.status, errorText);
-        throw new Error(`Failed to fetch show: ${response.status}`);
+        throw new Error(`Failed to fetch show: ${response.status} - ${errorText}`);
       }
       
       const rawData = await response.json();
