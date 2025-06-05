@@ -143,24 +143,34 @@ export default function CatalogShowDetailPage() {
   // Helper functions
   const getStimulationLabel = (score: number) => {
     switch (score) {
-      case 1: return 'Very Calm';
-      case 2: return 'Calm';
-      case 3: return 'Moderate';
-      case 4: return 'Active';
-      case 5: return 'High Energy';
+      case 1: return 'Low';
+      case 2: return 'Low-Medium';
+      case 3: return 'Medium';
+      case 4: return 'Medium-High';
+      case 5: return 'High';
       default: return 'Unknown';
     }
   };
 
   const renderStimulationDots = (score: number) => {
     const dots = [];
+    const colors = [
+      'bg-green-500',    // 1 - Low
+      'bg-yellow-500',   // 2 - Low-Medium  
+      'bg-orange-500',   // 3 - Medium
+      'bg-red-500',      // 4 - Medium-High
+      'bg-red-700'       // 5 - High
+    ];
+    
     for (let i = 1; i <= 5; i++) {
+      const isActive = i <= score;
+      const colorClass = isActive ? colors[i - 1] : 'bg-gray-300';
+      const ringClass = i === score ? 'ring-2 ring-gray-400' : '';
+      
       dots.push(
         <div
           key={i}
-          className={`w-2 h-2 rounded-full ${
-            i <= score ? 'bg-orange-500' : 'bg-gray-300'
-          }`}
+          className={`w-3 h-3 rounded-full ${colorClass} ${ringClass}`}
         />
       );
     }
