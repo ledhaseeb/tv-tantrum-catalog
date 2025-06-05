@@ -134,15 +134,19 @@ function Router() {
 
         {/* Show Detail Pages - Open to everyone */}
         <Route path="/shows/:id">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <Detail id={parseInt(params.id, 10)} />
+          {(params) => {
+            const showId = parseInt(params.id, 10);
+            console.log("Show detail route matched, ID:", showId);
+            return (
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <Detail id={showId} />
+                </div>
+                <Footer />
               </div>
-              <Footer />
-            </div>
-          )}
+            );
+          }}
         </Route>
         <Route path="/detail/:id">
           {(params) => (
