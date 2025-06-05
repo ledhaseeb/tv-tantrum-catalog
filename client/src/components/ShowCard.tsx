@@ -6,15 +6,7 @@ import { Star } from "lucide-react";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
 import { Link } from "wouter";
 
-// Helper function to create slug from show name
-const createShowSlug = (name: string): string => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .trim();
-};
+
 
 interface ShowCardProps {
   show: TvShow & {
@@ -126,14 +118,12 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
            'High';
   };
 
-  const showSlug = createShowSlug(show.name);
-
   // Mobile portrait style card - clean design without favorite buttons
   if (isMobile && viewMode === "grid") {
     const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
     
     return (
-      <Link href={`/show/${showSlug}`} className="block h-full">
+      <Link href={`/shows/${show.id}`} className="block h-full">
         <Card 
           className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow duration-200" 
         >
@@ -186,7 +176,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   // List view card without favorite buttons
   if (viewMode === "list") {
     return (
-      <Link href={`/show/${showSlug}`} className="block">
+      <Link href={`/shows/${show.id}`} className="block">
         <Card 
           className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
         >
@@ -266,7 +256,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
 
   // Desktop grid view
   return (
-    <Link href={`/show/${showSlug}`} className="block h-full">
+    <Link href={`/shows/${show.id}`} className="block h-full">
       <Card 
         className="hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full flex flex-col bg-white" 
       >
