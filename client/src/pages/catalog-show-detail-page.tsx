@@ -97,24 +97,24 @@ export default function CatalogShowDetailPage() {
     switch (normalizedLevel) {
       case 'very low':
       case 'very-low':
-        return 10;
+        return 20;
       case 'low':
-        return 25;
+        return 20;
       case 'low-moderate':
       case 'low moderate':
-        return 35;
+        return 40;
       case 'moderate':
-        return 50;
+        return 60;
       case 'moderate-high':
       case 'moderate high':
-        return 65;
-      case 'high':
         return 80;
+      case 'high':
+        return 100;
       case 'very high':
       case 'very-high':
-        return 95;
+        return 100;
       default:
-        return 50; // Default to moderate if unknown
+        return 60; // Default to moderate if unknown
     }
   };
 
