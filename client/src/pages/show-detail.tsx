@@ -80,8 +80,16 @@ export default function ShowDetail() {
   const params = useParams<{ slug: string }>();
 
   // Fetch show data directly by slug
-  const { data: show, isLoading, error } = useQuery({
+  const { data: show, isLoading, error } = useQuery<TvShow>({
     queryKey: ['/api/shows/by-slug', params.slug],
+    queryFn: async () => {
+      if (!params.slug) throw new Error('No slug provided');
+      const response = await fetch(`/api/shows/by-slug/${params.slug}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch show: ${response.status}`);
+      }
+      return response.json() as Promise<TvShow>;
+    },
     enabled: !!params.slug
   });
 
