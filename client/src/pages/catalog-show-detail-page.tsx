@@ -89,6 +89,35 @@ export default function CatalogShowDetailPage() {
 
   console.log('Query state - isLoading:', isLoading, 'error:', error, 'show:', !!show);
 
+  // Helper function to convert sensory levels to percentages
+  const getSensoryLevelPercentage = (level: string | null | undefined) => {
+    if (!level) return 0;
+    const normalizedLevel = level.toLowerCase().trim();
+    
+    switch (normalizedLevel) {
+      case 'very low':
+      case 'very-low':
+        return 10;
+      case 'low':
+        return 25;
+      case 'low-moderate':
+      case 'low moderate':
+        return 35;
+      case 'moderate':
+        return 50;
+      case 'moderate-high':
+      case 'moderate high':
+        return 65;
+      case 'high':
+        return 80;
+      case 'very high':
+      case 'very-high':
+        return 95;
+      default:
+        return 50; // Default to moderate if unknown
+    }
+  };
+
   // SEO optimization
   useEffect(() => {
     if (show) {
@@ -340,6 +369,123 @@ export default function CatalogShowDetailPage() {
                       <span className="text-sm text-gray-500">
                         ({show.stimulationScore || 0}/5)
                       </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Sensory Details */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Zap className="w-5 h-5 mr-2" />
+                      Sensory Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Dialogue Intensity */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Dialogue Intensity:</span>
+                        <span className="text-sm text-gray-600">{show.dialogueIntensity || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.dialogueIntensity)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Scene Frequency */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Scene Frequency:</span>
+                        <span className="text-sm text-gray-600">{show.sceneFrequency || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.sceneFrequency)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Sound Effects Level */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Sound Effects Level:</span>
+                        <span className="text-sm text-gray-600">{show.soundEffectsLevel || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.soundEffectsLevel)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Total Sound Effect Time */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Total Sound Effect Time:</span>
+                        <span className="text-sm text-gray-600">{show.totalSoundEffectTimeLevel || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.totalSoundEffectTimeLevel)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Music Tempo */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Music Tempo:</span>
+                        <span className="text-sm text-gray-600">{show.musicTempo || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.musicTempo)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Total Music Level */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Total Music Level:</span>
+                        <span className="text-sm text-gray-600">{show.totalMusicLevel || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.totalMusicLevel)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Interaction Level */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-700">Interaction Level:</span>
+                        <span className="text-sm text-gray-600">{show.interactivityLevel || 'Not specified'}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
+                          style={{ width: `${getSensoryLevelPercentage(show.interactivityLevel)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Animation Style */}
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Animation Style:</span>
+                        <span className="text-sm text-gray-600">{show.animationStyle || 'Not specified'}</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
