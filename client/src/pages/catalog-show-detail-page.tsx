@@ -21,6 +21,8 @@ import CatalogNavbar from "@/components/CatalogNavbar";
 import Footer from "@/components/Footer";
 
 export default function CatalogShowDetailPage() {
+  console.log('🔥 CATALOG SHOW DETAIL PAGE COMPONENT LOADED 🔥');
+  
   const params = useParams();
   const id = parseInt(params.id || "0");
   
