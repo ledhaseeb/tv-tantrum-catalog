@@ -125,7 +125,7 @@ router.get('/shows/by-slug/:slug', async (req, res) => {
   }
 });
 
-// Get single TV show
+// Get single TV show (catalog endpoint)
 router.get('/tv-shows/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -140,6 +140,36 @@ router.get('/tv-shows/:id', async (req, res) => {
   } catch (error) {
     console.error("Error fetching TV show:", error);
     res.status(500).json({ message: "Failed to fetch TV show" });
+  }
+});
+
+// Get single show (compatible with existing Detail component)
+router.get('/shows/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const shows = await catalogStorage.getTvShows({});
+    const show = shows.find(s => s.id === id);
+    
+    if (!show) {
+      return res.status(404).json({ message: "Show not found" });
+    }
+    
+    // Format response to match what Detail component expects
+    const showDetail = {
+      ...show,
+      reviews: [], // Empty reviews array for catalog version
+      omdb: null,
+      youtube: null,
+      externalData: {
+        omdb: null,
+        youtube: null
+      }
+    };
+    
+    res.json(showDetail);
+  } catch (error) {
+    console.error("Error fetching show:", error);
+    res.status(500).json({ message: "Failed to fetch show" });
   }
 });
 
