@@ -131,28 +131,12 @@ function Router() {
 
 
 
-        {/* Show Detail Pages - Open to everyone */}
+        {/* Legacy show detail routes - redirect to catalog */}
         <Route path="/shows/:id">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <Detail id={parseInt(params.id, 10)} />
-              </div>
-              <Footer />
-            </div>
-          )}
+          {(params) => <CatalogShowDetailPage />}
         </Route>
         <Route path="/detail/:id">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <Detail id={parseInt(params.id, 10)} />
-              </div>
-              <Footer />
-            </div>
-          )}
+          {(params) => <CatalogShowDetailPage />}
         </Route>
 
         {/* Compare Page - Open to everyone */}
