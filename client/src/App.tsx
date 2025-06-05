@@ -62,10 +62,10 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Show Detail Page - SEO-optimized individual show pages */}
-        <Route path="/show/:id">
-          {(params) => <CatalogShowDetailPage />}
-        </Route>
+        {/* All show detail routes use catalog page */}
+        <Route path="/show/:id" component={CatalogShowDetailPage} />
+        <Route path="/shows/:id" component={CatalogShowDetailPage} />
+        <Route path="/detail/:id" component={CatalogShowDetailPage} />
 
         {/* Catalog Home - Main landing page */}
         <Route path="/">
@@ -73,6 +73,17 @@ function Router() {
             <CatalogNavbar />
             <div className="flex-grow">
               <CatalogHome />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        
+        {/* Browse Page - Open to everyone */}
+        <Route path="/browse">
+          <div className="flex-grow flex flex-col">
+            <CatalogNavbar />
+            <div className="flex-grow">
+              <Browse />
             </div>
             <Footer />
           </div>
@@ -114,29 +125,6 @@ function Router() {
           {(params) => (
             <SharePage />
           )}
-        </Route>
-        
-
-        
-        {/* Browse Page - Open to everyone */}
-        <Route path="/browse">
-          <div className="flex-grow flex flex-col">
-            <CatalogNavbar />
-            <div className="flex-grow">
-              <Browse />
-            </div>
-            <Footer />
-          </div>
-        </Route>
-
-
-
-        {/* Legacy show detail routes - redirect to catalog */}
-        <Route path="/shows/:id">
-          {(params) => <CatalogShowDetailPage />}
-        </Route>
-        <Route path="/detail/:id">
-          {(params) => <CatalogShowDetailPage />}
         </Route>
 
         {/* Compare Page - Open to everyone */}
