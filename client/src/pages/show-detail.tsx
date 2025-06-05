@@ -78,35 +78,12 @@ const SensoryBar = ({ level, label }: { level: string; label: string }) => {
 
 export default function ShowDetail() {
   const params = useParams<{ slug: string }>();
-  const [showId, setShowId] = useState<number | null>(null);
 
-  // First, get the show ID from the slug
-  const { data: showMapping, isLoading: mappingLoading } = useQuery({
+  // Fetch show data directly by slug
+  const { data: show, isLoading, error } = useQuery({
     queryKey: ['/api/shows/by-slug', params.slug],
-    queryFn: async () => {
-      const response = await fetch(`/api/shows/by-slug/${params.slug}`);
-      if (!response.ok) {
-        throw new Error('Show not found');
-      }
-      return response.json() as Promise<{ id: number }>;
-    },
-    enabled: !!params.slug,
+    enabled: !!params.slug
   });
-
-  // Get the full show details once we have the ID
-  const { data: show, isLoading: showLoading } = useQuery({
-    queryKey: ['/api/tv-shows', showMapping?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/tv-shows/${showMapping!.id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch show details');
-      }
-      return response.json() as Promise<TvShow>;
-    },
-    enabled: !!showMapping?.id,
-  });
-
-  const isLoading = mappingLoading || showLoading;
 
   // Set page title for SEO
   useEffect(() => {

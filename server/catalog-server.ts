@@ -94,7 +94,7 @@ router.get('/shows/featured', async (req, res) => {
   }
 });
 
-// Get single TV show
+// Get single TV show by ID
 router.get('/tv-shows/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -107,6 +107,29 @@ router.get('/tv-shows/:id', async (req, res) => {
     res.json(show);
   } catch (error) {
     console.error("Error fetching TV show:", error);
+    res.status(500).json({ message: "Failed to fetch TV show" });
+  }
+});
+
+// Get single TV show by slug
+router.get('/shows/by-slug/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const shows = await catalogStorage.getTvShows({});
+    
+    // Find show by matching slug
+    const show = shows.find(show => {
+      const showSlug = createShowSlug(show.name);
+      return showSlug === slug;
+    });
+    
+    if (!show) {
+      return res.status(404).json({ message: "Show not found" });
+    }
+    
+    res.json(show);
+  } catch (error) {
+    console.error("Error fetching TV show by slug:", error);
     res.status(500).json({ message: "Failed to fetch TV show" });
   }
 });
