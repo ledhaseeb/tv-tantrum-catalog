@@ -62,6 +62,7 @@ function Router() {
   // Debug current location
   console.log('Current window location:', window.location.pathname);
   console.log('Current window href:', window.location.href);
+  console.log('isDevMode:', isDevMode);
 
   return (
     <div className="min-h-screen flex flex-col">
