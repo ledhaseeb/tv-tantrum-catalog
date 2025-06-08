@@ -25,7 +25,7 @@ export default function CatalogNavbar() {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const response = await fetch('/api/auth/admin-check', { credentials: 'include' });
+        const response = await fetch('/api/admin/me', { credentials: 'include' });
         if (response.ok) {
           setIsAdmin(true);
         }
@@ -39,18 +39,21 @@ export default function CatalogNavbar() {
   // Handle admin login
   const handleAdminLogin = async () => {
     try {
-      const response = await fetch('/api/auth/admin-login', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ password: adminPassword })
+        body: JSON.stringify({ 
+          email: 'admin@tvtantrum.com', 
+          password: adminPassword 
+        })
       });
 
       if (response.ok) {
         setIsAdmin(true);
         setShowAdminLogin(false);
         setAdminPassword("");
-        window.location.href = '/admin';
+        window.location.href = '/admin/dashboard';
       } else {
         alert('Invalid admin password');
       }
@@ -109,7 +112,7 @@ export default function CatalogNavbar() {
             {/* Admin access for desktop */}
             {isAdmin ? (
               <Link 
-                href="/admin"
+                href="/admin/dashboard"
                 className="hidden md:block text-white/80 hover:text-white font-medium px-3 py-2 rounded-md hover:bg-white/10 transition-colors flex items-center"
               >
                 <Settings className="w-4 h-4 mr-2" />
@@ -204,7 +207,7 @@ export default function CatalogNavbar() {
               {/* Admin access for mobile */}
               {isAdmin ? (
                 <Link 
-                  href="/admin"
+                  href="/admin/dashboard"
                   onClick={() => setIsNavOpen(false)}
                   className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
                 >
