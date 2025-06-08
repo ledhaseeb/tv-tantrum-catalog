@@ -7,6 +7,7 @@ import { setupVite, serveStatic } from './vite';
 import { catalogStorage } from './catalog-storage';
 import { Pool } from 'pg';
 import { setupSimpleAdminAuth } from './simple-admin';
+import adminRoutes from './admin-routes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -212,6 +213,9 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
 
 // Setup admin authentication routes
 setupSimpleAdminAuth(app);
+
+// Mount admin routes
+app.use('/api/admin', adminRoutes);
 
 app.use('/api', router);
 
