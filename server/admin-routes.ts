@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { storage } from './storage';
+import { catalogStorage } from './catalog-storage';
 import multer from 'multer';
 import sharp from 'sharp';
 import path from 'path';

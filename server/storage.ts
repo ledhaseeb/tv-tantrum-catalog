@@ -49,6 +49,7 @@ export interface IStorage {
     stimulationScoreRange?: {min: number, max: number};
   }): Promise<TvShow[]>;
   addTvShow(show: InsertTvShow): Promise<TvShow>;
+  createTvShow(show: InsertTvShow): Promise<TvShow>;
   updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined>;
   deleteTvShow(id: number): Promise<boolean>;
   
@@ -148,6 +149,8 @@ export class MemStorage implements IStorage {
   private userReadResearchId: number;
   private showSubmissionId: number;
   private userReferralId: number;
+  private nextResearchId: number;
+  private nextUserReadResearchId: number;
   private userPointsHistories: Map<string, UserPointsHistory[]>;
   private reviewUpvotes: Map<number, ReviewUpvote[]>;
   private researchSummaries: Map<number, ResearchSummary>;
@@ -170,6 +173,8 @@ export class MemStorage implements IStorage {
     this.userReadResearchId = 1;
     this.showSubmissionId = 1;
     this.userReferralId = 1;
+    this.nextResearchId = 1;
+    this.nextUserReadResearchId = 1;
     this.userPointsHistories = new Map();
     this.reviewUpvotes = new Map();
     this.researchSummaries = new Map();
@@ -549,6 +554,10 @@ export class MemStorage implements IStorage {
     const tvShow = { ...processedShow, id } as TvShow;
     this.tvShows.set(id, tvShow);
     return tvShow;
+  }
+
+  async createTvShow(show: InsertTvShow): Promise<TvShow> {
+    return this.addTvShow(show);
   }
 
   async updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined> {
