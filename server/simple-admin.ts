@@ -105,4 +105,148 @@ export function setupSimpleAdminAuth(app: Express) {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
+
+  // Get all TV shows for admin table
+  app.get('/api/admin/tv-shows', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const search = req.query.search as string || '';
+      const offset = (page - 1) * limit;
+      
+      let query = `
+        SELECT id, name, age_range, episode_length, creator, release_year, 
+               is_featured, image_url, stimulation_score
+        FROM catalog_tv_shows
+      `;
+      let countQuery = 'SELECT COUNT(*) as total FROM catalog_tv_shows';
+      let queryParams: any[] = [];
+      let countParams: any[] = [];
+      
+      if (search) {
+        query += ' WHERE name ILIKE $1';
+        countQuery += ' WHERE name ILIKE $1';
+        queryParams = [`%${search}%`, limit, offset];
+        countParams = [`%${search}%`];
+      } else {
+        queryParams = [limit, offset];
+      }
+      
+      query += ' ORDER BY name ASC LIMIT $' + (search ? '2' : '1') + ' OFFSET $' + (search ? '3' : '2');
+      
+      const [showsResult, totalResult] = await Promise.all([
+        pool.query(query, queryParams),
+        pool.query(countQuery, countParams)
+      ]);
+      
+      res.json({
+        shows: showsResult.rows,
+        total: parseInt(totalResult.rows[0]?.total || '0'),
+        page,
+        limit
+      });
+    } catch (error) {
+      console.error('Admin TV shows error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Update show featured status
+  app.patch('/api/admin/tv-shows/:id/featured', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isFeatured } = req.body;
+      
+      await pool.query(
+        'UPDATE catalog_tv_shows SET is_featured = $1 WHERE id = $2',
+        [isFeatured, id]
+      );
+      
+      res.json({ message: 'Featured status updated' });
+    } catch (error) {
+      console.error('Update featured status error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Get single TV show for editing
+  app.get('/api/admin/tv-shows/:id', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await pool.query('SELECT * FROM catalog_tv_shows WHERE id = $1', [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'Show not found' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Get TV show error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Update TV show
+  app.put('/api/admin/tv-shows/:id', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const {
+        name, description, age_range, episode_length, creator, release_year,
+        themes, stimulation_score, is_featured, image_url
+      } = req.body;
+      
+      await pool.query(`
+        UPDATE catalog_tv_shows SET 
+          name = $1, description = $2, age_range = $3, episode_length = $4,
+          creator = $5, release_year = $6, themes = $7, stimulation_score = $8,
+          is_featured = $9, image_url = $10, updated_at = NOW()
+        WHERE id = $11
+      `, [name, description, age_range, episode_length, creator, release_year, 
+          JSON.stringify(themes), stimulation_score, is_featured, image_url, id]);
+      
+      res.json({ message: 'Show updated successfully' });
+    } catch (error) {
+      console.error('Update TV show error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Create new TV show
+  app.post('/api/admin/tv-shows', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const {
+        name, description, age_range, episode_length, creator, release_year,
+        themes, stimulation_score, is_featured, image_url
+      } = req.body;
+      
+      const result = await pool.query(`
+        INSERT INTO catalog_tv_shows (
+          name, description, age_range, episode_length, creator, release_year,
+          themes, stimulation_score, is_featured, image_url, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+        RETURNING id
+      `, [name, description, age_range, episode_length, creator, release_year, 
+          JSON.stringify(themes), stimulation_score, is_featured, image_url]);
+      
+      res.json({ 
+        message: 'Show created successfully',
+        id: result.rows[0].id 
+      });
+    } catch (error) {
+      console.error('Create TV show error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Delete TV show
+  app.delete('/api/admin/tv-shows/:id', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      await pool.query('DELETE FROM catalog_tv_shows WHERE id = $1', [id]);
+      res.json({ message: 'Show deleted successfully' });
+    } catch (error) {
+      console.error('Delete TV show error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
 }
