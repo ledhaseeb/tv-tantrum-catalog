@@ -30,8 +30,32 @@ interface TvShow {
   hasYoutubeData: boolean;
 }
 
+interface FullTvShow {
+  id: number;
+  name: string;
+  description: string;
+  ageRange: string;
+  stimulationScore: number;
+  interactivityLevel?: string;
+  dialogueIntensity?: string;
+  soundEffectsLevel?: string;
+  totalMusicLevel?: string;
+  sceneFrequency?: string;
+  musicTempo?: string;
+  themes?: string[];
+  animationStyle?: string;
+  imageUrl?: string;
+  creator?: string;
+  releaseYear?: number;
+  episodeLength?: number;
+  seasons?: number;
+  isFeatured: boolean;
+  hasOmdbData: boolean;
+  hasYoutubeData: boolean;
+}
+
 interface TvShowsTableProps {
-  onEdit: (show: TvShow) => void;
+  onEdit: (show: FullTvShow) => void;
 }
 
 export function TvShowsTable({ onEdit }: TvShowsTableProps) {
@@ -77,6 +101,48 @@ export function TvShowsTable({ onEdit }: TvShowsTableProps) {
       });
     },
   });
+
+  // Handle edit with full data fetch
+  const handleEdit = async (showId: number) => {
+    try {
+      const response = await fetch(`/api/admin/tv-shows/${showId}`);
+      if (!response.ok) throw new Error('Failed to fetch show details');
+      const rawShow = await response.json();
+      
+      // Transform database column names to frontend format
+      const fullShow: FullTvShow = {
+        id: rawShow.id,
+        name: rawShow.name || "",
+        description: rawShow.description || "",
+        ageRange: rawShow.age_range || rawShow.ageRange || "",
+        stimulationScore: rawShow.stimulation_score || rawShow.stimulationScore || 1,
+        interactivityLevel: rawShow.interactivity_level || rawShow.interactivityLevel,
+        dialogueIntensity: rawShow.dialogue_intensity || rawShow.dialogueIntensity,
+        soundEffectsLevel: rawShow.sound_effects_level || rawShow.soundEffectsLevel,
+        totalMusicLevel: rawShow.total_music_level || rawShow.totalMusicLevel,
+        sceneFrequency: rawShow.scene_frequency || rawShow.sceneFrequency,
+        musicTempo: rawShow.music_tempo || rawShow.musicTempo,
+        themes: rawShow.themes || [],
+        animationStyle: rawShow.animation_style || rawShow.animationStyle,
+        imageUrl: rawShow.image_url || rawShow.imageUrl,
+        creator: rawShow.creator,
+        releaseYear: rawShow.release_year || rawShow.releaseYear,
+        episodeLength: rawShow.episode_length || rawShow.episodeLength,
+        seasons: rawShow.seasons,
+        isFeatured: rawShow.is_featured || rawShow.isFeatured || false,
+        hasOmdbData: rawShow.has_omdb_data || rawShow.hasOmdbData || false,
+        hasYoutubeData: rawShow.has_youtube_data || rawShow.hasYoutubeData || false
+      };
+      
+      onEdit(fullShow);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load show details for editing",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredShows = shows.filter(show =>
     show.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -171,7 +237,7 @@ export function TvShowsTable({ onEdit }: TvShowsTableProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onEdit(show)}
+                      onClick={() => handleEdit(show.id)}
                     >
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
