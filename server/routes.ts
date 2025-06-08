@@ -447,6 +447,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register the lookup API router
   app.use('/api/lookup-show', lookupRouter);
   
+  // Register admin routes
+  import adminRoutes from './admin-routes';
+  app.use('/api/admin', adminRoutes);
+  
   // Skip GitHub data import on server start to fix database errors
   console.log("Skipping GitHub data import on startup to prevent database errors");
   
