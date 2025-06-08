@@ -24,6 +24,11 @@ export default function Compare() {
   // Fetch all TV shows for the selector directly from tv_shows database
   const { data: allShows, isLoading: loadingShows } = useQuery<TvShow[]>({
     queryKey: ['/api/tv-shows'],
+    queryFn: async () => {
+      const response = await fetch('/api/tv-shows');
+      if (!response.ok) throw new Error('Failed to fetch shows');
+      return response.json();
+    },
     staleTime: 300000, // 5 minutes cache
   });
 
