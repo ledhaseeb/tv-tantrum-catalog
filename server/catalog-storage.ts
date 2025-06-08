@@ -173,11 +173,7 @@ export class CatalogStorage {
         }
       }
       
-      console.log('Debug SQL Query:', query);
-      console.log('Debug Query Params:', queryParams);
-      
       const result = await client.query(query, queryParams);
-      console.log('Debug Query Result Count:', result.rows.length);
       return result.rows;
     } finally {
       client.release();

@@ -62,6 +62,8 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const { data: shows, isLoading: isLoadingShows, error: showsError } = useQuery<TvShow[]>({
     queryKey: ['/api/tv-shows'],
     staleTime: 300000, // 5 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   // Debug logging for shows data
@@ -292,6 +294,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
     const updatedFilters = { ...filters, [key]: value };
     setFilters(updatedFilters);
+    
+    // Notify parent component immediately
+    onFilterChange(updatedFilters);
   };
   
   const handleThemeToggle = (theme: string) => {
