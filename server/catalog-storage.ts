@@ -264,7 +264,22 @@ export class CatalogStorage {
       }
       
       const result = await client.query(query, params);
-      return result.rows;
+      return result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        fullText: row.full_text,
+        category: row.category,
+        imageUrl: row.image_url,
+        source: row.source,
+        originalStudyUrl: row.original_url,
+        publishedDate: row.published_date,
+        headline: row.headline,
+        subHeadline: row.sub_headline,
+        keyFindings: row.key_findings,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
     } finally {
       client.release();
     }

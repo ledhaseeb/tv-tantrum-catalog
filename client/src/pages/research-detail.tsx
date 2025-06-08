@@ -384,7 +384,7 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
                 <div>
                   <h4 className="text-sm font-medium mb-1">Original Research</h4>
                   <a 
-                    href={research.originalUrl || `https://scholar.google.com/scholar?q=${encodeURIComponent(research.title + " " + (research.source || ""))}`} 
+                    href={research.originalStudyUrl || `https://scholar.google.com/scholar?q=${encodeURIComponent(research.title + " " + (research.source || ""))}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-sm flex items-center text-blue-600 hover:text-blue-800 font-medium"
@@ -393,7 +393,7 @@ const ResearchDetail = ({ id }: ResearchDetailProps) => {
                     Read the full study
                   </a>
                   <p className="text-xs text-gray-500 mt-1">
-                    {research.originalUrl ? "Opens original paper" : "Opens in Google Scholar"}
+                    {research.originalStudyUrl ? "Opens original paper" : "Opens in Google Scholar"}
                   </p>
                 </div>
 
