@@ -1,24 +1,16 @@
-import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TvShow } from "@shared/schema";
-import { Star } from "lucide-react";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
-import { Link } from "wouter";
 
 interface ShowCardProps {
-  show: TvShow & {
-    averageRating?: number;
-    reviewCount?: number;
-  };
+  show: TvShow;
   viewMode: "grid" | "list";
   onClick: () => void;
   isMobile?: boolean;
 }
 
 export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
-  const [reviewStats, setReviewStats] = useState<{reviewCount: number, avgRating: number} | null>(null);
-  
   // Ensure we have valid show data
   if (!show || !show.id) {
     return null;
@@ -32,11 +24,6 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     ageRange: show.ageRange || (show as any).age_range || 'Unknown',
     stimulationScore: show.stimulationScore || (show as any).stimulation_score || 0
   };
-  
-  // Catalog version doesn't use reviews - set default values
-  useEffect(() => {
-    setReviewStats({ reviewCount: 0, avgRating: 0 });
-  }, []);
   
   // Format release year range
   const releaseYears = show.releaseYear ? (
@@ -110,14 +97,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
             
-            {/* Review Statistics */}
-            {reviewStats && reviewStats.reviewCount > 0 && (
-              <div className="flex items-center gap-1 mb-2 text-xs">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{reviewStats.avgRating}</span>
-                <span className="text-gray-500">({reviewStats.reviewCount} review{reviewStats.reviewCount !== 1 ? 's' : ''})</span>
-              </div>
-            )}
+
             
             {/* Age Badge */}
             <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
