@@ -191,6 +191,29 @@ router.get('/research/:id', async (req, res) => {
   }
 });
 
+// Get active homepage categories (public endpoint)
+router.get('/homepage-categories', async (req, res) => {
+  try {
+    const categories = await catalogStorage.getActiveHomepageCategories();
+    res.json(categories);
+  } catch (error) {
+    console.error("Error fetching homepage categories:", error);
+    res.status(500).json({ message: "Failed to fetch homepage categories" });
+  }
+});
+
+// Get shows for a specific homepage category
+router.get('/homepage-categories/:id/shows', async (req, res) => {
+  try {
+    const categoryId = parseInt(req.params.id);
+    const shows = await catalogStorage.getHomepageCategoryShows(categoryId);
+    res.json(shows);
+  } catch (error) {
+    console.error("Error fetching category shows:", error);
+    res.status(500).json({ message: "Failed to fetch category shows" });
+  }
+});
+
 // Image proxy route for external images
 router.get('/image-proxy', async (req, res) => {
   try {

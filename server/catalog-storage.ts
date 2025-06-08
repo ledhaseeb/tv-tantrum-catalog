@@ -812,24 +812,92 @@ export class CatalogStorage {
     }
   }
 
-  async getShowsForCategory(categoryId: number): Promise<TvShow[]> {
+  async getActiveHomepageCategories(): Promise<HomepageCategory[]> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM homepage_categories WHERE is_active = true ORDER BY display_order, name'
+      );
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        displayOrder: row.display_order,
+        isActive: row.is_active,
+        filterConfig: row.filter_config,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+    } finally {
+      client.release();
+    }
+  }
+
+  async getHomepageCategoryShows(categoryId: number): Promise<TvShow[]> {
     const client = await pool.connect();
     try {
       // Get category filter config
       const categoryResult = await client.query(
-        'SELECT filter_config FROM homepage_categories WHERE id = $1',
+        'SELECT filter_config FROM homepage_categories WHERE id = $1 AND is_active = true',
         [categoryId]
       );
 
       if (categoryResult.rows.length === 0) return [];
 
-      const filterConfig = categoryResult.rows[0].filter_config;
+      const filterConfig = JSON.parse(categoryResult.rows[0].filter_config);
       
-      // Apply the filter config to get shows
-      return await this.getTvShows(filterConfig);
+      // Convert filter config to query filters
+      const filters = this.convertFilterConfigToFilters(filterConfig);
+      
+      // Apply the filters to get shows
+      return await this.getTvShows(filters);
     } finally {
       client.release();
     }
+  }
+
+  private convertFilterConfigToFilters(filterConfig: any): any {
+    const filters: any = {};
+    
+    if (!filterConfig.rules || !Array.isArray(filterConfig.rules)) {
+      return filters;
+    }
+
+    for (const rule of filterConfig.rules) {
+      switch (rule.field) {
+        case 'stimulationScore':
+          if (rule.operator === 'range' && rule.value) {
+            filters.stimulationScoreRange = {
+              min: rule.value.min || 1,
+              max: rule.value.max || 5
+            };
+          }
+          break;
+        case 'ageGroup':
+          if (rule.operator === 'equals') {
+            filters.ageGroup = rule.value;
+          }
+          break;
+        case 'themes':
+          if (rule.operator === 'in' && Array.isArray(rule.value)) {
+            filters.themes = rule.value;
+            filters.themeMatchMode = filterConfig.logic || 'AND';
+          }
+          break;
+        case 'interactivityLevel':
+          if (rule.operator === 'equals') {
+            filters.interactivityLevel = rule.value;
+          }
+          break;
+      }
+    }
+
+    return filters;
+  }
+
+  async getShowsForCategory(categoryId: number): Promise<TvShow[]> {
+    // This method is deprecated, use getHomepageCategoryShows instead
+    return this.getHomepageCategoryShows(categoryId);
   }
 }
 
