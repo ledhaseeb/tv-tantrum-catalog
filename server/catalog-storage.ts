@@ -280,7 +280,25 @@ export class CatalogStorage {
         'SELECT * FROM catalog_research_summaries WHERE id = $1',
         [id]
       );
-      return result.rows[0] || null;
+      const row = result.rows[0];
+      if (!row) return null;
+      
+      return {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        fullText: row.full_text,
+        category: row.category,
+        imageUrl: row.image_url,
+        source: row.source,
+        originalStudyUrl: row.original_url,
+        publishedDate: row.published_date,
+        headline: row.headline,
+        subHeadline: row.sub_headline,
+        keyFindings: row.key_findings,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
     } finally {
       client.release();
     }
@@ -448,7 +466,22 @@ export class CatalogStorage {
       const result = await client.query(
         'SELECT * FROM catalog_research_summaries ORDER BY created_at DESC'
       );
-      return result.rows;
+      return result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        fullText: row.full_text,
+        category: row.category,
+        imageUrl: row.image_url,
+        source: row.source,
+        originalStudyUrl: row.original_url,
+        publishedDate: row.published_date,
+        headline: row.headline,
+        subHeadline: row.sub_headline,
+        keyFindings: row.key_findings,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
     } finally {
       client.release();
     }
@@ -478,17 +511,33 @@ export class CatalogStorage {
     try {
       const result = await client.query(`
         INSERT INTO catalog_research_summaries (
-          title, category, source, published_date, original_study_url,
+          title, category, source, published_date, original_url, image_url,
           headline, sub_headline, summary, key_findings, full_text,
           created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
         ) RETURNING *
       `, [
-        data.title, data.category, data.source, data.publishedDate, data.originalStudyUrl,
+        data.title, data.category, data.source, data.publishedDate, data.originalStudyUrl, data.imageUrl,
         data.headline, data.subHeadline, data.summary, data.keyFindings, data.fullText
       ]);
-      return result.rows[0];
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        fullText: row.full_text,
+        category: row.category,
+        imageUrl: row.image_url,
+        source: row.source,
+        originalStudyUrl: row.original_url,
+        publishedDate: row.published_date,
+        headline: row.headline,
+        subHeadline: row.sub_headline,
+        keyFindings: row.key_findings,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
     } finally {
       client.release();
     }
@@ -503,16 +552,34 @@ export class CatalogStorage {
       const result = await client.query(`
         UPDATE catalog_research_summaries 
         SET title = $2, category = $3, source = $4, published_date = $5,
-            original_study_url = $6, headline = $7, sub_headline = $8,
-            summary = $9, key_findings = $10, full_text = $11, updated_at = NOW()
+            original_url = $6, image_url = $7, headline = $8, sub_headline = $9,
+            summary = $10, key_findings = $11, full_text = $12, updated_at = NOW()
         WHERE id = $1
         RETURNING *
       `, [
         id, data.title, data.category, data.source, data.publishedDate,
-        data.originalStudyUrl, data.headline, data.subHeadline,
+        data.originalStudyUrl, data.imageUrl, data.headline, data.subHeadline,
         data.summary, data.keyFindings, data.fullText
       ]);
-      return result.rows[0] || null;
+      const row = result.rows[0];
+      if (!row) return null;
+      
+      return {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        fullText: row.full_text,
+        category: row.category,
+        imageUrl: row.image_url,
+        source: row.source,
+        originalStudyUrl: row.original_url,
+        publishedDate: row.published_date,
+        headline: row.headline,
+        subHeadline: row.sub_headline,
+        keyFindings: row.key_findings,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
     } finally {
       client.release();
     }

@@ -69,6 +69,7 @@ export function EditResearchDialog({ research, isOpen, onClose, isAddingNew = fa
 
   useEffect(() => {
     if (research) {
+      console.log('EditResearchDialog received research data:', research);
       setFormData({
         title: research.title || "",
         category: research.category || "",
