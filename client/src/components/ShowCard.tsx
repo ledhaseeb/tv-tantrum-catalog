@@ -83,10 +83,13 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     
     return (
       <div className="w-full bg-gray-50 rounded-lg p-3 border border-gray-200">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-bold text-gray-800">Stimulation Level</span>
-        </div>
-        <div className="relative w-full bg-gray-300 rounded-full h-3 overflow-hidden shadow-inner">
+        {/* Show label only on non-mobile */}
+        {!isMobile && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-gray-800">Stimulation Level</span>
+          </div>
+        )}
+        <div className={`relative w-full bg-gray-300 rounded-full h-3 overflow-hidden shadow-inner ${isMobile ? 'mb-2' : ''}`}>
           <div 
             className="h-full transition-all duration-300 ease-out shadow-sm"
             style={{ 
