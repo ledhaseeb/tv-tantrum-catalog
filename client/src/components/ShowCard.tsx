@@ -46,15 +46,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return 'bg-gray-100 text-gray-800';
   };
   
-  // Get stimulation text and color
-  const getStimulationInfo = (score: number) => {
+  // Get stimulation text based on exact requirements
+  const getStimulationText = (score: number) => {
     switch (score) {
-      case 1: return { text: 'Very Calm', color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' };
-      case 2: return { text: 'Calm', color: 'text-green-500', bgColor: 'bg-green-50', borderColor: 'border-green-200' };
-      case 3: return { text: 'Moderate', color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' };
-      case 4: return { text: 'Active', color: 'text-orange-600', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' };
-      case 5: return { text: 'High Energy', color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' };
-      default: return { text: 'Unknown', color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
+      case 1: return 'Low';
+      case 2: return 'Low-Medium';
+      case 3: return 'Medium';
+      case 4: return 'Medium-High';
+      case 5: return 'High';
+      default: return 'Unknown';
     }
   };
 
@@ -63,37 +63,27 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return Math.min(score * 20, 100);
   };
 
-  // Get stimulation progress bar color
-  const getStimulationBarColor = (score: number) => {
-    switch (score) {
-      case 1: return 'bg-green-500';
-      case 2: return 'bg-green-400';
-      case 3: return 'bg-yellow-500';
-      case 4: return 'bg-orange-500';
-      case 5: return 'bg-red-500';
-      default: return 'bg-gray-400';
-    }
-  };
-
-  // Render enhanced stimulation indicator
+  // Render enhanced stimulation indicator with gradient fill
   const renderStimulationIndicator = () => {
-    const stimInfo = getStimulationInfo(normalizedShow.stimulationScore);
+    const stimulationText = getStimulationText(normalizedShow.stimulationScore);
     const percentage = getStimulationPercentage(normalizedShow.stimulationScore);
-    const barColor = getStimulationBarColor(normalizedShow.stimulationScore);
     
     return (
       <div className="w-full">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-gray-700">Stimulation</span>
-          <span className={`text-xs font-semibold ${stimInfo.color}`}>
-            {stimInfo.text}
-          </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="relative w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div 
-            className={`h-full ${barColor} transition-all duration-300 ease-out`}
-            style={{ width: `${percentage}%` }}
+            className="h-full transition-all duration-300 ease-out"
+            style={{ 
+              width: `${percentage}%`,
+              background: `linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%)`
+            }}
           />
+        </div>
+        <div className="text-xs text-gray-600 text-center mt-1">
+          {stimulationText}
         </div>
       </div>
     );
