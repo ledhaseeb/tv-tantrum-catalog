@@ -255,7 +255,7 @@ router.get('/research', requireAdmin, async (req, res) => {
 router.get('/research/:id', requireAdmin, async (req, res) => {
   try {
     const researchId = parseInt(req.params.id);
-    const research = await catalogStorage.getResearchSummary(researchId);
+    const research = await catalogStorage.getResearchSummaryById(researchId);
     if (!research) {
       return res.status(404).json({ error: 'Research not found' });
     }
