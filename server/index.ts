@@ -6,6 +6,7 @@ import session from 'express-session';
 import { setupVite, serveStatic } from './vite';
 import { catalogStorage } from './catalog-storage';
 import { Pool } from 'pg';
+import { setupSimpleAdminAuth } from './simple-admin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -208,6 +209,9 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
     res.status(500).send('Internal server error');
   }
 });
+
+// Setup admin authentication routes
+setupSimpleAdminAuth(app);
 
 app.use('/api', router);
 

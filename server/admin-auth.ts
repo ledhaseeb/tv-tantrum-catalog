@@ -110,12 +110,12 @@ export function setupAdminAuth(app: Express) {
   // Admin stats endpoint
   app.get('/api/admin/stats', requireAdmin, async (req: Request, res: Response) => {
     try {
-      // Get basic stats from database
-      const [totalShowsResult] = await db.execute('SELECT COUNT(*) as count FROM catalog_tv_shows');
-      const [adminUsersResult] = await db.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = true');
+      // Get basic stats from database using proper SQL queries
+      const totalShowsQuery = await db.execute('SELECT COUNT(*) as count FROM catalog_tv_shows');
+      const adminUsersQuery = await db.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = true');
       
-      const totalShows = totalShowsResult[0]?.count || 302;
-      const adminUsers = adminUsersResult[0]?.count || 1;
+      const totalShows = (totalShowsQuery.rows[0] as any)?.count || 302;
+      const adminUsers = (adminUsersQuery.rows[0] as any)?.count || 1;
       
       res.json({
         totalShows,
