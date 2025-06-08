@@ -329,7 +329,8 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
         case 'stimulationScore':
           if (rule.operator === 'range') {
             const [min, max] = rule.value.split('-').map(Number);
-            ruleMatches = show.stimulationScore >= min && show.stimulationScore <= max;
+            const stimScore = (show as any).stimulation_score || show.stimulationScore;
+            ruleMatches = stimScore >= min && stimScore <= max;
           }
           break;
         case 'ageRange':
