@@ -59,10 +59,20 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   const searchContainerRef = useRef<HTMLDivElement>(null);
   
   // Fetch shows for autocomplete and theme analysis
-  const { data: shows } = useQuery<TvShow[]>({
+  const { data: shows, isLoading: isLoadingShows, error: showsError } = useQuery<TvShow[]>({
     queryKey: ['/api/tv-shows'],
     staleTime: 300000, // 5 minutes
   });
+
+  // Debug logging for shows data
+  useEffect(() => {
+    console.log('ShowFilters - shows data update:', {
+      showsCount: shows?.length,
+      isLoading: isLoadingShows,
+      error: showsError,
+      firstShow: shows?.[0]
+    });
+  }, [shows, isLoadingShows, showsError]);
   
   // Computed state for relevant secondary themes based on the primary theme
   const [relevantSecondaryThemes, setRelevantSecondaryThemes] = useState<string[]>([]);
