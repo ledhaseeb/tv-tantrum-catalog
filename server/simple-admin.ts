@@ -116,7 +116,8 @@ export function setupSimpleAdminAuth(app: Express) {
       
       let query = `
         SELECT id, name, age_range, episode_length, creator, release_year, 
-               is_featured, image_url, stimulation_score
+               is_featured, image_url, stimulation_score,
+               has_omdb_data, has_youtube_data
         FROM catalog_tv_shows
       `;
       let countQuery = 'SELECT COUNT(*) as total FROM catalog_tv_shows';

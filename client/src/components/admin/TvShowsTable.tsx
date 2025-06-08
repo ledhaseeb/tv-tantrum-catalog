@@ -23,11 +23,16 @@ import { useToast } from "@/hooks/use-toast";
 interface TvShow {
   id: number;
   name: string;
-  ageRange: string;
-  stimulationScore: number;
-  isFeatured: boolean;
-  hasOmdbData: boolean;
-  hasYoutubeData: boolean;
+  age_range?: string;
+  ageRange?: string;
+  stimulation_score?: number;
+  stimulationScore?: number;
+  is_featured?: boolean;
+  isFeatured?: boolean;
+  has_omdb_data?: boolean;
+  hasOmdbData?: boolean;
+  has_youtube_data?: boolean;
+  hasYoutubeData?: boolean;
 }
 
 interface FullTvShow {
@@ -194,21 +199,21 @@ export function TvShowsTable({ onEdit }: TvShowsTableProps) {
                 <TableRow key={show.id}>
                   <TableCell>{show.id}</TableCell>
                   <TableCell className="font-medium">{show.name}</TableCell>
-                  <TableCell>{show.ageRange}</TableCell>
-                  <TableCell>{show.stimulationScore}/5</TableCell>
+                  <TableCell>{show.age_range || show.ageRange || 'N/A'}</TableCell>
+                  <TableCell>{(show.stimulation_score || show.stimulationScore || 0)}/5</TableCell>
                   <TableCell>
                     <Button
-                      variant={show.isFeatured ? "default" : "outline"}
+                      variant={(show.is_featured || show.isFeatured) ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFeaturedMutation.mutate(show.id)}
                       disabled={setFeaturedMutation.isPending}
                     >
-                      <Star className={`h-4 w-4 mr-1 ${show.isFeatured ? 'fill-current' : ''}`} />
-                      {show.isFeatured ? 'Featured' : 'Set Featured'}
+                      <Star className={`h-4 w-4 mr-1 ${(show.is_featured || show.isFeatured) ? 'fill-current' : ''}`} />
+                      {(show.is_featured || show.isFeatured) ? 'Featured' : 'Set Featured'}
                     </Button>
                   </TableCell>
                   <TableCell>
-                    {show.hasOmdbData ? (
+                    {(show.has_omdb_data || show.hasOmdbData) ? (
                       <Badge variant="secondary">
                         <Check className="h-3 w-3 mr-1" />
                         Yes
@@ -221,7 +226,7 @@ export function TvShowsTable({ onEdit }: TvShowsTableProps) {
                     )}
                   </TableCell>
                   <TableCell>
-                    {show.hasYoutubeData ? (
+                    {(show.has_youtube_data || show.hasYoutubeData) ? (
                       <Badge variant="secondary">
                         <Check className="h-3 w-3 mr-1" />
                         Yes
