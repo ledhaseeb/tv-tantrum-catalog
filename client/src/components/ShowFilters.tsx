@@ -64,6 +64,15 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     staleTime: 300000, // 5 minutes
     retry: 1,
     refetchOnWindowFocus: false,
+    onError: (error) => {
+      console.error('ShowFilters: Query failed:', error);
+    },
+    onSuccess: (data) => {
+      console.log('ShowFilters: Successfully loaded', data?.length || 0, 'shows');
+      if (data && data.length > 0) {
+        console.log('ShowFilters: First show sample:', data[0]);
+      }
+    }
   });
 
   // Error logging for shows data
@@ -71,7 +80,10 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     if (showsError) {
       console.error('ShowFilters API Error:', showsError);
     }
-  }, [showsError]);
+    if (isLoadingShows) {
+      console.log('ShowFilters: Loading shows...');
+    }
+  }, [showsError, isLoadingShows]);
   
   // Computed state for relevant secondary themes based on the primary theme
   const [relevantSecondaryThemes, setRelevantSecondaryThemes] = useState<string[]>([]);
