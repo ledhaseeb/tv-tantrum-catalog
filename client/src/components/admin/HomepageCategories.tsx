@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Plus, Edit, Trash2, Eye, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Filter, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { HomepageCategory, InsertHomepageCategory, TvShow } from '@shared/catalog-schema';
@@ -101,6 +101,21 @@ export default function HomepageCategories() {
     },
   });
 
+  // Reorder category mutation
+  const reorderMutation = useMutation({
+    mutationFn: async ({ id, newOrder }: { id: number; newOrder: number }) => {
+      return apiRequest('PUT', `/api/admin/homepage-categories/${id}`, {
+        displayOrder: newOrder
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: 'Failed to reorder category', variant: 'destructive' });
+    },
+  });
+
   // Preview category shows
   const handlePreview = async (category: HomepageCategory) => {
     try {
@@ -121,9 +136,36 @@ export default function HomepageCategories() {
     }
   };
 
+  // Helper functions for reordering
+  const moveCategory = (categoryId: number, direction: 'up' | 'down') => {
+    const sortedCategories = [...categories].sort((a, b) => a.displayOrder - b.displayOrder);
+    const currentIndex = sortedCategories.findIndex(cat => cat.id === categoryId);
+    
+    if (currentIndex === -1) return;
+    
+    let targetIndex;
+    if (direction === 'up' && currentIndex > 0) {
+      targetIndex = currentIndex - 1;
+    } else if (direction === 'down' && currentIndex < sortedCategories.length - 1) {
+      targetIndex = currentIndex + 1;
+    } else {
+      return; // Cannot move further
+    }
+    
+    const currentCategory = sortedCategories[currentIndex];
+    const targetCategory = sortedCategories[targetIndex];
+    
+    // Swap display orders
+    reorderMutation.mutate({ id: currentCategory.id, newOrder: targetCategory.displayOrder });
+    reorderMutation.mutate({ id: targetCategory.id, newOrder: currentCategory.displayOrder });
+  };
+
   if (isLoading) {
     return <div>Loading categories...</div>;
   }
+
+  // Sort categories by display order for consistent display
+  const sortedCategories = [...categories].sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
     <div className="space-y-6">
@@ -149,18 +191,41 @@ export default function HomepageCategories() {
       </div>
 
       <div className="grid gap-4">
-        {categories.map((category: HomepageCategory) => (
+        {sortedCategories.map((category: HomepageCategory, index: number) => (
           <Card key={category.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    {category.name}
-                    {!category.isActive && <Badge variant="secondary">Inactive</Badge>}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {category.description}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveCategory(category.id, 'up')}
+                      disabled={index === 0 || reorderMutation.isPending}
+                      className="h-6 w-6 p-0"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveCategory(category.id, 'down')}
+                      disabled={index === sortedCategories.length - 1 || reorderMutation.isPending}
+                      className="h-6 w-6 p-0"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <GripVertical className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      {category.name}
+                      {!category.isActive && <Badge variant="secondary">Inactive</Badge>}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {category.description}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
