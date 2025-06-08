@@ -63,15 +63,15 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return Math.min(score * 20, 100);
   };
 
-  // Get stimulation progress bar color
+  // Get stimulation progress bar color using custom colors from image
   const getStimulationBarColor = (score: number) => {
     switch (score) {
-      case 1: return 'bg-green-500';
-      case 2: return 'bg-green-400';
-      case 3: return 'bg-yellow-500';
-      case 4: return 'bg-orange-500';
-      case 5: return 'bg-red-500';
-      default: return 'bg-gray-400';
+      case 1: return '#22c55e'; // Green
+      case 2: return '#84cc16'; // Light green  
+      case 3: return '#eab308'; // Yellow
+      case 4: return '#f97316'; // Orange
+      case 5: return '#dc2626'; // Red
+      default: return '#9ca3af'; // Gray
     }
   };
 
@@ -88,8 +88,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         </div>
         <div className="relative w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div 
-            className={`h-full ${barColor} transition-all duration-300 ease-out`}
-            style={{ width: `${percentage}%` }}
+            className="h-full transition-all duration-300 ease-out"
+            style={{ 
+              width: `${percentage}%`,
+              backgroundColor: barColor
+            }}
           />
         </div>
         <div className="text-xs text-gray-600 text-center mt-1">
