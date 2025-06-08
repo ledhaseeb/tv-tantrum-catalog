@@ -216,9 +216,9 @@ export default function Compare() {
                     {show ? (
                       <>
                         <div className="relative mb-2">
-                          {show.image_url ? (
+                          {(show as any).image_url ? (
                             <img
-                              src={show.image_url}
+                              src={(show as any).image_url}
                               alt={`${show.name} TV show cover`}
                               className="w-24 h-36 object-cover rounded-lg"
                               loading="lazy"
@@ -298,7 +298,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`age-${show.id}`} className="text-center py-2">
-                        {show.ageRange}
+                        {(show as any).age_range || 'Unknown'}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -319,7 +319,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`style-${show.id}`} className="text-center py-2">
-                        {show.animationStyle || 'Traditional Animation'}
+                        {(show as any).animation_style || 'Traditional Animation'}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -368,9 +368,9 @@ export default function Compare() {
                   {selectedShows.map(show => (
                     <div key={`stim-${show.id}`} className="flex flex-col items-center">
                       <div className="flex flex-col items-center py-2">
-                        {getStimulationScoreDots(show.stimulationScore)}
+                        {getStimulationScoreDots((show as any).stimulation_score || 3)}
                         <div className="text-center text-sm font-medium">
-                          {show.stimulationScore}/5
+                          {(show as any).stimulation_score || 3}/5
                         </div>
                       </div>
                     </div>
@@ -414,7 +414,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
                       <div key={`interaction-${show.id}`} className="text-center py-1">
-                        <span className="text-sm font-medium">{show.interactivityLevel || 'Moderate'}</span>
+                        <span className="text-sm font-medium">{(show as any).interactivity_level || 'Moderate'}</span>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
