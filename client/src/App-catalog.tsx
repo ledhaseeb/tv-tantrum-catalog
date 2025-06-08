@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/hooks/use-auth";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import Footer from "@/components/Footer";
-import CatalogHomeMobile from "@/pages/catalog-home-mobile";
+import CatalogHomeResponsive from "@/pages/catalog-home-responsive";
 import Browse from "@/pages/browse";
 import Compare from "@/pages/compare";
 import About from "@/pages/about";
@@ -32,7 +32,7 @@ export default function CatalogApp() {
             <CatalogNavbar />
             <main className="flex-1">
               <Switch>
-                <Route path="/" component={CatalogHomeMobile} />
+                <Route path="/" component={CatalogHomeResponsive} />
                 <Route path="/browse" component={Browse} />
                 <Route path="/compare" component={Compare} />
                 <Route path="/about" component={About} />
