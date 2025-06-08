@@ -1,0 +1,533 @@
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { 
+  X, 
+  Plus, 
+  Upload,
+  Trash2
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface TvShow {
+  id?: number;
+  name: string;
+  description: string;
+  ageRange: string;
+  stimulationScore: number;
+  interactivityLevel?: string;
+  dialogueIntensity?: string;
+  soundEffectsLevel?: string;
+  totalMusicLevel?: string;
+  sceneFrequency?: string;
+  musicTempo?: string;
+  themes?: string[];
+  animationStyle?: string;
+  imageUrl?: string;
+  creator?: string;
+  releaseYear?: number;
+  episodeLength?: number;
+  seasons?: number;
+}
+
+interface EditShowDialogProps {
+  show: TvShow | null;
+  isOpen: boolean;
+  onClose: () => void;
+  isAddingNew?: boolean;
+}
+
+const STIMULATION_OPTIONS = [
+  { value: "1", label: "1 - Low" },
+  { value: "2", label: "2 - Low-Moderate" },
+  { value: "3", label: "3 - Moderate" },
+  { value: "4", label: "4 - High" },
+  { value: "5", label: "5 - Very High" }
+];
+
+const LEVEL_OPTIONS = [
+  { value: "Low", label: "Low" },
+  { value: "Moderate", label: "Moderate" },
+  { value: "Moderate-High", label: "Moderate-High" },
+  { value: "High", label: "High" }
+];
+
+const COMMON_THEMES = [
+  "Family Values", "Relatable Situations", "Problem Solving", "Preschool-Basics",
+  "Family Relationships", "Creativity & Imagination", "Conflict Resolution",
+  "Social Skills", "Educational Content", "Adventure", "Friendship",
+  "Learning & Discovery", "Music & Songs", "Animals & Nature"
+];
+
+export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: EditShowDialogProps) {
+  const [formData, setFormData] = useState<TvShow>({
+    name: "",
+    description: "",
+    ageRange: "",
+    stimulationScore: 1,
+    themes: []
+  });
+  const [newTheme, setNewTheme] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (show) {
+      setFormData(show);
+      setImagePreview(show.imageUrl || "");
+    } else if (isAddingNew) {
+      setFormData({
+        name: "",
+        description: "",
+        ageRange: "",
+        stimulationScore: 1,
+        themes: []
+      });
+      setImagePreview("");
+    }
+    setImageFile(null);
+  }, [show, isAddingNew]);
+
+  const mutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const url = isAddingNew ? '/api/admin/shows' : `/api/admin/shows/${show?.id}`;
+      const method = isAddingNew ? 'POST' : 'PUT';
+      
+      const response = await fetch(url, {
+        method,
+        body: data,
+      });
+      
+      if (!response.ok) throw new Error('Failed to save show');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tv-shows'] });
+      toast({
+        title: "Success",
+        description: `Show ${isAddingNew ? 'created' : 'updated'} successfully`,
+      });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to ${isAddingNew ? 'create' : 'update'} show`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const data = new FormData();
+    
+    // Add all form fields
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'themes' && Array.isArray(value)) {
+        data.append(key, JSON.stringify(value));
+      } else if (value !== null && value !== undefined) {
+        data.append(key, String(value));
+      }
+    });
+    
+    // Add image if selected
+    if (imageFile) {
+      data.append('image', imageFile);
+    }
+    
+    mutation.mutate(data);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addTheme = () => {
+    if (newTheme.trim() && !formData.themes?.includes(newTheme.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        themes: [...(prev.themes || []), newTheme.trim()]
+      }));
+      setNewTheme("");
+    }
+  };
+
+  const removeTheme = (theme: string) => {
+    setFormData(prev => ({
+      ...prev,
+      themes: prev.themes?.filter(t => t !== theme) || []
+    }));
+  };
+
+  const addCommonTheme = (theme: string) => {
+    if (!formData.themes?.includes(theme)) {
+      setFormData(prev => ({
+        ...prev,
+        themes: [...(prev.themes || []), theme]
+      }));
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {isAddingNew ? 'Add New TV Show' : `Edit TV Show`}
+          </DialogTitle>
+          {!isAddingNew && show && (
+            <p className="text-sm text-muted-foreground">
+              Update the details for {show.name}
+            </p>
+          )}
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name */}
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              required
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              rows={3}
+              required
+            />
+          </div>
+
+          {/* Age Range */}
+          <div className="space-y-2">
+            <Label htmlFor="ageRange">Age Range</Label>
+            <Input
+              id="ageRange"
+              value={formData.ageRange}
+              onChange={(e) => setFormData(prev => ({ ...prev, ageRange: e.target.value }))}
+              placeholder="e.g., 3-8"
+              required
+            />
+          </div>
+
+          {/* Stimulation Score */}
+          <div className="space-y-2">
+            <Label htmlFor="stimulationScore">Stimulation Score</Label>
+            <Select 
+              value={String(formData.stimulationScore)} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, stimulationScore: parseInt(value) }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STIMULATION_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Sensory Details */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Interactivity</Label>
+              <Select 
+                value={formData.interactivityLevel || ""} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, interactivityLevel: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Dialogue Intensity</Label>
+              <Select 
+                value={formData.dialogueIntensity || ""} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, dialogueIntensity: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Sound Effects</Label>
+              <Select 
+                value={formData.soundEffectsLevel || ""} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, soundEffectsLevel: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Total Sound Effect Time</Label>
+              <Select 
+                value={formData.totalMusicLevel || ""} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, totalMusicLevel: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Scene Frequency</Label>
+              <Select 
+                value={formData.sceneFrequency || ""} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, sceneFrequency: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Music Tempo</Label>
+              <Select 
+                value={formData.musicTempo || ""} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, musicTempo: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Themes */}
+          <div className="space-y-2">
+            <Label>Themes</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.themes?.map((theme) => (
+                <Badge key={theme} variant="secondary" className="text-sm">
+                  {theme}
+                  <button
+                    type="button"
+                    onClick={() => removeTheme(theme)}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            
+            <div className="flex gap-2">
+              <Input
+                value={newTheme}
+                onChange={(e) => setNewTheme(e.target.value)}
+                placeholder="Add custom theme"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTheme())}
+              />
+              <Button type="button" variant="outline" onClick={addTheme}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="text-sm text-muted-foreground">
+              <p className="mb-2">Or select from common themes:</p>
+              <div className="flex flex-wrap gap-1">
+                {COMMON_THEMES.filter(theme => !formData.themes?.includes(theme)).map((theme) => (
+                  <Button
+                    key={theme}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => addCommonTheme(theme)}
+                    className="h-6 text-xs"
+                  >
+                    + {theme}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Animation Style */}
+          <div className="space-y-2">
+            <Label htmlFor="animationStyle">Animation Style</Label>
+            <Textarea
+              id="animationStyle"
+              value={formData.animationStyle || ""}
+              onChange={(e) => setFormData(prev => ({ ...prev, animationStyle: e.target.value }))}
+              placeholder="e.g., Live-Action Family Videos"
+              rows={2}
+            />
+          </div>
+
+          {/* Image Management */}
+          <div className="space-y-2">
+            <Label>Image Management</Label>
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+              {imagePreview ? (
+                <div className="space-y-4">
+                  <img 
+                    src={imagePreview} 
+                    alt="Show preview" 
+                    className="mx-auto max-w-32 max-h-32 object-cover rounded"
+                  />
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Change Image
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setImagePreview("");
+                        setImageFile(null);
+                        setFormData(prev => ({ ...prev, imageUrl: "" }));
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-4xl">📺</div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </Button>
+                  <p className="text-sm text-muted-foreground">
+                    Upload a portrait-style image for the show (recommended ratio 3:4). 
+                    The image will be automatically optimized for web display.
+                  </p>
+                </div>
+              )}
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between pt-6 border-t">
+            <div>
+              {!isAddingNew && (
+                <Button type="button" variant="destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Show
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
