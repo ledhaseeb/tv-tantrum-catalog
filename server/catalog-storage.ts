@@ -689,6 +689,7 @@ export class CatalogStorage {
       for (const category of categories) {
         const shows = await this.getHomepageCategoryShows(category.id);
         (category as any).showCount = shows.length;
+        console.log(`[PUBLIC] Category "${category.name}" (ID: ${category.id}) has ${shows.length} shows`);
       }
 
       return categories;
@@ -718,6 +719,7 @@ export class CatalogStorage {
       for (const category of categories) {
         const shows = await this.getHomepageCategoryShows(category.id);
         (category as any).showCount = shows.length;
+        console.log(`[ADMIN] Category "${category.name}" (ID: ${category.id}) has ${shows.length} shows`);
       }
 
       return categories;
