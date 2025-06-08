@@ -210,4 +210,6 @@ export type InsertResearchSummary = z.infer<typeof insertResearchSummarySchema>;
 export type ResearchSummary = typeof researchSummaries.$inferSelect;
 
 export type InsertHomepageCategory = z.infer<typeof insertHomepageCategorySchema>;
-export type HomepageCategory = typeof homepageCategories.$inferSelect;
+export type HomepageCategory = typeof homepageCategories.$inferSelect & {
+  showCount?: number;
+};

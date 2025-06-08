@@ -674,7 +674,7 @@ export class CatalogStorage {
       const result = await client.query(
         'SELECT * FROM homepage_categories WHERE is_active = true ORDER BY display_order, name'
       );
-      return result.rows.map(row => ({
+      const categories = result.rows.map(row => ({
         id: row.id,
         name: row.name,
         description: row.description,
@@ -684,6 +684,14 @@ export class CatalogStorage {
         createdAt: row.created_at,
         updatedAt: row.updated_at
       }));
+
+      // Calculate show counts for each category
+      for (const category of categories) {
+        const shows = await this.getHomepageCategoryShows(category.id);
+        (category as any).showCount = shows.length;
+      }
+
+      return categories;
     } finally {
       client.release();
     }
@@ -695,7 +703,7 @@ export class CatalogStorage {
       const result = await client.query(
         'SELECT * FROM homepage_categories ORDER BY display_order, name'
       );
-      return result.rows.map(row => ({
+      const categories = result.rows.map(row => ({
         id: row.id,
         name: row.name,
         description: row.description,
@@ -705,6 +713,14 @@ export class CatalogStorage {
         createdAt: row.created_at,
         updatedAt: row.updated_at
       }));
+
+      // Calculate show counts for each category
+      for (const category of categories) {
+        const shows = await this.filterTvShows(category.filterConfig);
+        (category as any).showCount = shows.length;
+      }
+
+      return categories;
     } finally {
       client.release();
     }
