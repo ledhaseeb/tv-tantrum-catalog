@@ -105,6 +105,7 @@ export function EditResearchDialog({ research, isOpen, onClose, isAddingNew = fa
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
