@@ -69,9 +69,13 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     console.log('ShowFilters - shows data update:', {
       showsCount: shows?.length,
       isLoading: isLoadingShows,
-      error: showsError,
+      error: showsError?.message,
       firstShow: shows?.[0]
     });
+    
+    if (showsError) {
+      console.error('ShowFilters API Error:', showsError);
+    }
   }, [shows, isLoadingShows, showsError]);
   
   // Computed state for relevant secondary themes based on the primary theme
