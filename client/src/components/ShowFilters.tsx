@@ -313,7 +313,9 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     // Immediately notify parent with complete filter object including new themes
     const updatedFilters = { 
       ...filters, 
-      themes: newThemes.length ? newThemes : undefined 
+      themes: newThemes.length ? newThemes : undefined,
+      // Always include themeMatchMode when themes are present
+      themeMatchMode: newThemes.length ? themeMatchMode : undefined
     };
     setFilters(updatedFilters);
     onFilterChange(updatedFilters);

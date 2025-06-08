@@ -39,11 +39,6 @@ export class CatalogStorage {
       if (filters.themes && filters.themes.length > 0) {
         // Default to AND mode if no explicit mode is provided
         const matchMode = filters.themeMatchMode || 'AND';
-        console.log('Theme filtering mode:', { 
-          provided: filters.themeMatchMode, 
-          used: matchMode, 
-          themes: filters.themes 
-        });
         
         if (matchMode === 'AND') {
           // For AND logic, show must have ALL specified themes
@@ -51,13 +46,11 @@ export class CatalogStorage {
           whereConditions.push(`ts.themes @> $${paramIndex}`);
           queryParams.push(filters.themes);
           paramIndex++;
-          console.log('Using AND logic with @> operator');
         } else {
           // For OR logic, show must have ANY of the specified themes  
           whereConditions.push(`ts.themes && $${paramIndex}`);
           queryParams.push(filters.themes);
           paramIndex++;
-          console.log('Using OR logic with && operator');
         }
       }
       
