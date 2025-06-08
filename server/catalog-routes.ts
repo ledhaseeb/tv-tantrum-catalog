@@ -332,37 +332,7 @@ export function registerCatalogRoutes(app: Express) {
     }
   });
 
-  // Admin: Get single TV show for editing
-  app.get("/api/admin/tv-shows/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      console.log(`[SERVER] Fetching TV show ${id} for editing`);
-      
-      const show = await catalogStorage.getTvShowById(id);
-      
-      if (!show) {
-        console.log(`[SERVER] TV show ${id} not found`);
-        return res.status(404).json({ message: "Show not found" });
-      }
-      
-      console.log(`[SERVER] Successfully fetched TV show ${id}:`, show.name);
-      res.json(show);
-    } catch (error) {
-      console.error("Error fetching TV show:", error);
-      res.status(500).json({ message: "Failed to fetch TV show" });
-    }
-  });
-
-  // Admin: Get all shows (no filtering for management)
-  app.get("/api/admin/tv-shows", async (req: Request, res: Response) => {
-    try {
-      const shows = await catalogStorage.getTvShows(); // No filters for admin
-      res.json(shows);
-    } catch (error) {
-      console.error("Error fetching admin TV shows:", error);
-      res.status(500).json({ message: "Failed to fetch TV shows" });
-    }
-  });
+  // Note: Admin TV show routes are handled by admin-routes.ts
 
   // Homepage Categories Management Routes
   
