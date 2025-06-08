@@ -613,7 +613,7 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
                     <div key={show.id} className="text-xs border rounded p-2">
                       <div className="font-medium truncate">{show.name}</div>
                       <div className="text-muted-foreground">
-                        Stim: {show.stimulationScore}/5
+                        Stim: {(show as any).stimulation_score || show.stimulationScore}/5
                       </div>
                       {show.themes && (
                         <div className="text-muted-foreground truncate">
