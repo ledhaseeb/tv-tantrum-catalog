@@ -10,11 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Award } from 'lucide-react';
 
-interface ResearchDetailProps {
-  id: number;
-}
-
-const ResearchDetail = ({ id }: ResearchDetailProps) => {
+const ResearchDetail = () => {
+  const params = useParams();
+  const id = parseInt(params.id as string, 10);
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

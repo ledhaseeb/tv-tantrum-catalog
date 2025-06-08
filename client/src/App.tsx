@@ -265,15 +265,13 @@ function Router() {
           </div>
         </Route>
         <Route path="/research/:id">
-          {(params) => (
-            <div className="flex-grow flex flex-col">
-              <Navbar />
-              <div className="flex-grow">
-                <ResearchDetail id={parseInt(params.id, 10)} />
-              </div>
-              <Footer />
+          <div className="flex-grow flex flex-col">
+            <Navbar />
+            <div className="flex-grow">
+              <ResearchDetail />
             </div>
-          )}
+            <Footer />
+          </div>
         </Route>
 
         {/* Admin route with approval and admin check */}
