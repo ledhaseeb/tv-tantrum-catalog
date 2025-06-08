@@ -425,6 +425,114 @@ export class CatalogStorage {
       client.release();
     }
   }
+
+  /**
+   * Get all users (admin function)
+   */
+  async getAllUsers(): Promise<User[]> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query('SELECT * FROM catalog_users ORDER BY created_at DESC');
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Get all research summaries (admin function)
+   */
+  async getAllResearchSummaries(): Promise<ResearchSummary[]> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM catalog_research_summaries ORDER BY created_at DESC'
+      );
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Get research summary by ID (admin function)
+   */
+  async getResearchSummary(id: number): Promise<ResearchSummary | null> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM catalog_research_summaries WHERE id = $1',
+        [id]
+      );
+      return result.rows[0] || null;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Create research summary (admin function)
+   */
+  async createResearchSummary(data: any): Promise<ResearchSummary> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        INSERT INTO catalog_research_summaries (
+          title, category, source, published_date, original_study_url,
+          headline, sub_headline, summary, key_findings, full_text,
+          created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        data.title, data.category, data.source, data.publishedDate, data.originalStudyUrl,
+        data.headline, data.subHeadline, data.summary, data.keyFindings, data.fullText
+      ]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update research summary (admin function)
+   */
+  async updateResearchSummary(id: number, data: any): Promise<ResearchSummary | null> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        UPDATE catalog_research_summaries 
+        SET title = $2, category = $3, source = $4, published_date = $5,
+            original_study_url = $6, headline = $7, sub_headline = $8,
+            summary = $9, key_findings = $10, full_text = $11, updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `, [
+        id, data.title, data.category, data.source, data.publishedDate,
+        data.originalStudyUrl, data.headline, data.subHeadline,
+        data.summary, data.keyFindings, data.fullText
+      ]);
+      return result.rows[0] || null;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Delete research summary (admin function)
+   */
+  async deleteResearchSummary(id: number): Promise<boolean> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'DELETE FROM catalog_research_summaries WHERE id = $1',
+        [id]
+      );
+      return (result.rowCount || 0) > 0;
+    } finally {
+      client.release();
+    }
+  }
 }
 
 export const catalogStorage = new CatalogStorage();

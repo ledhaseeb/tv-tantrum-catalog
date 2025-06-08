@@ -19,7 +19,7 @@ const requireAdmin = (req: any, res: any, next: any) => {
 // Get admin stats
 router.get('/stats', requireAdmin, async (req, res) => {
   try {
-    const shows = await storage.getAllTvShows();
+    const shows = await catalogStorage.getTvShows();
     const totalShows = shows.length;
     const featuredShows = shows.filter(show => show.isFeatured).length;
     
@@ -39,7 +39,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
 router.get('/shows', requireAdmin, async (req, res) => {
   try {
     const { search } = req.query;
-    let shows = await storage.getAllTvShows();
+    let shows = await catalogStorage.getTvShows();
     
     if (search) {
       const searchTerm = search.toString().toLowerCase();
@@ -72,15 +72,15 @@ router.put('/shows/:id/featured', requireAdmin, async (req, res) => {
     const showId = parseInt(req.params.id);
     
     // First remove featured status from all shows
-    const allShows = await storage.getAllTvShows();
+    const allShows = await catalogStorage.getTvShows();
     for (const show of allShows) {
       if (show.isFeatured) {
-        await storage.updateTvShow(show.id, { isFeatured: false });
+        await catalogStorage.updateTvShow(show.id, { isFeatured: false });
       }
     }
     
     // Set the new featured show
-    await storage.updateTvShow(showId, { isFeatured: true });
+    await catalogStorage.updateTvShow(showId, { isFeatured: true });
     
     res.json({ success: true });
   } catch (error) {
@@ -93,7 +93,7 @@ router.put('/shows/:id/featured', requireAdmin, async (req, res) => {
 router.get('/shows/:id', requireAdmin, async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
-    const show = await storage.getTvShowById(showId);
+    const show = await catalogStorage.getTvShowById(showId);
     
     if (!show) {
       return res.status(404).json({ error: 'Show not found' });
@@ -140,7 +140,7 @@ router.post('/shows', requireAdmin, upload.single('image'), async (req, res) => 
       showData.releaseYear = parseInt(showData.releaseYear);
     }
     
-    const newShow = await storage.createTvShow(showData);
+    const newShow = await catalogStorage.createTvShow(showData);
     res.json(newShow);
   } catch (error) {
     console.error('Error creating show:', error);
@@ -183,7 +183,7 @@ router.put('/shows/:id', requireAdmin, upload.single('image'), async (req, res) 
       showData.releaseYear = parseInt(showData.releaseYear);
     }
     
-    const updatedShow = await storage.updateTvShow(showId, showData);
+    const updatedShow = await catalogStorage.updateTvShow(showId, showData);
     res.json(updatedShow);
   } catch (error) {
     console.error('Error updating show:', error);
@@ -195,7 +195,7 @@ router.put('/shows/:id', requireAdmin, upload.single('image'), async (req, res) 
 router.delete('/shows/:id', requireAdmin, async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
-    await storage.deleteTvShow(showId);
+    await catalogStorage.deleteTvShow(showId);
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting show:', error);
@@ -243,7 +243,7 @@ async function processImage(file: Express.Multer.File, showName: string): Promis
 // Get all research summaries
 router.get('/research', requireAdmin, async (req, res) => {
   try {
-    const research = await storage.getAllResearchSummaries();
+    const research = await catalogStorage.getAllResearchSummaries();
     res.json(research);
   } catch (error) {
     console.error('Error fetching research:', error);
@@ -255,7 +255,7 @@ router.get('/research', requireAdmin, async (req, res) => {
 router.get('/research/:id', requireAdmin, async (req, res) => {
   try {
     const researchId = parseInt(req.params.id);
-    const research = await storage.getResearchSummary(researchId);
+    const research = await catalogStorage.getResearchSummary(researchId);
     if (!research) {
       return res.status(404).json({ error: 'Research not found' });
     }
@@ -276,7 +276,7 @@ router.post('/research', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Title and category are required' });
     }
 
-    const newResearch = await storage.createResearchSummary(researchData);
+    const newResearch = await catalogStorage.createResearchSummary(researchData);
     res.status(201).json(newResearch);
   } catch (error) {
     console.error('Error creating research:', error);
@@ -290,7 +290,7 @@ router.put('/research/:id', requireAdmin, async (req, res) => {
     const researchId = parseInt(req.params.id);
     const researchData = req.body;
     
-    const updatedResearch = await storage.updateResearchSummary(researchId, researchData);
+    const updatedResearch = await catalogStorage.updateResearchSummary(researchId, researchData);
     if (!updatedResearch) {
       return res.status(404).json({ error: 'Research not found' });
     }
@@ -306,7 +306,7 @@ router.put('/research/:id', requireAdmin, async (req, res) => {
 router.delete('/research/:id', requireAdmin, async (req, res) => {
   try {
     const researchId = parseInt(req.params.id);
-    const deleted = await storage.deleteResearchSummary(researchId);
+    const deleted = await catalogStorage.deleteResearchSummary(researchId);
     
     if (!deleted) {
       return res.status(404).json({ error: 'Research not found' });
