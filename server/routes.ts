@@ -3343,6 +3343,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin routes - integrated directly
   
+  // Admin login endpoint
+  app.post('/api/admin/login', async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+
+      // Get user by email
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user || !user.isAdmin) {
+        return res.status(401).json({ error: 'Invalid admin credentials' });
+      }
+
+      // Verify password using the auth system
+      const isValidPassword = await comparePasswords(password, user.password || '');
+      
+      if (!isValidPassword) {
+        return res.status(401).json({ error: 'Invalid admin credentials' });
+      }
+
+      // Store admin user in session
+      (req.session as any).adminUser = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        isAdmin: user.isAdmin
+      };
+
+      res.json({ 
+        success: true, 
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          isAdmin: user.isAdmin
+        }
+      });
+    } catch (error) {
+      console.error('Error during admin login:', error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
   // Admin authentication middleware
   const requireAdmin = (req: any, res: any, next: any) => {
     if (!req.session?.adminUser?.isAdmin) {
