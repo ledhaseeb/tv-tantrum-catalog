@@ -48,7 +48,7 @@ export default function CatalogHomeResponsive() {
 
     shows?.forEach(show => {
       const themes = show.themes || [];
-      const stimulation = show.stimulationRating || 0;
+      const stimulation = show.stimulationScore || 0;
       
       // Popular shows (high creativity rating or recent)
       if (show.creativityRating && show.creativityRating >= 4) {
@@ -135,41 +135,7 @@ export default function CatalogHomeResponsive() {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-gray-50">
-        {/* Mobile Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
-          <div className="px-4 py-3">
-            <h1 className="text-xl font-bold text-gray-900 mb-3">TV Tantrum</h1>
-            <div className="flex gap-2 mb-3">
-              <Link href="/browse">
-                <Button variant="ghost" size="sm">
-                  <BarChart2 className="w-4 h-4 mr-2" />
-                  Browse
-                </Button>
-              </Link>
-              <Button variant="ghost" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
-            </div>
-            
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search shows..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <Button size="sm" onClick={handleSearch}>
-                Search
-              </Button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
@@ -200,10 +166,17 @@ export default function CatalogHomeResponsive() {
           </div>
         </div>
 
-        {/* Ad Container */}
+        {/* Google AdSense Container */}
         <div className="bg-gray-100 border-y border-gray-200 py-4 px-4">
-          <div className="text-center text-sm text-gray-500 bg-white rounded-lg py-6 border-2 border-dashed border-gray-300">
-            Advertisement Space
+          <div className="max-w-sm mx-auto">
+            <ins 
+              className="adsbygoogle block"
+              style={{ display: 'block' }}
+              data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
+              data-ad-slot="XXXXXXXXXX"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            />
           </div>
         </div>
 
@@ -279,43 +252,6 @@ export default function CatalogHomeResponsive() {
   // Desktop layout with large grid cards
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">TV Tantrum</h1>
-            <div className="flex gap-3">
-              <Link href="/browse">
-                <Button variant="ghost" size="sm">
-                  <BarChart2 className="w-4 h-4 mr-2" />
-                  Browse
-                </Button>
-              </Link>
-              <Button variant="ghost" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex gap-3 max-w-md">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search shows..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <Button className="px-6" onClick={handleSearch}>
-              Search
-            </Button>
-          </div>
-        </div>
-      </div>
 
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-16 px-8">
@@ -346,10 +282,17 @@ export default function CatalogHomeResponsive() {
         </div>
       </div>
 
-      {/* Ad Container */}
+      {/* Google AdSense Container */}
       <div className="bg-gray-100 border-y border-gray-200 py-6 px-8">
-        <div className="text-center text-sm text-gray-500 bg-white rounded-lg py-8 border-2 border-dashed border-gray-300 max-w-4xl mx-auto">
-          Advertisement Space
+        <div className="max-w-4xl mx-auto">
+          <ins 
+            className="adsbygoogle block"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
+            data-ad-slot="XXXXXXXXXX"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          />
         </div>
       </div>
 
