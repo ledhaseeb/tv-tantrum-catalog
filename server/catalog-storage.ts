@@ -11,11 +11,16 @@ export class CatalogStorage {
    */
   async getTvShows(filters: {
     ageGroup?: string;
+    ageRange?: {min: number, max: number};
     stimulationScoreRange?: {min: number, max: number};
     themes?: string[];
     themeMatchMode?: 'AND' | 'OR';
     search?: string;
     sortBy?: string;
+    tantrumFactor?: string;
+    interactionLevel?: string;
+    dialogueIntensity?: string;
+    soundFrequency?: string;
     limit?: number;
     offset?: number;
   } = {}): Promise<TvShow[]> {
@@ -65,11 +70,64 @@ export class CatalogStorage {
         paramIndex++;
       }
       
+      // Age range filtering - more flexible age matching
+      if (filters.ageRange) {
+        // Extract numeric ages from age_range field (e.g., "2-5" -> min:2, max:5)
+        whereConditions.push(`
+          (
+            CASE 
+              WHEN ts.age_range ~ '^[0-9]+-[0-9]+$' THEN
+                CAST(split_part(ts.age_range, '-', 1) AS INTEGER) <= $${paramIndex + 1} AND
+                CAST(split_part(ts.age_range, '-', 2) AS INTEGER) >= $${paramIndex}
+              ELSE false
+            END
+          )
+        `);
+        queryParams.push(filters.ageRange.min, filters.ageRange.max);
+        paramIndex += 2;
+      }
+      
       // Stimulation score range filtering
       if (filters.stimulationScoreRange) {
         whereConditions.push(`ts.stimulation_score BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
         queryParams.push(filters.stimulationScoreRange.min, filters.stimulationScoreRange.max);
         paramIndex += 2;
+      }
+      
+      // Sensory filters
+      if (filters.tantrumFactor) {
+        // Map tantrumFactor to stimulation_score for backward compatibility
+        const scoreMap: {[key: string]: number} = {
+          'low': 1,
+          'low-medium': 2,
+          'medium': 3,
+          'medium-high': 4,
+          'high': 5
+        };
+        const score = scoreMap[filters.tantrumFactor.toLowerCase()];
+        if (score) {
+          whereConditions.push(`ts.stimulation_score = $${paramIndex}`);
+          queryParams.push(score);
+          paramIndex++;
+        }
+      }
+      
+      if (filters.interactionLevel) {
+        whereConditions.push(`ts.interactivity_level = $${paramIndex}`);
+        queryParams.push(filters.interactionLevel);
+        paramIndex++;
+      }
+      
+      if (filters.dialogueIntensity) {
+        whereConditions.push(`ts.dialogue_intensity = $${paramIndex}`);
+        queryParams.push(filters.dialogueIntensity);
+        paramIndex++;
+      }
+      
+      if (filters.soundFrequency) {
+        whereConditions.push(`ts.sound_frequency = $${paramIndex}`);
+        queryParams.push(filters.soundFrequency);
+        paramIndex++;
       }
       
       // Search filtering

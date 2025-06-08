@@ -49,8 +49,25 @@ router.get('/tv-shows', async (req, res) => {
   try {
     const filters: any = {};
     
+    // Basic search and age filtering
     if (req.query.search) filters.search = req.query.search;
     if (req.query.ageGroup) filters.ageGroup = req.query.ageGroup;
+    
+    // Age range filtering (support both JSON and individual min/max params)
+    if (req.query.ageRange) {
+      try {
+        filters.ageRange = JSON.parse(req.query.ageRange as string);
+      } catch (e) {
+        return res.status(400).json({ message: "Invalid ageRange format" });
+      }
+    } else if (req.query.ageRangeMin && req.query.ageRangeMax) {
+      filters.ageRange = {
+        min: parseInt(req.query.ageRangeMin as string),
+        max: parseInt(req.query.ageRangeMax as string)
+      };
+    }
+    
+    // Stimulation score range filtering
     if (req.query.stimulationScoreRange) {
       try {
         filters.stimulationScoreRange = JSON.parse(req.query.stimulationScoreRange as string);
@@ -58,12 +75,35 @@ router.get('/tv-shows', async (req, res) => {
         return res.status(400).json({ message: "Invalid stimulationScoreRange format" });
       }
     }
+    
+    // Theme filtering with match mode
     if (req.query.themes) {
-      filters.themes = Array.isArray(req.query.themes) ? req.query.themes : [req.query.themes];
+      if (typeof req.query.themes === 'string') {
+        filters.themes = req.query.themes.split(',').map(theme => theme.trim());
+      } else if (Array.isArray(req.query.themes)) {
+        filters.themes = req.query.themes;
+      }
     }
+    if (req.query.themeMatchMode) {
+      filters.themeMatchMode = req.query.themeMatchMode as 'AND' | 'OR';
+    }
+    
+    // Sorting
+    if (req.query.sortBy) filters.sortBy = req.query.sortBy;
+    
+    // Sensory filters
+    if (req.query.tantrumFactor) filters.tantrumFactor = req.query.tantrumFactor;
+    if (req.query.interactionLevel) filters.interactionLevel = req.query.interactionLevel;
+    if (req.query.dialogueIntensity) filters.dialogueIntensity = req.query.dialogueIntensity;
+    if (req.query.soundFrequency) filters.soundFrequency = req.query.soundFrequency;
+    
+    // Pagination
     if (req.query.limit) filters.limit = parseInt(req.query.limit as string);
+    if (req.query.offset) filters.offset = parseInt(req.query.offset as string);
 
+    console.log('API received filters:', filters);
     const shows = await catalogStorage.getTvShows(filters);
+    console.log(`API returning ${shows.length} shows`);
     res.json(shows);
   } catch (error) {
     console.error("Error fetching TV shows:", error);
