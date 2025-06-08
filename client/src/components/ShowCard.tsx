@@ -102,28 +102,26 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   };
 
-  // Mobile portrait style card - clean design without favorite buttons
+  // Mobile portrait style card - consistent sizing
   if (isMobile && viewMode === "grid") {
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
-          {/* Image */}
-          <div className="relative">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+          {/* Image with fixed height */}
+          <div className="relative h-48 overflow-hidden">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
               originalUrl={normalizedShow.imageUrl}
-              className="w-full aspect-[2/3]"
+              className="w-full h-full object-cover"
               isInteractive={false}
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow">
+          <CardContent className="p-3 flex flex-col flex-grow h-32">
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
-            
-
             
             {/* Age Badge */}
             <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
