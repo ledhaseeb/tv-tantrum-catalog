@@ -21,6 +21,7 @@ interface ResearchSummary {
   source: string;
   publishedDate: string;
   originalStudyUrl?: string;
+  imageUrl?: string;
   headline?: string;
   subHeadline?: string;
   summary?: string;
@@ -55,6 +56,7 @@ export function EditResearchDialog({ research, isOpen, onClose, isAddingNew = fa
     source: "",
     publishedDate: "",
     originalStudyUrl: "",
+    imageUrl: "",
     headline: "",
     subHeadline: "",
     summary: "",
@@ -73,6 +75,7 @@ export function EditResearchDialog({ research, isOpen, onClose, isAddingNew = fa
         source: research.source || "",
         publishedDate: research.publishedDate || "",
         originalStudyUrl: research.originalStudyUrl || "",
+        imageUrl: research.imageUrl || "",
         headline: research.headline || "",
         subHeadline: research.subHeadline || "",
         summary: research.summary || "",
@@ -86,6 +89,7 @@ export function EditResearchDialog({ research, isOpen, onClose, isAddingNew = fa
         source: "",
         publishedDate: "",
         originalStudyUrl: "",
+        imageUrl: "",
         headline: "",
         subHeadline: "",
         summary: "",
@@ -253,14 +257,31 @@ export function EditResearchDialog({ research, isOpen, onClose, isAddingNew = fa
 
             {/* Right Column */}
             <div className="space-y-4">
-              {/* Upload section (placeholder for now) */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-600">Upload an image to accompany the research summary</p>
-                <p className="text-xs text-gray-500">
-                  Click to upload or drag and drop<br />
-                  .jpeg, .png, .webp, .gif up to 5MB
+              {/* Image URL */}
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl">Image URL</Label>
+                <Input
+                  id="imageUrl"
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  placeholder="https://example.com/image.jpg"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Direct link to an image that represents this research
                 </p>
+                {formData.imageUrl && (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <img 
+                      src={formData.imageUrl} 
+                      alt="Research preview" 
+                      className="mx-auto max-h-32 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Help section */}
