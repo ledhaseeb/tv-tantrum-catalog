@@ -856,7 +856,7 @@ export class CatalogStorage {
     try {
       // Get category filter config
       const categoryResult = await client.query(
-        'SELECT filter_config FROM homepage_categories WHERE id = $1 AND is_active = true',
+        'SELECT filter_config FROM homepage_categories WHERE id = $1',
         [categoryId]
       );
 
@@ -865,11 +865,16 @@ export class CatalogStorage {
       const filterConfigRaw = categoryResult.rows[0].filter_config;
       const filterConfig = typeof filterConfigRaw === 'string' ? JSON.parse(filterConfigRaw) : filterConfigRaw;
       
+      console.log(`[DEBUG] Category ${categoryId} filter config:`, JSON.stringify(filterConfig, null, 2));
+      
       // Convert filter config to query filters
       const filters = this.convertFilterConfigToFilters(filterConfig);
+      console.log(`[DEBUG] Category ${categoryId} converted filters:`, JSON.stringify(filters, null, 2));
       
       // Apply the filters to get shows
-      return await this.getTvShows(filters);
+      const shows = await this.getTvShows(filters);
+      console.log(`[DEBUG] Category ${categoryId} getTvShows returned ${shows.length} shows`);
+      return shows;
     } finally {
       client.release();
     }
