@@ -93,7 +93,7 @@ router.put('/shows/:id/featured', requireAdmin, async (req, res) => {
 router.get('/shows/:id', requireAdmin, async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
-    const show = await storage.getTvShow(showId);
+    const show = await storage.getTvShowById(showId);
     
     if (!show) {
       return res.status(404).json({ error: 'Show not found' });

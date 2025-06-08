@@ -447,10 +447,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register the lookup API router
   app.use('/api/lookup-show', lookupRouter);
   
-  // Register admin routes
-  import adminRoutes from './admin-routes';
-  app.use('/api/admin', adminRoutes);
-  
   // Skip GitHub data import on server start to fix database errors
   console.log("Skipping GitHub data import on startup to prevent database errors");
   
@@ -3342,6 +3338,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching themes:", error);
       res.status(500).json({ message: "Failed to fetch themes" });
+    }
+  });
+
+  // Admin routes - integrated directly
+  
+  // Admin authentication middleware
+  const requireAdmin = (req: any, res: any, next: any) => {
+    if (!req.session?.adminUser?.isAdmin) {
+      return res.status(401).json({ error: 'Admin access required' });
+    }
+    next();
+  };
+
+  // Get admin stats
+  app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+    try {
+      const shows = await storage.getAllTvShows();
+      const totalShows = shows.length;
+      const featuredShows = shows.filter((show: any) => show.isFeatured).length;
+      
+      res.json({
+        totalShows,
+        featuredShows,
+        adminUsers: 1,
+        databaseStatus: 'connected'
+      });
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+  });
+
+  // Get all shows with admin fields
+  app.get('/api/admin/shows', requireAdmin, async (req, res) => {
+    try {
+      const { search } = req.query;
+      let shows = await storage.getAllTvShows();
+      
+      if (search) {
+        const searchTerm = search.toString().toLowerCase();
+        shows = shows.filter((show: any) => 
+          show.name.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // Map to admin table format
+      const adminShows = shows.map((show: any) => ({
+        id: show.id,
+        name: show.name,
+        ageRange: show.ageRange,
+        stimulationScore: show.stimulationScore,
+        isFeatured: show.isFeatured || false,
+        hasOmdbData: show.hasOmdbData || false,
+        hasYoutubeData: show.hasYoutubeData || false
+      }));
+      
+      res.json(adminShows);
+    } catch (error) {
+      console.error('Error fetching shows:', error);
+      res.status(500).json({ error: 'Failed to fetch shows' });
+    }
+  });
+
+  // Set featured show
+  app.put('/api/admin/shows/:id/featured', requireAdmin, async (req, res) => {
+    try {
+      const showId = parseInt(req.params.id);
+      
+      // First remove featured status from all shows
+      const allShows = await storage.getAllTvShows();
+      for (const show of allShows) {
+        if (show.isFeatured) {
+          await storage.updateTvShow(show.id, { isFeatured: false });
+        }
+      }
+      
+      // Set the new featured show
+      await storage.updateTvShow(showId, { isFeatured: true });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error setting featured show:', error);
+      res.status(500).json({ error: 'Failed to set featured show' });
+    }
+  });
+
+  // Get single show for editing
+  app.get('/api/admin/shows/:id', requireAdmin, async (req, res) => {
+    try {
+      const showId = parseInt(req.params.id);
+      const show = await storage.getTvShowById(showId);
+      
+      if (!show) {
+        return res.status(404).json({ error: 'Show not found' });
+      }
+      
+      res.json(show);
+    } catch (error) {
+      console.error('Error fetching show:', error);
+      res.status(500).json({ error: 'Failed to fetch show' });
     }
   });
 
