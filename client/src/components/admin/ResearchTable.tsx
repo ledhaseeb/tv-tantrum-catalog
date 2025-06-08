@@ -26,6 +26,7 @@ interface ResearchSummary {
   source: string;
   publishedDate: string;
   originalStudyUrl?: string;
+  imageUrl?: string;
   headline?: string;
   subHeadline?: string;
   summary?: string;
