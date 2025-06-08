@@ -128,7 +128,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
               Ages {normalizedShow.ageRange}
             </Badge>
             
-            {/* Enhanced Stimulation Indicator */}
+            {/* Enhanced Stimulation Indicator - at bottom */}
             <div className="mt-auto">
               {renderStimulationIndicator()}
             </div>
@@ -168,28 +168,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                   </div>
                 </div>
                 
-                {/* Creator and year */}
-                <p className="text-sm text-gray-600 mb-2">
-                  {show.creator && (
-                    <span>Created by {show.creator}</span>
-                  )}
-                  {show.creator && releaseYears && <span> • </span>}
-                  {releaseYears && <span>{releaseYears}</span>}
-                </p>
-                
                 {/* Description */}
                 <p className="text-sm text-gray-700 line-clamp-2 mb-3">
                   {show.description}
                 </p>
                 
-                {/* Enhanced Stimulation Indicator */}
-                <div className="mb-3">
-                  {renderStimulationIndicator()}
-                </div>
-                
                 {/* Themes */}
                 {show.themes && show.themes.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 mb-3">
                     {show.themes.slice(0, 4).map((theme, index) => (
                       <Badge 
                         key={index} 
@@ -206,6 +192,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                     )}
                   </div>
                 )}
+                
+                {/* Enhanced Stimulation Indicator - at bottom */}
+                <div className="mt-auto">
+                  {renderStimulationIndicator()}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -240,14 +231,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             </Badge>
           </div>
           
-          {/* Enhanced Stimulation Indicator */}
-          <div className="mb-2">
-            {renderStimulationIndicator()}
-          </div>
-          
           {/* Themes */}
           {show.themes && show.themes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-auto">
+            <div className="flex flex-wrap gap-1 mb-2">
               {show.themes.slice(0, 2).map((theme, index) => (
                 <Badge 
                   key={index} 
@@ -264,6 +250,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
               )}
             </div>
           )}
+          
+          {/* Enhanced Stimulation Indicator - at bottom */}
+          <div className="mt-auto">
+            {renderStimulationIndicator()}
+          </div>
         </CardContent>
       </Card>
     </Link>
