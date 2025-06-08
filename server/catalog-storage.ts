@@ -848,9 +848,13 @@ export class CatalogStorage {
       
       // Convert filter config to query filters
       const filters = this.convertFilterConfigToFilters(filterConfig);
+      console.log('Category filter config:', filterConfig);
+      console.log('Converted filters:', filters);
       
       // Apply the filters to get shows
-      return await this.getTvShows(filters);
+      const shows = await this.getTvShows(filters);
+      console.log(`Category ${categoryId} returned ${shows.length} shows`);
+      return shows;
     } finally {
       client.release();
     }
@@ -867,10 +871,21 @@ export class CatalogStorage {
       switch (rule.field) {
         case 'stimulationScore':
           if (rule.operator === 'range' && rule.value) {
-            filters.stimulationScoreRange = {
-              min: rule.value.min || 1,
-              max: rule.value.max || 5
-            };
+            // Handle both string format "1-2" and object format {min: 1, max: 2}
+            if (typeof rule.value === 'string') {
+              const parts = rule.value.split('-');
+              if (parts.length === 2) {
+                filters.stimulationScoreRange = {
+                  min: parseInt(parts[0]),
+                  max: parseInt(parts[1])
+                };
+              }
+            } else if (typeof rule.value === 'object') {
+              filters.stimulationScoreRange = {
+                min: rule.value.min || 1,
+                max: rule.value.max || 5
+              };
+            }
           }
           break;
         case 'ageGroup':
