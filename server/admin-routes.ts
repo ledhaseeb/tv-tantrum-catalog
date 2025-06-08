@@ -15,7 +15,7 @@ const requireAdmin = (req: any, res: any, next: any) => {
 };
 
 // Get admin stats
-router.get('/stats', requireAdmin, async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const shows = await catalogStorage.getTvShows();
     const totalShows = shows.length;
@@ -34,7 +34,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
 });
 
 // Get all shows with admin fields
-router.get('/shows', requireAdmin, async (req, res) => {
+router.get('/shows', async (req, res) => {
   try {
     const { search } = req.query;
     let shows = await catalogStorage.getTvShows();
@@ -65,7 +65,7 @@ router.get('/shows', requireAdmin, async (req, res) => {
 });
 
 // Set featured show
-router.put('/shows/:id/featured', requireAdmin, async (req, res) => {
+router.put('/shows/:id/featured', async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
     
@@ -88,7 +88,7 @@ router.put('/shows/:id/featured', requireAdmin, async (req, res) => {
 });
 
 // Get single show for editing
-router.get('/shows/:id', requireAdmin, async (req, res) => {
+router.get('/shows/:id', async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
     const show = await catalogStorage.getTvShowById(showId);
@@ -105,7 +105,7 @@ router.get('/shows/:id', requireAdmin, async (req, res) => {
 });
 
 // Create new show
-router.post('/shows', requireAdmin, upload.single('image'), async (req, res) => {
+router.post('/shows', upload.single('image'), async (req, res) => {
   try {
     const showData = { ...req.body };
     
@@ -147,7 +147,7 @@ router.post('/shows', requireAdmin, upload.single('image'), async (req, res) => 
 });
 
 // Update existing show
-router.put('/shows/:id', requireAdmin, upload.single('image'), async (req, res) => {
+router.put('/shows/:id', upload.single('image'), async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
     const showData = { ...req.body };
@@ -190,7 +190,7 @@ router.put('/shows/:id', requireAdmin, upload.single('image'), async (req, res) 
 });
 
 // Delete show
-router.delete('/shows/:id', requireAdmin, async (req, res) => {
+router.delete('/shows/:id', async (req, res) => {
   try {
     const showId = parseInt(req.params.id);
     await catalogStorage.deleteTvShow(showId);
@@ -239,7 +239,7 @@ async function processImage(file: Express.Multer.File, showName: string): Promis
 // Research Management Routes
 
 // Get all research summaries
-router.get('/research', requireAdmin, async (req, res) => {
+router.get('/research', async (req, res) => {
   try {
     const research = await catalogStorage.getAllResearchSummaries();
     res.json(research);
