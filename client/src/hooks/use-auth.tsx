@@ -36,6 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false; // Always check with server instead of localStorage
   };
   
+  // Don't fetch user data on admin login page
+  const isAdminLoginPage = typeof window !== 'undefined' && window.location.pathname === '/admin/login';
+  
   // Fetch current user data
   const {
     data: user,
@@ -49,8 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     select: (data) => data ?? null,
     // Initialize with null (not authenticated)
     initialData: null,
-    // Always fetch on mount to ensure we have latest auth state
-    enabled: true,
+    // Don't fetch on admin login page
+    enabled: !isAdminLoginPage,
     // If auth token is invalid, retry a few times before giving up
     retry: 2,
     // Refresh user data every 30 minutes to reduce server load
