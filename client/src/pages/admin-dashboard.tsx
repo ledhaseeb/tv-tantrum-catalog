@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { TvShowsTable } from "@/components/admin/TvShowsTable";
 import { EditShowDialog } from "@/components/admin/EditShowDialog";
+import { ResearchTable } from "@/components/admin/ResearchTable";
+import { EditResearchDialog } from "@/components/admin/EditResearchDialog";
 
 interface AdminUser {
   id: number;
@@ -36,6 +38,9 @@ export default function AdminDashboard() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingShow, setEditingShow] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [showResearchDialog, setShowResearchDialog] = useState(false);
+  const [editingResearch, setEditingResearch] = useState(null);
+  const [isAddingNewResearch, setIsAddingNewResearch] = useState(false);
 
   // Check admin authentication
   const { data: adminUser, isLoading: loadingAuth } = useQuery<AdminUser>({
@@ -113,6 +118,24 @@ export default function AdminDashboard() {
     setShowEditDialog(false);
     setEditingShow(null);
     setIsAddingNew(false);
+  };
+
+  const handleEditResearch = (research: any) => {
+    setEditingResearch(research);
+    setIsAddingNewResearch(false);
+    setShowResearchDialog(true);
+  };
+
+  const handleAddResearch = () => {
+    setEditingResearch(null);
+    setIsAddingNewResearch(true);
+    setShowResearchDialog(true);
+  };
+
+  const handleCloseResearchDialog = () => {
+    setShowResearchDialog(false);
+    setEditingResearch(null);
+    setIsAddingNewResearch(false);
   };
 
   return (
@@ -401,19 +424,19 @@ export default function AdminDashboard() {
 
         {activeTab === 'research' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold">Research Management</h2>
-              <p className="text-muted-foreground">
-                Manage research summaries and educational content
-              </p>
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-center text-muted-foreground">
-                  Research management features coming soon...
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold">Research Manager</h2>
+                <p className="text-muted-foreground">
+                  Manage research summaries and original study links
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+              <Button onClick={handleAddResearch}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Research
+              </Button>
+            </div>
+            <ResearchTable onEdit={handleEditResearch} />
           </div>
         )}
 
@@ -459,6 +482,13 @@ export default function AdminDashboard() {
         isOpen={showEditDialog}
         onClose={handleCloseDialog}
         isAddingNew={isAddingNew}
+      />
+
+      <EditResearchDialog
+        research={editingResearch}
+        isOpen={showResearchDialog}
+        onClose={handleCloseResearchDialog}
+        isAddingNew={isAddingNewResearch}
       />
     </div>
   );
