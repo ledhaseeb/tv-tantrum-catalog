@@ -46,39 +46,61 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return 'bg-gray-100 text-gray-800';
   };
   
-  // Get stimulation text
-  const getStimulationText = (score: number) => {
+  // Get stimulation text and color
+  const getStimulationInfo = (score: number) => {
     switch (score) {
-      case 1: return 'Very Calm';
-      case 2: return 'Calm';
-      case 3: return 'Moderate';
-      case 4: return 'Active';
-      case 5: return 'High Energy';
-      default: return 'Unknown';
+      case 1: return { text: 'Very Calm', color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' };
+      case 2: return { text: 'Calm', color: 'text-green-500', bgColor: 'bg-green-50', borderColor: 'border-green-200' };
+      case 3: return { text: 'Moderate', color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' };
+      case 4: return { text: 'Active', color: 'text-orange-600', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' };
+      case 5: return { text: 'High Energy', color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' };
+      default: return { text: 'Unknown', color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
     }
   };
 
-  // Render stimulation dots
-  const renderStimulationDots = () => {
-    const dots = [];
-    for (let i = 1; i <= 5; i++) {
-      dots.push(
-        <div
-          key={i}
-          className={`w-1.5 h-1.5 rounded-full mx-0.5 ${
-            i <= normalizedShow.stimulationScore 
-              ? 'bg-orange-500' 
-              : 'bg-gray-300'
-          }`}
-        />
-      );
+  // Get stimulation progress bar percentage (20%, 40%, 60%, 80%, 100%)
+  const getStimulationPercentage = (score: number) => {
+    return Math.min(score * 20, 100);
+  };
+
+  // Get stimulation progress bar color
+  const getStimulationBarColor = (score: number) => {
+    switch (score) {
+      case 1: return 'bg-green-500';
+      case 2: return 'bg-green-400';
+      case 3: return 'bg-yellow-500';
+      case 4: return 'bg-orange-500';
+      case 5: return 'bg-red-500';
+      default: return 'bg-gray-400';
     }
-    return dots;
+  };
+
+  // Render enhanced stimulation indicator
+  const renderStimulationIndicator = () => {
+    const stimInfo = getStimulationInfo(normalizedShow.stimulationScore);
+    const percentage = getStimulationPercentage(normalizedShow.stimulationScore);
+    const barColor = getStimulationBarColor(normalizedShow.stimulationScore);
+    
+    return (
+      <div className="w-full">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-medium text-gray-700">Stimulation</span>
+          <span className={`text-xs font-semibold ${stimInfo.color}`}>
+            {stimInfo.text}
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div 
+            className={`h-full ${barColor} transition-all duration-300 ease-out`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    );
   };
 
   // Mobile portrait style card - clean design without favorite buttons
   if (isMobile && viewMode === "grid") {
-    const stimulationLabel = getStimulationText(normalizedShow.stimulationScore);
     
     return (
       <Link href={`/show/${show.id}`}>
@@ -105,16 +127,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
               Ages {normalizedShow.ageRange}
             </Badge>
             
-            {/* Stimulation score dots and label */}
+            {/* Enhanced Stimulation Indicator */}
             <div className="mt-auto">
-              <div className="flex flex-col items-center">
-                <div className="flex items-center justify-center mb-1">
-                  {renderStimulationDots()}
-                </div>
-                <div className="text-xs text-gray-600 text-center">
-                  {stimulationLabel} Stimulation
-                </div>
-              </div>
+              {renderStimulationIndicator()}
             </div>
           </CardContent>
         </Card>
@@ -166,17 +181,16 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                   {show.description}
                 </p>
                 
-                {/* Stimulation and episode info */}
-                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mb-3">
-                  <div className="flex items-center">
-                    <span className="mr-1">Stimulation:</span>
-                    <div className="flex items-center mr-1">
-                      {renderStimulationDots()}
+                {/* Enhanced Stimulation and episode info */}
+                <div className="mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="flex-1">
+                      {renderStimulationIndicator()}
                     </div>
-                    <span>{getStimulationText(normalizedShow.stimulationScore)}</span>
+                    <div className="flex items-center text-xs text-gray-600">
+                      <span>{show.episodeLength} min episodes</span>
+                    </div>
                   </div>
-                  <span>•</span>
-                  <span>{show.episodeLength} min episodes</span>
                 </div>
                 
                 {/* Themes */}
@@ -242,17 +256,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             <span className="text-xs text-gray-600">{show.episodeLength} min</span>
           </div>
           
-          {/* Stimulation score */}
+          {/* Enhanced Stimulation Indicator */}
           <div className="mt-auto">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-600">Stimulation</span>
-              <div className="flex items-center">
-                {renderStimulationDots()}
-              </div>
-            </div>
-            <div className="text-xs text-gray-600 text-center">
-              {getStimulationText(normalizedShow.stimulationScore)}
-            </div>
+            {renderStimulationIndicator()}
           </div>
         </CardContent>
       </Card>
