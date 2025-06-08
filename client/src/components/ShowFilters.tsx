@@ -300,10 +300,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   };
   
   const handleThemeToggle = (theme: string) => {
-    console.log('Theme toggle clicked:', theme);
-    console.log('Current selectedThemes:', selectedThemes);
-    console.log('Current filters:', filters);
-    
     let newThemes: string[];
     
     if (selectedThemes.includes(theme)) {
@@ -312,7 +308,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       newThemes = [...selectedThemes, theme];
     }
     
-    console.log('New themes after toggle:', newThemes);
     setSelectedThemes(newThemes);
     
     // Immediately notify parent with complete filter object including new themes
@@ -320,7 +315,6 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       ...filters, 
       themes: newThemes.length ? newThemes : undefined 
     };
-    console.log('Updated filters to send to parent:', updatedFilters);
     setFilters(updatedFilters);
     onFilterChange(updatedFilters);
   };
@@ -667,21 +661,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
                         id={`theme-${theme}`}
                         checked={isSelected}
                         disabled={isDisabled}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            const newThemes = [...selectedThemes, theme];
-                            setSelectedThemes(newThemes);
-                            handleFilterChange('themes', newThemes);
-                            handleFilterChange('themeMatchMode', themeMatchMode);
-                          } else {
-                            const newThemes = selectedThemes.filter(t => t !== theme);
-                            setSelectedThemes(newThemes);
-                            handleFilterChange('themes', newThemes.length > 0 ? newThemes : undefined);
-                            if (newThemes.length === 0) {
-                              handleFilterChange('themeMatchMode', undefined);
-                            }
-                          }
-                        }}
+                        onCheckedChange={() => handleThemeToggle(theme)}
                       />
                       <label
                         htmlFor={`theme-${theme}`}

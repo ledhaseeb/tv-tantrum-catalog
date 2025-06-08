@@ -268,7 +268,6 @@ export default function Browse() {
   }, []);
 
   const handleFilterChange = (filters: typeof activeFilters) => {
-    console.log('Browse page received filter change:', filters);
     setActiveFilters(filters);
     setCurrentPage(1); // Reset to first page when filters change
     
