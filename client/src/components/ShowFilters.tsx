@@ -83,25 +83,31 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   // Extract all themes from the database when shows data is loaded
   useEffect(() => {
     if (!shows || !Array.isArray(shows)) {
+      console.log('ShowFilters: No shows data available:', shows);
       setCommonThemes([]);
       setAvailableThemes([]);
       return;
     }
     
+    console.log('ShowFilters: Processing', shows.length, 'shows for themes');
     const allThemes = new Set<string>();
     
-    shows.forEach((show) => {
+    shows.forEach((show, index) => {
       if (show.themes && Array.isArray(show.themes)) {
         show.themes.forEach(theme => {
           if (theme && typeof theme === 'string' && theme.trim() !== '') {
             allThemes.add(theme.trim());
           }
         });
+      } else if (index < 5) {
+        // Log first few shows to debug theme structure
+        console.log('ShowFilters: Show themes structure:', show.name, show.themes);
       }
     });
     
     // Convert to array and sort alphabetically
     const sortedThemes = Array.from(allThemes).sort();
+    console.log('ShowFilters: Extracted', sortedThemes.length, 'unique themes:', sortedThemes.slice(0, 10));
     
     setCommonThemes(sortedThemes);
     setAvailableThemes(sortedThemes); // Initially all themes are available
