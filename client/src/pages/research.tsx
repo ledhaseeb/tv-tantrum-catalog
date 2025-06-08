@@ -263,10 +263,10 @@ const ResearchCard = ({ summary, onReadMore }: ResearchCardProps) => {
 
   return (
     <Card className={`h-full flex flex-col ${summary.hasRead ? 'bg-gray-50 border-gray-200' : ''}`}>
-      {summary.image_url && (
+      {summary.imageUrl && (
         <div className="relative w-full h-48 overflow-hidden">
           <img 
-            src={summary.image_url} 
+            src={summary.imageUrl} 
             alt={summary.title}
             className={`w-full h-full object-contain bg-gray-50 transition-transform hover:scale-105 ${summary.hasRead ? 'opacity-75' : ''}`}
           />
@@ -284,7 +284,7 @@ const ResearchCard = ({ summary, onReadMore }: ResearchCardProps) => {
           <Badge variant="outline" className="mb-2">
             {formatCategoryName(summary.category)}
           </Badge>
-          {summary.hasRead && !summary.image_url && (
+          {summary.hasRead && !summary.imageUrl && (
             <Badge className="bg-green-500 text-white border-green-600">
               ✓ Read
             </Badge>
