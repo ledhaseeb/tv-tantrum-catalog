@@ -93,7 +93,25 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
 
   useEffect(() => {
     if (show) {
-      setFormData(show);
+      setFormData({
+        name: show.name || "",
+        description: show.description || "",
+        ageRange: show.ageRange || "",
+        stimulationScore: show.stimulationScore || 1,
+        interactivityLevel: show.interactivityLevel || "",
+        dialogueIntensity: show.dialogueIntensity || "",
+        soundEffectsLevel: show.soundEffectsLevel || "",
+        totalMusicLevel: show.totalMusicLevel || "",
+        sceneFrequency: show.sceneFrequency || "",
+        musicTempo: show.musicTempo || "",
+        themes: show.themes || [],
+        animationStyle: show.animationStyle || "",
+        imageUrl: show.imageUrl || "",
+        creator: show.creator || "",
+        releaseYear: show.releaseYear || new Date().getFullYear(),
+        episodeLength: show.episodeLength || 0,
+        seasons: show.seasons || 1
+      });
       setImagePreview(show.imageUrl || "");
     } else if (isAddingNew) {
       setFormData({
@@ -101,7 +119,19 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
         description: "",
         ageRange: "",
         stimulationScore: 1,
-        themes: []
+        interactivityLevel: "",
+        dialogueIntensity: "",
+        soundEffectsLevel: "",
+        totalMusicLevel: "",
+        sceneFrequency: "",
+        musicTempo: "",
+        themes: [],
+        animationStyle: "",
+        imageUrl: "",
+        creator: "",
+        releaseYear: new Date().getFullYear(),
+        episodeLength: 0,
+        seasons: 1
       });
       setImagePreview("");
     }
@@ -446,17 +476,79 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
             />
           </div>
 
+          {/* Additional Details */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="creator">Creator</Label>
+              <Input
+                id="creator"
+                value={formData.creator || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, creator: e.target.value }))}
+                placeholder="e.g., PBS Kids"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="releaseYear">Release Year</Label>
+              <Input
+                id="releaseYear"
+                type="number"
+                value={formData.releaseYear || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, releaseYear: parseInt(e.target.value) || 0 }))}
+                placeholder="2024"
+                min="1900"
+                max="2030"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="episodeLength">Episode Length (minutes)</Label>
+              <Input
+                id="episodeLength"
+                type="number"
+                value={formData.episodeLength || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, episodeLength: parseInt(e.target.value) || 0 }))}
+                placeholder="22"
+                min="1"
+                max="180"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="seasons">Seasons</Label>
+              <Input
+                id="seasons"
+                type="number"
+                value={formData.seasons || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, seasons: parseInt(e.target.value) || 1 }))}
+                placeholder="1"
+                min="1"
+                max="50"
+              />
+            </div>
+          </div>
+
           {/* Image Management */}
           <div className="space-y-2">
             <Label>Image Management</Label>
             <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
               {imagePreview ? (
                 <div className="space-y-4">
-                  <img 
-                    src={imagePreview} 
-                    alt="Show preview" 
-                    className="mx-auto max-w-32 max-h-32 object-cover rounded"
-                  />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {imageFile ? "New Image Selected" : "Current Show Image"}
+                    </p>
+                    <img 
+                      src={imagePreview} 
+                      alt={`${formData.name || 'Show'} image`} 
+                      className="mx-auto max-w-40 max-h-48 object-cover rounded-lg border shadow-sm"
+                    />
+                    {!imageFile && formData.imageUrl && (
+                      <p className="text-xs text-muted-foreground">
+                        URL: {formData.imageUrl.length > 50 ? formData.imageUrl.substring(0, 50) + '...' : formData.imageUrl}
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-2 justify-center">
                     <Button
                       type="button"
@@ -464,7 +556,7 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
                       onClick={() => document.getElementById('image-upload')?.click()}
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      Change Image
+                      {imageFile ? 'Choose Different' : 'Change Image'}
                     </Button>
                     <Button
                       type="button"
@@ -483,6 +575,7 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
               ) : (
                 <div className="space-y-4">
                   <div className="text-4xl">📺</div>
+                  <p className="text-sm font-medium text-muted-foreground">No image available</p>
                   <Button
                     type="button"
                     variant="outline"
