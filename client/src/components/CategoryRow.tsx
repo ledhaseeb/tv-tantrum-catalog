@@ -1,5 +1,5 @@
 import { TvShow } from "@shared/schema";
-import MobileShowCard from "@/components/MobileShowCard";
+import ShowCard from "@/components/ShowCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,13 @@ export default function CategoryRow({ title, description, shows, viewAllLink }: 
           }}
         >
           {shows.slice(0, 12).map((show) => (
-            <MobileShowCard key={show.id} show={show} />
+            <ShowCard 
+              key={show.id} 
+              show={show} 
+              viewMode="grid"
+              onClick={() => {}}
+              isMobile={true}
+            />
           ))}
         </div>
       </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import CategoryRow from "@/components/CategoryRow";
-import DesktopShowCard from "@/components/DesktopShowCard";
+import ShowCard from "@/components/ShowCard";
 import { Search, Filter, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
 import type { TvShow } from "../../../shared/catalog-schema";
 
