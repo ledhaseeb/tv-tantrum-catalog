@@ -57,10 +57,7 @@ export default function HomepageCategories() {
   // Create category mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomepageCategory) => {
-      return apiRequest('/api/admin/homepage-categories', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('POST', '/api/admin/homepage-categories', data);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category created successfully' });
@@ -74,10 +71,7 @@ export default function HomepageCategories() {
   // Update category mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertHomepageCategory> }) => {
-      return apiRequest(`/api/admin/homepage-categories/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('PUT', `/api/admin/homepage-categories/${id}`, data);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category updated successfully' });
@@ -91,9 +85,7 @@ export default function HomepageCategories() {
   // Delete category mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/homepage-categories/${id}`, {
-        method: 'DELETE',
-      });
+      return apiRequest('DELETE', `/api/admin/homepage-categories/${id}`);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category deleted successfully' });
