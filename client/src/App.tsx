@@ -15,6 +15,7 @@ import AuthPage from "@/pages/auth-page-new";
 import AdminPage from "@/pages/admin-page";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
+import SimpleAdminTest from "@/pages/simple-admin-test";
 import LandingPage from "@/pages/landing-page";
 import PreLaunchAbout from "@/pages/pre-launch-about";
 import PreLaunchFAQ from "@/pages/pre-launch-faq";
@@ -195,6 +196,11 @@ function Router() {
         {/* Admin Dashboard - accessible after admin login */}
         <Route path="/admin/dashboard">
           <AdminDashboard />
+        </Route>
+
+        {/* Admin Test - temporary for debugging */}
+        <Route path="/admin/test">
+          <SimpleAdminTest />
         </Route>
 
         {/* User Dashboard - Requires authentication */}

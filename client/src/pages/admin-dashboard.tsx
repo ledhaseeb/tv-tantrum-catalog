@@ -76,9 +76,12 @@ export default function AdminDashboard() {
     },
   });
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (but avoid infinite loops)
   if (!loadingAuth && !adminUser) {
-    setLocation('/admin/login');
+    // Only redirect if we're not already on the login page
+    if (typeof window !== 'undefined' && window.location.pathname !== '/admin/login') {
+      setLocation('/admin/login');
+    }
     return null;
   }
 
