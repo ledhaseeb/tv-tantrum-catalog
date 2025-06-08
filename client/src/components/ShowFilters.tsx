@@ -300,6 +300,10 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   };
   
   const handleThemeToggle = (theme: string) => {
+    console.log('Theme toggle clicked:', theme);
+    console.log('Current selectedThemes:', selectedThemes);
+    console.log('Current filters:', filters);
+    
     let newThemes: string[];
     
     if (selectedThemes.includes(theme)) {
@@ -308,8 +312,17 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       newThemes = [...selectedThemes, theme];
     }
     
+    console.log('New themes after toggle:', newThemes);
     setSelectedThemes(newThemes);
-    handleFilterChange('themes', newThemes.length ? newThemes : undefined);
+    
+    // Immediately notify parent with complete filter object including new themes
+    const updatedFilters = { 
+      ...filters, 
+      themes: newThemes.length ? newThemes : undefined 
+    };
+    console.log('Updated filters to send to parent:', updatedFilters);
+    setFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
   
   const handleApplyFilters = () => {
