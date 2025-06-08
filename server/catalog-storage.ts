@@ -731,6 +731,13 @@ export class CatalogStorage {
   async createHomepageCategory(category: InsertHomepageCategory): Promise<HomepageCategory> {
     const client = await pool.connect();
     try {
+      // Get the next available display order
+      let displayOrder = category.displayOrder;
+      if (displayOrder === undefined || displayOrder === null) {
+        const maxOrderResult = await client.query('SELECT COALESCE(MAX(display_order), 0) + 1 as next_order FROM homepage_categories');
+        displayOrder = maxOrderResult.rows[0].next_order;
+      }
+      
       const result = await client.query(`
         INSERT INTO homepage_categories (name, description, display_order, is_active, filter_config)
         VALUES ($1, $2, $3, $4, $5)
@@ -738,7 +745,7 @@ export class CatalogStorage {
       `, [
         category.name,
         category.description,
-        category.displayOrder || 0,
+        displayOrder,
         category.isActive !== false,
         JSON.stringify(category.filterConfig)
       ]);
