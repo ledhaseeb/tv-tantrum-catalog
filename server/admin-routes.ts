@@ -238,4 +238,85 @@ async function processImage(file: Express.Multer.File, showName: string): Promis
   }
 }
 
+// Research Management Routes
+
+// Get all research summaries
+router.get('/research', requireAdmin, async (req, res) => {
+  try {
+    const research = await storage.getAllResearchSummaries();
+    res.json(research);
+  } catch (error) {
+    console.error('Error fetching research:', error);
+    res.status(500).json({ error: 'Failed to fetch research' });
+  }
+});
+
+// Get single research summary
+router.get('/research/:id', requireAdmin, async (req, res) => {
+  try {
+    const researchId = parseInt(req.params.id);
+    const research = await storage.getResearchSummary(researchId);
+    if (!research) {
+      return res.status(404).json({ error: 'Research not found' });
+    }
+    res.json(research);
+  } catch (error) {
+    console.error('Error fetching research:', error);
+    res.status(500).json({ error: 'Failed to fetch research' });
+  }
+});
+
+// Create new research summary
+router.post('/research', requireAdmin, async (req, res) => {
+  try {
+    const researchData = req.body;
+    
+    // Validate required fields
+    if (!researchData.title || !researchData.category) {
+      return res.status(400).json({ error: 'Title and category are required' });
+    }
+
+    const newResearch = await storage.createResearchSummary(researchData);
+    res.status(201).json(newResearch);
+  } catch (error) {
+    console.error('Error creating research:', error);
+    res.status(500).json({ error: 'Failed to create research' });
+  }
+});
+
+// Update research summary
+router.put('/research/:id', requireAdmin, async (req, res) => {
+  try {
+    const researchId = parseInt(req.params.id);
+    const researchData = req.body;
+    
+    const updatedResearch = await storage.updateResearchSummary(researchId, researchData);
+    if (!updatedResearch) {
+      return res.status(404).json({ error: 'Research not found' });
+    }
+    
+    res.json(updatedResearch);
+  } catch (error) {
+    console.error('Error updating research:', error);
+    res.status(500).json({ error: 'Failed to update research' });
+  }
+});
+
+// Delete research summary
+router.delete('/research/:id', requireAdmin, async (req, res) => {
+  try {
+    const researchId = parseInt(req.params.id);
+    const deleted = await storage.deleteResearchSummary(researchId);
+    
+    if (!deleted) {
+      return res.status(404).json({ error: 'Research not found' });
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting research:', error);
+    res.status(500).json({ error: 'Failed to delete research' });
+  }
+});
+
 export default router;

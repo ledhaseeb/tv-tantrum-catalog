@@ -110,8 +110,12 @@ export interface IStorage {
   
   // Research summaries
   getResearchSummaries(): Promise<ResearchSummary[]>;
+  getAllResearchSummaries(): Promise<ResearchSummary[]>;
   getResearchSummary(id: number): Promise<ResearchSummary | undefined>;
   addResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary>;
+  createResearchSummary(summary: InsertResearchSummary): Promise<ResearchSummary>;
+  updateResearchSummary(id: number, data: Partial<InsertResearchSummary>): Promise<ResearchSummary | null>;
+  deleteResearchSummary(id: number): Promise<boolean>;
   markResearchAsRead(userId: string, researchId: number): Promise<UserReadResearch>;
   getUserReadResearch(userId: string): Promise<ResearchSummary[]>;
   hasUserReadResearch(userId: string, researchId: number): Promise<boolean>;
@@ -772,24 +776,75 @@ export class MemStorage implements IStorage {
     return streak;
   }
   
-  async getResearchSummaries(): Promise<any[]> {
-    return [];
+  async getResearchSummaries(): Promise<ResearchSummary[]> {
+    return Array.from(this.researchSummaries.values());
   }
   
-  async getResearchSummary(id: number): Promise<any | null> {
-    return null;
+  async getAllResearchSummaries(): Promise<ResearchSummary[]> {
+    return Array.from(this.researchSummaries.values());
   }
   
-  async hasUserReadResearch(userId: number, researchId: number): Promise<boolean> {
+  async getResearchSummary(id: number): Promise<ResearchSummary | undefined> {
+    return this.researchSummaries.get(id);
+  }
+  
+  async createResearchSummary(data: InsertResearchSummary): Promise<ResearchSummary> {
+    const id = this.nextResearchId++;
+    const now = new Date();
+    const research: ResearchSummary = {
+      id,
+      title: data.title,
+      category: data.category,
+      source: data.source || null,
+      publishedDate: data.publishedDate || null,
+      originalStudyUrl: data.originalStudyUrl || null,
+      headline: data.headline || null,
+      subHeadline: data.subHeadline || null,
+      summary: data.summary || null,
+      keyFindings: data.keyFindings || null,
+      fullText: data.fullText || null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.researchSummaries.set(id, research);
+    return research;
+  }
+
+  async updateResearchSummary(id: number, data: Partial<InsertResearchSummary>): Promise<ResearchSummary | null> {
+    const existing = this.researchSummaries.get(id);
+    if (!existing) return null;
+
+    const updated: ResearchSummary = {
+      ...existing,
+      ...data,
+      updatedAt: new Date()
+    };
+    this.researchSummaries.set(id, updated);
+    return updated;
+  }
+
+  async deleteResearchSummary(id: number): Promise<boolean> {
+    return this.researchSummaries.delete(id);
+  }
+  
+  async hasUserReadResearch(userId: string, researchId: number): Promise<boolean> {
     return false;
   }
   
-  async markResearchAsRead(userId: number, researchId: number): Promise<any> {
-    return {};
+  async markResearchAsRead(userId: string, researchId: number): Promise<UserReadResearch> {
+    const id = this.nextUserReadResearchId++;
+    const now = new Date();
+    const userReadResearch: UserReadResearch = {
+      id,
+      userId,
+      researchId,
+      readAt: now
+    };
+    return userReadResearch;
   }
   
-  async addResearchSummary(data: any): Promise<any> {
-    return {};
+  async addResearchSummary(data: InsertResearchSummary): Promise<ResearchSummary> {
+    return this.createResearchSummary(data);
   }
   
   async addReviewUpvote(userId: string, reviewId: number): Promise<ReviewUpvote> {

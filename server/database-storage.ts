@@ -3243,6 +3243,84 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // Research Management Methods
+  async getAllResearchSummaries(): Promise<ResearchSummary[]> {
+    try {
+      const research = await db
+        .select()
+        .from(researchSummaries)
+        .orderBy(desc(researchSummaries.createdAt));
+      
+      return research;
+    } catch (error) {
+      console.error('Error fetching all research summaries:', error);
+      return [];
+    }
+  }
+
+  async getResearchSummary(id: number): Promise<ResearchSummary | null> {
+    try {
+      const [research] = await db
+        .select()
+        .from(researchSummaries)
+        .where(eq(researchSummaries.id, id));
+      
+      return research || null;
+    } catch (error) {
+      console.error(`Error fetching research summary with ID ${id}:`, error);
+      return null;
+    }
+  }
+
+  async createResearchSummary(data: InsertResearchSummary): Promise<ResearchSummary> {
+    try {
+      const [newResearch] = await db
+        .insert(researchSummaries)
+        .values({
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newResearch;
+    } catch (error) {
+      console.error('Error creating research summary:', error);
+      throw error;
+    }
+  }
+
+  async updateResearchSummary(id: number, data: Partial<InsertResearchSummary>): Promise<ResearchSummary | null> {
+    try {
+      const [updatedResearch] = await db
+        .update(researchSummaries)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(researchSummaries.id, id))
+        .returning();
+      
+      return updatedResearch || null;
+    } catch (error) {
+      console.error(`Error updating research summary with ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteResearchSummary(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(researchSummaries)
+        .where(eq(researchSummaries.id, id));
+      
+      return result.count > 0;
+    } catch (error) {
+      console.error(`Error deleting research summary with ID ${id}:`, error);
+      return false;
+    }
+  }
 }
 
 // Helper function to build a default image URL
