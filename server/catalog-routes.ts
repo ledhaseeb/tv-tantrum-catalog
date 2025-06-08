@@ -3,22 +3,16 @@ import { catalogStorage } from "./catalog-storage";
 import { insertTvShowSchema } from "@shared/catalog-schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
+import { setupAdminSession, setupAdminAuth, requireAdmin } from "./admin-auth";
 
 const router = express.Router();
 
 export { router };
 
 export function registerCatalogRoutes(app: Express) {
-  // Session middleware for admin authentication
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'catalog-session-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-      secure: false, // Set to true in production with HTTPS
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  }));
+  // Setup admin session and authentication
+  setupAdminSession(app);
+  setupAdminAuth(app);
 
   // Health check
   router.get('/health', (req, res) => {
