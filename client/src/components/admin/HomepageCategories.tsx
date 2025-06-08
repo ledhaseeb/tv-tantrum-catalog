@@ -69,6 +69,7 @@ export default function HomepageCategories() {
       console.log('Category created successfully');
       toast({ title: 'Success', description: 'Category created successfully' });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
+      setIsCreating(false);
     },
     onError: (error) => {
       console.error('Category creation error:', error);
@@ -84,6 +85,7 @@ export default function HomepageCategories() {
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category updated successfully' });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
+      setEditingCategory(null);
     },
     onError: (error) => {
       toast({ title: 'Error', description: 'Failed to update category', variant: 'destructive' });
