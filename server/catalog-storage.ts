@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { TvShow, Theme, Platform, ResearchSummary, User } from '@shared/catalog-schema';
+import { TvShow, Theme, Platform, ResearchSummary, User, HomepageCategory, InsertHomepageCategory } from '@shared/catalog-schema';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -660,6 +660,173 @@ export class CatalogStorage {
         [id]
       );
       return (result.rowCount || 0) > 0;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Homepage Categories Management
+   */
+  async getHomepageCategories(): Promise<HomepageCategory[]> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM homepage_categories WHERE is_active = true ORDER BY display_order, name'
+      );
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        displayOrder: row.display_order,
+        isActive: row.is_active,
+        filterConfig: row.filter_config,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+    } finally {
+      client.release();
+    }
+  }
+
+  async getAllHomepageCategories(): Promise<HomepageCategory[]> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM homepage_categories ORDER BY display_order, name'
+      );
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        displayOrder: row.display_order,
+        isActive: row.is_active,
+        filterConfig: row.filter_config,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+    } finally {
+      client.release();
+    }
+  }
+
+  async createHomepageCategory(category: InsertHomepageCategory): Promise<HomepageCategory> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        INSERT INTO homepage_categories (name, description, display_order, is_active, filter_config)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `, [
+        category.name,
+        category.description,
+        category.displayOrder || 0,
+        category.isActive !== false,
+        JSON.stringify(category.filterConfig)
+      ]);
+
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        displayOrder: row.display_order,
+        isActive: row.is_active,
+        filterConfig: row.filter_config,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateHomepageCategory(id: number, category: Partial<InsertHomepageCategory>): Promise<HomepageCategory | null> {
+    const client = await pool.connect();
+    try {
+      const setClauses: string[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
+
+      if (category.name !== undefined) {
+        setClauses.push(`name = $${paramIndex++}`);
+        values.push(category.name);
+      }
+      if (category.description !== undefined) {
+        setClauses.push(`description = $${paramIndex++}`);
+        values.push(category.description);
+      }
+      if (category.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramIndex++}`);
+        values.push(category.displayOrder);
+      }
+      if (category.isActive !== undefined) {
+        setClauses.push(`is_active = $${paramIndex++}`);
+        values.push(category.isActive);
+      }
+      if (category.filterConfig !== undefined) {
+        setClauses.push(`filter_config = $${paramIndex++}`);
+        values.push(JSON.stringify(category.filterConfig));
+      }
+
+      setClauses.push(`updated_at = $${paramIndex++}`);
+      values.push(new Date());
+
+      values.push(id);
+
+      const result = await client.query(`
+        UPDATE homepage_categories 
+        SET ${setClauses.join(', ')} 
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `, values);
+
+      if (result.rows.length === 0) return null;
+
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        displayOrder: row.display_order,
+        isActive: row.is_active,
+        filterConfig: row.filter_config,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+    } finally {
+      client.release();
+    }
+  }
+
+  async deleteHomepageCategory(id: number): Promise<boolean> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'DELETE FROM homepage_categories WHERE id = $1',
+        [id]
+      );
+      return (result.rowCount || 0) > 0;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getShowsForCategory(categoryId: number): Promise<TvShow[]> {
+    const client = await pool.connect();
+    try {
+      // Get category filter config
+      const categoryResult = await client.query(
+        'SELECT filter_config FROM homepage_categories WHERE id = $1',
+        [categoryId]
+      );
+
+      if (categoryResult.rows.length === 0) return [];
+
+      const filterConfig = categoryResult.rows[0].filter_config;
+      
+      // Apply the filter config to get shows
+      return await this.getTvShows(filterConfig);
     } finally {
       client.release();
     }

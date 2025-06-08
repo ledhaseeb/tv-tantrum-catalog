@@ -130,6 +130,18 @@ export const researchSummaries = pgTable("research_summaries", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// --- Homepage Categories (admin controlled) ---
+export const homepageCategories = pgTable("homepage_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  filterConfig: jsonb("filter_config").notNull(), // Stores the filter logic
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // --- Zod schemas for inserting/selecting ---
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -166,6 +178,12 @@ export const insertResearchSummarySchema = createInsertSchema(researchSummaries)
   updatedAt: true,
 });
 
+export const insertHomepageCategorySchema = createInsertSchema(homepageCategories).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // --- TypeScript types for database entities ---
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -190,3 +208,6 @@ export type TvShowPlatform = typeof tvShowPlatforms.$inferSelect;
 
 export type InsertResearchSummary = z.infer<typeof insertResearchSummarySchema>;
 export type ResearchSummary = typeof researchSummaries.$inferSelect;
+
+export type InsertHomepageCategory = z.infer<typeof insertHomepageCategorySchema>;
+export type HomepageCategory = typeof homepageCategories.$inferSelect;

@@ -342,4 +342,85 @@ export function registerCatalogRoutes(app: Express) {
       res.status(500).json({ message: "Failed to fetch TV shows" });
     }
   });
+
+  // Homepage Categories Management Routes
+  
+  // Get all homepage categories (public)
+  app.get("/api/homepage-categories", async (req: Request, res: Response) => {
+    try {
+      const categories = await catalogStorage.getHomepageCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching homepage categories:", error);
+      res.status(500).json({ message: "Failed to fetch homepage categories" });
+    }
+  });
+
+  // Get shows for a specific category (public)
+  app.get("/api/homepage-categories/:id/shows", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const shows = await catalogStorage.getShowsForCategory(categoryId);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching category shows:", error);
+      res.status(500).json({ message: "Failed to fetch category shows" });
+    }
+  });
+
+  // Admin: Get all homepage categories (including inactive)
+  app.get("/api/admin/homepage-categories", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const categories = await catalogStorage.getAllHomepageCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching admin homepage categories:", error);
+      res.status(500).json({ message: "Failed to fetch homepage categories" });
+    }
+  });
+
+  // Admin: Create homepage category
+  app.post("/api/admin/homepage-categories", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const category = await catalogStorage.createHomepageCategory(req.body);
+      res.status(201).json(category);
+    } catch (error) {
+      console.error("Error creating homepage category:", error);
+      res.status(500).json({ message: "Failed to create homepage category" });
+    }
+  });
+
+  // Admin: Update homepage category
+  app.put("/api/admin/homepage-categories/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const category = await catalogStorage.updateHomepageCategory(id, req.body);
+      
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating homepage category:", error);
+      res.status(500).json({ message: "Failed to update homepage category" });
+    }
+  });
+
+  // Admin: Delete homepage category
+  app.delete("/api/admin/homepage-categories/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await catalogStorage.deleteHomepageCategory(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting homepage category:", error);
+      res.status(500).json({ message: "Failed to delete homepage category" });
+    }
+  });
 }
