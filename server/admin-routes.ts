@@ -222,6 +222,17 @@ router.delete('/shows/:id', async (req, res) => {
   }
 });
 
+// Get all unique themes from the database
+router.get('/themes', async (req, res) => {
+  try {
+    const themes = await catalogStorage.getAllUniqueThemes();
+    res.json(themes);
+  } catch (error) {
+    console.error('Error fetching themes:', error);
+    res.status(500).json({ error: 'Failed to fetch themes' });
+  }
+});
+
 // Process and optimize uploaded images
 async function processImage(file: Express.Multer.File, showName: string): Promise<string> {
   try {
