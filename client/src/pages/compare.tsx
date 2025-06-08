@@ -426,7 +426,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`interaction-bar-${show.id}`}>
-                        {renderSegmentedBar(show.interactivityLevel)}
+                        {renderSegmentedBar((show as any).interactivity_level)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -447,7 +447,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
                       <div key={`dialogue-${show.id}`} className="text-center py-1">
-                        <span className="text-sm font-medium">{show.dialogueIntensity || 'Moderate'}</span>
+                        <span className="text-sm font-medium">{(show as any).dialogue_intensity || 'Moderate'}</span>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -459,7 +459,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`dialogue-bar-${show.id}`}>
-                        {renderSegmentedBar(show.dialogueIntensity)}
+                        {renderSegmentedBar((show as any).dialogue_intensity)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -480,7 +480,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
                       <div key={`sound-${show.id}`} className="text-center py-1">
-                        <span className="text-sm font-medium">{show.soundEffectsLevel || 'Moderate'}</span>
+                        <span className="text-sm font-medium">{(show as any).sound_effects_level || 'Moderate'}</span>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -492,7 +492,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`sound-bar-${show.id}`}>
-                        {renderSegmentedBar(show.soundEffectsLevel)}
+                        {renderSegmentedBar((show as any).sound_effects_level)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -513,7 +513,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
                       <div key={`scene-${show.id}`} className="text-center py-1">
-                        <span className="text-sm font-medium">{show.sceneFrequency || 'Moderate'}</span>
+                        <span className="text-sm font-medium">{(show as any).scene_frequency || 'Moderate'}</span>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -525,7 +525,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`scene-bar-${show.id}`}>
-                        {renderSegmentedBar(show.sceneFrequency)}
+                        {renderSegmentedBar((show as any).scene_frequency)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -546,7 +546,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
                       <div key={`tempo-${show.id}`} className="text-center py-1">
-                        <span className="text-sm font-medium">{show.musicTempo || 'Moderate'}</span>
+                        <span className="text-sm font-medium">{(show as any).music_tempo || 'Moderate'}</span>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -558,7 +558,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`tempo-bar-${show.id}`}>
-                        {renderSegmentedBar(show.musicTempo)}
+                        {renderSegmentedBar((show as any).music_tempo)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -579,7 +579,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4 mb-1">
                     {selectedShows.map(show => (
                       <div key={`music-${show.id}`} className="text-center py-1">
-                        <span className="text-sm font-medium">{show.totalMusicLevel || 'Moderate'}</span>
+                        <span className="text-sm font-medium">{(show as any).total_music_level || 'Moderate'}</span>
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -591,7 +591,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`music-bar-${show.id}`}>
-                        {renderSegmentedBar(show.totalMusicLevel)}
+                        {renderSegmentedBar((show as any).total_music_level)}
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
