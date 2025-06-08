@@ -35,29 +35,16 @@ export class CatalogStorage {
       let queryParams: any[] = [];
       let paramIndex = 1;
       
-      // Theme filtering with junction table support
+      // Theme filtering using array column
       if (filters.themes && filters.themes.length > 0) {
         if (filters.themeMatchMode === 'AND') {
           // For AND logic, show must have ALL specified themes
-          query += `
-            WHERE ts.id IN (
-              SELECT tv_show_id 
-              FROM catalog_tv_show_themes tst
-              JOIN catalog_themes t ON tst.theme_id = t.id
-              WHERE t.name = ANY($${paramIndex})
-              GROUP BY tv_show_id
-              HAVING COUNT(DISTINCT t.name) = $${paramIndex + 1}
-            )
-          `;
-          queryParams.push(filters.themes, filters.themes.length);
-          paramIndex += 2;
+          whereConditions.push(`ts.themes @> $${paramIndex}`);
+          queryParams.push(filters.themes);
+          paramIndex++;
         } else {
-          // For OR logic, show must have ANY of the specified themes
-          query += `
-            LEFT JOIN catalog_tv_show_themes tst ON ts.id = tst.tv_show_id
-            LEFT JOIN catalog_themes t ON tst.theme_id = t.id
-          `;
-          whereConditions.push(`(t.name = ANY($${paramIndex}) OR ts.themes && $${paramIndex})`);
+          // For OR logic, show must have ANY of the specified themes  
+          whereConditions.push(`ts.themes && $${paramIndex}`);
           queryParams.push(filters.themes);
           paramIndex++;
         }
@@ -186,7 +173,11 @@ export class CatalogStorage {
         }
       }
       
+      console.log('Debug SQL Query:', query);
+      console.log('Debug Query Params:', queryParams);
+      
       const result = await client.query(query, queryParams);
+      console.log('Debug Query Result Count:', result.rows.length);
       return result.rows;
     } finally {
       client.release();
