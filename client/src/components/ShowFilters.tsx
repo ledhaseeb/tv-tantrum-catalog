@@ -61,18 +61,33 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   // Fetch shows for autocomplete and theme analysis
   const { data: shows, isLoading: isLoadingShows, error: showsError } = useQuery<TvShow[]>({
     queryKey: ['/api/tv-shows'],
+    queryFn: async () => {
+      console.log('ShowFilters: Fetching shows from /api/tv-shows');
+      const response = await fetch('/api/tv-shows');
+      console.log('ShowFilters: Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('ShowFilters: API Error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('ShowFilters: Successfully fetched', data?.length || 0, 'shows');
+      
+      if (data && data.length > 0) {
+        console.log('ShowFilters: First show sample:', {
+          id: data[0].id,
+          name: data[0].name,
+          themes: data[0].themes
+        });
+      }
+      
+      return data;
+    },
     staleTime: 300000, // 5 minutes
     retry: 1,
     refetchOnWindowFocus: false,
-    onError: (error) => {
-      console.error('ShowFilters: Query failed:', error);
-    },
-    onSuccess: (data) => {
-      console.log('ShowFilters: Successfully loaded', data?.length || 0, 'shows');
-      if (data && data.length > 0) {
-        console.log('ShowFilters: First show sample:', data[0]);
-      }
-    }
   });
 
   // Error logging for shows data
