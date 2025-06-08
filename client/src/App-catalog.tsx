@@ -42,6 +42,8 @@ export default function CatalogApp() {
                 <Route path="/research/:id" component={ResearchDetail} />
                 <Route path="/show/:id" component={CatalogShowDetailPage} />
                 <Route path="/admin" component={AdminPage} />
+                <Route path="/admin/login" component={AdminLogin} />
+                <Route path="/admin/dashboard" component={AdminDashboard} />
                 <Route component={NotFound} />
               </Switch>
             </main>
