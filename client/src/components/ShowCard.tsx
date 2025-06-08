@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TvShow } from "@shared/schema";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
+import { Link } from "wouter";
 
 interface ShowCardProps {
   show: TvShow;

@@ -345,7 +345,12 @@ export default function CatalogHomeResponsive() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {categories.popular.slice(0, 10).map((show) => (
-                <DesktopShowCard key={show.id} show={show} />
+                <ShowCard 
+                  key={show.id} 
+                  show={show} 
+                  viewMode="grid"
+                  onClick={() => {}}
+                />
               ))}
             </div>
           </section>
@@ -367,7 +372,12 @@ export default function CatalogHomeResponsive() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {categories.musical.slice(0, 10).map((show) => (
-                <DesktopShowCard key={show.id} show={show} />
+                <ShowCard 
+                  key={show.id} 
+                  show={show} 
+                  viewMode="grid"
+                  onClick={() => {}}
+                />
               ))}
             </div>
           </section>
@@ -389,7 +399,12 @@ export default function CatalogHomeResponsive() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {categories.educational.slice(0, 10).map((show) => (
-                <DesktopShowCard key={show.id} show={show} />
+                <ShowCard 
+                  key={show.id} 
+                  show={show} 
+                  viewMode="grid"
+                  onClick={() => {}}
+                />
               ))}
             </div>
           </section>
@@ -411,7 +426,12 @@ export default function CatalogHomeResponsive() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {categories.preschool.slice(0, 10).map((show) => (
-                <DesktopShowCard key={show.id} show={show} />
+                <ShowCard 
+                  key={show.id} 
+                  show={show} 
+                  viewMode="grid"
+                  onClick={() => {}}
+                />
               ))}
             </div>
           </section>
