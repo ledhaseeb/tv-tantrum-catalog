@@ -913,10 +913,30 @@ export class CatalogStorage {
             filters.ageGroup = rule.value;
           }
           break;
+        case 'ageRange':
+          if (rule.operator === 'range' && rule.value) {
+            // Handle age range format "0-5"
+            if (typeof rule.value === 'string') {
+              const parts = rule.value.split('-');
+              if (parts.length === 2) {
+                filters.ageRange = {
+                  min: parseInt(parts[0]),
+                  max: parseInt(parts[1])
+                };
+              }
+            }
+          }
+          break;
         case 'themes':
           if (rule.operator === 'in' && Array.isArray(rule.value)) {
             filters.themes = rule.value;
             filters.themeMatchMode = filterConfig.logic || 'AND';
+          } else if (rule.operator === 'contains') {
+            // Handle individual theme contains rules - collect them into an array
+            if (!filters.themes) {
+              filters.themes = [];
+            }
+            filters.themes.push(rule.value);
           }
           break;
         case 'interactivityLevel':
@@ -925,6 +945,11 @@ export class CatalogStorage {
           }
           break;
       }
+    }
+
+    // Set theme match mode if themes were found
+    if (filters.themes && filters.themes.length > 0) {
+      filters.themeMatchMode = filterConfig.logic || 'AND';
     }
 
     return filters;
