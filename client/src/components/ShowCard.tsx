@@ -182,16 +182,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
                   {show.description}
                 </p>
                 
-                {/* Enhanced Stimulation and episode info */}
+                {/* Enhanced Stimulation Indicator */}
                 <div className="mb-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="flex-1">
-                      {renderStimulationIndicator()}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-600">
-                      <span>{show.episodeLength} min episodes</span>
-                    </div>
-                  </div>
+                  {renderStimulationIndicator()}
                 </div>
                 
                 {/* Themes */}
@@ -240,27 +233,37 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
           {/* Title */}
           <h3 className="text-sm font-bold mb-2 line-clamp-2">{show.name}</h3>
           
-          {/* Creator and year */}
-          {(show.creator || releaseYears) && (
-            <p className="text-xs text-gray-600 mb-2">
-              {show.creator && <span>By {show.creator}</span>}
-              {show.creator && releaseYears && <span> • </span>}
-              {releaseYears}
-            </p>
-          )}
-          
-          {/* Age and episode length */}
-          <div className="flex items-center justify-between mb-2">
+          {/* Target Ages */}
+          <div className="mb-2">
             <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100">
               Ages {normalizedShow.ageRange}
             </Badge>
-            <span className="text-xs text-gray-600">{show.episodeLength} min</span>
           </div>
           
           {/* Enhanced Stimulation Indicator */}
-          <div className="mt-auto">
+          <div className="mb-2">
             {renderStimulationIndicator()}
           </div>
+          
+          {/* Themes */}
+          {show.themes && show.themes.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-auto">
+              {show.themes.slice(0, 2).map((theme, index) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary" 
+                  className={`text-xs ${getThemeColor(theme)}`}
+                >
+                  {theme}
+                </Badge>
+              ))}
+              {show.themes.length > 2 && (
+                <Badge variant="outline" className="text-xs">
+                  +{show.themes.length - 2}
+                </Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>
