@@ -394,12 +394,16 @@ export function registerCatalogRoutes(app: Express) {
   app.put("/api/admin/homepage-categories/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`[SERVER] Updating category ${id} with data:`, req.body);
+      
       const category = await catalogStorage.updateHomepageCategory(id, req.body);
       
       if (!category) {
+        console.log(`[SERVER] Category ${id} not found`);
         return res.status(404).json({ message: "Category not found" });
       }
       
+      console.log(`[SERVER] Successfully updated category ${id}:`, category);
       res.json(category);
     } catch (error) {
       console.error("Error updating homepage category:", error);

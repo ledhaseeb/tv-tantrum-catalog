@@ -109,14 +109,19 @@ export default function HomepageCategories() {
   // Reorder category mutation
   const reorderMutation = useMutation({
     mutationFn: async ({ id, newOrder }: { id: number; newOrder: number }) => {
-      return apiRequest('PUT', `/api/admin/homepage-categories/${id}`, {
+      console.log(`[REORDER] Updating category ${id} to order ${newOrder}`);
+      const result = await apiRequest('PUT', `/api/admin/homepage-categories/${id}`, {
         displayOrder: newOrder
       });
+      console.log(`[REORDER] API response:`, result);
+      return result;
     },
     onSuccess: () => {
+      console.log(`[REORDER] Success - invalidating cache`);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
     },
     onError: (error) => {
+      console.error(`[REORDER] Error:`, error);
       toast({ title: 'Error', description: 'Failed to reorder category', variant: 'destructive' });
     },
   });
