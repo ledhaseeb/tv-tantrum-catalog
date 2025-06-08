@@ -274,8 +274,8 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
   }
 });
 
-// Setup admin authentication routes
-setupSimpleAdminAuth(app);
+// Setup admin authentication routes (temporarily disabled for development)
+// setupSimpleAdminAuth(app);
 
 // Mount admin routes
 app.use('/api/admin', adminRoutes);
