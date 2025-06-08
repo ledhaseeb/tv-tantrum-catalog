@@ -63,10 +63,23 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     return Math.min(score * 20, 100);
   };
 
-  // Render enhanced stimulation indicator with gradient fill
+  // Get stimulation progress bar color
+  const getStimulationBarColor = (score: number) => {
+    switch (score) {
+      case 1: return 'bg-green-500';
+      case 2: return 'bg-green-400';
+      case 3: return 'bg-yellow-500';
+      case 4: return 'bg-orange-500';
+      case 5: return 'bg-red-500';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  // Render enhanced stimulation indicator with solid colors
   const renderStimulationIndicator = () => {
     const stimulationText = getStimulationText(normalizedShow.stimulationScore);
     const percentage = getStimulationPercentage(normalizedShow.stimulationScore);
+    const barColor = getStimulationBarColor(normalizedShow.stimulationScore);
     
     return (
       <div className="w-full">
@@ -75,11 +88,8 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         </div>
         <div className="relative w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div 
-            className="h-full transition-all duration-300 ease-out"
-            style={{ 
-              width: `${percentage}%`,
-              background: `linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%)`
-            }}
+            className={`h-full ${barColor} transition-all duration-300 ease-out`}
+            style={{ width: `${percentage}%` }}
           />
         </div>
         <div className="text-xs text-gray-600 text-center mt-1">
