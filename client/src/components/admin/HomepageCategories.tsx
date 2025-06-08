@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, Edit, Trash2, Eye, Filter, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import CategoryEditor from './CategoryEditor';
 import type { HomepageCategory, InsertHomepageCategory, TvShow } from '@shared/catalog-schema';
 
 interface FilterRule {
@@ -43,6 +44,8 @@ interface FiltersType {
 export default function HomepageCategories() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [editingCategory, setEditingCategory] = useState<HomepageCategory | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Fetch categories
   const { data: categories = [], isLoading } = useQuery({
@@ -167,27 +170,35 @@ export default function HomepageCategories() {
   // Sort categories by display order for consistent display
   const sortedCategories = [...categories].sort((a, b) => a.displayOrder - b.displayOrder);
 
+  // Show category editor if creating or editing
+  if (isCreating || editingCategory) {
+    return (
+      <CategoryEditor
+        category={editingCategory || undefined}
+        onSubmit={(data) => {
+          if (editingCategory) {
+            updateMutation.mutate({ id: editingCategory.id, data });
+          } else {
+            createMutation.mutate(data);
+          }
+        }}
+        onCancel={() => {
+          setIsCreating(false);
+          setEditingCategory(null);
+        }}
+        isLoading={createMutation.isPending || updateMutation.isPending}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Homepage Categories</h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Category
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Homepage Category</DialogTitle>
-            </DialogHeader>
-            <CategoryForm 
-              onSubmit={(data) => createMutation.mutate(data)}
-              isLoading={createMutation.isPending}
-            />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsCreating(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Create Category
+        </Button>
       </div>
 
       <div className="grid gap-4">
@@ -240,24 +251,15 @@ export default function HomepageCategories() {
                     <Eye className="h-4 w-4" />
                     Preview
                   </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Edit className="h-4 w-4" />
-                        Edit
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Edit Category</DialogTitle>
-                      </DialogHeader>
-                      <CategoryForm 
-                        initialData={category}
-                        onSubmit={(data) => updateMutation.mutate({ id: category.id, data })}
-                        isLoading={updateMutation.isPending}
-                      />
-                    </DialogContent>
-                  </Dialog>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => setEditingCategory(category)}
+                  >
+                    <Edit className="h-4 w-4" />
+                    Edit
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
