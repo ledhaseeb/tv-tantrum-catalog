@@ -844,17 +844,14 @@ export class CatalogStorage {
 
       if (categoryResult.rows.length === 0) return [];
 
-      const filterConfig = JSON.parse(categoryResult.rows[0].filter_config);
+      const filterConfigRaw = categoryResult.rows[0].filter_config;
+      const filterConfig = typeof filterConfigRaw === 'string' ? JSON.parse(filterConfigRaw) : filterConfigRaw;
       
       // Convert filter config to query filters
       const filters = this.convertFilterConfigToFilters(filterConfig);
-      console.log('Category filter config:', filterConfig);
-      console.log('Converted filters:', filters);
       
       // Apply the filters to get shows
-      const shows = await this.getTvShows(filters);
-      console.log(`Category ${categoryId} returned ${shows.length} shows`);
-      return shows;
+      return await this.getTvShows(filters);
     } finally {
       client.release();
     }
