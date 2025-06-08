@@ -46,9 +46,9 @@ export default function HomepageCategories() {
 
   // Fetch categories
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['/api/homepage-categories'],
+    queryKey: ['/api/admin/homepage-categories'],
     queryFn: async () => {
-      const response = await fetch('/api/homepage-categories');
+      const response = await fetch('/api/admin/homepage-categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json() as Promise<HomepageCategory[]>;
     },
@@ -57,14 +57,14 @@ export default function HomepageCategories() {
   // Create category mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomepageCategory) => {
-      return apiRequest('/api/homepage-categories', {
+      return apiRequest('/api/admin/homepage-categories', {
         method: 'POST',
         body: JSON.stringify(data),
       });
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category created successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
     },
     onError: (error) => {
       toast({ title: 'Error', description: 'Failed to create category', variant: 'destructive' });
@@ -74,14 +74,14 @@ export default function HomepageCategories() {
   // Update category mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertHomepageCategory> }) => {
-      return apiRequest(`/api/homepage-categories/${id}`, {
-        method: 'PATCH',
+      return apiRequest(`/api/admin/homepage-categories/${id}`, {
+        method: 'PUT',
         body: JSON.stringify(data),
       });
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category updated successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
     },
     onError: (error) => {
       toast({ title: 'Error', description: 'Failed to update category', variant: 'destructive' });
@@ -91,13 +91,13 @@ export default function HomepageCategories() {
   // Delete category mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/homepage-categories/${id}`, {
+      return apiRequest(`/api/admin/homepage-categories/${id}`, {
         method: 'DELETE',
       });
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category deleted successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
     },
     onError: (error) => {
       toast({ title: 'Error', description: 'Failed to delete category', variant: 'destructive' });
