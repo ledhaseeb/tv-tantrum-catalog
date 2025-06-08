@@ -221,6 +221,9 @@ export default function HomepageCategories() {
                     <CardTitle className="flex items-center gap-2">
                       {category.name}
                       {!category.isActive && <Badge variant="secondary">Inactive</Badge>}
+                      <Badge variant="outline" className="text-xs">
+                        {category.showCount || 0} shows
+                      </Badge>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
                       {category.description}

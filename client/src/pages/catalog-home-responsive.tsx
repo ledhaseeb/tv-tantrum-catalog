@@ -191,7 +191,12 @@ export default function CatalogHomeResponsive() {
                 <div key={category.id} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{category.name}</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        {category.name}
+                        <span className="text-sm font-normal bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                          {category.showCount || shows.length} shows
+                        </span>
+                      </h2>
                       <p className="text-gray-600">{category.description}</p>
                     </div>
                     <Link href={`/browse?category=${category.id}`}>

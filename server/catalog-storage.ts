@@ -716,7 +716,7 @@ export class CatalogStorage {
 
       // Calculate show counts for each category
       for (const category of categories) {
-        const shows = await this.filterTvShows(category.filterConfig);
+        const shows = await this.getHomepageCategoryShows(category.id);
         (category as any).showCount = shows.length;
       }
 
