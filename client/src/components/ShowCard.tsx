@@ -75,27 +75,27 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     }
   };
 
-  // Render enhanced stimulation indicator with solid colors
+  // Render enhanced stimulation indicator with prominent styling
   const renderStimulationIndicator = () => {
     const stimulationText = getStimulationText(normalizedShow.stimulationScore);
     const percentage = getStimulationPercentage(normalizedShow.stimulationScore);
     const barColor = getStimulationBarColor(normalizedShow.stimulationScore);
     
     return (
-      <div className="w-full">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-medium text-gray-700">Stimulation</span>
+      <div className="w-full bg-gray-50 rounded-lg p-3 border border-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-bold text-gray-800">Stimulation Level</span>
         </div>
-        <div className="relative w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="relative w-full bg-gray-300 rounded-full h-3 overflow-hidden shadow-inner">
           <div 
-            className="h-full transition-all duration-300 ease-out"
+            className="h-full transition-all duration-300 ease-out shadow-sm"
             style={{ 
               width: `${percentage}%`,
               backgroundColor: barColor
             }}
           />
         </div>
-        <div className="text-xs text-gray-600 text-center mt-1">
+        <div className="text-sm font-semibold text-center mt-2" style={{ color: barColor }}>
           {stimulationText}
         </div>
       </div>
