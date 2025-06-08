@@ -47,7 +47,9 @@ export function ResearchTable({ onEdit }: ResearchTableProps) {
   const { data: research = [], isLoading } = useQuery({
     queryKey: ['/api/admin/research'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/research');
+      const response = await fetch('/api/admin/research', {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Failed to fetch research');
       return response.json();
     },
@@ -57,6 +59,7 @@ export function ResearchTable({ onEdit }: ResearchTableProps) {
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/admin/research/${id}`, {
         method: 'DELETE',
+        credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to delete research');
       return response.json();
