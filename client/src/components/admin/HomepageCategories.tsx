@@ -57,13 +57,18 @@ export default function HomepageCategories() {
   // Create category mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomepageCategory) => {
-      return apiRequest('POST', '/api/admin/homepage-categories', data);
+      console.log('Creating category with data:', data);
+      const response = await apiRequest('POST', '/api/admin/homepage-categories', data);
+      console.log('Category creation response:', response);
+      return response;
     },
     onSuccess: () => {
+      console.log('Category created successfully');
       toast({ title: 'Success', description: 'Category created successfully' });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
     },
     onError: (error) => {
+      console.error('Category creation error:', error);
       toast({ title: 'Error', description: 'Failed to create category', variant: 'destructive' });
     },
   });
@@ -386,6 +391,7 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     onSubmit(formData);
   };
 

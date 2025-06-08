@@ -33,6 +33,7 @@ import ResearchView from "@/pages/research-view";
 import SharePage from "@/pages/share";
 import AdminResearchLinks from "@/pages/admin-research-links";
 import AdminResearchManager from "@/pages/admin-research-manager";
+import AdminCategories from "@/pages/admin-categories";
 import CompleteRegistration from "@/pages/complete-registration";
 import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
@@ -295,6 +296,15 @@ function Router() {
                 <Footer />
               </div>
             </Route>
+            <Route path="/admin/categories">
+              <div className="flex-grow flex flex-col">
+                <Navbar />
+                <div className="flex-grow">
+                  <AdminCategories />
+                </div>
+                <Footer />
+              </div>
+            </Route>
           </>
         ) : (
           <>
@@ -317,6 +327,18 @@ function Router() {
                   <Navbar />
                   <div className="flex-grow">
                     <AdminResearchManager />
+                  </div>
+                  <Footer />
+                </div>
+              )} 
+            />
+            <AdminRoute 
+              path="/admin/categories" 
+              component={() => (
+                <div className="flex-grow flex flex-col">
+                  <Navbar />
+                  <div className="flex-grow">
+                    <AdminCategories />
                   </div>
                   <Footer />
                 </div>
