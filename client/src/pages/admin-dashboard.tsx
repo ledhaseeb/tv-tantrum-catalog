@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -82,12 +82,18 @@ export default function AdminDashboard() {
     },
   });
 
-  // Redirect to login if not authenticated (but avoid infinite loops)
-  if (!loadingAuth && !adminUser) {
-    // Only redirect if we're not already on the login page
-    if (typeof window !== 'undefined' && window.location.pathname !== '/admin/login') {
-      setLocation('/admin/login');
+  // Use useEffect for redirect to avoid setState during render
+  useEffect(() => {
+    if (!loadingAuth && !adminUser) {
+      // Only redirect if we're not already on the login page
+      if (typeof window !== 'undefined' && window.location.pathname !== '/admin/login') {
+        setLocation('/admin/login');
+      }
     }
+  }, [loadingAuth, adminUser, setLocation]);
+
+  // Return early if not authenticated
+  if (!loadingAuth && !adminUser) {
     return null;
   }
 

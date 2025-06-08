@@ -54,7 +54,7 @@ function Router() {
   useAnalytics();
   
   // Access URL to check for development mode
-  const isDevMode = window.location.search.includes('dev=true');
+  const isDevMode = true; // Temporarily force dev mode for testing
   
   // Check if user has early access token stored in localStorage
   const hasEarlyAccess = localStorage.getItem("earlyAccessShown") === "true";
@@ -204,6 +204,8 @@ function Router() {
         <Route path="/admin/test">
           <SimpleAdminTest />
         </Route>
+
+
 
         {/* User Dashboard - Requires authentication */}
         <ProtectedRoute 
