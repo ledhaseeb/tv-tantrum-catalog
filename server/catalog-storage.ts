@@ -966,6 +966,25 @@ export class CatalogStorage {
     // This method is deprecated, use getHomepageCategoryShows instead
     return this.getHomepageCategoryShows(categoryId);
   }
+
+  /**
+   * Get all unique themes from the database for theme search functionality
+   */
+  async getAllUniqueThemes(): Promise<string[]> {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT DISTINCT unnest(themes) as theme 
+        FROM catalog_tv_shows 
+        WHERE themes IS NOT NULL 
+        ORDER BY theme
+      `);
+      
+      return result.rows.map(row => row.theme).filter(theme => theme && theme.trim());
+    } finally {
+      client.release();
+    }
+  }
 }
 
 export const catalogStorage = new CatalogStorage();
