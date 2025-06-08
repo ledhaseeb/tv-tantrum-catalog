@@ -39,9 +39,13 @@ export class CatalogStorage {
       if (filters.themes && filters.themes.length > 0) {
         if (filters.themeMatchMode === 'AND') {
           // For AND logic, show must have ALL specified themes
-          whereConditions.push(`ts.themes @> $${paramIndex}`);
-          queryParams.push(filters.themes);
-          paramIndex++;
+          // Each theme must be present in the show's themes array
+          const themeConditions = filters.themes.map((_, index) => 
+            `$${paramIndex + index} = ANY(ts.themes)`
+          );
+          whereConditions.push(`(${themeConditions.join(' AND ')})`);
+          queryParams.push(...filters.themes);
+          paramIndex += filters.themes.length;
         } else {
           // For OR logic, show must have ANY of the specified themes  
           whereConditions.push(`ts.themes && $${paramIndex}`);
