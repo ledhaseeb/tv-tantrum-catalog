@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CategoryRow from "@/components/CategoryRow";
 import ShowCard from "@/components/ShowCard";
 import { Search, Filter, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
-import type { TvShow } from "../../../shared/catalog-schema";
+import type { TvShow, HomepageCategory } from "../../../shared/catalog-schema";
 
 export default function CatalogHomeResponsive() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,8 +24,45 @@ export default function CatalogHomeResponsive() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch all shows
-  const { data: allShows, isLoading: showsLoading } = useQuery({
+  // Fetch homepage categories
+  const { data: homepageCategories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ['/api/homepage-categories'],
+    queryFn: async () => {
+      const response = await fetch('/api/homepage-categories');
+      if (!response.ok) throw new Error('Failed to fetch homepage categories');
+      return response.json() as Promise<HomepageCategory[]>;
+    },
+  });
+
+  // Fetch shows for each category
+  const { data: categoryShows = {}, isLoading: categoryShowsLoading } = useQuery({
+    queryKey: ['/api/homepage-category-shows', homepageCategories?.map(c => c.id)],
+    queryFn: async () => {
+      if (!homepageCategories?.length) return {};
+      
+      const categoryShows: { [key: number]: TvShow[] } = {};
+      
+      await Promise.all(
+        homepageCategories.map(async (category: HomepageCategory) => {
+          try {
+            const response = await fetch(`/api/homepage-categories/${category.id}/shows`);
+            if (response.ok) {
+              categoryShows[category.id] = await response.json();
+            }
+          } catch (error) {
+            console.error(`Failed to fetch shows for category ${category.id}:`, error);
+            categoryShows[category.id] = [];
+          }
+        })
+      );
+      
+      return categoryShows;
+    },
+    enabled: !!homepageCategories?.length,
+  });
+
+  // Fetch all shows for search functionality
+  const { data: allShows = [], isLoading: showsLoading } = useQuery({
     queryKey: ['/api/tv-shows'],
     queryFn: async () => {
       const response = await fetch('/api/tv-shows');
@@ -34,332 +71,181 @@ export default function CatalogHomeResponsive() {
     },
   });
 
-  // Group shows by themes and characteristics
-  const groupShowsByCategory = (shows: TvShow[]) => {
-    const categories: { [key: string]: TvShow[] } = {
-      popular: [],
-      musical: [],
-      fantasy: [],
-      educational: [],
-      preschool: [],
-      highEnergy: [],
-      calm: []
-    };
+  const isLoading = categoriesLoading || categoryShowsLoading;
+  
+  // Filter shows based on search
+  const filteredShows = searchTerm 
+    ? allShows.filter(show => 
+        show.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) 
+    : [];
 
-    shows?.forEach(show => {
-      const themes = show.themes || [];
-      const stimulation = show.stimulationScore || 0;
-      
-      // Popular shows (high creativity rating or recent)
-      if (show.creativityRating && show.creativityRating >= 4) {
-        categories.popular.push(show);
-      }
-      
-      // Musical shows
-      if (themes.some(theme => 
-        theme.toLowerCase().includes('music') || 
-        theme.toLowerCase().includes('song') ||
-        theme.toLowerCase().includes('musical')
-      )) {
-        categories.musical.push(show);
-      }
-      
-      // Fantasy shows
-      if (themes.some(theme => 
-        theme.toLowerCase().includes('fantasy') || 
-        theme.toLowerCase().includes('magic') ||
-        theme.toLowerCase().includes('adventure')
-      )) {
-        categories.fantasy.push(show);
-      }
-      
-      // Educational shows
-      if (themes.some(theme => 
-        theme.toLowerCase().includes('education') || 
-        theme.toLowerCase().includes('learning') ||
-        theme.toLowerCase().includes('teach')
-      )) {
-        categories.educational.push(show);
-      }
-      
-      // Preschool shows (age range 2-5)
-      if (show.ageRange && (
-        show.ageRange.includes('2-5') ||
-        show.ageRange.includes('3-5') ||
-        show.ageRange.includes('toddler') ||
-        show.ageRange.includes('preschool')
-      )) {
-        categories.preschool.push(show);
-      }
-      
-      // High energy shows
-      if (stimulation >= 4) {
-        categories.highEnergy.push(show);
-      }
-      
-      // Calm shows
-      if (stimulation <= 2) {
-        categories.calm.push(show);
-      }
-    });
-
-    // Limit each category to 10 shows
-    Object.keys(categories).forEach(key => {
-      categories[key] = categories[key].slice(0, 10);
-    });
-
-    return categories;
-  };
-
-  const categories = groupShowsByCategory(allShows || []);
-
-  const handleSearch = () => {
-    if (searchTerm.trim()) {
-      window.location.href = `/browse?search=${encodeURIComponent(searchTerm)}`;
-    }
-  };
-
-  if (showsLoading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="space-y-6">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-60 w-full" />
+      <div className="min-h-screen bg-background">
+        <div className="space-y-8 p-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
       </div>
     );
   }
 
-  // Mobile layout with category rows
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-gray-50">
+  // Sort categories by display order
+  const sortedCategories = [...homepageCategories].sort((a, b) => a.displayOrder - b.displayOrder);
 
-
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Screen Time Stimulation Scores
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 border-b">
+        <div className="container mx-auto px-4 py-12 lg:py-16">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 tracking-tight">
+              Find the Perfect Show
             </h1>
-            <p className="text-gray-600 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
-              Find TV shows measured by stimulation levels, helping you discover content that fits your child's needs.
+            <p className="text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto">
+              Discover children's content based on sensory details and stimulation levels
             </p>
             
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto relative">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Search show by name, theme..."
+                  placeholder="Search for shows..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full pl-9 pr-3 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-12 pr-12 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
                 />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
-              <Button onClick={handleSearch} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-sm">
-                Search
-              </Button>
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap justify-center gap-4 pt-4">
+              <Link href="/browse">
+                <Button variant="outline" size="lg" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  Browse All Shows
+                </Button>
+              </Link>
+              <Link href="/research">
+                <Button variant="outline" size="lg" className="gap-2">
+                  <BarChart2 className="h-4 w-4" />
+                  Research Insights
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Google AdSense Container */}
-        <div className="bg-gray-100 border-y border-gray-200 py-4 px-4">
-          <div className="max-w-sm mx-auto">
-            <ins 
-              className="adsbygoogle block"
-              style={{ display: 'block' }}
-              data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
-              data-ad-slot="XXXXXXXXXX"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
+      {/* Search Results */}
+      {searchTerm && (
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6">
+              Search Results for "{searchTerm}" ({filteredShows.length} shows)
+            </h2>
+            {filteredShows.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {filteredShows.slice(0, 20).map((show) => (
+                  <ShowCard key={show.id} show={show} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">No shows found matching your search.</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSearchTerm("")}
+                  className="mt-4"
+                >
+                  Clear Search
+                </Button>
+              </div>
+            )}
           </div>
         </div>
+      )}
 
-        {/* Content - Category Rows */}
-        <div className="pt-6 pb-8">
-          {categories.popular && categories.popular.length > 0 && (
-            <CategoryRow
-              title="Popular Shows"
-              description="Most viewed shows across all age groups"
-              shows={categories.popular}
-              viewAllLink="/browse?sort=popular"
-            />
-          )}
+      {/* Homepage Categories */}
+      {!searchTerm && (
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto space-y-12">
+            {sortedCategories.map((category) => {
+              const shows = categoryShows[category.id] || [];
+              
+              if (shows.length === 0) return null;
 
-          {categories.musical && categories.musical.length > 0 && (
-            <CategoryRow
-              title="Musical Shows"
-              description="Shows featuring songs, musical numbers and rhythmic content"
-              shows={categories.musical}
-              viewAllLink="/browse?theme=music"
-            />
-          )}
+              return (
+                <div key={category.id} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">{category.name}</h2>
+                      <p className="text-gray-600">{category.description}</p>
+                    </div>
+                    <Link href={`/browse?category=${category.id}`}>
+                      <Button variant="outline">View All</Button>
+                    </Link>
+                  </div>
+                  
+                  <CategoryRow shows={shows} />
+                </div>
+              );
+            })}
 
-          {categories.fantasy && categories.fantasy.length > 0 && (
-            <CategoryRow
-              title="Fantasy Shows"
-              description="Shows with magical, imaginative and fantasy elements"
-              shows={categories.fantasy}
-              viewAllLink="/browse?theme=fantasy"
-            />
-          )}
-
-          {categories.educational && categories.educational.length > 0 && (
-            <CategoryRow
-              title="Educational Shows"
-              description="Learning-focused content for cognitive development"
-              shows={categories.educational}
-              viewAllLink="/browse?theme=education"
-            />
-          )}
-
-          {categories.preschool && categories.preschool.length > 0 && (
-            <CategoryRow
-              title="Preschool Shows"
-              description="Perfect content for toddlers and preschoolers"
-              shows={categories.preschool}
-              viewAllLink="/browse?age=2-5"
-            />
-          )}
-
-          {categories.highEnergy && categories.highEnergy.length > 0 && (
-            <CategoryRow
-              title="High Energy Shows"
-              description="Active and stimulating content for energetic kids"
-              shows={categories.highEnergy}
-              viewAllLink="/browse?stimulation=4-5"
-            />
-          )}
-
-          {categories.calm && categories.calm.length > 0 && (
-            <CategoryRow
-              title="Calm Shows"
-              description="Gentle and soothing content for quiet time"
-              shows={categories.calm}
-              viewAllLink="/browse?stimulation=1-2"
-            />
-          )}
+            {/* Fallback message if no categories */}
+            {sortedCategories.length === 0 && (
+              <div className="text-center py-12">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">No Categories Available</h2>
+                <p className="text-gray-600 mb-6">
+                  Homepage categories are being set up. Browse all shows in the meantime.
+                </p>
+                <Link href="/browse">
+                  <Button size="lg">Browse All Shows</Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  // Desktop layout with large grid cards
-  return (
-    <div className="min-h-screen bg-gray-50">
-
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-16 px-8">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Screen Time Stimulation Scores
-          </h1>
-          <p className="text-gray-600 mb-10 text-lg leading-relaxed max-w-2xl mx-auto">
-            Find TV shows measured by stimulation levels, helping you discover content that fits your child's needs.
-          </p>
-          
-          <div className="flex gap-3 max-w-lg mx-auto">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search show by name, theme, platform..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full pl-10 pr-4 py-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+      {/* AdSense Ad Container - Mobile */}
+      <div className="lg:hidden">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center">
+            <div className="adsbygoogle bg-gray-50 border border-gray-200 rounded-lg p-4 w-full max-w-sm h-64 flex items-center justify-center text-gray-400"
+                 data-ad-client="ca-pub-YOUR-PUBLISHER-ID"
+                 data-ad-slot="YOUR-MOBILE-AD-SLOT"
+                 data-ad-format="auto">
+              Advertisement
             </div>
-            <Button onClick={handleSearch} className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-base">
-              Search
-            </Button>
           </div>
         </div>
       </div>
 
-      {/* Google AdSense Container */}
-      <div className="bg-gray-100 border-y border-gray-200 py-6 px-8">
-        <div className="max-w-4xl mx-auto">
-          <ins 
-            className="adsbygoogle block"
-            style={{ display: 'block' }}
-            data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
-            data-ad-slot="XXXXXXXXXX"
-            data-ad-format="auto"
-            data-full-width-responsive="true"
-          />
+      {/* AdSense Ad Container - Desktop */}
+      <div className="hidden lg:block">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center">
+            <div className="adsbygoogle bg-gray-50 border border-gray-200 rounded-lg p-4 w-full max-w-4xl h-32 flex items-center justify-center text-gray-400"
+                 data-ad-client="ca-pub-YOUR-PUBLISHER-ID"
+                 data-ad-slot="YOUR-DESKTOP-AD-SLOT"
+                 data-ad-format="auto">
+              Advertisement
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Content - Category Rows */}
-      <div className="pt-8 pb-8">
-        {categories.popular && categories.popular.length > 0 && (
-          <CategoryRow
-            title="Popular Shows"
-            description="Most viewed shows across all age groups"
-            shows={categories.popular}
-            viewAllLink="/browse?sort=popular"
-          />
-        )}
-
-        {categories.musical && categories.musical.length > 0 && (
-          <CategoryRow
-            title="Musical Shows"
-            description="Shows featuring songs, musical numbers and rhythmic content"
-            shows={categories.musical}
-            viewAllLink="/browse?theme=music"
-          />
-        )}
-
-        {categories.fantasy && categories.fantasy.length > 0 && (
-          <CategoryRow
-            title="Fantasy Shows"
-            description="Shows with magical, imaginative and fantasy elements"
-            shows={categories.fantasy}
-            viewAllLink="/browse?theme=fantasy"
-          />
-        )}
-
-        {categories.educational && categories.educational.length > 0 && (
-          <CategoryRow
-            title="Educational Shows"
-            description="Learning-focused content for cognitive development"
-            shows={categories.educational}
-            viewAllLink="/browse?theme=education"
-          />
-        )}
-
-        {categories.preschool && categories.preschool.length > 0 && (
-          <CategoryRow
-            title="Preschool Shows"
-            description="Perfect content for toddlers and preschoolers"
-            shows={categories.preschool}
-            viewAllLink="/browse?age=2-5"
-          />
-        )}
-
-        {categories.highEnergy && categories.highEnergy.length > 0 && (
-          <CategoryRow
-            title="High Energy Shows"
-            description="Active and stimulating content for energetic kids"
-            shows={categories.highEnergy}
-            viewAllLink="/browse?stimulation=4-5"
-          />
-        )}
-
-        {categories.calm && categories.calm.length > 0 && (
-          <CategoryRow
-            title="Calm Shows"
-            description="Gentle and soothing content for quiet time"
-            shows={categories.calm}
-            viewAllLink="/browse?stimulation=1-2"
-          />
-        )}
       </div>
     </div>
   );

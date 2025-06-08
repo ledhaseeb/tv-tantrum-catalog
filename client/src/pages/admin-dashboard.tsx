@@ -23,6 +23,7 @@ import { TvShowsTable } from "@/components/admin/TvShowsTable";
 import { EditShowDialog } from "@/components/admin/EditShowDialog";
 import { ResearchTable } from "@/components/admin/ResearchTable";
 import { EditResearchDialog } from "@/components/admin/EditResearchDialog";
+import HomepageCategories from "@/components/admin/HomepageCategories";
 
 interface AdminUser {
   id: number;
@@ -195,6 +196,16 @@ export default function AdminDashboard() {
               }`}
             >
               Research
+            </button>
+            <button
+              onClick={() => setActiveTab('homepage-categories')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'homepage-categories'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Homepage Categories
             </button>
             <button
               onClick={() => setActiveTab('users')}
@@ -438,6 +449,10 @@ export default function AdminDashboard() {
             </div>
             <ResearchTable onEdit={handleEditResearch} />
           </div>
+        )}
+
+        {activeTab === 'homepage-categories' && (
+          <HomepageCategories />
         )}
 
         {activeTab === 'users' && (
