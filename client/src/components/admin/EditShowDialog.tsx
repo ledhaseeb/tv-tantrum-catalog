@@ -84,7 +84,6 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
     stimulationScore: 1,
     themes: []
   });
-  const [newTheme, setNewTheme] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [themeSearch, setThemeSearch] = useState("");
@@ -223,16 +222,6 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
     }
   };
 
-  const addTheme = () => {
-    if (newTheme.trim() && !formData.themes?.includes(newTheme.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        themes: [...(prev.themes || []), newTheme.trim()]
-      }));
-      setNewTheme("");
-    }
-  };
-
   const removeTheme = (theme: string) => {
     setFormData(prev => ({
       ...prev,
@@ -246,6 +235,23 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
         ...prev,
         themes: [...(prev.themes || []), theme]
       }));
+    }
+  };
+
+  const handleThemeAdd = () => {
+    if (themeSearch.trim()) {
+      // Check if there's an exact match in existing themes
+      const exactMatch = existingThemes.find(theme => 
+        theme.toLowerCase() === themeSearch.trim().toLowerCase()
+      );
+      
+      if (exactMatch) {
+        addCommonTheme(exactMatch);
+      } else {
+        // Add as new theme
+        addCommonTheme(themeSearch.trim());
+      }
+      setThemeSearch("");
     }
   };
 
@@ -455,57 +461,55 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
             </div>
             
             <div className="space-y-3">
-              {/* Add custom theme */}
-              <div className="flex gap-2">
-                <Input
-                  value={newTheme}
-                  onChange={(e) => setNewTheme(e.target.value)}
-                  placeholder="Add custom theme"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTheme())}
-                />
-                <Button type="button" variant="outline" onClick={addTheme}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Search existing themes */}
+              {/* Single theme search/add field */}
               <div className="space-y-2">
-                <Input
-                  value={themeSearch}
-                  onChange={(e) => setThemeSearch(e.target.value)}
-                  placeholder="Search existing themes..."
-                  className="text-sm"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={themeSearch}
+                    onChange={(e) => setThemeSearch(e.target.value)}
+                    placeholder="Search for themes or add new theme..."
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleThemeAdd())}
+                  />
+                  <Button type="button" variant="outline" onClick={handleThemeAdd}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Show matching themes from database */}
                 {themeSearch && (
                   <div className="max-h-32 overflow-y-auto border rounded-md p-2 bg-muted/50">
-                    {existingThemes
-                      .filter(theme => 
-                        theme.toLowerCase().includes(themeSearch.toLowerCase()) &&
-                        !formData.themes?.includes(theme)
-                      )
-                      .slice(0, 10)
-                      .map((theme) => (
-                        <Button
-                          key={theme}
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            addCommonTheme(theme);
-                            setThemeSearch("");
-                          }}
-                          className="w-full justify-start h-8 text-xs mb-1"
-                        >
-                          + {theme}
-                        </Button>
-                      ))}
-                    {existingThemes
-                      .filter(theme => 
-                        theme.toLowerCase().includes(themeSearch.toLowerCase()) &&
-                        !formData.themes?.includes(theme)
-                      ).length === 0 && (
-                      <p className="text-xs text-muted-foreground p-2">No matching themes found</p>
-                    )}
+                    {(() => {
+                      const matchingThemes = existingThemes
+                        .filter(theme => 
+                          theme.toLowerCase().includes(themeSearch.toLowerCase()) &&
+                          !formData.themes?.includes(theme)
+                        )
+                        .slice(0, 8);
+
+                      if (matchingThemes.length > 0) {
+                        return matchingThemes.map((theme) => (
+                          <Button
+                            key={theme}
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              addCommonTheme(theme);
+                              setThemeSearch("");
+                            }}
+                            className="w-full justify-start h-8 text-xs mb-1"
+                          >
+                            + {theme}
+                          </Button>
+                        ));
+                      } else {
+                        return (
+                          <div className="p-2 text-xs text-muted-foreground">
+                            No matching themes found. Click the + button to add "{themeSearch}" as a new theme.
+                          </div>
+                        );
+                      }
+                    })()}
                   </div>
                 )}
               </div>
