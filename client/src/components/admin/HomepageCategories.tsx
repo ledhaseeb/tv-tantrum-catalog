@@ -307,10 +307,15 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
   const matchingShows = allShows.filter(show => {
     if (!showPreview) return false;
 
-    let matches = [];
+    let matches: boolean[] = [];
 
     // Apply each filter rule
     parsedConfig.rules?.forEach(rule => {
+      // Skip rules with empty values or placeholder values
+      if (!rule.value || rule.value === '' || rule.value === 'Select theme') {
+        return;
+      }
+
       let ruleMatches = false;
 
       switch (rule.field) {
@@ -329,12 +334,12 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
           break;
         case 'ageRange':
           if (rule.operator === 'contains') {
-            ruleMatches = show.ageRange.includes(rule.value);
+            ruleMatches = show.ageRange.toLowerCase().includes(rule.value.toLowerCase());
           }
           break;
         case 'interactivityLevel':
           if (rule.operator === 'equals') {
-            ruleMatches = show.interactivityLevel === rule.value;
+            ruleMatches = show.interactivityLevel?.toLowerCase() === rule.value.toLowerCase();
           }
           break;
       }
@@ -342,7 +347,7 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
       matches.push(ruleMatches);
     });
 
-    // Apply logic (AND/OR)
+    // Apply logic (AND/OR) - if no valid rules, return false
     if (matches.length === 0) return false;
     return parsedConfig.logic === 'AND' ? matches.every(Boolean) : matches.some(Boolean);
   });
