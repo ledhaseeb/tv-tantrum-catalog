@@ -225,7 +225,10 @@ export default function HomepageCategories() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => moveCategory(category.id, 'up')}
+                      onClick={() => {
+                        console.log(`Up button clicked for category ${category.id} (${category.name})`);
+                        moveCategory(category.id, 'up');
+                      }}
                       disabled={index === 0 || reorderMutation.isPending}
                       className="h-6 w-6 p-0"
                     >
@@ -234,7 +237,10 @@ export default function HomepageCategories() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => moveCategory(category.id, 'down')}
+                      onClick={() => {
+                        console.log(`Down button clicked for category ${category.id} (${category.name})`);
+                        moveCategory(category.id, 'down');
+                      }}
                       disabled={index === sortedCategories.length - 1 || reorderMutation.isPending}
                       className="h-6 w-6 p-0"
                     >
