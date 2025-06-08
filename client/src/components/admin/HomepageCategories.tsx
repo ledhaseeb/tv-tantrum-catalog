@@ -142,7 +142,7 @@ export default function HomepageCategories() {
   };
 
   // Helper functions for reordering
-  const moveCategory = (categoryId: number, direction: 'up' | 'down') => {
+  const moveCategory = async (categoryId: number, direction: 'up' | 'down') => {
     const sortedCategories = [...categories].sort((a, b) => a.displayOrder - b.displayOrder);
     const currentIndex = sortedCategories.findIndex(cat => cat.id === categoryId);
     
@@ -160,9 +160,21 @@ export default function HomepageCategories() {
     const currentCategory = sortedCategories[currentIndex];
     const targetCategory = sortedCategories[targetIndex];
     
-    // Swap display orders
-    reorderMutation.mutate({ id: currentCategory.id, newOrder: targetCategory.displayOrder });
-    reorderMutation.mutate({ id: targetCategory.id, newOrder: currentCategory.displayOrder });
+    console.log(`Moving category ${currentCategory.name} (order ${currentCategory.displayOrder}) ${direction}`);
+    console.log(`Swapping with ${targetCategory.name} (order ${targetCategory.displayOrder})`);
+    
+    // Swap display orders - do one at a time to avoid race conditions
+    try {
+      await reorderMutation.mutateAsync({ id: currentCategory.id, newOrder: targetCategory.displayOrder });
+      await reorderMutation.mutateAsync({ id: targetCategory.id, newOrder: currentCategory.displayOrder });
+      
+      toast({
+        title: 'Success',
+        description: `Moved "${currentCategory.name}" ${direction}`,
+      });
+    } catch (error) {
+      console.error('Error reordering categories:', error);
+    }
   };
 
   if (isLoading) {
