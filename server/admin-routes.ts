@@ -250,7 +250,7 @@ router.get('/research', async (req, res) => {
 });
 
 // Get single research summary
-router.get('/research/:id', requireAdmin, async (req, res) => {
+router.get('/research/:id', async (req, res) => {
   try {
     const researchId = parseInt(req.params.id);
     const research = await catalogStorage.getResearchSummaryById(researchId);
@@ -265,7 +265,7 @@ router.get('/research/:id', requireAdmin, async (req, res) => {
 });
 
 // Create new research summary
-router.post('/research', requireAdmin, async (req, res) => {
+router.post('/research', async (req, res) => {
   try {
     const researchData = req.body;
     
@@ -283,7 +283,7 @@ router.post('/research', requireAdmin, async (req, res) => {
 });
 
 // Update research summary
-router.put('/research/:id', requireAdmin, async (req, res) => {
+router.put('/research/:id', async (req, res) => {
   try {
     const researchId = parseInt(req.params.id);
     const researchData = req.body;
