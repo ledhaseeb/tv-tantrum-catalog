@@ -72,7 +72,8 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
       showsCount: shows?.length,
       isLoading: isLoadingShows,
       error: showsError?.message,
-      firstShow: shows?.[0]
+      firstShow: shows?.[0],
+      firstShowThemes: shows?.[0]?.themes
     });
     
     if (showsError) {
@@ -89,15 +90,23 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
   
   // Extract all themes from the database when shows data is loaded
   useEffect(() => {
+    console.log('Theme extraction effect triggered:', { shows: !!shows, isArray: Array.isArray(shows), length: shows?.length });
+    
     if (!shows || !Array.isArray(shows)) {
       console.log('No shows data available for theme extraction');
+      setCommonThemes([]);
+      setAvailableThemes([]);
       return;
     }
     
     const allThemes = new Set<string>();
+    let showsWithThemes = 0;
     
-    shows.forEach(show => {
+    shows.forEach((show, index) => {
+      console.log(`Show ${index}:`, { name: show.name, themes: show.themes, hasThemes: !!show.themes, isArray: Array.isArray(show.themes) });
+      
       if (show.themes && Array.isArray(show.themes)) {
+        showsWithThemes++;
         show.themes.forEach(theme => {
           if (theme && typeof theme === 'string' && theme.trim() !== '') {
             allThemes.add(theme.trim());
@@ -108,7 +117,7 @@ export default function ShowFilters({ activeFilters, onFilterChange, onClearFilt
     
     // Convert to array and sort alphabetically
     const sortedThemes = Array.from(allThemes).sort();
-    console.log(`Found ${sortedThemes.length} unique themes in the database:`, sortedThemes.slice(0, 10));
+    console.log(`Theme extraction complete: ${showsWithThemes} shows with themes, ${sortedThemes.length} unique themes found:`, sortedThemes.slice(0, 10));
     
     setCommonThemes(sortedThemes);
     setAvailableThemes(sortedThemes); // Initially all themes are available
