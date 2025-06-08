@@ -207,11 +207,11 @@ export default function HomepageCategories() {
                 <span>Order: {category.displayOrder}</span>
                 <span>•</span>
                 <span>
-                  Logic: {JSON.parse(category.filterConfig || '{}').logic || 'AND'}
+                  Logic: {(typeof category.filterConfig === 'string' ? JSON.parse(category.filterConfig || '{}') : category.filterConfig).logic || 'AND'}
                 </span>
                 <span>•</span>
                 <span>
-                  Rules: {JSON.parse(category.filterConfig || '{}').rules?.length || 0}
+                  Rules: {(typeof category.filterConfig === 'string' ? JSON.parse(category.filterConfig || '{}') : category.filterConfig).rules?.length || 0}
                 </span>
               </div>
             </CardContent>
@@ -242,14 +242,18 @@ function CategoryForm({ initialData, onSubmit, isLoading }: CategoryFormProps) {
     description: initialData?.description || '',
     displayOrder: initialData?.displayOrder || 0,
     isActive: initialData?.isActive ?? true,
-    filterConfig: initialData?.filterConfig || JSON.stringify({ logic: 'AND', rules: [] })
+    filterConfig: typeof initialData?.filterConfig === 'string' 
+      ? initialData.filterConfig 
+      : JSON.stringify(initialData?.filterConfig || { logic: 'AND', rules: [] })
   });
 
   const [showPreview, setShowPreview] = useState(false);
   const [previewFilters, setPreviewFilters] = useState<FiltersType>({});
 
   // Parse filter config for easier manipulation
-  const parsedConfig: FilterConfig = JSON.parse(formData.filterConfig || '{"logic":"AND","rules":[]}');
+  const parsedConfig: FilterConfig = typeof formData.filterConfig === 'string' 
+    ? JSON.parse(formData.filterConfig || '{"logic":"AND","rules":[]}')
+    : formData.filterConfig || { logic: 'AND', rules: [] };
 
   // Fetch all shows for preview
   const { data: allShows = [] } = useQuery({
