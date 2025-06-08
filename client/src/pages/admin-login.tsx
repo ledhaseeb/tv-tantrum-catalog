@@ -15,10 +15,6 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  // Debug logging
-  console.log('AdminLogin component rendered');
-  console.log('Current location:', window.location.pathname);
-
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
       const response = await fetch('/api/admin/login', {

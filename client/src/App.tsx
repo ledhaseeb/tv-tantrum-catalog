@@ -189,10 +189,7 @@ function Router() {
 
         {/* Admin Login - accessible without authentication */}
         <Route path="/admin/login">
-          {() => {
-            console.log('Admin login route matched!');
-            return <AdminLogin />;
-          }}
+          <AdminLogin />
         </Route>
 
         {/* Admin Dashboard - accessible after admin login */}
