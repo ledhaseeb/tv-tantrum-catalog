@@ -87,6 +87,8 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
   const [newTheme, setNewTheme] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [themeSearch, setThemeSearch] = useState("");
+  const [existingThemes, setExistingThemes] = useState<string[]>([]);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -137,6 +139,25 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
     }
     setImageFile(null);
   }, [show, isAddingNew]);
+
+  // Fetch existing themes when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchExistingThemes();
+    }
+  }, [isOpen]);
+
+  const fetchExistingThemes = async () => {
+    try {
+      const response = await fetch('/api/admin/themes');
+      if (response.ok) {
+        const themes = await response.json();
+        setExistingThemes(themes);
+      }
+    } catch (error) {
+      console.error('Failed to fetch existing themes:', error);
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -433,33 +454,79 @@ export function EditShowDialog({ show, isOpen, onClose, isAddingNew = false }: E
               ))}
             </div>
             
-            <div className="flex gap-2">
-              <Input
-                value={newTheme}
-                onChange={(e) => setNewTheme(e.target.value)}
-                placeholder="Add custom theme"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTheme())}
-              />
-              <Button type="button" variant="outline" onClick={addTheme}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="text-sm text-muted-foreground">
-              <p className="mb-2">Or select from common themes:</p>
-              <div className="flex flex-wrap gap-1">
-                {COMMON_THEMES.filter(theme => !formData.themes?.includes(theme)).map((theme) => (
-                  <Button
-                    key={theme}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => addCommonTheme(theme)}
-                    className="h-6 text-xs"
-                  >
-                    + {theme}
-                  </Button>
-                ))}
+            <div className="space-y-3">
+              {/* Add custom theme */}
+              <div className="flex gap-2">
+                <Input
+                  value={newTheme}
+                  onChange={(e) => setNewTheme(e.target.value)}
+                  placeholder="Add custom theme"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTheme())}
+                />
+                <Button type="button" variant="outline" onClick={addTheme}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Search existing themes */}
+              <div className="space-y-2">
+                <Input
+                  value={themeSearch}
+                  onChange={(e) => setThemeSearch(e.target.value)}
+                  placeholder="Search existing themes..."
+                  className="text-sm"
+                />
+                {themeSearch && (
+                  <div className="max-h-32 overflow-y-auto border rounded-md p-2 bg-muted/50">
+                    {existingThemes
+                      .filter(theme => 
+                        theme.toLowerCase().includes(themeSearch.toLowerCase()) &&
+                        !formData.themes?.includes(theme)
+                      )
+                      .slice(0, 10)
+                      .map((theme) => (
+                        <Button
+                          key={theme}
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            addCommonTheme(theme);
+                            setThemeSearch("");
+                          }}
+                          className="w-full justify-start h-8 text-xs mb-1"
+                        >
+                          + {theme}
+                        </Button>
+                      ))}
+                    {existingThemes
+                      .filter(theme => 
+                        theme.toLowerCase().includes(themeSearch.toLowerCase()) &&
+                        !formData.themes?.includes(theme)
+                      ).length === 0 && (
+                      <p className="text-xs text-muted-foreground p-2">No matching themes found</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Common themes */}
+              <div className="text-sm text-muted-foreground">
+                <p className="mb-2">Or select from common themes:</p>
+                <div className="flex flex-wrap gap-1">
+                  {COMMON_THEMES.filter(theme => !formData.themes?.includes(theme)).map((theme) => (
+                    <Button
+                      key={theme}
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => addCommonTheme(theme)}
+                      className="h-6 text-xs"
+                    >
+                      + {theme}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

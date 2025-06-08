@@ -186,6 +186,24 @@ export function setupSimpleAdminAuth(app: Express) {
     }
   });
 
+  // Get all unique themes from the database
+  app.get('/api/admin/themes', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT DISTINCT unnest(themes) as theme 
+        FROM catalog_tv_shows 
+        WHERE themes IS NOT NULL AND array_length(themes, 1) > 0
+        ORDER BY theme ASC
+      `);
+      
+      const themes = result.rows.map(row => row.theme).filter(theme => theme && theme.trim() !== '');
+      res.json(themes);
+    } catch (error) {
+      console.error('Get themes error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Update TV show
   app.put('/api/admin/tv-shows/:id', requireAdmin, async (req: Request, res: Response) => {
     try {
