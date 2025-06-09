@@ -241,6 +241,11 @@ export default function CatalogShowDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <CatalogNavbar />
       
+      {/* DEBUG: Component verification banner */}
+      <div className="bg-red-500 text-white text-center py-2 font-bold">
+        ⚠️ CATALOG SHOW DETAIL PAGE COMPONENT IS LOADING ⚠️
+      </div>
+      
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Back to Shows */}
         <Link href="/">
