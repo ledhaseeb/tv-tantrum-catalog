@@ -99,7 +99,7 @@ export default function HomepageCategories() {
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category deleted successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
     },
     onError: (error) => {
       toast({ title: 'Error', description: 'Failed to delete category', variant: 'destructive' });
@@ -110,7 +110,7 @@ export default function HomepageCategories() {
   const reorderMutation = useMutation({
     mutationFn: async ({ id, newOrder }: { id: number; newOrder: number }) => {
       console.log(`[REORDER] Updating category ${id} to order ${newOrder}`);
-      const result = await apiRequest('PUT', `/api/admin/homepage-categories/${id}`, {
+      const result = await apiRequest('PUT', `/api/homepage-categories/${id}`, {
         displayOrder: newOrder
       });
       console.log(`[REORDER] API response:`, result);
