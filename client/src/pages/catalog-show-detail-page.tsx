@@ -266,11 +266,11 @@ export default function CatalogShowDetailPage() {
               </Button>
             </Link>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Show Image */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Show Image - Reduced Size */}
               <div className="lg:col-span-1">
-                <Card className="overflow-hidden">
-                  <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center">
+                <Card className="overflow-hidden max-w-xs mx-auto lg:mx-0">
+                  <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center w-full max-w-[240px] mx-auto">
                     {show.imageUrl ? (
                       <img 
                         src={show.imageUrl} 
@@ -303,8 +303,8 @@ export default function CatalogShowDetailPage() {
                 </Card>
               </div>
 
-              {/* Show Details */}
-              <div className="lg:col-span-2 space-y-6">
+              {/* Show Details - Expanded */}
+              <div className="lg:col-span-3 space-y-6">
                 {/* Header */}
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
