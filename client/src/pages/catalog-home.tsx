@@ -14,6 +14,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Search, Filter, BarChart2, BookOpen, Star, Clock, Users, Sparkles, Heart, TrendingUp } from "lucide-react";
+import AdContainer from "@/components/AdContainer";
 import type { TvShow } from "../../../shared/catalog-schema";
 
 export default function CatalogHome() {
@@ -97,57 +98,44 @@ export default function CatalogHome() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-primary-600 text-white py-16">
+      <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Discover Amazing Shows for Kids
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+              Screen Time Stimulation Scores
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-              Find the perfect children's shows with our smart filtering system. 
-              Filter by age, stimulation level, and themes to discover content that fits your family.
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Find TV shows measured by stimulation levels, helping you discover content that fits your child's needs.
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
+            <div className="max-w-2xl mx-auto">
               <form onSubmit={handleSearch} className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Search for shows..."
+                  placeholder="Search show by name, theme, platform..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-6 py-4 pr-16 text-lg rounded-full border-0 focus:ring-4 focus:ring-white/20 text-gray-900 placeholder:text-gray-500"
+                  className="w-full pl-12 pr-16 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-secondary text-primary px-6 py-2 rounded-full hover:bg-secondary/90 transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition-colors"
                 >
-                  <Search className="h-5 w-5" />
+                  Search
                 </button>
               </form>
             </div>
-            
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/browse">
-                <Button size="lg" variant="secondary" className="text-primary">
-                  <Filter className="mr-2 h-5 w-5" />
-                  Browse All Shows
-                </Button>
-              </Link>
-              <Link href="/compare">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                  <BarChart2 className="mr-2 h-5 w-5" />
-                  Compare Shows
-                </Button>
-              </Link>
-              <Link href="/research">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  Research Hub
-                </Button>
-              </Link>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ad Container */}
+      <section className="py-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center">
+            <AdContainer size="leaderboard" className="w-full max-w-4xl" />
           </div>
         </div>
       </section>
