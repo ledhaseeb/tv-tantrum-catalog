@@ -74,4 +74,6 @@ export const TvShowImage: React.FC<TvShowImageProps> = ({
   );
 };
 
+// Export both named and default exports for backward compatibility
+export const TvShowCardImage = TvShowImage;
 export default TvShowImage;
