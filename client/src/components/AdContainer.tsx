@@ -9,6 +9,8 @@ interface AdContainerProps {
 }
 
 const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label = 'Advertisement', slot }) => {
+  console.log('🎯 AdContainer rendering:', { size, className, label, slot });
+  
   // AdSense ad slot IDs - using auto ads format for now
   const adSlots = {
     banner: 'auto',
@@ -43,10 +45,11 @@ const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label =
     };
 
     return (
-      <div className={`${sizeClasses[size]} ${className} bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center`}>
-        <div className="text-center">
-          <div className="text-xs text-gray-400 uppercase tracking-wide">{label}</div>
-          <div className="text-xs text-gray-300 mt-1">Ad Space Ready</div>
+      <div className={`${sizeClasses[size]} ${className} bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm`}>
+        <div className="text-center p-4">
+          <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">{label}</div>
+          <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
+          <div className="text-xs text-blue-400 mt-1">Size: {size}</div>
         </div>
       </div>
     );
