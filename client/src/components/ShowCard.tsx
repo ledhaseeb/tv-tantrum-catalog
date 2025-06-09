@@ -120,9 +120,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80 w-52 flex-shrink-0">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-72 w-48 flex-shrink-0">
           {/* Image with fixed height */}
-          <div className="relative h-48 overflow-hidden bg-gray-50">
+          <div className="relative h-36 overflow-hidden bg-gray-50">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
@@ -132,7 +132,7 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow h-32">
+          <CardContent className="p-3 flex flex-col flex-grow h-36">
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
             
