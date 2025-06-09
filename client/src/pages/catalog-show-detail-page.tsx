@@ -249,6 +249,9 @@ export default function CatalogShowDetailPage() {
 
         {/* Top Ad Container */}
         <div className="mb-8">
+          <div className="bg-red-200 border-2 border-red-500 p-4 text-center">
+            <p>TEST: Ad container should appear here</p>
+          </div>
           <AdContainer size="leaderboard" className="mx-auto" />
         </div>
 
