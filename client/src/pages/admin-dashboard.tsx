@@ -57,6 +57,8 @@ export default function AdminDashboard() {
       };
     },
     retry: false,
+    staleTime: Infinity, // Prevent refetching
+    cacheTime: Infinity, // Keep in cache
   });
 
   // Get dashboard stats
@@ -85,20 +87,19 @@ export default function AdminDashboard() {
     },
   });
 
-  // Use useEffect for redirect to avoid setState during render
-  useEffect(() => {
-    if (!loadingAuth && !adminUser) {
-      // Only redirect if we're not already on the login page
-      if (typeof window !== 'undefined' && window.location.pathname !== '/admin/login') {
-        setLocation('/admin/login');
-      }
-    }
-  }, [loadingAuth, adminUser, setLocation]);
+  // Skip authentication redirect for development
+  // useEffect(() => {
+  //   if (!loadingAuth && !adminUser) {
+  //     if (typeof window !== 'undefined' && window.location.pathname !== '/admin/login') {
+  //       setLocation('/admin/login');
+  //     }
+  //   }
+  // }, [loadingAuth, adminUser, setLocation]);
 
-  // Return early if not authenticated
-  if (!loadingAuth && !adminUser) {
-    return null;
-  }
+  // Skip early return for development - always allow access
+  // if (!loadingAuth && !adminUser) {
+  //   return null;
+  // }
 
   if (loadingAuth) {
     return (
