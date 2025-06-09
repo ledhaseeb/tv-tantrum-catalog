@@ -415,7 +415,7 @@ export default function CatalogHome() {
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {calmShows?.map((show) => (
                     <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                      <DesktopGridShowCard show={show} onClick={() => {}} />
+                      <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
