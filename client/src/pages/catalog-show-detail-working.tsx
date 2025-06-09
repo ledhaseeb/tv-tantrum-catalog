@@ -235,15 +235,7 @@ export default function CatalogShowDetailWorking() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Debug Info */}
-        <div className="mb-4 p-4 bg-yellow-100 rounded-lg">
-          <h3 className="font-bold">Debug Info:</h3>
-          <p>ID: {id}</p>
-          <p>Loading: {isLoading.toString()}</p>
-          <p>Error: {error ? error.message : 'None'}</p>
-          <p>Show exists: {!!show ? 'Yes' : 'No'}</p>
-          <p>Show name: {show?.name || 'N/A'}</p>
-        </div>
+
 
         {/* Back Button */}
         <Link href="/">
