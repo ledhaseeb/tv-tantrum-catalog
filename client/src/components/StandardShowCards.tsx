@@ -23,7 +23,7 @@ const CARD_VARIANTS = {
   
   // Desktop grid cards - portrait with specified dimensions
   desktopGrid: {
-    container: "h-72", // Total height: 288px
+    container: "h-72 w-48", // Total: 288px height x 192px width
     image: "h-40", // Image height: 160px
     content: "h-32", // Content height: 128px
     title: "text-sm font-bold line-clamp-2",
