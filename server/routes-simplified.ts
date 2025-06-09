@@ -110,6 +110,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get shows for a specific homepage category
+  app.get('/api/homepage-categories/:id/shows', async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const shows = await storage.getShowsForCategory(categoryId);
+      res.json(shows);
+    } catch (error) {
+      console.error("Error fetching category shows:", error);
+      res.status(500).json({ message: "Failed to fetch category shows" });
+    }
+  });
+
   // Get research summaries
   app.get('/api/research-summaries', async (req, res) => {
     try {

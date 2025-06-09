@@ -94,6 +94,10 @@ export interface IStorage {
   // Import shows from GitHub data
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
 
+  // Homepage categories methods
+  getHomepageCategories(): Promise<any[]>;
+  getShowsForCategory(categoryId: number): Promise<TvShow[]>;
+
   // Favorites methods
   addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
   removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
@@ -2019,6 +2023,77 @@ export class DatabaseStorage implements IStorage {
       console.error("Error fetching homepage categories:", error);
       return [];
     }
+  }
+
+  async getShowsForCategory(categoryId: number): Promise<TvShow[]> {
+    try {
+      // Get the category's filter configuration
+      const categoryResult = await db.execute(sql`SELECT filter_config FROM homepage_categories WHERE id = ${categoryId} AND is_active = true`);
+      
+      if (!categoryResult.rows.length) {
+        return [];
+      }
+      
+      const row = categoryResult.rows[0];
+      console.log("Database row:", row);
+      console.log("filter_config type:", typeof row.filter_config);
+      console.log("filter_config value:", row.filter_config);
+      
+      let filterConfig;
+      if (typeof row.filter_config === 'string') {
+        filterConfig = JSON.parse(row.filter_config);
+      } else if (typeof row.filter_config === 'object' && row.filter_config !== null) {
+        filterConfig = row.filter_config;
+      } else {
+        console.error("Invalid filter_config format:", row.filter_config);
+        return [];
+      }
+      
+      // Apply the filter configuration to get shows
+      const filters = this.parseFilterConfig(filterConfig);
+      return await this.getTvShowsByFilter(filters);
+      
+    } catch (error) {
+      console.error("Error fetching shows for category:", error);
+      return [];
+    }
+  }
+
+  private parseFilterConfig(filterConfig: any): any {
+    const filters: any = {};
+    
+    if (!filterConfig || !filterConfig.rules) {
+      return filters;
+    }
+    
+    filterConfig.rules.forEach((rule: any) => {
+      switch (rule.field) {
+        case 'stimulationScore':
+          if (rule.operator === 'range') {
+            const [min, max] = rule.value.split('-').map(Number);
+            filters.stimulationScoreRange = { min, max };
+          }
+          break;
+        case 'ageGroup':
+          if (rule.operator === 'equals') {
+            filters.ageGroup = rule.value;
+          }
+          break;
+        case 'themes':
+          if (rule.operator === 'in') {
+            filters.themes = Array.isArray(rule.value) ? rule.value : [rule.value];
+            filters.themeMatchMode = filterConfig.logic || 'OR';
+          }
+          break;
+        case 'interactionLevel':
+          if (rule.operator === 'equals') {
+            filters.interactionLevel = rule.value;
+          }
+          break;
+      }
+    });
+    
+    return filters;
   }
 
   async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
