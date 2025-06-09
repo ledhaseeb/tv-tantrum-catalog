@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import AdContainer from "@/components/AdContainer";
+import { ShowDetailsAd } from "@/components/AdContainer";
 import {
   Select,
   SelectContent,

@@ -172,3 +172,6 @@ export function ResearchSummaryAd({ className }: { className?: string }) {
 export function ResearchDetailsAd({ className }: { className?: string }) {
   return <AdContainer placement="research-details" className={className} />;
 }
+
+// Default export
+export default AdContainer;
