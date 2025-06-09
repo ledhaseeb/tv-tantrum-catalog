@@ -20,9 +20,13 @@ import {
   Copy
 } from "lucide-react";
 
-export default function CatalogShowDetailWorking() {
+interface CatalogShowDetailWorkingProps {
+  showId?: string;
+}
+
+export default function CatalogShowDetailWorking({ showId: propShowId }: CatalogShowDetailWorkingProps = {}) {
   const params = useParams();
-  const id = parseInt(params.id || "0");
+  const id = parseInt(propShowId || params.id || "0");
   const { toast } = useToast();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);

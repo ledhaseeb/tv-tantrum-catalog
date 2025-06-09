@@ -71,11 +71,13 @@ function Router() {
         <Route path="/show/:id">
           {(params) => {
             console.log('[App] Route matched /show/:id with params:', params);
+            const showId = params?.id;
+            console.log('[App] Extracted showId:', showId);
             return (
               <div className="flex-grow flex flex-col">
                 <CatalogNavbar />
                 <div className="flex-grow">
-                  <CatalogShowDetailWorking />
+                  <CatalogShowDetailWorking showId={showId} />
                 </div>
                 <Footer />
               </div>
