@@ -12,7 +12,7 @@ import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
-import { setupAuth, comparePasswords } from "./auth";
+// Removed legacy auth import
 // Use the new consolidated utility files
 import * as imageOptimizer from "../image-optimizer.js";
 import * as imageManager from "../image-manager.js";
@@ -85,8 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Set up authentication
-  setupAuth(app);
+  // Skip authentication setup for now
   
   // Auth routes - using original custom authentication system
   app.get('/api/auth/user', (req, res) => {
