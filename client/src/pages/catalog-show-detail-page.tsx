@@ -247,17 +247,16 @@ export default function CatalogShowDetailPage() {
           </Button>
         </Link>
 
-        {/* Top Ad Container */}
+        {/* Top Ad Container - Leaderboard */}
         <div className="mb-8">
-          <div className="bg-red-200 border-2 border-red-500 p-4 text-center">
-            <p>TEST: Ad container should appear here</p>
-          </div>
-          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full h-24 mx-auto">
-            <div className="text-center p-4">
-              <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
-              <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
-              <div className="text-xs text-blue-400 mt-1">Size: leaderboard</div>
+          <div className="bg-gradient-to-r from-blue-100 to-purple-100 border-2 border-dashed border-blue-400 rounded-lg p-6 text-center shadow-lg">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-lg font-bold text-blue-700">TOP AD SPACE</span>
+              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
             </div>
+            <p className="text-blue-600 font-medium">728x90 Leaderboard Advertisement</p>
+            <p className="text-sm text-blue-500 mt-1">Ready for AdSense integration</p>
           </div>
         </div>
 
@@ -327,14 +326,16 @@ export default function CatalogShowDetailPage() {
               )}
             </div>
 
-            {/* Middle Ad Container */}
+            {/* Middle Ad Container - Rectangle */}
             <div className="my-8">
-              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full max-w-sm h-64 mx-auto">
-                <div className="text-center p-4">
-                  <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
-                  <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
-                  <div className="text-xs text-blue-400 mt-1">Size: rectangle</div>
+              <div className="bg-gradient-to-br from-green-100 to-teal-100 border-2 border-dashed border-green-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
+                  <span className="text-lg font-bold text-green-700">MIDDLE AD SPACE</span>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                 </div>
+                <p className="text-green-600 font-medium">300x250 Rectangle Advertisement</p>
+                <p className="text-sm text-green-500 mt-1">Ready for AdSense integration</p>
               </div>
             </div>
 
@@ -492,14 +493,16 @@ export default function CatalogShowDetailPage() {
               </Card>
             )}
 
-            {/* Bottom Ad Container */}
+            {/* Bottom Ad Container - Rectangle */}
             <div className="mt-8 mb-6">
-              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full max-w-sm h-64 mx-auto">
-                <div className="text-center p-4">
-                  <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
-                  <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
-                  <div className="text-xs text-blue-400 mt-1">Size: rectangle</div>
+              <div className="bg-gradient-to-tr from-orange-100 to-red-100 border-2 border-dashed border-orange-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                  <span className="text-lg font-bold text-orange-700">BOTTOM AD SPACE</span>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                 </div>
+                <p className="text-orange-600 font-medium">300x250 Rectangle Advertisement</p>
+                <p className="text-sm text-orange-500 mt-1">Ready for AdSense integration</p>
               </div>
             </div>
           </div>
