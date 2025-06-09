@@ -39,7 +39,7 @@ import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import CatalogShowDetail from "@/pages/catalog-show-detail";
-import ShowDetailSimple from "@/pages/show-detail-simple";
+import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
@@ -68,50 +68,9 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <Switch>
         {/* All show detail routes use catalog page */}
-        <Route path="/show/:id">
-          {(params) => {
-            console.log('[App] Route matched /show/:id with params:', params);
-            const showId = params?.id;
-            console.log('[App] Extracted showId:', showId);
-            return (
-              <div className="flex-grow flex flex-col">
-                <CatalogNavbar />
-                <div className="flex-grow">
-                  <ShowDetailSimple showId={showId} />
-                </div>
-                <Footer />
-              </div>
-            );
-          }}
-        </Route>
-        <Route path="/shows/:id">
-          {(params) => {
-            const showId = params?.id;
-            return (
-              <div className="flex-grow flex flex-col">
-                <CatalogNavbar />
-                <div className="flex-grow">
-                  <ShowDetailSimple showId={showId} />
-                </div>
-                <Footer />
-              </div>
-            );
-          }}
-        </Route>
-        <Route path="/detail/:id">
-          {(params) => {
-            const showId = params?.id;
-            return (
-              <div className="flex-grow flex flex-col">
-                <CatalogNavbar />
-                <div className="flex-grow">
-                  <ShowDetailSimple showId={showId} />
-                </div>
-                <Footer />
-              </div>
-            );
-          }}
-        </Route>
+        <Route path="/show/:id" component={CatalogShowDetailPage} />
+        <Route path="/shows/:id" component={CatalogShowDetailPage} />
+        <Route path="/detail/:id" component={CatalogShowDetailPage} />
 
         {/* Catalog Home - Main landing page */}
         <Route path="/">

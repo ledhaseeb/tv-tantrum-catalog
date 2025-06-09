@@ -104,27 +104,26 @@ router.get('/shows/:id', async (req, res) => {
   }
 });
 
-// TEMPORARILY DISABLED - Conflicts with public route
 // Get single TV show for editing (correct path for frontend)
-// router.get('/tv-shows/:id', async (req, res) => {
-//   try {
-//     const showId = parseInt(req.params.id);
-//     console.log(`[ADMIN] Fetching TV show ${showId} for editing`);
-//     
-//     const show = await catalogStorage.getTvShowById(showId);
-//     
-//     if (!show) {
-//       console.log(`[ADMIN] TV show ${showId} not found`);
-//       return res.status(404).json({ error: 'Show not found' });
-//     }
-//     
-//     console.log(`[ADMIN] Successfully fetched TV show ${showId}:`, show.name);
-//     res.json(show);
-//   } catch (error) {
-//     console.error('Error fetching TV show:', error);
-//     res.status(500).json({ error: 'Failed to fetch TV show' });
-//   }
-// });
+router.get('/tv-shows/:id', async (req, res) => {
+  try {
+    const showId = parseInt(req.params.id);
+    console.log(`[ADMIN] Fetching TV show ${showId} for editing`);
+    
+    const show = await catalogStorage.getTvShowById(showId);
+    
+    if (!show) {
+      console.log(`[ADMIN] TV show ${showId} not found`);
+      return res.status(404).json({ error: 'Show not found' });
+    }
+    
+    console.log(`[ADMIN] Successfully fetched TV show ${showId}:`, show.name);
+    res.json(show);
+  } catch (error) {
+    console.error('Error fetching TV show:', error);
+    res.status(500).json({ error: 'Failed to fetch TV show' });
+  }
+});
 
 // Create new show
 router.post('/shows', upload.single('image'), async (req, res) => {

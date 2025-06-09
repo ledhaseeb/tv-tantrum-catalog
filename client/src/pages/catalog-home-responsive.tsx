@@ -151,12 +151,7 @@ export default function CatalogHomeResponsive() {
             {filteredShows.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredShows.slice(0, 20).map((show) => (
-                  <ShowCard 
-                    key={show.id} 
-                    show={show} 
-                    viewMode="grid"
-                    onClick={() => {}}
-                  />
+                  <ShowCard key={show.id} show={show} />
                 ))}
               </div>
             ) : (
@@ -201,11 +196,7 @@ export default function CatalogHomeResponsive() {
                     </Link>
                   </div>
                   
-                  <CategoryRow 
-                    title={category.name}
-                    description={category.description}
-                    shows={shows}
-                  />
+                  <CategoryRow shows={shows} />
                 </div>
               );
             })}
