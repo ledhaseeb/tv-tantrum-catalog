@@ -567,7 +567,7 @@ export default function CatalogShowDetailPage() {
                   show={relatedShow}
                   viewMode="grid"
                   onClick={() => {}}
-                  isMobile={false}
+                  isMobile={true}
                 />
               ))}
             </div>
