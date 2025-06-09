@@ -167,65 +167,101 @@ export default function CatalogNavbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Overlay */}
         {isNavOpen && (
-          <div className="md:hidden bg-white/10 backdrop-blur-sm rounded-lg mt-2 mb-4 p-4">
-            <div className="space-y-2">
-              <Link 
-                href="/browse"
-                onClick={() => setIsNavOpen(false)}
-                className={`flex items-center px-3 py-2 text-base font-medium ${location === '/browse' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-              >
-                <Filter className="h-5 w-5 mr-3" />
-                Browse
-              </Link>
-              <Link 
-                href="/compare"
-                onClick={() => setIsNavOpen(false)}
-                className={`flex items-center px-3 py-2 text-base font-medium ${location === '/compare' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-              >
-                <BarChart2 className="h-5 w-5 mr-3" />
-                Compare
-              </Link>
-              <Link 
-                href="/about"
-                onClick={() => setIsNavOpen(false)}
-                className={`flex items-center px-3 py-2 text-base font-medium ${location === '/about' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-              >
-                <Info className="h-5 w-5 mr-3" />
-                About
-              </Link>
-              <Link 
-                href="/research"
-                onClick={() => setIsNavOpen(false)}
-                className={`flex items-center px-3 py-2 text-base font-medium ${location === '/research' ? 'text-primary-600 bg-primary-50' : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'} rounded-md`}
-              >
-                <BookOpen className="h-5 w-5 mr-3" />
-                Research
-              </Link>
-              
-              {/* Admin access for mobile */}
-              {isAdmin ? (
-                <Link 
-                  href="/admin/dashboard"
-                  onClick={() => setIsNavOpen(false)}
-                  className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md"
-                >
-                  <Settings className="h-5 w-5 mr-2" />
-                  Admin
-                </Link>
-              ) : (
-                <button
-                  onClick={() => {
-                    setIsNavOpen(false);
-                    setShowAdminLogin(true);
-                  }}
-                  className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-md w-full text-left"
-                >
-                  <Lock className="h-5 w-5 mr-2" />
-                  Admin
-                </button>
-              )}
+          <div className="fixed inset-0 z-50 md:hidden">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50"
+              onClick={() => setIsNavOpen(false)}
+            />
+            
+            {/* Slide-out menu */}
+            <div className="fixed top-0 left-0 h-full w-80 bg-primary shadow-xl transform transition-transform duration-300 ease-in-out">
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-2 text-white">
+                    <div className="bg-white/20 p-2 rounded-lg">
+                      <Home className="h-6 w-6" />
+                    </div>
+                    <span className="text-xl font-bold">TV Tantrum</span>
+                  </div>
+                  <button
+                    onClick={() => setIsNavOpen(false)}
+                    className="text-white hover:text-white/80 p-2"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {/* Navigation Links */}
+                <div className="space-y-2">
+                  <Link 
+                    href="/"
+                    onClick={() => setIsNavOpen(false)}
+                    className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/' ? 'font-bold bg-white/20' : 'font-normal'}`}
+                  >
+                    <Home className="h-5 w-5 mr-3" />
+                    Home
+                  </Link>
+                  <Link 
+                    href="/browse"
+                    onClick={() => setIsNavOpen(false)}
+                    className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/browse' ? 'font-bold bg-white/20' : 'font-normal'}`}
+                  >
+                    <Filter className="h-5 w-5 mr-3" />
+                    Browse
+                  </Link>
+                  <Link 
+                    href="/compare"
+                    onClick={() => setIsNavOpen(false)}
+                    className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/compare' ? 'font-bold bg-white/20' : 'font-normal'}`}
+                  >
+                    <BarChart2 className="h-5 w-5 mr-3" />
+                    Compare
+                  </Link>
+                  <Link 
+                    href="/about"
+                    onClick={() => setIsNavOpen(false)}
+                    className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/about' ? 'font-bold bg-white/20' : 'font-normal'}`}
+                  >
+                    <Info className="h-5 w-5 mr-3" />
+                    About
+                  </Link>
+                  <Link 
+                    href="/research"
+                    onClick={() => setIsNavOpen(false)}
+                    className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/research' || location?.startsWith('/research/') ? 'font-bold bg-white/20' : 'font-normal'}`}
+                  >
+                    <BookOpen className="h-5 w-5 mr-3" />
+                    Research
+                  </Link>
+                  
+                  {/* Admin access for mobile */}
+                  {isAdmin ? (
+                    <Link 
+                      href="/admin/dashboard"
+                      onClick={() => setIsNavOpen(false)}
+                      className="flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors font-normal"
+                    >
+                      <Settings className="h-5 w-5 mr-3" />
+                      Admin
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setIsNavOpen(false);
+                        setShowAdminLogin(true);
+                      }}
+                      className="flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors w-full text-left font-normal"
+                    >
+                      <Lock className="h-5 w-5 mr-3" />
+                      Admin
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
