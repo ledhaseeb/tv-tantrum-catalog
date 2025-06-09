@@ -499,6 +499,100 @@ export default function CatalogShowDetailPage() {
           </div>
         </div>
 
+        {/* What You Might Also Like Section */}
+        {relatedShows.length > 0 && (
+          <div className="mt-12 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Heart className="w-5 h-5 mr-2 text-pink-500" />
+                  What You Might Also Like
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Shows with similar themes, age range, and stimulation levels
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {relatedShows.map((relatedShow: TvShow) => (
+                    <div key={relatedShow.id} className="group">
+                      <Link href={`/show/${relatedShow.id}`}>
+                        <div className="bg-white rounded-lg border hover:border-blue-300 hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer">
+                          {/* Show Image */}
+                          <div className="aspect-[3/4] relative bg-gray-100">
+                            {relatedShow.imageUrl ? (
+                              <img
+                                src={relatedShow.imageUrl}
+                                alt={`${relatedShow.name} poster`}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full text-gray-400">
+                                <div className="text-center">
+                                  <svg className="w-12 h-12 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                                  </svg>
+                                  <span className="text-xs">No Image</span>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Stimulation Score Overlay */}
+                            {relatedShow.stimulationScore && (
+                              <div className="absolute top-2 right-2">
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`text-xs font-semibold ${
+                                    relatedShow.stimulationScore <= 2 ? 'bg-green-100 text-green-800' :
+                                    relatedShow.stimulationScore === 3 ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}
+                                >
+                                  {relatedShow.stimulationScore}/5
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Show Info */}
+                          <div className="p-3">
+                            <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-blue-600 transition-colors">
+                              {relatedShow.name}
+                            </h3>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {relatedShow.ageRange}
+                            </p>
+                            
+                            {/* Matching Themes */}
+                            {relatedShow.themes && show?.themes && (
+                              <div className="mt-2">
+                                {relatedShow.themes
+                                  .filter(theme => show.themes?.includes(theme))
+                                  .slice(0, 2)
+                                  .map((theme, index) => (
+                                    <Badge 
+                                      key={index} 
+                                      variant="outline" 
+                                      className="text-xs mr-1 mb-1"
+                                    >
+                                      {theme}
+                                    </Badge>
+                                  ))
+                                }
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Bottom Ad Container - Rectangle */}
         <div className="mt-12 mb-8">
           <div className="bg-gradient-to-tr from-orange-100 to-red-100 border-2 border-dashed border-orange-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
