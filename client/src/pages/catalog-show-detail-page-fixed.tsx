@@ -99,35 +99,6 @@ export default function CatalogShowDetailPage() {
 
   console.log('Query state - isLoading:', isLoading, 'error:', error, 'show:', !!show);
 
-  // Helper function to convert sensory levels to percentages
-  const getSensoryLevelPercentage = (level: string | null | undefined) => {
-    if (!level) return 0;
-    const normalizedLevel = level.toLowerCase().trim();
-    
-    switch (normalizedLevel) {
-      case 'very low':
-      case 'very-low':
-        return 20;
-      case 'low':
-        return 20;
-      case 'low-moderate':
-      case 'low moderate':
-        return 40;
-      case 'moderate':
-        return 60;
-      case 'moderate-high':
-      case 'moderate high':
-        return 80;
-      case 'high':
-        return 100;
-      case 'very high':
-      case 'very-high':
-        return 100;
-      default:
-        return 60; // Default to moderate if unknown
-    }
-  };
-
   // SEO optimization
   useEffect(() => {
     if (show) {
