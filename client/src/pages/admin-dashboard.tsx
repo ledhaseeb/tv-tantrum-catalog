@@ -44,21 +44,21 @@ export default function AdminDashboard() {
   const [isAddingNewResearch, setIsAddingNewResearch] = useState(false);
 
   // Check admin authentication - TEMPORARILY DISABLED FOR DEVELOPMENT
-  const { data: adminUser, isLoading: loadingAuth } = useQuery<AdminUser>({
+  const { data: adminUser, isLoading: loadingAuth, error: authError } = useQuery<AdminUser>({
     queryKey: ['/api/admin/me'],
     queryFn: async () => {
-      // Return mock admin user for development
-      console.log('[ADMIN] Authentication disabled for development');
-      return {
-        id: 1,
-        email: 'admin@tvtantrum.com',
-        firstName: 'Admin',
-        isAdmin: true
-      };
+      console.log('[ADMIN] Fetching admin user data');
+      const response = await fetch('/api/admin/me');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch admin user: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('[ADMIN] Admin user data:', data);
+      return data;
     },
     retry: false,
     staleTime: Infinity, // Prevent refetching
-    cacheTime: Infinity, // Keep in cache
+    gcTime: Infinity, // Keep in cache (updated property name)
   });
 
   // Get dashboard stats
@@ -101,13 +101,37 @@ export default function AdminDashboard() {
   //   return null;
   // }
 
-  if (loadingAuth) {
+  // Debug logging
+  console.log('[ADMIN] Component state:', { loadingAuth, adminUser, authError });
+
+  if (authError) {
+    console.error('[ADMIN] Authentication error:', authError);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="text-red-500">Authentication Error: {authError.message}</div>
       </div>
     );
   }
+
+  if (loadingAuth) {
+    console.log('[ADMIN] Loading authentication...');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg">Loading admin dashboard...</div>
+      </div>
+    );
+  }
+
+  if (!adminUser) {
+    console.log('[ADMIN] No admin user found');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-yellow-600">No admin user authentication</div>
+      </div>
+    );
+  }
+
+  console.log('[ADMIN] Rendering dashboard for user:', adminUser);
 
   const handleLogout = () => {
     logoutMutation.mutate();
