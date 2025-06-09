@@ -72,15 +72,7 @@ export default function CatalogHomeResponsive() {
     },
   });
 
-  // Fetch research summaries
-  const { data: researchSummaries = [], isLoading: researchLoading } = useQuery({
-    queryKey: ['/api/research-summaries'],
-    queryFn: async () => {
-      const response = await fetch('/api/research-summaries');
-      if (!response.ok) throw new Error('Failed to fetch research summaries');
-      return response.json();
-    },
-  });
+
 
   const isLoading = categoriesLoading || categoryShowsLoading;
   
@@ -227,45 +219,7 @@ export default function CatalogHomeResponsive() {
         </div>
       )}
 
-      {/* Research Summaries Section */}
-      {researchSummaries.length > 0 && (
-        <div className="container mx-auto px-4 py-12">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Latest Research Insights</h2>
-            <p className="text-gray-600">Discover the latest findings in children's media and developmental research</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {researchSummaries.slice(0, 6).map((summary: any) => (
-              <div key={summary.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
-                    {summary.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {summary.summary}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
-                      {summary.category || 'Research'}
-                    </span>
-                    {summary.source_url && (
-                      <a 
-                        href={summary.source_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        Read More →
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* AdSense Ad Container - Mobile */}
       <div className="lg:hidden">
