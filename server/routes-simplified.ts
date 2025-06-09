@@ -251,6 +251,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single TV show for admin editing
+  app.get('/api/admin/tv-shows/:id', async (req, res) => {
+    try {
+      const showId = parseInt(req.params.id);
+      const show = await storage.getTvShowById(showId);
+      
+      if (!show) {
+        return res.status(404).json({ message: 'Show not found' });
+      }
+      
+      res.json(show);
+    } catch (error) {
+      console.error('Error fetching show for admin:', error);
+      res.status(500).json({ message: 'Failed to fetch show' });
+    }
+  });
+
+  // Create new TV show (admin)
+  app.post('/api/admin/shows', async (req, res) => {
+    try {
+      const showData = req.body;
+      const newShow = await storage.createTvShow(showData);
+      res.json(newShow);
+    } catch (error) {
+      console.error('Error creating show:', error);
+      res.status(500).json({ message: 'Failed to create show' });
+    }
+  });
+
+  // Update TV show (admin)
+  app.put('/api/admin/shows/:id', async (req, res) => {
+    try {
+      const showId = parseInt(req.params.id);
+      const showData = req.body;
+      const updatedShow = await storage.updateTvShow(showId, showData);
+      
+      if (!updatedShow) {
+        return res.status(404).json({ message: 'Show not found' });
+      }
+      
+      res.json(updatedShow);
+    } catch (error) {
+      console.error('Error updating show:', error);
+      res.status(500).json({ message: 'Failed to update show' });
+    }
+  });
+
+  // Get themes for admin (used by EditShowDialog)
+  app.get('/api/admin/themes', async (req, res) => {
+    try {
+      const themes = await storage.getAllThemes();
+      res.json(themes);
+    } catch (error) {
+      console.error('Error fetching themes:', error);
+      res.status(500).json({ message: 'Failed to fetch themes' });
+    }
+  });
+
+  // Get admin dashboard stats
+  app.get('/api/admin/stats', async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ message: 'Failed to fetch stats' });
+    }
+  });
+
   // Admin authentication endpoint
   app.get('/api/admin/user', async (req, res) => {
     try {

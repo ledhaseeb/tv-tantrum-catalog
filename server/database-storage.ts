@@ -3429,6 +3429,48 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  async createTvShow(show: InsertTvShow): Promise<TvShow> {
+    return this.addTvShow(show);
+  }
+
+  async getAdminStats(): Promise<any> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        // Get total counts
+        const showsResult = await client.query('SELECT COUNT(*) as count FROM catalog_tv_shows');
+        const usersResult = await client.query('SELECT COUNT(*) as count FROM users');
+        const researchResult = await client.query('SELECT COUNT(*) as count FROM catalog_research_summaries');
+        
+        // Get recent activity (shows added in last 30 days)
+        const recentShowsResult = await client.query(`
+          SELECT COUNT(*) as count 
+          FROM catalog_tv_shows 
+          WHERE created_at >= NOW() - INTERVAL '30 days'
+        `);
+
+        return {
+          totalShows: parseInt(showsResult.rows[0].count),
+          totalUsers: parseInt(usersResult.rows[0].count),
+          totalResearch: parseInt(researchResult.rows[0].count),
+          recentShows: parseInt(recentShowsResult.rows[0].count)
+        };
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      // Return default stats if database query fails
+      return {
+        totalShows: 0,
+        totalUsers: 0,
+        totalResearch: 0,
+        recentShows: 0
+      };
+    }
+  }
 }
 
 // Helper function to build a default image URL
