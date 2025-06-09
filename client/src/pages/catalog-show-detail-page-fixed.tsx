@@ -579,7 +579,7 @@ export default function CatalogShowDetailPage() {
                   show={relatedShow}
                   viewMode="grid"
                   onClick={() => {}}
-                  isMobile={isMobile}
+                  isMobile={true}
                 />
               ))}
             </div>
