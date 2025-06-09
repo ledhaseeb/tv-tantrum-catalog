@@ -559,15 +559,15 @@ export default function CatalogShowDetailPage() {
               Shows with similar themes, age range, and stimulation levels
             </p>
             
-            {/* Fixed 4-Column Grid - Always 4 cards in a row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
+            {/* Fixed 3-Column Grid - Always 3 cards in a row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {relatedShows.slice(0, 3).map((relatedShow: TvShow) => (
                 <ShowCard 
                   key={relatedShow.id}
                   show={relatedShow}
                   viewMode="grid"
                   onClick={() => {}}
-                  isMobile={window.innerWidth < 768}
+                  isMobile={false}
                 />
               ))}
             </div>
