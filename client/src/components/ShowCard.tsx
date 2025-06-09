@@ -120,19 +120,19 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-72 w-48 flex-shrink-0">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-72">
           {/* Image with fixed height */}
-          <div className="relative h-36 overflow-hidden bg-gray-50">
+          <div className="relative h-40 overflow-hidden">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
               originalUrl={normalizedShow.imageUrl}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               isInteractive={false}
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow h-36">
+          <CardContent className="p-3 flex flex-col flex-grow h-32">
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
             
@@ -218,24 +218,24 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   }
 
-  // Desktop grid view card with better proportions
+  // Default grid view card
   return (
     <Link href={`/show/${show.id}`}>
-      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
-        {/* Image with fixed height for consistency */}
-        <div className="relative h-48 overflow-hidden">
+      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
+        {/* Image */}
+        <div className="relative">
           <TvShowCardImage
             showId={show.id}
             showName={show.name}
             originalUrl={normalizedShow.imageUrl}
-            className="w-full h-full object-cover"
+            className="w-full aspect-[2/3]"
             isInteractive={false}
           />
         </div>
         
-        <CardContent className="p-3 flex flex-col flex-grow h-32">
+        <CardContent className="p-4 flex flex-col flex-grow">
           {/* Title */}
-          <h3 className="text-sm font-bold mb-2 line-clamp-1">{show.name}</h3>
+          <h3 className="text-sm font-bold mb-2 line-clamp-2">{show.name}</h3>
           
           {/* Target Ages */}
           <div className="mb-2">
