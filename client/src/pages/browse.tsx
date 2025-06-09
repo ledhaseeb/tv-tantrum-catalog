@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
-import { MobileGridShowCard, DesktopGridShowCard, CategoryGridShowCard } from "@/components/StandardShowCards";
-import { CatalogPageGrid, CategoryPageGrid } from "@/components/GridLayouts";
+import ShowCard from "@/components/ShowCard";
 import SimpleShowCard from "@/components/SimpleShowCard";
 import AdContainer from "@/components/AdContainer";
 import { Button } from "@/components/ui/button";
@@ -465,27 +464,31 @@ export default function Browse() {
               </div>
             ) : (
               <div ref={resultsRef}>
-                {/* Show Cards Grid using standardized components */}
+                {/* Show Cards Grid - Mobile uses portrait, desktop uses landscape */}
                 {isMobile ? (
-                  <CatalogPageGrid>
+                  <div className="grid grid-cols-3 gap-3">
+                    {/* Mobile grid layout with portrait cards */}
                     {currentShows.map(show => (
-                      <MobileGridShowCard 
+                      <ShowCard 
                         key={show.id} 
                         show={show} 
+                        viewMode="grid"
+                        isMobile={true}
                         onClick={() => handleShowClick(show.id)}
                       />
                     ))}
-                  </CatalogPageGrid>
+                  </div>
                 ) : (
-                  <CatalogPageGrid>
-                    {currentShows.map(show => (
-                      <DesktopGridShowCard 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {currentShows.map((show, index) => (
+                      <ShowCard 
                         key={show.id} 
                         show={show} 
+                        viewMode="grid"
                         onClick={() => handleShowClick(show.id)}
                       />
                     ))}
-                  </CatalogPageGrid>
+                  </div>
                 )}
                 
                 {/* Pagination */}

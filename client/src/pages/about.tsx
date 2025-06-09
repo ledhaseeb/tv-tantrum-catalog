@@ -137,55 +137,55 @@ export default function About() {
           Our stimulation ratings help you understand how a show may affect your child's sensory system and behavior. Lower-rated shows allow for longer watching periods before causing overstimulation, while higher-rated shows may lead to overstimulation more quickly, potentially resulting in tantrums. Keep in mind that younger children are more sensitive to stimulation, while older children can typically handle higher levels of stimulation.
         </p>
         
-        <div className="space-y-4 mt-6">
-          <div className="bg-green-100 rounded-lg p-6 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">1</div>
-            <div>
-              <h3 className="text-xl font-bold text-green-800 mb-2">Low</h3>
-              <p className="text-green-800">
-                Gentle pacing with minimal scene changes. Typically contains softer sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
+          <div className="bg-green-100 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">1</div>
+              <h3 className="ml-2 text-lg font-bold text-green-800">Low</h3>
             </div>
+            <p className="text-green-800">
+              Gentle pacing with minimal scene changes. Typically contains softer sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.
+            </p>
           </div>
           
-          <div className="bg-yellow-50 rounded-lg p-6 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">2</div>
-            <div>
-              <h3 className="text-xl font-bold text-yellow-800 mb-2">Low-Medium</h3>
-              <p className="text-yellow-800">
-                Balanced pacing with occasional transitions. Typically contains mild sound effects and harmonious music. Engaging but not overwhelming content. Recommended for those longer viewing sessions and younger children.
-              </p>
+          <div className="bg-yellow-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold">2</div>
+              <h3 className="ml-2 text-lg font-bold text-yellow-800">Low-Medium</h3>
             </div>
+            <p className="text-yellow-800">
+              Balanced pacing with occasional transitions. Typically contains mild sound effects and harmonious music. Engaging but not overwhelming content. Recommended for those longer viewing sessions and younger children.
+            </p>
           </div>
           
-          <div className="bg-orange-50 rounded-lg p-6 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">3</div>
-            <div>
-              <h3 className="text-xl font-bold text-orange-800 mb-2">Medium</h3>
-              <p className="text-orange-800">
-                Moderate pacing with regular scene changes. Typically contains moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most but monitor younger viewers for signs of overstimulation.
-              </p>
+          <div className="bg-orange-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">3</div>
+              <h3 className="ml-2 text-lg font-bold text-orange-800">Medium</h3>
             </div>
+            <p className="text-orange-800">
+              Moderate pacing with regular scene changes. Typically contains moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most but monitor younger viewers for signs of overstimulation.
+            </p>
           </div>
           
-          <div className="bg-red-100 rounded-lg p-6 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-red-400 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">4</div>
-            <div>
-              <h3 className="text-xl font-bold text-red-700 mb-2">Medium-High</h3>
-              <p className="text-red-700">
-                Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better shorter viewing sessions. May feel intense to sensitive or younger viewers.
-              </p>
+          <div className="bg-red-100 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-red-400 flex items-center justify-center text-white font-bold">4</div>
+              <h3 className="ml-2 text-lg font-bold text-red-700">Medium-High</h3>
             </div>
+            <p className="text-red-700">
+              Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better shorter viewing sessions. May feel intense to sensitive or younger viewers.
+            </p>
           </div>
           
-          <div className="bg-red-50 rounded-lg p-6 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">5</div>
-            <div>
-              <h3 className="text-xl font-bold text-red-800 mb-2">High</h3>
-              <p className="text-red-800">
-                Rapid pacing with very quick scene changes. Typically contains intense sound effect usage and fast music. Highly energetic content with many elements competing for attention. Use with caution.
-              </p>
+          <div className="bg-red-50 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">5</div>
+              <h3 className="ml-2 text-lg font-bold text-red-800">High</h3>
             </div>
+            <p className="text-red-800">
+              Rapid pacing with very quick scene changes. Typically contains intense sound effect usage and fast music. Highly energetic content with many elements competing for attention. Use with caution.
+            </p>
           </div>
         </div>
       </div>
