@@ -49,9 +49,9 @@ export default function HomepageCategories() {
 
   // Fetch categories
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['/api/admin/homepage-categories'],
+    queryKey: ['/api/homepage-categories'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/homepage-categories');
+      const response = await fetch('/api/homepage-categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json() as Promise<HomepageCategory[]>;
     },
@@ -61,14 +61,14 @@ export default function HomepageCategories() {
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomepageCategory) => {
       console.log('Creating category with data:', data);
-      const response = await apiRequest('POST', '/api/admin/homepage-categories', data);
+      const response = await apiRequest('POST', '/api/homepage-categories', data);
       console.log('Category creation response:', response);
       return response;
     },
     onSuccess: () => {
       console.log('Category created successfully');
       toast({ title: 'Success', description: 'Category created successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
       setIsCreating(false);
     },
     onError: (error) => {
@@ -80,11 +80,11 @@ export default function HomepageCategories() {
   // Update category mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertHomepageCategory> }) => {
-      return apiRequest('PUT', `/api/admin/homepage-categories/${id}`, data);
+      return apiRequest('PUT', `/api/homepage-categories/${id}`, data);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category updated successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
       setEditingCategory(null);
     },
     onError: (error) => {
@@ -95,7 +95,7 @@ export default function HomepageCategories() {
   // Delete category mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/admin/homepage-categories/${id}`);
+      return apiRequest('DELETE', `/api/homepage-categories/${id}`);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category deleted successfully' });
