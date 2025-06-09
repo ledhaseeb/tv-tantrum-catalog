@@ -12,7 +12,7 @@ import ResearchDetail from "@/pages/research-detail";
 import CatalogShowDetailPage from "@/pages/catalog-show-detail-page-fixed";
 import AdminPage from "@/pages/admin-page";
 import AdminLogin from "@/pages/admin-login";
-import AdminDashboard from "@/pages/admin-dashboard";
+import AdminDashboardSimple from "@/pages/admin-dashboard-simple";
 import NotFound from "@/pages/not-found";
 
 // Create query client with sensible defaults
@@ -43,7 +43,7 @@ export default function CatalogApp() {
                 <Route path="/show/:id" component={CatalogShowDetailPage} />
                 <Route path="/admin" component={AdminPage} />
                 <Route path="/admin/login" component={AdminLogin} />
-                <Route path="/admin/dashboard" component={AdminDashboard} />
+                <Route path="/admin/dashboard" component={AdminDashboardSimple} />
                 <Route component={NotFound} />
               </Switch>
             </main>
