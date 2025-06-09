@@ -167,7 +167,7 @@ export default function Compare() {
 
       {/* Compare Page Ad */}
       <div className="mb-6">
-        <AdContainer size="leaderboard" className="mx-auto" />
+        <ShowDetailsAd className="mx-auto" />
       </div>
       
       {isLoading ? (

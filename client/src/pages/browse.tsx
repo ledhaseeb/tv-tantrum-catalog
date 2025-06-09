@@ -4,7 +4,7 @@ import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
 import ShowCard from "@/components/ShowCard";
 import SimpleShowCard from "@/components/SimpleShowCard";
-import AdContainer from "@/components/AdContainer";
+import { ShowDetailsAd } from "@/components/AdContainer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -412,7 +412,7 @@ export default function Browse() {
 
         {/* Top Browse Ad */}
         <div className="mb-6">
-          <AdContainer size="leaderboard" className="mx-auto" />
+          <ShowDetailsAd className="mx-auto" />
         </div>
         
         <div className="flex flex-col md:flex-row gap-6">

@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CategoryRow from "@/components/CategoryRow";
 import ShowCard from "@/components/ShowCard";
 import { Search, Filter, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
-import AdContainer from "@/components/AdContainer";
+import { ShowDetailsAd } from "@/components/AdContainer";
 import type { TvShow, HomepageCategory } from "../../../shared/catalog-schema";
 
 export default function CatalogHomeResponsive() {
@@ -136,7 +136,7 @@ export default function CatalogHomeResponsive() {
       <div className="bg-gray-50 py-8">
         <div className="container mx-auto px-4">
           <div className="flex justify-center">
-            <AdContainer size="leaderboard" className="w-full max-w-4xl" />
+            <ShowDetailsAd className="w-full max-w-4xl" />
           </div>
         </div>
       </div>
