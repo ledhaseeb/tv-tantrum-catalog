@@ -322,36 +322,6 @@ export const insertTvShowPlatformSchema = createInsertSchema(tvShowPlatforms).om
   id: true,
 });
 
-// --- Ad System Tables ---
-export const ads = pgTable("ads", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  imageUrl: text("image_url"),
-  ctaText: text("cta_text").notNull(),
-  targetUrl: text("target_url").notNull(),
-  placement: text("placement").notNull(), // 'show-details' | 'research-summary' | 'research-details'
-  isActive: boolean("is_active").default(true),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  maxImpressions: integer("max_impressions"),
-  currentImpressions: integer("current_impressions").default(0),
-  maxClicks: integer("max_clicks"),
-  currentClicks: integer("current_clicks").default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export const adTracking = pgTable("ad_tracking", {
-  id: serial("id").primaryKey(),
-  adId: integer("ad_id").notNull().references(() => ads.id),
-  action: text("action").notNull(), // 'impression' | 'click' | 'dismiss'
-  placement: text("placement").notNull(),
-  userAgent: text("user_agent"),
-  ipAddress: text("ip_address"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
 // --- Gamification schemas ---
 export const insertUserPointsHistorySchema = createInsertSchema(userPointsHistory).omit({
   id: true,
@@ -373,25 +343,6 @@ export const insertUserReadResearchSchema = createInsertSchema(userReadResearch)
   id: true,
   readAt: true,
 });
-
-// --- Ad System schemas ---
-export const insertAdSchema = createInsertSchema(ads).omit({
-  id: true,
-  currentImpressions: true,
-  currentClicks: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertAdTrackingSchema = createInsertSchema(adTracking).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type Ad = typeof ads.$inferSelect;
-export type AdTracking = typeof adTracking.$inferSelect;
-export type InsertAd = z.infer<typeof insertAdSchema>;
-export type InsertAdTracking = z.infer<typeof insertAdTrackingSchema>;
 
 
 

@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'wouter';
 import { BookOpen, BookText, ArrowRight, Lock } from 'lucide-react';
-import { ResearchSummaryAd } from '@/components/AdContainer';
 
 const Research = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -181,9 +180,6 @@ const Research = () => {
           ))}
         </TabsList>
       </Tabs>
-
-      {/* Ad Container */}
-      <ResearchSummaryAd className="mb-8" />
 
       {/* Content display for both mobile and desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

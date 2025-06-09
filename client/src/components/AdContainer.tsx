@@ -1,177 +1,61 @@
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { X } from 'lucide-react';
+import React from 'react';
+import GoogleAd from './GoogleAd';
 
 interface AdContainerProps {
-  placement: 'show-details' | 'research-summary' | 'research-details';
+  size: 'banner' | 'rectangle' | 'leaderboard' | 'mobile-banner';
   className?: string;
+  label?: string;
 }
 
-interface AdData {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  ctaText: string;
-  targetUrl: string;
-  placement: string;
-  isActive: boolean;
-}
-
-export function AdContainer({ placement, className = '' }: AdContainerProps) {
-  const [adData, setAdData] = useState<AdData | null>(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchAdData();
-  }, [placement]);
-
-  const fetchAdData = async () => {
-    try {
-      const response = await fetch(`/api/ads?placement=${placement}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAdData(data);
-      }
-    } catch (error) {
-      console.error('Failed to load ad:', error);
-    } finally {
-      setIsLoading(false);
-    }
+const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label = 'Advertisement' }) => {
+  // AdSense ad slot IDs - using auto ads format for now
+  const adSlots = {
+    banner: 'auto', // Auto ads - AdSense will optimize placement
+    rectangle: 'auto', // Auto ads - AdSense will optimize placement  
+    leaderboard: 'auto', // Auto ads - AdSense will optimize placement
+    'mobile-banner': 'auto' // Auto ads - AdSense will optimize placement
   };
 
-  const handleAdClick = () => {
-    if (adData) {
-      // Track ad click
-      fetch('/api/ads/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          adId: adData.id, 
-          action: 'click',
-          placement 
-        })
-      }).catch(console.error);
-
-      // Open ad URL
-      window.open(adData.targetUrl, '_blank', 'noopener,noreferrer');
-    }
+  const adDimensions = {
+    banner: { width: 728, height: 90 },
+    rectangle: { width: 300, height: 250 },
+    leaderboard: { width: 728, height: 90 },
+    'mobile-banner': { width: 320, height: 50 }
   };
 
-  const handleClose = () => {
-    setIsVisible(false);
-    if (adData) {
-      // Track ad dismissal
-      fetch('/api/ads/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          adId: adData.id, 
-          action: 'dismiss',
-          placement 
-        })
-      }).catch(console.error);
-    }
-  };
+  // Check if AdSense is configured
+  const adsenseId = import.meta.env.VITE_GOOGLE_ADSENSE_ID;
+  
+  if (!adsenseId) {
+    // Fallback to placeholder when AdSense not configured
+    const sizeClasses = {
+      banner: 'w-full h-24 md:h-32',
+      rectangle: 'w-full max-w-sm h-64',
+      leaderboard: 'w-full h-24',
+      'mobile-banner': 'w-full h-16'
+    };
 
-  // Track ad impression
-  useEffect(() => {
-    if (adData && isVisible) {
-      fetch('/api/ads/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          adId: adData.id, 
-          action: 'impression',
-          placement 
-        })
-      }).catch(console.error);
-    }
-  }, [adData, isVisible, placement]);
-
-  if (isLoading) {
     return (
-      <Card className={`p-4 bg-gradient-to-r from-gray-50 to-gray-100 ${className}`}>
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <div className={`${sizeClasses[size]} ${className} bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center`}>
+        <div className="text-center">
+          <div className="text-xs text-gray-400 uppercase tracking-wide">{label}</div>
+          <div className="text-xs text-gray-300 mt-1">Ad Space Ready</div>
         </div>
-      </Card>
+      </div>
     );
   }
 
-  if (!adData || !adData.isActive || !isVisible) {
-    return null;
-  }
-
   return (
-    <Card className={`relative overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 ${className}`}>
-      {/* Close button */}
-      <button
-        onClick={handleClose}
-        className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/80 hover:bg-white transition-colors"
-        aria-label="Close ad"
-      >
-        <X className="h-3 w-3 text-gray-500" />
-      </button>
-
-      {/* Ad content */}
-      <div 
-        className="p-4 cursor-pointer hover:bg-gradient-to-r hover:from-blue-100 hover:to-indigo-100 transition-colors"
-        onClick={handleAdClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleAdClick();
-          }
-        }}
-      >
-        <div className="flex items-start gap-3">
-          {adData.imageUrl && (
-            <div className="flex-shrink-0">
-              <img
-                src={adData.imageUrl}
-                alt={adData.title}
-                className="w-16 h-16 rounded-lg object-cover"
-              />
-            </div>
-          )}
-          
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-sm mb-1">
-              {adData.title}
-            </h3>
-            <p className="text-gray-600 text-xs mb-2 line-clamp-2">
-              {adData.description}
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {adData.ctaText}
-              </span>
-              <span className="text-xs text-gray-400">Sponsored</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <div className={className}>
+      <GoogleAd
+        slot={adSlots[size]}
+        width={adDimensions[size].width}
+        height={adDimensions[size].height}
+        format="auto"
+        responsive={true}
+      />
+    </div>
   );
-}
+};
 
-// Specialized ad containers for different placements
-export function ShowDetailsAd({ className }: { className?: string }) {
-  return <AdContainer placement="show-details" className={className} />;
-}
-
-export function ResearchSummaryAd({ className }: { className?: string }) {
-  return <AdContainer placement="research-summary" className={className} />;
-}
-
-export function ResearchDetailsAd({ className }: { className?: string }) {
-  return <AdContainer placement="research-details" className={className} />;
-}
-
-// Default export
 export default AdContainer;

@@ -22,7 +22,6 @@ import { upload, optimizeImage, uploadErrorHandler } from "./image-upload";
 import { lookupRouter } from "./lookup-api";
 import { createShortUrl, resolveShortUrl } from "./url-shortener";
 import { trackReferral, trackReferralClick } from "./referral-system";
-import adRoutes from "./ad-routes";
 import path from "path";
 import bcrypt from "bcrypt";
 
@@ -3487,9 +3486,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to fetch show' });
     }
   });
-
-  // Add ad routes
-  app.use("/api", adRoutes);
 
   const httpServer = createServer(app);
 

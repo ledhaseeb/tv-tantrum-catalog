@@ -9,7 +9,6 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { ArrowLeft, BookOpen, Calendar, ExternalLink, FileText, Award } from 'lucide-react';
-import { ResearchDetailsAd } from '@/components/AdContainer';
 
 const ResearchDetail = () => {
   const params = useParams();
@@ -419,9 +418,6 @@ const ResearchDetail = () => {
                 </div>
               </CardContent>
             </Card>
-            
-            {/* Ad Container */}
-            <ResearchDetailsAd className="mt-6" />
           </div>
         </div>
       </div>

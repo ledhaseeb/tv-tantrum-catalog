@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { ShowDetailsAd } from "@/components/AdContainer";
+import AdContainer from "@/components/AdContainer";
 import {
   Select,
   SelectContent,
@@ -167,7 +167,7 @@ export default function Compare() {
 
       {/* Compare Page Ad */}
       <div className="mb-6">
-        <ShowDetailsAd className="mx-auto" />
+        <AdContainer size="leaderboard" className="mx-auto" />
       </div>
       
       {isLoading ? (
