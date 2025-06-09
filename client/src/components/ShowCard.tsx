@@ -50,9 +50,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
   const getStimulationText = (score: number) => {
     switch (score) {
       case 1: return 'Low';
-      case 2: return 'Low-Medium';
+      case 2: return 'Low-Mid';
       case 3: return 'Medium';
-      case 4: return 'Medium-High';
+      case 4: return 'Mid-High';
       case 5: return 'High';
       default: return 'Unknown';
     }
