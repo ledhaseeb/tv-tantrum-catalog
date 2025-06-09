@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import type { TvShow } from "@shared/schema";
 import CatalogNavbar from "@/components/CatalogNavbar";
-import { ShareButton } from "@/components/ShareButton";
 import Footer from "@/components/Footer";
 import SensoryBar from "@/components/SensoryBar";
 
@@ -267,11 +266,11 @@ export default function CatalogShowDetailPage() {
               </Button>
             </Link>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-              {/* Show Image - Reduced Size */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Show Image */}
               <div className="lg:col-span-1">
-                <Card className="overflow-hidden max-w-xs mx-auto lg:mx-0">
-                  <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center w-full max-w-[240px] mx-auto">
+                <Card className="overflow-hidden">
+                  <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center">
                     {show.imageUrl ? (
                       <img 
                         src={show.imageUrl} 
@@ -304,22 +303,14 @@ export default function CatalogShowDetailPage() {
                 </Card>
               </div>
 
-              {/* Show Details - Expanded */}
-              <div className="lg:col-span-3 space-y-6">
+              {/* Show Details */}
+              <div className="lg:col-span-2 space-y-6">
                 {/* Header */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
-                    {show.creator && (
-                      <p className="text-lg text-gray-600">Created by {show.creator}</p>
-                    )}
-                  </div>
-                  <ShareButton 
-                    title={show.name}
-                    description={show.description}
-                    imageUrl={show.imageUrl || undefined}
-                    type="show"
-                  />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
+                  {show.creator && (
+                    <p className="text-lg text-gray-600">Created by {show.creator}</p>
+                  )}
                 </div>
 
                 {/* Key Info Badges */}

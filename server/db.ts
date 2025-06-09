@@ -9,22 +9,14 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
 
-// Configure the pool with optimized settings for high traffic
+// Configure the pool with optimized settings to prevent timeouts
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
-  max: process.env.NODE_ENV === 'production' ? 50 : 10, // Scale up for production
-  min: process.env.NODE_ENV === 'production' ? 10 : 2,  // Maintain minimum connections
-  idleTimeoutMillis: 30000, // 30 seconds idle timeout
-  connectionTimeoutMillis: 5000, // 5 second connection timeout
-  acquireTimeoutMillis: 60000, // 60 second acquire timeout
+  max: 5, // Reduce connection pool size to prevent overwhelming the DB
+  idleTimeoutMillis: 60000, // Increased to 60 seconds to allow for longer idle times
+  connectionTimeoutMillis: 10000, // Increased to 10 seconds to allow more time to establish connections
   ssl: { rejectUnauthorized: false },
-  application_name: 'tv-tantrum-optimized',
-  // Connection pooling optimizations
-  allowExitOnIdle: false,
-  maxUses: 7500, // Maximum uses per connection before replacement
-  // Keep-alive settings
-  keepAlive: true,
-  keepAliveInitialDelayMillis: 10000
+  application_name: 'tv-tantrum'
 };
 
 export const pool = new Pool(poolConfig);
@@ -37,28 +29,11 @@ pool.on('error', (err) => {
   }
 });
 
-// Enhanced connection monitoring
+// Add connect handling
 pool.on('connect', (client) => {
-  console.log('New database client connected. Pool stats - Total:', pool.totalCount, 'Idle:', pool.idleCount);
-  
   client.on('error', (err) => {
     console.error('Database client error:', err);
   });
-  
-  client.on('end', () => {
-    console.log('Database client disconnected. Pool stats - Total:', pool.totalCount, 'Idle:', pool.idleCount);
-  });
-});
-
-// Pool monitoring for production insights
-pool.on('acquire', () => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Client acquired from pool. Total: %d, Idle: %d', pool.totalCount, pool.idleCount);
-  }
-});
-
-pool.on('remove', () => {
-  console.log('Client removed from pool. Total: %d, Idle: %d', pool.totalCount, pool.idleCount);
 });
 
 // Initialize Drizzle ORM with the pool

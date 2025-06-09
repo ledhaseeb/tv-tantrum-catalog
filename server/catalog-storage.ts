@@ -3,19 +3,6 @@ import { TvShow, Theme, Platform, ResearchSummary, User, HomepageCategory, Inser
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
-
-// Test database connection on startup
-pool.on('connect', () => {
-  console.log('Connected to catalog database');
-});
-
-pool.on('error', (err) => {
-  console.error('Database pool error:', err);
 });
 
 export class CatalogStorage {
@@ -37,9 +24,8 @@ export class CatalogStorage {
     limit?: number;
     offset?: number;
   } = {}): Promise<TvShow[]> {
-    let client;
+    const client = await pool.connect();
     try {
-      client = await pool.connect();
       let query = `
         SELECT DISTINCT ts.* 
         FROM catalog_tv_shows ts

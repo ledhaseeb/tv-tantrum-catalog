@@ -1,44 +1,22 @@
 import express, { Express, Request, Response } from "express";
 import { catalogStorage } from "./catalog-storage";
-import { cachedCatalogStorage } from "./cached-catalog-storage";
-import cache from "./cache";
 import { insertTvShowSchema } from "@shared/catalog-schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import { setupAdminSession, setupAdminAuth, requireAdmin } from "./admin-auth";
-import compression from "compression";
 
 const router = express.Router();
 
 export { router };
 
 export function registerCatalogRoutes(app: Express) {
-  // Enable compression for all responses
-  app.use(compression({
-    level: 6, // Balance between compression and CPU usage
-    threshold: 1024, // Only compress responses larger than 1KB
-  }));
-
   // Setup admin session and authentication
   setupAdminSession(app);
   setupAdminAuth(app);
 
-  // Health check endpoint for load balancer
-  app.get("/api/health", (req: Request, res: Response) => {
-    res.json({ 
-      status: "ok", 
-      timestamp: new Date().toISOString(),
-      cache: cache.isConnected() ? "connected" : "disconnected",
-      version: "2.0.0"
-    });
-  });
-
-  // Cache status endpoint for monitoring
-  app.get("/api/cache-status", (req: Request, res: Response) => {
-    res.json({
-      redis: cache.isConnected(),
-      stats: cache.getStats()
-    });
+  // Health check
+  router.get('/health', (req, res) => {
+    res.status(200).send('OK');
   });
 
   // Get all TV shows with filtering
@@ -74,7 +52,7 @@ export function registerCatalogRoutes(app: Express) {
       if (req.query.limit) filters.limit = parseInt(req.query.limit as string);
       if (req.query.offset) filters.offset = parseInt(req.query.offset as string);
       
-      const shows = await cachedCatalogStorage.getTvShows(filters);
+      const shows = await catalogStorage.getTvShows(filters);
       res.json(shows);
     } catch (error) {
       console.error("Error fetching TV shows:", error);
@@ -86,7 +64,7 @@ export function registerCatalogRoutes(app: Express) {
   app.get("/api/tv-shows/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      const show = await cachedCatalogStorage.getTvShowById(id);
+      const show = await catalogStorage.getTvShowById(id);
       
       if (!show) {
         return res.status(404).json({ message: "Show not found" });
@@ -102,7 +80,7 @@ export function registerCatalogRoutes(app: Express) {
   // Get featured show
   app.get("/api/shows/featured", async (req: Request, res: Response) => {
     try {
-      const show = await cachedCatalogStorage.getFeaturedShow();
+      const show = await catalogStorage.getFeaturedShow();
       
       if (!show) {
         return res.status(404).json({ message: "No featured show found" });
@@ -121,7 +99,7 @@ export function registerCatalogRoutes(app: Express) {
       const limitStr = req.query.limit;
       const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
       
-      const shows = await cachedCatalogStorage.getPopularShows(limit);
+      const shows = await catalogStorage.getPopularShows(limit);
       res.json(shows);
     } catch (error) {
       console.error("Error fetching popular shows:", error);
