@@ -27,9 +27,9 @@ export default function CatalogHomeResponsive() {
 
   // Fetch homepage categories
   const { data: homepageCategories = [], isLoading: categoriesLoading } = useQuery({
-    queryKey: ['/api/catalog/homepage-categories'],
+    queryKey: ['/api/homepage-categories'],
     queryFn: async () => {
-      const response = await fetch('/api/catalog/homepage-categories');
+      const response = await fetch('/api/homepage-categories');
       if (!response.ok) throw new Error('Failed to fetch homepage categories');
       return response.json() as Promise<HomepageCategory[]>;
     },
@@ -46,7 +46,7 @@ export default function CatalogHomeResponsive() {
       await Promise.all(
         homepageCategories.map(async (category: HomepageCategory) => {
           try {
-            const response = await fetch(`/api/catalog/homepage-categories/${category.id}/shows`);
+            const response = await fetch(`/api/homepage-categories/${category.id}/shows`);
             if (response.ok) {
               categoryShows[category.id] = await response.json();
             }
@@ -151,12 +151,7 @@ export default function CatalogHomeResponsive() {
             {filteredShows.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredShows.slice(0, 20).map((show) => (
-                  <ShowCard 
-                    key={show.id} 
-                    show={show} 
-                    viewMode="grid" 
-                    onClick={() => {}}
-                  />
+                  <ShowCard key={show.id} show={show} />
                 ))}
               </div>
             ) : (
@@ -201,11 +196,7 @@ export default function CatalogHomeResponsive() {
                     </Link>
                   </div>
                   
-                  <CategoryRow 
-                    title={category.name}
-                    description={category.description}
-                    shows={shows} 
-                  />
+                  <CategoryRow shows={shows} />
                 </div>
               );
             })}

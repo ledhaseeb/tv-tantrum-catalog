@@ -277,11 +277,11 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
 // Setup admin authentication routes (temporarily disabled for development)
 // setupSimpleAdminAuth(app);
 
-const port = Number(process.env.PORT) || 5000;
-
 // Mount API routes BEFORE Vite middleware to prevent conflicts
 app.use('/api/admin', adminRoutes);
-app.use('/api/catalog', router);
+app.use('/api', router);
+
+const port = Number(process.env.PORT) || 5000;
 
 if (process.env.NODE_ENV === 'development') {
   setupVite(app, server);
