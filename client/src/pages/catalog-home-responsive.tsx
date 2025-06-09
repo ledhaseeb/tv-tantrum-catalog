@@ -8,6 +8,7 @@ import CategoryRow from "@/components/CategoryRow";
 import ShowCard from "@/components/ShowCard";
 import { Search, Filter, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
 import AdContainer from "@/components/AdContainer";
+import { FloatingShareWidget } from "@/components/FloatingShareWidget";
 import type { TvShow, HomepageCategory } from "../../../shared/catalog-schema";
 
 export default function CatalogHomeResponsive() {
@@ -244,6 +245,9 @@ export default function CatalogHomeResponsive() {
           </div>
         </div>
       </div>
+      
+      {/* Floating Share Widget */}
+      <FloatingShareWidget />
     </div>
   );
 }

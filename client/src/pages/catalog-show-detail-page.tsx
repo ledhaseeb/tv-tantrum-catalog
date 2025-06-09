@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { TvShow } from "@shared/schema";
 import CatalogNavbar from "@/components/CatalogNavbar";
+import { ShareButton } from "@/components/ShareButton";
 import Footer from "@/components/Footer";
 import SensoryBar from "@/components/SensoryBar";
 
@@ -306,11 +307,19 @@ export default function CatalogShowDetailPage() {
               {/* Show Details - Expanded */}
               <div className="lg:col-span-3 space-y-6">
                 {/* Header */}
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
-                  {show.creator && (
-                    <p className="text-lg text-gray-600">Created by {show.creator}</p>
-                  )}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
+                    {show.creator && (
+                      <p className="text-lg text-gray-600">Created by {show.creator}</p>
+                    )}
+                  </div>
+                  <ShareButton 
+                    title={show.name}
+                    description={show.description}
+                    imageUrl={show.imageUrl || undefined}
+                    type="show"
+                  />
                 </div>
 
                 {/* Key Info Badges */}
