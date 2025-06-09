@@ -351,12 +351,12 @@ export default function CatalogShowDetailPage() {
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content - 2 Column Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Show Image */}
-          <div className="lg:col-span-1">
+          <div>
             <Card className="overflow-hidden">
-              <div className="aspect-[2/3] relative">
+              <div className="aspect-[3/4] relative">
                 {show.imageUrl ? (
                   <img
                     src={show.imageUrl}
@@ -377,53 +377,51 @@ export default function CatalogShowDetailPage() {
             </Card>
           </div>
 
-          {/* Show Details */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Show Basic Info */}
+          <div className="space-y-6">
             {/* Header */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{show.name}</h1>
               {show.creator && (
-                <p className="text-lg text-gray-600">Created by {show.creator}</p>
+                <p className="text-lg text-gray-600 mb-4">Created by {show.creator}</p>
               )}
             </div>
 
             {/* Key Info Badges */}
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <Users className="w-3 h-3 mr-1" />
-                Ages {show.ageRange}
-              </Badge>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                <Clock className="w-3 h-3 mr-1" />
-                {show.episodeLength} min episodes
-              </Badge>
-              {show.releaseYear && (
-                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  {show.endYear && show.endYear !== show.releaseYear 
-                    ? `${show.releaseYear}-${show.endYear}` 
-                    : show.releaseYear}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-gray-500" />
+                <span className="font-medium">Ages:</span>
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  {show.ageRange}
                 </Badge>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <span className="font-medium">Episode Length:</span>
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  {show.episodeLength} minutes
+                </Badge>
+              </div>
+              
+              {show.releaseYear && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium">Year:</span>
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                    {show.endYear && show.endYear !== show.releaseYear 
+                      ? `${show.releaseYear}-${show.endYear}` 
+                      : show.releaseYear}
+                  </Badge>
+                </div>
               )}
             </div>
-
-            {/* Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  About This Show
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed">{show.description}</p>
-              </CardContent>
-            </Card>
 
             {/* Stimulation Level */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-lg">
                   <Zap className="w-5 h-5 mr-2" />
                   Stimulation Level
                 </CardTitle>
@@ -442,6 +440,23 @@ export default function CatalogShowDetailPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Single Column Content Below */}
+        <div className="space-y-6">
+          {/* Description */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BookOpen className="w-5 h-5 mr-2" />
+                About This Show
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">{show.description}</p>
+            </CardContent>
+          </Card>
 
             {/* Sensory Details */}
             <Card>
@@ -574,16 +589,17 @@ export default function CatalogShowDetailPage() {
           </div>
         )}
 
-        {/* Bottom Ad Container - Rectangle */}
-        <div className="mt-12 mb-8">
-          <div className="bg-gradient-to-tr from-orange-100 to-red-100 border-2 border-dashed border-orange-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
-            <div className="flex items-center justify-center space-x-2 mb-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-              <span className="text-lg font-bold text-orange-700">BOTTOM AD SPACE</span>
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+          {/* Bottom Ad Container - Rectangle */}
+          <div className="mt-12 mb-8">
+            <div className="bg-gradient-to-tr from-orange-100 to-red-100 border-2 border-dashed border-orange-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                <span className="text-lg font-bold text-orange-700">BOTTOM AD SPACE</span>
+                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+              </div>
+              <p className="text-orange-600 font-medium">300x250 Rectangle Advertisement</p>
+              <p className="text-sm text-orange-500 mt-1">Ready for AdSense integration</p>
             </div>
-            <p className="text-orange-600 font-medium">300x250 Rectangle Advertisement</p>
-            <p className="text-sm text-orange-500 mt-1">Ready for AdSense integration</p>
           </div>
         </div>
       </div>
