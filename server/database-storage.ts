@@ -79,6 +79,7 @@ export interface IStorage {
     stimulationScoreRange?: {min: number, max: number};
   }): Promise<TvShow[]>;
   addTvShow(show: InsertTvShow): Promise<TvShow>;
+  createTvShow(show: InsertTvShow): Promise<TvShow>;
   updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined>;
   deleteTvShow(id: number): Promise<boolean>;
   
@@ -104,6 +105,10 @@ export interface IStorage {
   getUserFavorites(userId: number): Promise<TvShow[]>;
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
+
+  // Admin methods
+  getAllThemes(): Promise<{ id: number; name: string }[]>;
+  getAdminStats(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
