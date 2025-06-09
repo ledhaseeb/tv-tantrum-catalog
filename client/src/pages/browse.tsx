@@ -479,7 +479,7 @@ export default function Browse() {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="flex flex-wrap gap-6 justify-start">
                     {currentShows.map((show, index) => (
                       <ShowCard 
                         key={show.id} 

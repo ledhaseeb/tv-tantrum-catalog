@@ -9,10 +9,9 @@ interface ShowCardProps {
   viewMode: "grid" | "list";
   onClick: () => void;
   isMobile?: boolean;
-  compact?: boolean;
 }
 
-export default function ShowCard({ show, viewMode, onClick, isMobile = false, compact = false }: ShowCardProps) {
+export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
   // Ensure we have valid show data
   if (!show || !show.id) {
     return null;
@@ -116,59 +115,24 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false, co
     );
   };
 
-  // Compact card for 4-column recommendation layouts
-  if (compact && viewMode === "grid") {
-    return (
-      <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-96">
-          {/* Image with fixed height - even taller to reduce text area */}
-          <div className="relative h-60 overflow-hidden">
-            <TvShowCardImage
-              showId={show.id}
-              showName={show.name}
-              originalUrl={normalizedShow.imageUrl}
-              className="w-full h-full object-cover"
-              isInteractive={false}
-            />
-          </div>
-          
-          <CardContent className="p-3 flex flex-col flex-grow h-36">
-            {/* Title with ellipsis - single line for consistency */}
-            <h3 className="text-sm font-bold line-clamp-1 mb-1">{show.name}</h3>
-            
-            {/* Age Badge - no bottom margin to bring closer to stimulation */}
-            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-0 w-fit">
-              Ages {normalizedShow.ageRange}
-            </Badge>
-            
-            {/* Enhanced Stimulation Indicator - directly below age with minimal gap */}
-            <div className="mt-1">
-              {renderStimulationIndicator()}
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-    );
-  }
-
   // Mobile portrait style card - consistent sizing
   if (isMobile && viewMode === "grid") {
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-96">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-72 w-48 flex-shrink-0">
           {/* Image with fixed height */}
-          <div className="relative h-64 overflow-hidden">
+          <div className="relative h-36 overflow-hidden bg-gray-50">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
               originalUrl={normalizedShow.imageUrl}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               isInteractive={false}
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow h-32">
+          <CardContent className="p-3 flex flex-col flex-grow h-36">
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
             
@@ -254,24 +218,24 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false, co
     );
   }
 
-  // Default grid view card
+  // Desktop grid view card with better proportions
   return (
     <Link href={`/show/${show.id}`}>
-      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
-        {/* Image */}
-        <div className="relative">
+      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+        {/* Image with fixed height for consistency */}
+        <div className="relative h-48 overflow-hidden">
           <TvShowCardImage
             showId={show.id}
             showName={show.name}
             originalUrl={normalizedShow.imageUrl}
-            className="w-full aspect-[2/3]"
+            className="w-full h-full object-cover"
             isInteractive={false}
           />
         </div>
         
-        <CardContent className="p-4 flex flex-col flex-grow">
+        <CardContent className="p-3 flex flex-col flex-grow h-32">
           {/* Title */}
-          <h3 className="text-sm font-bold mb-2 line-clamp-2">{show.name}</h3>
+          <h3 className="text-sm font-bold mb-2 line-clamp-1">{show.name}</h3>
           
           {/* Target Ages */}
           <div className="mb-2">

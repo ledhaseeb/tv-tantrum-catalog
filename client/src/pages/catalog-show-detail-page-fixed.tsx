@@ -58,6 +58,18 @@ export default function CatalogShowDetailPage() {
   console.log('🔥 CATALOG SHOW DETAIL PAGE COMPONENT LOADED 🔥');
   
   const { id } = useParams<{ id: string }>();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
   console.log('CatalogShowDetailPage mounted with params:', { id }, 'parsed ID:', parseInt(id || '0'));
   console.log('Current URL pathname:', window.location.pathname);
 
@@ -559,15 +571,15 @@ export default function CatalogShowDetailPage() {
               Shows with similar themes, age range, and stimulation levels
             </p>
             
-            {/* Fixed 4-Column Grid - Always 4 cards in a row */}
-            <div className="grid grid-cols-4 gap-3">
-              {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
+            {/* Fixed width cards matching homepage style */}
+            <div className="flex gap-4 flex-wrap">
+              {relatedShows.slice(0, 3).map((relatedShow: TvShow) => (
                 <ShowCard 
                   key={relatedShow.id}
                   show={relatedShow}
                   viewMode="grid"
                   onClick={() => {}}
-                  compact={true}
+                  isMobile={true}
                 />
               ))}
             </div>
