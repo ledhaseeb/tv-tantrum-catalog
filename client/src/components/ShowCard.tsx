@@ -222,12 +222,11 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
         {/* Image */}
         <div className="relative">
-          <TvShowCardImage
+          <TvShowImage
             showId={show.id}
             showName={show.name}
             originalUrl={normalizedShow.imageUrl}
             className="w-full aspect-[2/3]"
-            isInteractive={false}
           />
         </div>
         
