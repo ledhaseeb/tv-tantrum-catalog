@@ -27,6 +27,7 @@ export function registerCatalogRoutes(app: Express) {
       // Parse query parameters
       if (req.query.search) filters.search = req.query.search;
       if (req.query.ageGroup) filters.ageGroup = req.query.ageGroup;
+      if (req.query.ageRange) filters.ageGroup = req.query.ageRange; // Map ageRange to ageGroup for compatibility
       if (req.query.sortBy) filters.sortBy = req.query.sortBy;
       if (req.query.themeMatchMode) filters.themeMatchMode = req.query.themeMatchMode;
       

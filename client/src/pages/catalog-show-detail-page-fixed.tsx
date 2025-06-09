@@ -121,38 +121,87 @@ export default function CatalogShowDetailPage() {
     queryFn: async () => {
       if (!show) return [];
       
-      // Build query parameters for finding similar shows
-      const params = new URLSearchParams();
+      // Try multiple strategies to find related shows, starting with most restrictive
+      let allShows: TvShow[] = [];
       
-      // Add theme filters (OR logic for any matching theme)
+      // Strategy 1: Same themes + similar age range + similar stimulation (most restrictive)
       if (show.themes && show.themes.length > 0) {
+        const params1 = new URLSearchParams();
         show.themes.slice(0, 3).forEach(theme => {
-          params.append('themes', theme);
+          params1.append('themes', theme);
         });
-        params.append('themeMatchMode', 'OR');
+        params1.append('themeMatchMode', 'OR');
+        
+        if (show.ageRange) {
+          params1.append('ageRange', show.ageRange);
+        }
+        
+        if (show.stimulationScore) {
+          const minScore = Math.max(1, show.stimulationScore - 1);
+          const maxScore = Math.min(5, show.stimulationScore + 1);
+          params1.append('stimulationScoreRange', JSON.stringify({ min: minScore, max: maxScore }));
+        }
+        
+        const response1 = await fetch(`/api/tv-shows?${params1.toString()}`);
+        if (response1.ok) {
+          allShows = await response1.json();
+        }
       }
       
-      // Add age range filter
-      if (show.ageRange) {
-        params.append('ageRange', show.ageRange);
+      // Strategy 2: If we don't have enough shows, try just themes + age range
+      if (allShows.length < 3 && show.themes && show.themes.length > 0) {
+        const params2 = new URLSearchParams();
+        show.themes.slice(0, 4).forEach(theme => {
+          params2.append('themes', theme);
+        });
+        params2.append('themeMatchMode', 'OR');
+        
+        if (show.ageRange) {
+          params2.append('ageRange', show.ageRange);
+        }
+        
+        const response2 = await fetch(`/api/tv-shows?${params2.toString()}`);
+        if (response2.ok) {
+          const moreShows = await response2.json();
+          // Merge, avoiding duplicates
+          const existingIds = new Set(allShows.map(s => s.id));
+          allShows = [...allShows, ...moreShows.filter((s: TvShow) => !existingIds.has(s.id))];
+        }
       }
       
-      // Add stimulation score range (±1 from current show)
-      if (show.stimulationScore) {
-        const minScore = Math.max(1, show.stimulationScore - 1);
-        const maxScore = Math.min(5, show.stimulationScore + 1);
-        params.append('stimulationMin', minScore.toString());
-        params.append('stimulationMax', maxScore.toString());
+      // Strategy 3: If still not enough, try just themes (broadest)
+      if (allShows.length < 4 && show.themes && show.themes.length > 0) {
+        const params3 = new URLSearchParams();
+        show.themes.slice(0, 2).forEach(theme => {
+          params3.append('themes', theme);
+        });
+        params3.append('themeMatchMode', 'OR');
+        
+        const response3 = await fetch(`/api/tv-shows?${params3.toString()}`);
+        if (response3.ok) {
+          const moreShows = await response3.json();
+          // Merge, avoiding duplicates
+          const existingIds = new Set(allShows.map(s => s.id));
+          allShows = [...allShows, ...moreShows.filter((s: TvShow) => !existingIds.has(s.id))];
+        }
       }
       
-      const response = await fetch(`/api/tv-shows?${params.toString()}`);
-      if (!response.ok) return [];
+      // Filter out the current show and prioritize by relevance
+      const filteredShows = allShows.filter((relatedShow: TvShow) => relatedShow.id !== show.id);
       
-      const allShows = await response.json();
-      
-      // Filter out the current show and limit to 6 recommendations
-      return allShows
-        .filter((relatedShow: TvShow) => relatedShow.id !== show.id)
+      // Sort by relevance: same age range first, then similar stimulation scores
+      return filteredShows
+        .sort((a, b) => {
+          // Prioritize same age range
+          const aAgeMatch = a.ageRange === show.ageRange ? 2 : 0;
+          const bAgeMatch = b.ageRange === show.ageRange ? 2 : 0;
+          
+          // Add stimulation score similarity bonus
+          const aStimMatch = Math.abs((a.stimulationScore || 3) - (show.stimulationScore || 3)) <= 1 ? 1 : 0;
+          const bStimMatch = Math.abs((b.stimulationScore || 3) - (show.stimulationScore || 3)) <= 1 ? 1 : 0;
+          
+          return (bAgeMatch + bStimMatch) - (aAgeMatch + aStimMatch);
+        })
         .slice(0, 6);
     },
     enabled: !!show,
