@@ -252,7 +252,13 @@ export default function CatalogShowDetailPage() {
           <div className="bg-red-200 border-2 border-red-500 p-4 text-center">
             <p>TEST: Ad container should appear here</p>
           </div>
-          <AdContainer size="leaderboard" className="mx-auto" />
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full h-24 mx-auto">
+            <div className="text-center p-4">
+              <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
+              <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
+              <div className="text-xs text-blue-400 mt-1">Size: leaderboard</div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -370,7 +376,13 @@ export default function CatalogShowDetailPage() {
 
             {/* Middle Ad Container */}
             <div className="my-8">
-              <AdContainer size="rectangle" className="mx-auto" />
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full max-w-sm h-64 mx-auto">
+                <div className="text-center p-4">
+                  <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
+                  <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
+                  <div className="text-xs text-blue-400 mt-1">Size: rectangle</div>
+                </div>
+              </div>
             </div>
 
             {/* Sensory Details */}
@@ -466,7 +478,13 @@ export default function CatalogShowDetailPage() {
 
             {/* Bottom Ad Container */}
             <div className="mt-8 mb-6">
-              <AdContainer size="rectangle" className="mx-auto" />
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full max-w-sm h-64 mx-auto">
+                <div className="text-center p-4">
+                  <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
+                  <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
+                  <div className="text-xs text-blue-400 mt-1">Size: rectangle</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
