@@ -53,52 +53,84 @@ export default function CatalogHome() {
     },
   });
 
-  // Fetch shows by age categories
-  const { data: toddlerShows, isLoading: toddlerLoading } = useQuery({
-    queryKey: ['/api/tv-shows', { ageGroup: '0-3' }],
+  // Fetch all shows for categorization
+  const { data: allShows, isLoading: allShowsLoading } = useQuery({
+    queryKey: ['/api/tv-shows'],
     queryFn: async () => {
-      const response = await fetch('/api/tv-shows?ageGroup=0-3&limit=12');
-      if (!response.ok) throw new Error('Failed to fetch toddler shows');
+      const response = await fetch('/api/tv-shows');
+      if (!response.ok) throw new Error('Failed to fetch shows');
       return response.json() as Promise<TvShow[]>;
     },
   });
 
-  const { data: preschoolShows, isLoading: preschoolLoading } = useQuery({
-    queryKey: ['/api/tv-shows', { ageGroup: '3-6' }],
-    queryFn: async () => {
-      const response = await fetch('/api/tv-shows?ageGroup=3-6&limit=12');
-      if (!response.ok) throw new Error('Failed to fetch preschool shows');
-      return response.json() as Promise<TvShow[]>;
-    },
-  });
+  // Group shows by themes and characteristics (same logic as mobile)
+  const groupShowsByCategory = (shows: TvShow[]) => {
+    const categories: { [key: string]: TvShow[] } = {
+      musical: [],
+      fantasy: [],
+      educational: [],
+      preschool: [],
+      highEnergy: [],
+      calm: []
+    };
 
-  const { data: elementaryShows, isLoading: elementaryLoading } = useQuery({
-    queryKey: ['/api/tv-shows', { ageGroup: '6-12' }],
-    queryFn: async () => {
-      const response = await fetch('/api/tv-shows?ageGroup=6-12&limit=12');
-      if (!response.ok) throw new Error('Failed to fetch elementary shows');
-      return response.json() as Promise<TvShow[]>;
-    },
-  });
+    shows?.forEach(show => {
+      const themes = show.themes || [];
+      const stimulation = show.stimulationScore || 0;
+      const ageRange = show.ageRange || '';
 
-  // Fetch shows by stimulation level
-  const { data: calmShows, isLoading: calmLoading } = useQuery({
-    queryKey: ['/api/tv-shows', { stimulation: 'low' }],
-    queryFn: async () => {
-      const response = await fetch('/api/tv-shows?stimulationScoreRange={"min":1,"max":2}&limit=12');
-      if (!response.ok) throw new Error('Failed to fetch calm shows');
-      return response.json() as Promise<TvShow[]>;
-    },
-  });
+      // Musical shows
+      if (themes.some(theme => 
+        theme.toLowerCase().includes('music') || 
+        theme.toLowerCase().includes('song') ||
+        theme.toLowerCase().includes('rhythm')
+      )) {
+        categories.musical.push(show);
+      }
 
-  const { data: activeShows, isLoading: activeLoading } = useQuery({
-    queryKey: ['/api/tv-shows', { stimulation: 'high' }],
-    queryFn: async () => {
-      const response = await fetch('/api/tv-shows?stimulationScoreRange={"min":4,"max":5}&limit=12');
-      if (!response.ok) throw new Error('Failed to fetch active shows');
-      return response.json() as Promise<TvShow[]>;
-    },
-  });
+      // Fantasy shows
+      if (themes.some(theme => 
+        theme.toLowerCase().includes('fantasy') || 
+        theme.toLowerCase().includes('magic') ||
+        theme.toLowerCase().includes('adventure') ||
+        theme.toLowerCase().includes('imagination')
+      )) {
+        categories.fantasy.push(show);
+      }
+
+      // Educational shows
+      if (themes.some(theme => 
+        theme.toLowerCase().includes('education') || 
+        theme.toLowerCase().includes('learning') ||
+        theme.toLowerCase().includes('science') ||
+        theme.toLowerCase().includes('math') ||
+        theme.toLowerCase().includes('literacy')
+      )) {
+        categories.educational.push(show);
+      }
+
+      // Preschool shows (ages 2-5)
+      if (ageRange.includes('2') || ageRange.includes('3') || ageRange.includes('4') || ageRange.includes('5')) {
+        categories.preschool.push(show);
+      }
+
+      // High energy shows (stimulation 4-5)
+      if (stimulation >= 4) {
+        categories.highEnergy.push(show);
+      }
+
+      // Calm shows (stimulation 1-2)
+      if (stimulation <= 2) {
+        categories.calm.push(show);
+      }
+    });
+
+    return categories;
+  };
+
+  const categories = allShows ? groupShowsByCategory(allShows) : {};
+
+
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
@@ -261,208 +293,218 @@ export default function CatalogHome() {
         </div>
       </section>
 
-      {/* Age-Based Categories */}
+      {/* Real Show Categories */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Toddler Shows */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Toddler Shows (Ages 0-3)</h2>
-                <p className="text-gray-600">Perfect for your little ones</p>
+          {/* Musical Shows */}
+          {categories.musical && categories.musical.length > 0 && (
+            <div className="mb-16">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Musical Shows</h2>
+                  <p className="text-gray-600">Shows featuring songs, musical numbers and rhythmic content</p>
+                </div>
+                <Link href="/browse?theme=music">
+                  <Button variant="outline">View All</Button>
+                </Link>
               </div>
-              <Link href="/browse?ageGroup=0-3">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-            
-            {toddlerLoading ? (
-              <div className="flex space-x-6 overflow-hidden">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-4 w-3/4 mb-2" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Carousel className="w-full">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {toddlerShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                      <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
-                    </CarouselItem>
+              
+              {allShowsLoading ? (
+                <div className="flex space-x-6 overflow-hidden">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
+                      <Skeleton className="h-48 w-full" />
+                      <CardContent className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </CardContent>
+                    </Card>
                   ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            )}
-          </div>
+                </div>
+              ) : (
+                <Carousel className="w-full">
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {categories.musical.slice(0, 12).map((show) => (
+                      <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
+                        <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )}
+            </div>
+          )}
 
-          {/* Preschool Shows */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Preschool Shows (Ages 3-6)</h2>
-                <p className="text-gray-600">Learning and fun combined</p>
+          {/* Calm Shows */}
+          {categories.calm && categories.calm.length > 0 && (
+            <div className="mb-16">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Calm Shows</h2>
+                  <p className="text-gray-600">Gentle and soothing content for quiet time</p>
+                </div>
+                <Link href="/browse?stimulation=1-2">
+                  <Button variant="outline">View All</Button>
+                </Link>
               </div>
-              <Link href="/browse?ageGroup=3-6">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-            
-            {preschoolLoading ? (
-              <div className="flex space-x-6 overflow-hidden">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-4 w-3/4 mb-2" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Carousel className="w-full">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {preschoolShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                      <DesktopGridShowCard show={show} onClick={() => {}} />
-                    </CarouselItem>
+              
+              {allShowsLoading ? (
+                <div className="flex space-x-6 overflow-hidden">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
+                      <Skeleton className="h-48 w-full" />
+                      <CardContent className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </CardContent>
+                    </Card>
                   ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            )}
-          </div>
+                </div>
+              ) : (
+                <Carousel className="w-full">
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {categories.calm.slice(0, 12).map((show) => (
+                      <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
+                        <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )}
+            </div>
+          )}
 
-          {/* Elementary Shows */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Elementary Shows (Ages 6-12)</h2>
-                <p className="text-gray-600">Adventure and education for older kids</p>
+          {/* Educational Shows */}
+          {categories.educational && categories.educational.length > 0 && (
+            <div className="mb-16">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Educational Shows</h2>
+                  <p className="text-gray-600">Learning-focused content for cognitive development</p>
+                </div>
+                <Link href="/browse?theme=education">
+                  <Button variant="outline">View All</Button>
+                </Link>
               </div>
-              <Link href="/browse?ageGroup=6-12">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-            
-            {elementaryLoading ? (
-              <div className="flex space-x-6 overflow-hidden">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-4 w-3/4 mb-2" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Carousel className="w-full">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {elementaryShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                      <DesktopGridShowCard show={show} onClick={() => {}} />
-                    </CarouselItem>
+              
+              {allShowsLoading ? (
+                <div className="flex space-x-6 overflow-hidden">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
+                      <Skeleton className="h-48 w-full" />
+                      <CardContent className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </CardContent>
+                    </Card>
                   ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            )}
-          </div>
+                </div>
+              ) : (
+                <Carousel className="w-full">
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {categories.educational.slice(0, 12).map((show) => (
+                      <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
+                        <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Stimulation Level Categories */}
+      {/* Additional Categories */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Calm Shows */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Calm & Relaxing Shows</h2>
-                <p className="text-gray-600">Perfect for quiet time and bedtime</p>
+          {/* Fantasy Shows */}
+          {categories.fantasy && categories.fantasy.length > 0 && (
+            <div className="mb-16">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Fantasy Shows</h2>
+                  <p className="text-gray-600">Shows with magical, imaginative and fantasy elements</p>
+                </div>
+                <Link href="/browse?theme=fantasy">
+                  <Button variant="outline">View All</Button>
+                </Link>
               </div>
-              <Link href="/browse?stimulationScoreRange=%7B%22min%22%3A1%2C%22max%22%3A2%7D">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-            
-            {calmLoading ? (
-              <div className="flex space-x-6 overflow-hidden">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-4 w-3/4 mb-2" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Carousel className="w-full">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {calmShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                      <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
-                    </CarouselItem>
+              
+              {allShowsLoading ? (
+                <div className="flex space-x-6 overflow-hidden">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
+                      <Skeleton className="h-48 w-full" />
+                      <CardContent className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </CardContent>
+                    </Card>
                   ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            )}
-          </div>
+                </div>
+              ) : (
+                <Carousel className="w-full">
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {categories.fantasy.slice(0, 12).map((show) => (
+                      <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
+                        <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )}
+            </div>
+          )}
 
-          {/* Active Shows */}
-          <div>
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Active & Energetic Shows</h2>
-                <p className="text-gray-600">High-energy content for active kids</p>
+          {/* High Energy Shows */}
+          {categories.highEnergy && categories.highEnergy.length > 0 && (
+            <div className="mb-16">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">High Energy Shows</h2>
+                  <p className="text-gray-600">Active and stimulating content for energetic kids</p>
+                </div>
+                <Link href="/browse?stimulation=4-5">
+                  <Button variant="outline">View All</Button>
+                </Link>
               </div>
-              <Link href="/browse?stimulationScoreRange=%7B%22min%22%3A4%2C%22max%22%3A5%7D">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-            
-            {activeLoading ? (
-              <div className="flex space-x-6 overflow-hidden">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-4 w-3/4 mb-2" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Carousel className="w-full">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {activeShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                      <DesktopGridShowCard show={show} onClick={() => {}} />
-                    </CarouselItem>
+              
+              {allShowsLoading ? (
+                <div className="flex space-x-6 overflow-hidden">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="flex-shrink-0 w-64 overflow-hidden">
+                      <Skeleton className="h-48 w-full" />
+                      <CardContent className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </CardContent>
+                    </Card>
                   ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            )}
-          </div>
+                </div>
+              ) : (
+                <Carousel className="w-full">
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {categories.highEnergy.slice(0, 12).map((show) => (
+                      <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
+                        <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
