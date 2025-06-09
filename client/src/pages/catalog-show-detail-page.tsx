@@ -20,6 +20,7 @@ import type { TvShow } from "@shared/schema";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import Footer from "@/components/Footer";
 import SensoryBar from "@/components/SensoryBar";
+import AdContainer from "@/components/AdContainer";
 
 export default function CatalogShowDetailPage() {
   console.log('🔥 CATALOG SHOW DETAIL PAGE COMPONENT LOADED 🔥');
@@ -472,6 +473,10 @@ export default function CatalogShowDetailPage() {
                   </Card>
                 )}
 
+                {/* Bottom Ad Container */}
+                <div className="mt-8 mb-6">
+                  <AdContainer size="rectangle" className="mx-auto" />
+                </div>
 
               </div>
             </div>

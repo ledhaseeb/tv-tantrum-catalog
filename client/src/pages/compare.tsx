@@ -585,6 +585,11 @@ export default function Compare() {
           )}
         </div>
       )}
+      
+      {/* Bottom Compare Ad */}
+      <div className="mt-12 mb-6">
+        <AdContainer size="rectangle" className="mx-auto" />
+      </div>
     </main>
   );
 }
