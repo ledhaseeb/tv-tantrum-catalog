@@ -20,6 +20,7 @@ import type { TvShow } from "@shared/schema";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import Footer from "@/components/Footer";
 import SensoryBar from "@/components/SensoryBar";
+import { ShowDetailsAd } from "@/components/AdContainer";
 
 export default function CatalogShowDetailPage() {
   console.log('🔥 CATALOG SHOW DETAIL PAGE COMPONENT LOADED 🔥');
