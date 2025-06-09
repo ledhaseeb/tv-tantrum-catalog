@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { 
   Play, 
@@ -15,6 +17,9 @@ import {
   BookOpen,
   Zap,
   ArrowLeft,
+  Share2,
+  Copy,
+  Download
 } from "lucide-react";
 import type { TvShow } from "@shared/schema";
 import CatalogNavbar from "@/components/CatalogNavbar";
@@ -26,6 +31,9 @@ export default function CatalogShowDetailPage() {
   
   const params = useParams();
   const id = parseInt(params.id || "0");
+  const { toast } = useToast();
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const shareRef = useRef<HTMLDivElement>(null);
   
   console.log('CatalogShowDetailPage mounted with params:', params, 'parsed ID:', id);
   console.log('Current URL pathname:', window.location.pathname);
@@ -150,6 +158,59 @@ export default function CatalogShowDetailPage() {
       case 4: return 'Medium-High';
       case 5: return 'High';
       default: return 'Unknown';
+    }
+  };
+
+  const getStimulationDescription = (score: number): string => {
+    switch (score) {
+      case 1: return "Perfect for quiet time, bedtime routines, or when children need to wind down. Features gentle pacing, soft sounds, and minimal visual stimulation.";
+      case 2: return "Great for relaxed viewing that maintains attention without overstimulation. Balanced content that's engaging yet soothing.";
+      case 3: return "Ideal for regular playtime with moderate energy levels. Balanced stimulation that keeps children engaged and entertained.";
+      case 4: return "Perfect for active play and learning. Higher energy content that encourages movement and excitement.";
+      case 5: return "High-energy content designed for active engagement. Features fast-paced action, vibrant visuals, and dynamic audio.";
+      default: return "This show's stimulation level helps you understand its intensity in terms of visual pace, audio, and overall sensory input.";
+    }
+  };
+
+  const copyShowLink = async () => {
+    const url = `${window.location.origin}/shows/${show?.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link Copied!",
+        description: "Share link has been copied to your clipboard.",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please copy the URL manually from your browser.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const shareToSocial = (platform: string) => {
+    const url = `${window.location.origin}/shows/${show?.id}`;
+    const text = `Check out "${show?.name}" - ${getStimulationLabel(show?.stimulationScore || 0)} stimulation content perfect for kids! 📺✨`;
+    
+    let shareUrl = '';
+    switch (platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+        break;
+      case 'telegram':
+        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+        break;
+    }
+    
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
     }
   };
 
