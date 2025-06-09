@@ -150,6 +150,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get research summaries
+  app.get('/api/research-summaries', async (req, res) => {
+    try {
+      const summaries = await storage.getResearchSummaries();
+      res.json(summaries);
+    } catch (error) {
+      console.error('Error fetching research summaries:', error);
+      res.status(500).json({ message: 'Failed to fetch research summaries' });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
