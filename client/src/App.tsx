@@ -85,22 +85,32 @@ function Router() {
           }}
         </Route>
         <Route path="/shows/:id">
-          <div className="flex-grow flex flex-col">
-            <CatalogNavbar />
-            <div className="flex-grow">
-              <CatalogShowDetailWorking />
-            </div>
-            <Footer />
-          </div>
+          {(params) => {
+            const showId = params?.id;
+            return (
+              <div className="flex-grow flex flex-col">
+                <CatalogNavbar />
+                <div className="flex-grow">
+                  <CatalogShowDetailWorking showId={showId} />
+                </div>
+                <Footer />
+              </div>
+            );
+          }}
         </Route>
         <Route path="/detail/:id">
-          <div className="flex-grow flex flex-col">
-            <CatalogNavbar />
-            <div className="flex-grow">
-              <CatalogShowDetailWorking />
-            </div>
-            <Footer />
-          </div>
+          {(params) => {
+            const showId = params?.id;
+            return (
+              <div className="flex-grow flex flex-col">
+                <CatalogNavbar />
+                <div className="flex-grow">
+                  <CatalogShowDetailWorking showId={showId} />
+                </div>
+                <Footer />
+              </div>
+            );
+          }}
         </Route>
 
         {/* Catalog Home - Main landing page */}
