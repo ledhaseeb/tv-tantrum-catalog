@@ -81,7 +81,13 @@ export default function CatalogShowDetailWorking({ showId: propShowId }: Catalog
   // Early return check for debugging
   if (error) {
     console.error('[ShowDetail] Component error:', error);
-    return <div className="p-8 text-red-500 font-bold">ERROR: {error.message}</div>;
+    return <div className="p-8 text-red-500 font-bold text-xl bg-red-100 border-4 border-red-500">
+      <h2 className="text-2xl mb-4">COMPONENT ERROR DETECTED:</h2>
+      <p className="mb-2">Error: {error.message}</p>
+      <p className="mb-2">ID: {id}</p>
+      <p className="mb-2">Params: {JSON.stringify(params)}</p>
+      <p className="text-sm">Check browser console for full error details</p>
+    </div>;
   }
 
   if (!show && !isLoading) {
