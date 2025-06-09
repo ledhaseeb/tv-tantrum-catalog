@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TvShow } from "@shared/schema";
-import { TvShowImage } from "@/components/ui/tv-show-image";
+import { TvShowCardImage } from "@/components/ui/tv-show-image";
 import { Link } from "wouter";
 
 interface ShowCardProps {
@@ -123,11 +123,12 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
         <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
           {/* Image with fixed height */}
           <div className="relative h-48 overflow-hidden">
-            <TvShowImage
+            <TvShowCardImage
               showId={show.id}
               showName={show.name}
               originalUrl={normalizedShow.imageUrl}
               className="w-full h-full object-cover"
+              isInteractive={false}
             />
           </div>
           
@@ -159,11 +160,12 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Show image */}
               <div className="flex-shrink-0">
-                <TvShowImage
+                <TvShowCardImage
                   showId={show.id}
                   showName={show.name}
                   originalUrl={normalizedShow.imageUrl}
                   className="w-full sm:w-24 h-32 sm:h-36"
+                  isInteractive={false}
                 />
               </div>
               
@@ -222,11 +224,12 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
         {/* Image */}
         <div className="relative">
-          <TvShowImage
+          <TvShowCardImage
             showId={show.id}
             showName={show.name}
             originalUrl={normalizedShow.imageUrl}
             className="w-full aspect-[2/3]"
+            isInteractive={false}
           />
         </div>
         

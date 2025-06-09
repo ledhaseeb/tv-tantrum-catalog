@@ -72,8 +72,6 @@ export default function CatalogHomeResponsive() {
     },
   });
 
-
-
   const isLoading = categoriesLoading || categoryShowsLoading;
   
   // Filter shows based on search
@@ -153,7 +151,7 @@ export default function CatalogHomeResponsive() {
             {filteredShows.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredShows.slice(0, 20).map((show) => (
-                  <ShowCard key={show.id} show={show} viewMode="grid" onClick={() => {}} />
+                  <ShowCard key={show.id} show={show} />
                 ))}
               </div>
             ) : (
@@ -198,7 +196,7 @@ export default function CatalogHomeResponsive() {
                     </Link>
                   </div>
                   
-                  <CategoryRow shows={shows} title={category.name} description={category.description || ""} />
+                  <CategoryRow shows={shows} />
                 </div>
               );
             })}
@@ -218,8 +216,6 @@ export default function CatalogHomeResponsive() {
           </div>
         </div>
       )}
-
-
 
       {/* AdSense Ad Container - Mobile */}
       <div className="lg:hidden">

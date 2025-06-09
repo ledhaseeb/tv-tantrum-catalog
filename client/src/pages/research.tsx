@@ -16,9 +16,9 @@ const Research = () => {
   // Using Link component for navigation instead of useLocation
 
   const { data: summaries, isLoading: isLoadingSummaries, error } = useQuery({
-    queryKey: ['/api/research-summaries'],
+    queryKey: ['/api/research'],
     queryFn: async () => {
-      const response = await fetch('/api/research-summaries', {
+      const response = await fetch('/api/research', {
         credentials: 'include'
       });
       if (!response.ok) {

@@ -12,7 +12,7 @@ import ResearchDetail from "@/pages/research-detail";
 import CatalogShowDetailPage from "@/pages/catalog-show-detail-page-fixed";
 import AdminPage from "@/pages/admin-page";
 import AdminLogin from "@/pages/admin-login";
-import AdminDashboard from "@/pages/admin-dashboard-working";
+import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 
 // Create query client with sensible defaults

@@ -79,7 +79,6 @@ export interface IStorage {
     stimulationScoreRange?: {min: number, max: number};
   }): Promise<TvShow[]>;
   addTvShow(show: InsertTvShow): Promise<TvShow>;
-  createTvShow(show: InsertTvShow): Promise<TvShow>;
   updateTvShow(id: number, show: Partial<InsertTvShow>): Promise<TvShow | undefined>;
   deleteTvShow(id: number): Promise<boolean>;
   
@@ -95,20 +94,12 @@ export interface IStorage {
   // Import shows from GitHub data
   importShowsFromGitHub(shows: TvShowGitHub[]): Promise<TvShow[]>;
 
-  // Homepage categories methods
-  getHomepageCategories(): Promise<any[]>;
-  getShowsForCategory(categoryId: number): Promise<TvShow[]>;
-
   // Favorites methods
   addFavorite(userId: number, tvShowId: number): Promise<Favorite>;
   removeFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getUserFavorites(userId: number): Promise<TvShow[]>;
   isFavorite(userId: number, tvShowId: number): Promise<boolean>;
   getSimilarShows(userId: number, limit?: number): Promise<TvShow[]>;
-
-  // Admin methods
-  getAllThemes(): Promise<{ id: number; name: string }[]>;
-  getAdminStats(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1405,9 +1396,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addTvShow(show: InsertTvShow): Promise<TvShow> {
-    // Remove the id field if present to let the database auto-generate it
-    const { id, ...showData } = show as any;
-    const [newShow] = await db.insert(tvShows).values(showData).returning();
+    const [newShow] = await db.insert(tvShows).values(show).returning();
     return newShow;
   }
 
@@ -2009,108 +1998,6 @@ export class DatabaseStorage implements IStorage {
       ));
 
     return !!favorite;
-  }
-
-  async getHomepageCategories(): Promise<any[]> {
-    try {
-      const result = await db.execute(sql`SELECT * FROM homepage_categories WHERE is_active = true ORDER BY display_order`);
-      
-      // Map snake_case database fields to camelCase for frontend
-      return result.rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        description: row.description,
-        filterConfig: row.filter_config,
-        isActive: row.is_active,
-        displayOrder: row.display_order,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }));
-    } catch (error) {
-      console.error("Error fetching homepage categories:", error);
-      return [];
-    }
-  }
-
-  async getShowsForCategory(categoryId: number): Promise<TvShow[]> {
-    try {
-      // Get the category's filter configuration
-      const categoryResult = await db.execute(sql`SELECT filter_config FROM homepage_categories WHERE id = ${categoryId} AND is_active = true`);
-      
-      if (!categoryResult.rows.length) {
-        return [];
-      }
-      
-      const row = categoryResult.rows[0];
-      let filterConfig;
-      if (typeof row.filter_config === 'string') {
-        filterConfig = JSON.parse(row.filter_config);
-      } else if (typeof row.filter_config === 'object' && row.filter_config !== null) {
-        filterConfig = row.filter_config;
-      } else {
-        console.error("Invalid filter_config format:", row.filter_config);
-        return [];
-      }
-      
-      // Apply the filter configuration to get shows
-      const filters = this.parseFilterConfig(filterConfig);
-      return await this.getTvShowsByFilter(filters);
-      
-    } catch (error) {
-      console.error("Error fetching shows for category:", error);
-      return [];
-    }
-  }
-
-  private parseFilterConfig(filterConfig: any): any {
-    const filters: any = {};
-    
-    if (!filterConfig || !filterConfig.rules) {
-      return filters;
-    }
-    
-    // Collect themes from multiple rules
-    const themeValues: string[] = [];
-    
-    filterConfig.rules.forEach((rule: any) => {
-      switch (rule.field) {
-        case 'stimulationScore':
-          if (rule.operator === 'range') {
-            const [min, max] = rule.value.split('-').map(Number);
-            filters.stimulationScoreRange = { min, max };
-          }
-          break;
-        case 'ageGroup':
-          if (rule.operator === 'equals') {
-            filters.ageGroup = rule.value;
-          }
-          break;
-        case 'ageRange':
-          if (rule.operator === 'range') {
-            const [min, max] = rule.value.split('-').map(Number);
-            filters.ageRange = { min, max };
-          }
-          break;
-        case 'themes':
-          if (rule.operator === 'contains' || rule.operator === 'in') {
-            themeValues.push(rule.value);
-          }
-          break;
-        case 'interactionLevel':
-          if (rule.operator === 'equals') {
-            filters.interactionLevel = rule.value;
-          }
-          break;
-      }
-    });
-    
-    // Add themes if any were found
-    if (themeValues.length > 0) {
-      filters.themes = themeValues;
-      filters.themeMatchMode = filterConfig.logic || 'OR';
-    }
-    
-    return filters;
   }
 
   async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
@@ -3432,54 +3319,6 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error deleting research summary with ID ${id}:`, error);
       return false;
-    }
-  }
-
-  async createTvShow(show: InsertTvShow): Promise<TvShow> {
-    return this.addTvShow(show);
-  }
-
-  async getAdminStats(): Promise<any> {
-    try {
-      const client = await pool.connect();
-      
-      try {
-        // Get total counts
-        const showsResult = await client.query('SELECT COUNT(*) as count FROM catalog_tv_shows');
-        const usersResult = await client.query('SELECT COUNT(*) as count FROM users');
-        const researchResult = await client.query('SELECT COUNT(*) as count FROM catalog_research_summaries');
-        
-        // Get recent activity (shows added in last 30 days) - use a fallback since created_at column may not exist
-        let recentShowsResult;
-        try {
-          recentShowsResult = await client.query(`
-            SELECT COUNT(*) as count 
-            FROM catalog_tv_shows 
-            WHERE created_at >= NOW() - INTERVAL '30 days'
-          `);
-        } catch (error) {
-          // Fallback if created_at column doesn't exist
-          recentShowsResult = await client.query('SELECT 0 as count');
-        }
-
-        return {
-          totalShows: parseInt(showsResult.rows[0].count),
-          totalUsers: parseInt(usersResult.rows[0].count),
-          totalResearch: parseInt(researchResult.rows[0].count),
-          recentShows: parseInt(recentShowsResult.rows[0].count)
-        };
-      } finally {
-        client.release();
-      }
-    } catch (error) {
-      console.error('Error fetching admin stats:', error);
-      // Return default stats if database query fails
-      return {
-        totalShows: 0,
-        totalUsers: 0,
-        totalResearch: 0,
-        recentShows: 0
-      };
     }
   }
 }

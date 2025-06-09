@@ -46,55 +46,29 @@ export default function HomepageCategories() {
   const queryClient = useQueryClient();
   const [editingCategory, setEditingCategory] = useState<HomepageCategory | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [showCounts, setShowCounts] = useState<Record<number, number>>({});
 
   // Fetch categories
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['/api/homepage-categories'],
+    queryKey: ['/api/admin/homepage-categories'],
     queryFn: async () => {
-      const response = await fetch('/api/homepage-categories');
+      const response = await fetch('/api/admin/homepage-categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json() as Promise<HomepageCategory[]>;
     },
   });
 
-  // Fetch show counts for all categories when categories change
-  React.useEffect(() => {
-    const fetchShowCounts = async () => {
-      if (!categories.length) return;
-      
-      const counts: Record<number, number> = {};
-      for (const category of categories) {
-        try {
-          const response = await fetch(`/api/homepage-categories/${category.id}/shows`);
-          if (response.ok) {
-            const shows = await response.json();
-            counts[category.id] = shows.length;
-          } else {
-            counts[category.id] = 0;
-          }
-        } catch (error) {
-          counts[category.id] = 0;
-        }
-      }
-      setShowCounts(counts);
-    };
-
-    fetchShowCounts();
-  }, [categories]);
-
   // Create category mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomepageCategory) => {
       console.log('Creating category with data:', data);
-      const response = await apiRequest('POST', '/api/homepage-categories', data);
+      const response = await apiRequest('POST', '/api/admin/homepage-categories', data);
       console.log('Category creation response:', response);
       return response;
     },
     onSuccess: () => {
       console.log('Category created successfully');
       toast({ title: 'Success', description: 'Category created successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
       setIsCreating(false);
     },
     onError: (error) => {
@@ -106,11 +80,11 @@ export default function HomepageCategories() {
   // Update category mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertHomepageCategory> }) => {
-      return apiRequest('PUT', `/api/homepage-categories/${id}`, data);
+      return apiRequest('PUT', `/api/admin/homepage-categories/${id}`, data);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category updated successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
       setEditingCategory(null);
     },
     onError: (error) => {
@@ -121,11 +95,11 @@ export default function HomepageCategories() {
   // Delete category mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/homepage-categories/${id}`);
+      return apiRequest('DELETE', `/api/admin/homepage-categories/${id}`);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Category deleted successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/homepage-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/homepage-categories'] });
     },
     onError: (error) => {
       toast({ title: 'Error', description: 'Failed to delete category', variant: 'destructive' });
@@ -136,7 +110,7 @@ export default function HomepageCategories() {
   const reorderMutation = useMutation({
     mutationFn: async ({ id, newOrder }: { id: number; newOrder: number }) => {
       console.log(`[REORDER] Updating category ${id} to order ${newOrder}`);
-      const result = await apiRequest('PUT', `/api/homepage-categories/${id}`, {
+      const result = await apiRequest('PUT', `/api/admin/homepage-categories/${id}`, {
         displayOrder: newOrder
       });
       console.log(`[REORDER] API response:`, result);
@@ -284,7 +258,7 @@ export default function HomepageCategories() {
                       {category.name}
                       {!category.isActive && <Badge variant="secondary">Inactive</Badge>}
                       <Badge variant="outline" className="text-xs">
-                        {showCounts[category.id] ?? 0} shows
+                        {category.showCount || 0} shows
                       </Badge>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">

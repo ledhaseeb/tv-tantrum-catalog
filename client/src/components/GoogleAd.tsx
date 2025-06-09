@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { pushAd } from '@/lib/adsense';
 
 interface GoogleAdProps {
   slot: string;
@@ -21,11 +22,9 @@ const GoogleAd = ({
 
   useEffect(() => {
     try {
-      // Initialize AdSense ads
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-      (window as any).adsbygoogle.push({});
+      pushAd();
     } catch (error) {
-      console.error('Error initializing ad:', error);
+      console.error('Error pushing ad:', error);
     }
   }, []);
 

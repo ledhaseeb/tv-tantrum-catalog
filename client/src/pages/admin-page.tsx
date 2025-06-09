@@ -66,10 +66,9 @@ import {
   Key,
   Copy
 } from 'lucide-react';
-// Image upload functionality simplified for scaling
+import { ImageUpload } from '@/components/image-upload';
 import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import HomepageCategories from '@/components/admin/HomepageCategories';
 
 export default function AdminPage() {
   const { user, isAdmin } = useAuth();
@@ -153,11 +152,6 @@ export default function AdminPage() {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetPasswordUserId, setResetPasswordUserId] = useState<number | null>(null);
   const [tempPassword, setTempPassword] = useState<string>('');
-  
-  // Edit show dialog state
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingShow, setEditingShow] = useState<any>(null);
-  const [editFormState, setEditFormState] = useState<any>({});
 
 
 
@@ -298,7 +292,7 @@ export default function AdminPage() {
     console.log("Fetching all research entries...");
     setIsLoadingResearch(true);
     try {
-      const response = await fetch('/api/research-summaries');
+      const response = await fetch('/api/research');
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
@@ -639,24 +633,8 @@ export default function AdminPage() {
       endYear: null,
       isOngoing: true,
       creator: '',
-      availableOn: [],
-      // Additional required fields
-      network: null,
-      productionCompany: null,
-      productionCountry: null,
-      language: null,
-      genre: null,
-      targetAudience: null,
-      viewerRating: null,
-      creativityRating: null,
-      isFeatured: false,
-      totalEpisodes: null,
-      subscriberCount: null,
-      videoCount: null,
-      isYouTubeChannel: false,
-      publishedAt: null,
-      channelDescription: null,
-      hasYoutubeData: false
+      availableOn: []
+      // Note: we now use stimulationScore for overallRating in the backend
     });
     
     // Reset lookup results when opening a new form
@@ -779,7 +757,7 @@ export default function AdminPage() {
   };
   
   // Open edit dialog
-  const handleEditShow = async (show: TvShow) => {
+  const handleEditShow = (show: TvShow) => {
     // Log the show object to debug what values we're getting from the API
     console.log("Show data for editing:", JSON.stringify(show, null, 2));
     
@@ -874,7 +852,7 @@ export default function AdminPage() {
     };
     
     // Call the fetch function
-    await fetchCurrentShowData();
+    fetchCurrentShowData();
   };
 
   // Convert form values back to API format
@@ -895,47 +873,20 @@ export default function AdminPage() {
     const wholeStimulationScore = Math.round(formValues.stimulationScore);
     console.log(`Rounded stimulation score: ${formValues.stimulationScore} → ${wholeStimulationScore}`);
     
-    // Create a new object with converted values and all required fields
+    // Create a new object with converted values
     return {
-      name: formValues.name || '',
-      description: formValues.description || '',
-      ageRange: formValues.ageRange || '3-5 years',
-      episodeLength: formValues.episodeLength || 15,
-      creator: formValues.creator || null,
-      releaseYear: formValues.releaseYear || new Date().getFullYear(),
-      endYear: formValues.endYear || null,
-      isOngoing: formValues.isOngoing !== undefined ? formValues.isOngoing : true,
+      ...formValues,
+      // Ensure stimulation score is a whole number
       stimulationScore: wholeStimulationScore,
+      // Ensure themes is an array
       themes: Array.isArray(formValues.themes) ? formValues.themes : [],
-      imageUrl: formValues.imageUrl || null,
-      availableOn: Array.isArray(formValues.availableOn) ? formValues.availableOn : [],
-      seasons: formValues.seasons || 1,
-      totalEpisodes: formValues.totalEpisodes || null,
-      network: formValues.network || null,
-      productionCompany: formValues.productionCompany || null,
-      productionCountry: formValues.productionCountry || null,
-      language: formValues.language || null,
-      genre: formValues.genre || null,
-      targetAudience: formValues.targetAudience || null,
-      viewerRating: formValues.viewerRating || null,
-      creativityRating: formValues.creativityRating || null,
-      isFeatured: formValues.isFeatured || false,
       // Convert form field values back to API format
       interactivityLevel: formValues.interactivityLevel === 'Medium' ? 'Moderate' : formValues.interactivityLevel,
       dialogueIntensity: formValues.dialogueIntensity === 'Medium' ? 'Moderate' : formValues.dialogueIntensity,
-      soundEffectsLevel: formValues.soundEffectsLevel === 'Medium' ? 'Moderate' : formValues.soundEffectsLevel,
       sceneFrequency: formValues.sceneFrequency === 'Medium' ? 'Moderate' : formValues.sceneFrequency,
       musicTempo: formValues.musicTempo === 'Medium' ? 'Moderate' : formValues.musicTempo,
       totalMusicLevel: formValues.totalMusicLevel === 'Medium' ? 'Moderate' : formValues.totalMusicLevel,
       totalSoundEffectTimeLevel: formValues.totalSoundEffectTimeLevel === 'Medium' ? 'Moderate' : formValues.totalSoundEffectTimeLevel,
-      animationStyle: formValues.animationStyle || null,
-      // YouTube data fields (optional)
-      subscriberCount: formValues.subscriberCount || null,
-      videoCount: formValues.videoCount || null,
-      isYouTubeChannel: formValues.isYouTubeChannel || false,
-      publishedAt: formValues.publishedAt || null,
-      channelDescription: formValues.channelDescription || null,
-      hasYoutubeData: formValues.hasYoutubeData || false,
     };
   };
   
@@ -1162,16 +1113,11 @@ export default function AdminPage() {
       <Tabs defaultValue="shows">
         <TabsList className="mb-4">
           <TabsTrigger value="shows">TV Shows</TabsTrigger>
-          <TabsTrigger value="homepage-categories">Homepage Categories</TabsTrigger>
           <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Show Submissions</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="homepage-categories">
-          <HomepageCategories />
-        </TabsContent>
         
         <TabsContent value="research">
           <Card>
@@ -1333,12 +1279,12 @@ export default function AdminPage() {
                           <TableCell>{show.stimulationScore}/5</TableCell>
                           <TableCell>
                             <Button
-                              variant={show.isFeatured ? "default" : "outline"}
+                              variant={show.is_featured ? "default" : "outline"}
                               size="sm"
-                              onClick={() => handleFeaturedToggle(show.id, !show.isFeatured)}
-                              className={show.isFeatured ? "bg-yellow-600 hover:bg-yellow-700" : ""}
+                              onClick={() => handleFeaturedToggle(show.id, !show.is_featured)}
+                              className={show.is_featured ? "bg-yellow-600 hover:bg-yellow-700" : ""}
                             >
-                              {show.isFeatured ? "★ Featured" : "☆ Set Featured"}
+                              {show.is_featured ? "★ Featured" : "☆ Set Featured"}
                             </Button>
                           </TableCell>
                           <TableCell>
@@ -2124,15 +2070,10 @@ export default function AdminPage() {
               
               <div className="flex flex-col gap-4">
                 {/* Image Upload Component */}
-                <div>
-                  <Label htmlFor="imageUrl">Image URL</Label>
-                  <Input
-                    id="imageUrl"
-                    value={formState.imageUrl || ''}
-                    onChange={(e) => setFormState({...formState, imageUrl: e.target.value})}
-                    placeholder="Enter image URL"
-                  />
-                </div>
+                <ImageUpload 
+                  imageUrl={formState.imageUrl} 
+                  onImageChange={(imageUrl) => setFormState({...formState, imageUrl})}
+                />
                 
                 {/* OMDB Image Lookup Button */}
                 <div>
@@ -2776,10 +2717,9 @@ export default function AdminPage() {
                 <Label>Show Image</Label>
               </div>
               <div className="col-span-3">
-                <Input
-                  value={newShowFormState.imageUrl || ''}
-                  onChange={(e) => setNewShowFormState({...newShowFormState, imageUrl: e.target.value})}
-                  placeholder="Enter image URL"
+                <ImageUpload 
+                  imageUrl={newShowFormState.imageUrl} 
+                  onImageChange={(imageUrl) => setNewShowFormState({...newShowFormState, imageUrl})}
                 />
               </div>
             </div>
