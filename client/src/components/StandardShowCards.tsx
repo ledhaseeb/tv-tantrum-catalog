@@ -21,14 +21,14 @@ const CARD_VARIANTS = {
     themes: 1, // Max themes to show
   },
   
-  // Desktop grid cards - true portrait ratio (taller than wide)
+  // Desktop grid cards - portrait with specified dimensions
   desktopGrid: {
-    container: "h-[500px] w-56", // Portrait: taller than wide
-    image: "h-80", // Tall portrait image area
-    content: "h-32", // Compact content area
+    container: "h-72", // Total height: 288px
+    image: "h-40", // Image height: 160px
+    content: "h-32", // Content height: 128px
     title: "text-sm font-bold line-clamp-2",
     badge: "text-xs",
-    themes: 1, // Max themes to show in compact space
+    themes: 1, // Max themes to show
   },
   
   // List view cards - responsive horizontal layout
@@ -121,7 +121,7 @@ export function DesktopGridShowCard({ show, onClick }: BaseShowCardProps) {
           />
         </div>
         
-        <CardContent className={`p-4 flex flex-col ${variant.content}`}>
+        <CardContent className={`p-3 flex flex-col ${variant.content}`}>
           <h3 className={`${variant.title} mb-3`}>{show.name}</h3>
           
           <Badge variant="outline" className={`bg-green-50 text-green-700 ${variant.badge} border-green-100 mb-3 w-fit`}>
