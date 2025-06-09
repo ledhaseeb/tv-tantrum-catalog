@@ -485,7 +485,7 @@ export default function Browse() {
                         key={show.id} 
                         show={show} 
                         viewMode="grid"
-                        isMobile={true}
+                        isMobile={false}
                         onClick={() => handleShowClick(show.id)}
                       />
                     ))}

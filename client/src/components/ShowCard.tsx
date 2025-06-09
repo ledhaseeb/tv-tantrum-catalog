@@ -218,24 +218,24 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   }
 
-  // Default grid view card
+  // Desktop grid view card with better proportions
   return (
     <Link href={`/show/${show.id}`}>
-      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
-        {/* Image */}
-        <div className="relative">
+      <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+        {/* Image with fixed height for consistency */}
+        <div className="relative h-48 overflow-hidden">
           <TvShowCardImage
             showId={show.id}
             showName={show.name}
             originalUrl={normalizedShow.imageUrl}
-            className="w-full aspect-[2/3]"
+            className="w-full h-full object-cover"
             isInteractive={false}
           />
         </div>
         
-        <CardContent className="p-4 flex flex-col flex-grow">
+        <CardContent className="p-3 flex flex-col flex-grow h-32">
           {/* Title */}
-          <h3 className="text-sm font-bold mb-2 line-clamp-2">{show.name}</h3>
+          <h3 className="text-sm font-bold mb-2 line-clamp-1">{show.name}</h3>
           
           {/* Target Ages */}
           <div className="mb-2">
