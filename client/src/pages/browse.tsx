@@ -519,6 +519,15 @@ export default function Browse() {
             )}
           </div>
         </div>
+        
+        {/* Bottom Browse Ad */}
+        <div className="mt-12 mb-6">
+          <AdContainer 
+            size={isMobile ? "mobile-banner" : "leaderboard"} 
+            className="mx-auto" 
+            label="Advertisement"
+          />
+        </div>
       </div>
     </div>
   );

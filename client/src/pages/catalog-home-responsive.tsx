@@ -217,30 +217,15 @@ export default function CatalogHomeResponsive() {
         </div>
       )}
 
-      {/* AdSense Ad Container - Mobile */}
-      <div className="lg:hidden">
-        <div className="container mx-auto px-4 py-8">
+      {/* Bottom Ad Container */}
+      <div className="bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
           <div className="flex justify-center">
-            <div className="adsbygoogle bg-gray-50 border border-gray-200 rounded-lg p-4 w-full max-w-sm h-64 flex items-center justify-center text-gray-400"
-                 data-ad-client="ca-pub-YOUR-PUBLISHER-ID"
-                 data-ad-slot="YOUR-MOBILE-AD-SLOT"
-                 data-ad-format="auto">
-              Advertisement
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* AdSense Ad Container - Desktop */}
-      <div className="hidden lg:block">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center">
-            <div className="adsbygoogle bg-gray-50 border border-gray-200 rounded-lg p-4 w-full max-w-4xl h-32 flex items-center justify-center text-gray-400"
-                 data-ad-client="ca-pub-YOUR-PUBLISHER-ID"
-                 data-ad-slot="YOUR-DESKTOP-AD-SLOT"
-                 data-ad-format="auto">
-              Advertisement
-            </div>
+            <AdContainer 
+              size={isMobile ? "mobile-banner" : "leaderboard"} 
+              className="w-full max-w-4xl" 
+              label="Advertisement"
+            />
           </div>
         </div>
       </div>

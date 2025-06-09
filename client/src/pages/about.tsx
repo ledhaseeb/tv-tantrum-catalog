@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import AdContainer from "@/components/AdContainer";
 import { useEffect, useState } from "react";
 
 export default function About() {
