@@ -1,10 +1,11 @@
 interface SensoryBarProps {
-  level: string | null | undefined;
+  level?: string | null | undefined;
+  score?: number | null | undefined;
   className?: string;
   height?: 'thin' | 'thick';
 }
 
-export default function SensoryBar({ level, className = "", height = 'thick' }: SensoryBarProps) {
+export default function SensoryBar({ level, score, className = "", height = 'thick' }: SensoryBarProps) {
   // Convert sensory level text to percentage
   const getSensoryLevelPercentage = (level: string | null | undefined) => {
     if (!level) return 60; // Default to moderate
@@ -36,7 +37,14 @@ export default function SensoryBar({ level, className = "", height = 'thick' }: 
     }
   };
 
-  const percentage = getSensoryLevelPercentage(level);
+  // Convert numeric score (1-5) to percentage
+  const getScorePercentage = (score: number | null | undefined) => {
+    if (!score || score < 1) return 20;
+    if (score >= 5) return 100;
+    return (score / 5) * 100;
+  };
+
+  const percentage = score !== undefined ? getScorePercentage(score) : getSensoryLevelPercentage(level);
   const barHeight = height === 'thick' ? 'h-4' : 'h-2';
 
   return (
