@@ -129,28 +129,25 @@ export default function CatalogShowDetailPage() {
   };
 
   const renderStimulationDots = (score: number) => {
-    const dots = [];
-    const colors = [
-      'bg-green-500',    // 1 - Low
-      'bg-yellow-500',   // 2 - Low-Medium  
-      'bg-orange-500',   // 3 - Medium
-      'bg-red-500',      // 4 - Medium-High
-      'bg-red-700'       // 5 - High
-    ];
-    
-    for (let i = 1; i <= 5; i++) {
-      const isActive = i <= score;
-      const colorClass = isActive ? colors[i - 1] : 'bg-gray-300';
-      const ringClass = i === score ? 'ring-2 ring-gray-400' : '';
-      
-      dots.push(
-        <div
-          key={i}
-          className={`w-3 h-3 rounded-full ${colorClass} ${ringClass}`}
-        />
-      );
-    }
-    return dots;
+    return (
+      <div className="flex justify-center gap-1 mb-1">
+        {[1, 2, 3, 4, 5].map((dot) => {
+          let bgColor = '';
+          if (dot === 1) bgColor = 'bg-green-500';
+          else if (dot === 2) bgColor = 'bg-green-400';
+          else if (dot === 3) bgColor = 'bg-yellow-500';
+          else if (dot === 4) bgColor = 'bg-orange-500';
+          else bgColor = 'bg-red-500';
+          
+          return (
+            <div 
+              key={dot} 
+              className={`w-3 h-3 rounded-full ${dot <= score ? bgColor : 'border border-gray-300'}`}
+            />
+          );
+        })}
+      </div>
+    );
   };
 
   const LoadingSkeleton = () => (
