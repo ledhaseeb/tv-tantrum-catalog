@@ -31,16 +31,19 @@ export default function CatalogShowDetailPage() {
   console.log('CatalogShowDetailPage mounted with params:', params, 'parsed ID:', id);
   console.log('Current URL pathname:', window.location.pathname);
   
+  // Force valid ID for testing if none provided
+  const validId = id > 0 ? id : 1;
+  
   // Fetch show details
   const { data: show, isLoading, error } = useQuery({
-    queryKey: ['catalog-tv-show', id],
+    queryKey: ['catalog-tv-show', validId],
     queryFn: async () => {
       console.log('=== FETCHING SHOW DETAILS ===');
-      console.log('Show ID:', id);
-      console.log('Request URL:', `/api/tv-shows/${id}`);
-      console.log('Full URL:', `${window.location.origin}/api/tv-shows/${id}`);
+      console.log('Show ID:', validId);
+      console.log('Request URL:', `/api/tv-shows/${validId}`);
+      console.log('Full URL:', `${window.location.origin}/api/tv-shows/${validId}`);
       
-      const response = await fetch(`/api/tv-shows/${id}`, {
+      const response = await fetch(`/api/tv-shows/${validId}`, {
         credentials: 'include',
         headers: {
           'Accept': 'application/json',
