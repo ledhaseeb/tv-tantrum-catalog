@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DesktopGridShowCard, MobileGridShowCard } from "@/components/StandardShowCards";
+import { CardSizingControls } from "@/components/CardSizingControls";
+import { DynamicShowCard } from "@/components/DynamicShowCard";
 import {
   Carousel,
   CarouselContent,
@@ -19,6 +21,17 @@ import type { TvShow } from "../../../shared/catalog-schema";
 
 export default function CatalogHome() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [cardConfig, setCardConfig] = useState({
+    totalHeight: 'h-72',
+    totalWidth: 'w-48',
+    imageHeight: 'h-40',
+    contentHeight: 'h-32',
+    contentPadding: 'p-3',
+    titleSize: 'text-sm',
+    badgeSize: 'text-xs',
+    maxThemes: 1,
+  });
+  const [showSizingControls, setShowSizingControls] = useState(false);
 
   // Fetch featured show
   const { data: featuredShow, isLoading: featuredLoading } = useQuery({
@@ -237,7 +250,7 @@ export default function CatalogHome() {
               <CarouselContent className="-ml-2 md:-ml-4">
                 {popularShows?.map((show) => (
                   <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
-                    <DesktopGridShowCard show={show} onClick={() => {}} />
+                    <DynamicShowCard show={show} config={cardConfig} onClick={() => {}} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -453,7 +466,12 @@ export default function CatalogHome() {
         </div>
       </section>
 
-
+      {/* Visual Card Sizing Controls */}
+      <CardSizingControls
+        onSizeChange={setCardConfig}
+        isVisible={showSizingControls}
+        onToggle={() => setShowSizingControls(!showSizingControls)}
+      />
     </div>
   );
 }
