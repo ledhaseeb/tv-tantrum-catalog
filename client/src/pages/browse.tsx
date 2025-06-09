@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
 import ShowFilters from "@/components/ShowFilters";
-import ShowCard from "@/components/ShowCard";
+import { MobileGridShowCard, DesktopGridShowCard, CategoryGridShowCard } from "@/components/StandardShowCards";
+import { CatalogPageGrid, CategoryPageGrid } from "@/components/GridLayouts";
 import SimpleShowCard from "@/components/SimpleShowCard";
 import AdContainer from "@/components/AdContainer";
 import { Button } from "@/components/ui/button";
@@ -464,32 +465,27 @@ export default function Browse() {
               </div>
             ) : (
               <div ref={resultsRef}>
-                {/* Show Cards Grid - Mobile uses portrait, desktop uses landscape */}
+                {/* Show Cards Grid using standardized components */}
                 {isMobile ? (
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Mobile grid layout with portrait cards */}
+                  <CatalogPageGrid>
                     {currentShows.map(show => (
-                      <ShowCard 
+                      <MobileGridShowCard 
                         key={show.id} 
                         show={show} 
-                        viewMode="grid"
-                        isMobile={true}
                         onClick={() => handleShowClick(show.id)}
                       />
                     ))}
-                  </div>
+                  </CatalogPageGrid>
                 ) : (
-                  <div className="flex flex-wrap gap-6 justify-start">
-                    {currentShows.map((show, index) => (
-                      <ShowCard 
+                  <CatalogPageGrid>
+                    {currentShows.map(show => (
+                      <DesktopGridShowCard 
                         key={show.id} 
                         show={show} 
-                        viewMode="grid"
-                        isMobile={true}
                         onClick={() => handleShowClick(show.id)}
                       />
                     ))}
-                  </div>
+                  </CatalogPageGrid>
                 )}
                 
                 {/* Pagination */}
