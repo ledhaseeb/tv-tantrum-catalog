@@ -207,7 +207,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/homepage-categories/:id/shows', async (req, res) => {
     try {
       const categoryId = parseInt(req.params.id);
-      const category = await storage.getHomepageCategoryById(categoryId);
+      const categories = await storage.getHomepageCategories();
+      const category = categories.find(c => c.id === categoryId);
       
       if (!category) {
         return res.status(404).json({ message: 'Category not found' });
@@ -218,8 +219,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? JSON.parse(category.filterConfig) 
         : category.filterConfig;
 
-      const shows = await storage.getAllTvShows({}, filterConfig);
-      res.json(shows);
+      // Get all shows and apply the category's filter config
+      const allShows = await storage.getAllTvShows();
+      
+      // Apply filtering based on the category's filter config
+      let filteredShows = allShows;
+      
+      if (filterConfig && filterConfig.rules) {
+        filteredShows = allShows.filter(show => {
+          return filterConfig.rules.every((rule: any) => {
+            if (rule.field === 'stimulationScore' && rule.operator === 'range') {
+              const score = show.stimulationScore;
+              return score >= rule.value.min && score <= rule.value.max;
+            }
+            if (rule.field === 'ageRange' && rule.operator === 'equals') {
+              return show.ageRange === rule.value;
+            }
+            if (rule.field === 'themes' && rule.operator === 'in') {
+              if (!show.themes || !Array.isArray(show.themes)) return false;
+              return rule.value.some((theme: string) => show.themes!.includes(theme));
+            }
+            return true;
+          });
+        });
+      }
+      
+      res.json(filteredShows);
     } catch (error) {
       console.error('Error fetching category shows:', error);
       res.status(500).json({ message: 'Failed to fetch category shows' });

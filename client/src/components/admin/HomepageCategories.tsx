@@ -58,6 +58,31 @@ export default function HomepageCategories() {
     },
   });
 
+  // Fetch show counts for all categories when categories change
+  React.useEffect(() => {
+    const fetchShowCounts = async () => {
+      if (!categories.length) return;
+      
+      const counts: Record<number, number> = {};
+      for (const category of categories) {
+        try {
+          const response = await fetch(`/api/homepage-categories/${category.id}/shows`);
+          if (response.ok) {
+            const shows = await response.json();
+            counts[category.id] = shows.length;
+          } else {
+            counts[category.id] = 0;
+          }
+        } catch (error) {
+          counts[category.id] = 0;
+        }
+      }
+      setShowCounts(counts);
+    };
+
+    fetchShowCounts();
+  }, [categories]);
+
   // Create category mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomepageCategory) => {
@@ -259,7 +284,7 @@ export default function HomepageCategories() {
                       {category.name}
                       {!category.isActive && <Badge variant="secondary">Inactive</Badge>}
                       <Badge variant="outline" className="text-xs">
-                        {category.showCount || 0} shows
+                        {showCounts[category.id] ?? 0} shows
                       </Badge>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
