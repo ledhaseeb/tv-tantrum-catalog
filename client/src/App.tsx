@@ -77,7 +77,7 @@ function Router() {
               <div className="flex-grow flex flex-col">
                 <CatalogNavbar />
                 <div className="flex-grow">
-                  <CatalogShowDetailWorking showId={showId} />
+                  <ShowDetailSimple showId={showId} />
                 </div>
                 <Footer />
               </div>
@@ -91,7 +91,7 @@ function Router() {
               <div className="flex-grow flex flex-col">
                 <CatalogNavbar />
                 <div className="flex-grow">
-                  <CatalogShowDetailWorking showId={showId} />
+                  <ShowDetailSimple showId={showId} />
                 </div>
                 <Footer />
               </div>
@@ -105,7 +105,7 @@ function Router() {
               <div className="flex-grow flex flex-col">
                 <CatalogNavbar />
                 <div className="flex-grow">
-                  <CatalogShowDetailWorking showId={showId} />
+                  <ShowDetailSimple showId={showId} />
                 </div>
                 <Footer />
               </div>
