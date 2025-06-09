@@ -138,7 +138,7 @@ export default function About() {
               <h3 className="ml-2 text-lg font-bold text-green-800">Low</h3>
             </div>
             <p className="text-green-800">
-              Gentle pacing with minimal scene changes. Soft sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.
+              Gentle pacing with minimal scene changes. Typically contains softer sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.
             </p>
           </div>
           
@@ -148,7 +148,7 @@ export default function About() {
               <h3 className="ml-2 text-lg font-bold text-yellow-800">Low-Medium</h3>
             </div>
             <p className="text-yellow-800">
-              Moderate pacing with occasional transitions. Mild sound effects and harmonious music. Engaging but not overwhelming content. Good for longer viewing sessions and younger children.
+              Balanced pacing with occasional transitions. Typically contains mild sound effects and harmonious music. Engaging but not overwhelming content. Recommended for those longer viewing sessions and younger children.
             </p>
           </div>
           
@@ -158,7 +158,7 @@ export default function About() {
               <h3 className="ml-2 text-lg font-bold text-orange-800">Medium</h3>
             </div>
             <p className="text-orange-800">
-              Balanced pacing with regular scene changes. Moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most children but monitor younger viewers for signs of overstimulation.
+              Moderate pacing with regular scene changes. Typically contains moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most but monitor younger viewers for signs of overstimulation.
             </p>
           </div>
           
@@ -168,7 +168,7 @@ export default function About() {
               <h3 className="ml-2 text-lg font-bold text-red-700">Medium-High</h3>
             </div>
             <p className="text-red-700">
-              Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better for older children and shorter viewing sessions. May feel intense to younger viewers.
+              Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better shorter viewing sessions. May feel intense to sensitive or younger viewers.
             </p>
           </div>
           
@@ -178,7 +178,7 @@ export default function About() {
               <h3 className="ml-2 text-lg font-bold text-red-800">High</h3>
             </div>
             <p className="text-red-800">
-              Rapid pacing with constant scene changes. Loud sound effects and intense music. Highly energetic content with many elements competing for attention. Use with caution.
+              Rapid pacing with very quick scene changes. Typically contains intense sound effect usage and fast music. Highly energetic content with many elements competing for attention. Use with caution.
             </p>
           </div>
         </div>
