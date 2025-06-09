@@ -1,3 +1,17 @@
+/**
+ * ⚠️ ACTIVE SHOW DETAIL PAGE - This is the LIVE file used in production
+ * 
+ * Route: /show/:id in App-catalog.tsx
+ * 
+ * DO NOT EDIT catalog-show-detail-page.tsx (legacy file)
+ * 
+ * This file contains:
+ * - Top ad container (blue/purple gradient)
+ * - Bottom ad container (orange/red gradient)
+ * - Complete sensory details display
+ * - Show information and themes
+ */
+
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -12,9 +26,11 @@ import {
   Calendar, 
   BookOpen, 
   Zap,
-  Tag
+  Tag,
+  Heart
 } from "lucide-react";
 import SensoryBar from "@/components/SensoryBar";
+import ShowCard from "@/components/ShowCard";
 
 interface TvShow {
   id: number;
@@ -98,6 +114,49 @@ export default function CatalogShowDetailPage() {
   });
 
   console.log('Query state - isLoading:', isLoading, 'error:', error, 'show:', !!show);
+
+  // Fetch related shows based on themes and age range
+  const { data: relatedShows = [] } = useQuery({
+    queryKey: ['/api/tv-shows/related', id, show?.themes, show?.ageRange],
+    queryFn: async () => {
+      if (!show) return [];
+      
+      // Build query parameters for finding similar shows
+      const params = new URLSearchParams();
+      
+      // Add theme filters (OR logic for any matching theme)
+      if (show.themes && show.themes.length > 0) {
+        show.themes.slice(0, 3).forEach(theme => {
+          params.append('themes', theme);
+        });
+        params.append('themeMatchMode', 'OR');
+      }
+      
+      // Add age range filter
+      if (show.ageRange) {
+        params.append('ageRange', show.ageRange);
+      }
+      
+      // Add stimulation score range (±1 from current show)
+      if (show.stimulationScore) {
+        const minScore = Math.max(1, show.stimulationScore - 1);
+        const maxScore = Math.min(5, show.stimulationScore + 1);
+        params.append('stimulationMin', minScore.toString());
+        params.append('stimulationMax', maxScore.toString());
+      }
+      
+      const response = await fetch(`/api/tv-shows?${params.toString()}`);
+      if (!response.ok) return [];
+      
+      const allShows = await response.json();
+      
+      // Filter out the current show and limit to 6 recommendations
+      return allShows
+        .filter((relatedShow: TvShow) => relatedShow.id !== show.id)
+        .slice(0, 6);
+    },
+    enabled: !!show,
+  });
 
   // SEO optimization
   useEffect(() => {
@@ -416,19 +475,6 @@ export default function CatalogShowDetailPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Middle Ad Container - Rectangle */}
-            <div className="my-8">
-              <div className="bg-gradient-to-br from-green-100 to-teal-100 border-2 border-dashed border-green-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
-                <div className="flex items-center justify-center space-x-2 mb-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
-                  <span className="text-lg font-bold text-green-700">MIDDLE AD SPACE</span>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                </div>
-                <p className="text-green-600 font-medium">300x250 Rectangle Advertisement</p>
-                <p className="text-sm text-green-500 mt-1">Ready for AdSense integration</p>
-              </div>
-            </div>
 
             {/* Themes */}
             {show.themes && show.themes.length > 0 && (
