@@ -559,8 +559,8 @@ export default function CatalogShowDetailPage() {
               Shows with similar themes, age range, and stimulation levels
             </p>
             
-            {/* Grid Container - Same as Homepage */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* Fixed 4-Column Grid - Always 4 cards in a row */}
+            <div className="grid grid-cols-4 gap-4">
               {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
                 <ShowCard 
                   key={relatedShow.id}
