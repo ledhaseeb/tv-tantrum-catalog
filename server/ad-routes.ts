@@ -48,7 +48,20 @@ router.get('/ads', async (req, res) => {
       return res.status(404).json({ error: 'No active ads found for this placement' });
     }
 
-    res.json(activeAds[0]);
+    // Map database fields to frontend expected format
+    const ad = activeAds[0];
+    const mappedAd = {
+      id: ad.id,
+      title: ad.title,
+      description: ad.description,
+      imageUrl: ad.image_url,
+      ctaText: ad.cta_text,
+      targetUrl: ad.target_url,
+      placement: ad.placement,
+      isActive: ad.is_active,
+    };
+    
+    res.json(mappedAd);
   } catch (error) {
     console.error('Error fetching ad:', error);
     res.status(500).json({ error: 'Failed to fetch ad' });

@@ -8,6 +8,7 @@ import { catalogStorage } from './catalog-storage';
 import { Pool } from 'pg';
 import { setupSimpleAdminAuth } from './simple-admin';
 import adminRoutes from './admin-routes';
+import adRoutes from './ad-routes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
