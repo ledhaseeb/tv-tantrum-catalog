@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CategoryRow from "@/components/CategoryRow";
 import ShowCard from "@/components/ShowCard";
 import { Search, Filter, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
+import AdContainer from "@/components/AdContainer";
 import type { TvShow, HomepageCategory } from "../../../shared/catalog-schema";
 
 export default function CatalogHomeResponsive() {
@@ -98,14 +99,14 @@ export default function CatalogHomeResponsive() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 border-b">
+      <div className="relative bg-white border-b">
         <div className="container mx-auto px-4 py-12 lg:py-16">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 tracking-tight">
-              Find the Perfect Show
+              Screen Time Stimulation Scores
             </h1>
             <p className="text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto">
-              Discover children's content based on sensory details and stimulation levels
+              Find TV shows measured by stimulation levels, helping you discover content that fits your child's needs.
             </p>
             
             {/* Search Bar */}
@@ -114,37 +115,28 @@ export default function CatalogHomeResponsive() {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Search for shows..."
+                  placeholder="Search show by name, theme, platform..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-12 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+                  className="w-full pl-12 pr-16 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
                 />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    ×
-                  </button>
-                )}
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Search
+                </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <Link href="/browse">
-                <Button variant="outline" size="lg" className="gap-2">
-                  <Filter className="h-4 w-4" />
-                  Browse All Shows
-                </Button>
-              </Link>
-              <Link href="/research">
-                <Button variant="outline" size="lg" className="gap-2">
-                  <BarChart2 className="h-4 w-4" />
-                  Research Insights
-                </Button>
-              </Link>
-            </div>
+      {/* Ad Container */}
+      <div className="bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center">
+            <AdContainer size="leaderboard" className="w-full max-w-4xl" />
           </div>
         </div>
       </div>
