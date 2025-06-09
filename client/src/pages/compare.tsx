@@ -597,7 +597,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`music-bar-${show.id}`}>
-                        {renderSegmentedBar((show as any).total_music_level)}
+                        <SensoryBar level={(show as any).total_music_level} />
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
