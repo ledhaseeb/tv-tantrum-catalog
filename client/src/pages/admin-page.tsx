@@ -153,6 +153,11 @@ export default function AdminPage() {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [resetPasswordUserId, setResetPasswordUserId] = useState<number | null>(null);
   const [tempPassword, setTempPassword] = useState<string>('');
+  
+  // Edit show dialog state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingShow, setEditingShow] = useState<any>(null);
+  const [editFormState, setEditFormState] = useState<any>({});
 
 
 
@@ -293,7 +298,7 @@ export default function AdminPage() {
     console.log("Fetching all research entries...");
     setIsLoadingResearch(true);
     try {
-      const response = await fetch('/api/research');
+      const response = await fetch('/api/research-summaries');
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
