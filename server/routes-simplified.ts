@@ -320,7 +320,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin authentication endpoint
+  // Admin authentication endpoint for dashboard
+  app.get('/api/admin/me', async (req, res) => {
+    try {
+      // Return mock admin user for development
+      const adminUser = { 
+        id: 1, 
+        email: 'admin@tvtantrum.com',
+        firstName: 'Admin',
+        isAdmin: true 
+      };
+      res.json(adminUser);
+    } catch (error) {
+      console.error('Error checking admin user:', error);
+      res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+
+  // Legacy admin authentication endpoint
   app.get('/api/admin/user', async (req, res) => {
     try {
       // Simple admin check - in production this would use proper session management
@@ -333,6 +350,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error checking admin user:', error);
       res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+
+  // Admin logout endpoint
+  app.post('/api/admin/logout', async (req, res) => {
+    try {
+      res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      res.status(500).json({ message: 'Logout failed' });
     }
   });
 

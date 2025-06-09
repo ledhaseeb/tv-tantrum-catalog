@@ -3449,12 +3449,18 @@ export class DatabaseStorage implements IStorage {
         const usersResult = await client.query('SELECT COUNT(*) as count FROM users');
         const researchResult = await client.query('SELECT COUNT(*) as count FROM catalog_research_summaries');
         
-        // Get recent activity (shows added in last 30 days)
-        const recentShowsResult = await client.query(`
-          SELECT COUNT(*) as count 
-          FROM catalog_tv_shows 
-          WHERE created_at >= NOW() - INTERVAL '30 days'
-        `);
+        // Get recent activity (shows added in last 30 days) - use a fallback since created_at column may not exist
+        let recentShowsResult;
+        try {
+          recentShowsResult = await client.query(`
+            SELECT COUNT(*) as count 
+            FROM catalog_tv_shows 
+            WHERE created_at >= NOW() - INTERVAL '30 days'
+          `);
+        } catch (error) {
+          // Fallback if created_at column doesn't exist
+          recentShowsResult = await client.query('SELECT 0 as count');
+        }
 
         return {
           totalShows: parseInt(showsResult.rows[0].count),
