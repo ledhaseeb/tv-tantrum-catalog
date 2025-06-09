@@ -27,9 +27,9 @@ export default function CatalogHomeResponsive() {
 
   // Fetch homepage categories
   const { data: homepageCategories = [], isLoading: categoriesLoading } = useQuery({
-    queryKey: ['/api/homepage-categories'],
+    queryKey: ['/api/catalog/homepage-categories'],
     queryFn: async () => {
-      const response = await fetch('/api/homepage-categories');
+      const response = await fetch('/api/catalog/homepage-categories');
       if (!response.ok) throw new Error('Failed to fetch homepage categories');
       return response.json() as Promise<HomepageCategory[]>;
     },
@@ -46,7 +46,7 @@ export default function CatalogHomeResponsive() {
       await Promise.all(
         homepageCategories.map(async (category: HomepageCategory) => {
           try {
-            const response = await fetch(`/api/homepage-categories/${category.id}/shows`);
+            const response = await fetch(`/api/catalog/homepage-categories/${category.id}/shows`);
             if (response.ok) {
               categoryShows[category.id] = await response.json();
             }
