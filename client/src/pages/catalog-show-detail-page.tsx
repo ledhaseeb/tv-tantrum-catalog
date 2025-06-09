@@ -484,6 +484,7 @@ export default function CatalogShowDetailPage() {
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </div>
     </div>
