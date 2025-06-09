@@ -23,23 +23,7 @@ router.get('/ads', async (req, res) => {
       .where(
         and(
           eq(ads.placement, placement),
-          eq(ads.isActive, true),
-          or(
-            isNull(ads.startDate),
-            lte(ads.startDate, now)
-          ),
-          or(
-            isNull(ads.endDate),
-            gte(ads.endDate, now)
-          ),
-          or(
-            isNull(ads.maxImpressions),
-            gte(ads.maxImpressions, ads.currentImpressions)
-          ),
-          or(
-            isNull(ads.maxClicks),
-            gte(ads.maxClicks, ads.currentClicks)
-          )
+          eq(ads.isActive, true)
         )
       )
       .limit(1);

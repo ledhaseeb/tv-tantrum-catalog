@@ -280,6 +280,7 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
 
 // Mount API routes BEFORE Vite middleware to prevent conflicts
 app.use('/api/admin', adminRoutes);
+app.use('/api', adRoutes);
 app.use('/api', router);
 
 const port = Number(process.env.PORT) || 5000;
