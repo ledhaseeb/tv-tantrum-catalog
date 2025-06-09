@@ -81,16 +81,16 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     const score = normalizedShow.stimulationScore || 3;
     
     return (
-      <div className="w-full bg-gray-50 rounded-lg p-3 border border-gray-200">
+      <div className="w-full">
         {/* Show label only on non-mobile */}
         {!isMobile && (
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-bold text-gray-800">Stimulation Level</span>
           </div>
         )}
         
         {/* Stimulation Score Dots */}
-        <div className="flex justify-center gap-1 mb-2">
+        <div className="flex justify-center gap-1 mb-1">
           {[1, 2, 3, 4, 5].map((dot) => {
             let bgColor = '';
             if (dot === 1) bgColor = 'bg-green-500';
