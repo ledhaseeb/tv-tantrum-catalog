@@ -21,11 +21,11 @@ const CARD_VARIANTS = {
     themes: 1, // Max themes to show
   },
   
-  // Desktop grid cards - consistent 3:4 ratio
+  // Desktop grid cards - portrait ratio for full image display
   desktopGrid: {
-    container: "h-96 w-64", // Fixed dimensions
-    image: "h-56", // ~58% of total height
-    content: "h-40", // ~42% of total height
+    container: "h-[420px] w-64", // Taller for portrait images
+    image: "h-72", // Portrait height for full image visibility
+    content: "h-36", // Reduced content area
     title: "text-base font-bold line-clamp-2",
     badge: "text-sm",
     themes: 2, // Max themes to show
@@ -116,7 +116,7 @@ export function DesktopGridShowCard({ show, onClick }: BaseShowCardProps) {
             showId={show.id}
             showName={show.name}
             originalUrl={normalizedShow.imageUrl}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             isInteractive={false}
           />
         </div>
