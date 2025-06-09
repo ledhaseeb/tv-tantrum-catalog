@@ -120,9 +120,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-96">
           {/* Image with fixed height */}
-          <div className="relative h-48 overflow-hidden">
+          <div className="relative h-64 overflow-hidden">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
