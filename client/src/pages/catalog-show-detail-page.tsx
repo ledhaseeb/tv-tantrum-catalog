@@ -20,7 +20,7 @@ import type { TvShow } from "@shared/schema";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import Footer from "@/components/Footer";
 import SensoryBar from "@/components/SensoryBar";
-import AdContainer from "@/components/AdContainer";
+// AdContainer component removed - using direct HTML implementation
 
 export default function CatalogShowDetailPage() {
   console.log('🔥 CATALOG SHOW DETAIL PAGE COMPONENT LOADED 🔥');
@@ -329,7 +329,13 @@ export default function CatalogShowDetailPage() {
 
             {/* Middle Ad Container */}
             <div className="my-8">
-              <AdContainer size="rectangle" className="mx-auto" />
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm w-full max-w-sm h-64 mx-auto">
+                <div className="text-center p-4">
+                  <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Advertisement</div>
+                  <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
+                  <div className="text-xs text-blue-400 mt-1">Size: rectangle</div>
+                </div>
+              </div>
             </div>
 
             {/* Production Details */}
@@ -396,39 +402,49 @@ export default function CatalogShowDetailPage() {
               <CardContent>
                 <div className="space-y-4">
                   {show.interactivityLevel && (
-                    <SensoryBar
-                      label="Interactivity Level"
-                      value={show.interactivityLevel}
-                      percentage={getLevelPercentage(show.interactivityLevel)}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Interactivity Level:</span>
+                        <span className="text-sm text-gray-600">{show.interactivityLevel}</span>
+                      </div>
+                      <SensoryBar level={show.interactivityLevel} />
+                    </div>
                   )}
                   {show.dialogueIntensity && (
-                    <SensoryBar
-                      label="Dialogue Intensity"
-                      value={show.dialogueIntensity}
-                      percentage={getLevelPercentage(show.dialogueIntensity)}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Dialogue Intensity:</span>
+                        <span className="text-sm text-gray-600">{show.dialogueIntensity}</span>
+                      </div>
+                      <SensoryBar level={show.dialogueIntensity} />
+                    </div>
                   )}
                   {show.soundEffectsLevel && (
-                    <SensoryBar
-                      label="Sound Effects Level"
-                      value={show.soundEffectsLevel}
-                      percentage={getLevelPercentage(show.soundEffectsLevel)}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Sound Effects Level:</span>
+                        <span className="text-sm text-gray-600">{show.soundEffectsLevel}</span>
+                      </div>
+                      <SensoryBar level={show.soundEffectsLevel} />
+                    </div>
                   )}
                   {show.sceneFrequency && (
-                    <SensoryBar
-                      label="Scene Change Frequency"
-                      value={show.sceneFrequency}
-                      percentage={getLevelPercentage(show.sceneFrequency)}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Scene Change Frequency:</span>
+                        <span className="text-sm text-gray-600">{show.sceneFrequency}</span>
+                      </div>
+                      <SensoryBar level={show.sceneFrequency} />
+                    </div>
                   )}
                   {show.musicTempo && (
-                    <SensoryBar
-                      label="Music Tempo"
-                      value={show.musicTempo}
-                      percentage={getLevelPercentage(show.musicTempo)}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Music Tempo:</span>
+                        <span className="text-sm text-gray-600">{show.musicTempo}</span>
+                      </div>
+                      <SensoryBar level={show.musicTempo} />
+                    </div>
                   )}
                 </div>
               </CardContent>
