@@ -473,12 +473,15 @@ export default function CatalogShowDetailPage() {
                   </Card>
                 )}
 
+                {/* Ad Container */}
+                <ShowDetailsAd className="mt-6" />
 
               </div>
             </div>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
