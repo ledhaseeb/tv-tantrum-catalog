@@ -69,13 +69,18 @@ function Router() {
       <Switch>
         {/* All show detail routes use catalog page */}
         <Route path="/show/:id">
-          <div className="flex-grow flex flex-col">
-            <CatalogNavbar />
-            <div className="flex-grow">
-              <CatalogShowDetailWorking />
-            </div>
-            <Footer />
-          </div>
+          {(params) => {
+            console.log('[App] Route matched /show/:id with params:', params);
+            return (
+              <div className="flex-grow flex flex-col">
+                <CatalogNavbar />
+                <div className="flex-grow">
+                  <CatalogShowDetailWorking />
+                </div>
+                <Footer />
+              </div>
+            );
+          }}
         </Route>
         <Route path="/shows/:id">
           <div className="flex-grow flex flex-col">
