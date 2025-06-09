@@ -40,7 +40,12 @@ export default function CatalogShowDetailPage() {
       console.log('Request URL:', `/api/tv-shows/${id}`);
       console.log('Full URL:', `${window.location.origin}/api/tv-shows/${id}`);
       
-      const response = await fetch(`/api/tv-shows/${id}`);
+      const response = await fetch(`/api/tv-shows/${id}`, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
       console.log('Response status:', response.status);
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
