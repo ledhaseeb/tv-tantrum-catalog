@@ -559,28 +559,18 @@ export default function CatalogShowDetailPage() {
               Shows with similar themes, age range, and stimulation levels
             </p>
             
-            {/* Horizontal Scrollable Container */}
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-4">
-                {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
-                  <div key={relatedShow.id} className="flex-shrink-0 w-40 sm:w-44 md:w-48">
-                    <ShowCard 
-                      show={relatedShow}
-                      viewMode="grid"
-                      onClick={() => {}}
-                      isMobile={true}
-                    />
-                  </div>
-                ))}
-              </div>
+            {/* Grid Container - Same as Homepage */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
+                <ShowCard 
+                  key={relatedShow.id}
+                  show={relatedShow}
+                  viewMode="grid"
+                  onClick={() => {}}
+                  isMobile={true}
+                />
+              ))}
             </div>
-            
-            {/* Scroll Indicator */}
-            {relatedShows.length > 2 && (
-              <div className="text-center mt-2">
-                <p className="text-xs text-gray-500">← Scroll to see more →</p>
-              </div>
-            )}
           </div>
         )}
 
