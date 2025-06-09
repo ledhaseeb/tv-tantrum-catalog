@@ -2035,10 +2035,6 @@ export class DatabaseStorage implements IStorage {
       }
       
       const row = categoryResult.rows[0];
-      console.log("Database row:", row);
-      console.log("filter_config type:", typeof row.filter_config);
-      console.log("filter_config value:", row.filter_config);
-      
       let filterConfig;
       if (typeof row.filter_config === 'string') {
         filterConfig = JSON.parse(row.filter_config);
@@ -2066,6 +2062,9 @@ export class DatabaseStorage implements IStorage {
       return filters;
     }
     
+    // Collect themes from multiple rules
+    const themeValues: string[] = [];
+    
     filterConfig.rules.forEach((rule: any) => {
       switch (rule.field) {
         case 'stimulationScore':
@@ -2079,10 +2078,15 @@ export class DatabaseStorage implements IStorage {
             filters.ageGroup = rule.value;
           }
           break;
+        case 'ageRange':
+          if (rule.operator === 'range') {
+            const [min, max] = rule.value.split('-').map(Number);
+            filters.ageRange = { min, max };
+          }
+          break;
         case 'themes':
-          if (rule.operator === 'in') {
-            filters.themes = Array.isArray(rule.value) ? rule.value : [rule.value];
-            filters.themeMatchMode = filterConfig.logic || 'OR';
+          if (rule.operator === 'contains' || rule.operator === 'in') {
+            themeValues.push(rule.value);
           }
           break;
         case 'interactionLevel':
@@ -2092,6 +2096,12 @@ export class DatabaseStorage implements IStorage {
           break;
       }
     });
+    
+    // Add themes if any were found
+    if (themeValues.length > 0) {
+      filters.themes = themeValues;
+      filters.themeMatchMode = filterConfig.logic || 'OR';
+    }
     
     return filters;
   }
