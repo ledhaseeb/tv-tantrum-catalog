@@ -58,7 +58,12 @@ export default function CatalogShowDetailPage() {
   const [relatedShows, setRelatedShows] = useState<TvShow[]>([]);
 
   const { data: show, isLoading, error } = useQuery<TvShow>({
-    queryKey: [`/api/catalog/shows/${id}`],
+    queryKey: ['/api/catalog/tv-shows', id],
+    queryFn: async () => {
+      const response = await fetch(`/api/catalog/tv-shows/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch show');
+      return response.json();
+    },
     enabled: !!id,
   });
 
