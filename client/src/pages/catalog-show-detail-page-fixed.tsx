@@ -14,7 +14,7 @@
 
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -560,14 +560,14 @@ export default function CatalogShowDetailPage() {
             </p>
             
             {/* Fixed 4-Column Grid - Always 4 cards in a row */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
                 <ShowCard 
                   key={relatedShow.id}
                   show={relatedShow}
                   viewMode="grid"
                   onClick={() => {}}
-                  isMobile={true}
+                  isMobile={window.innerWidth < 768}
                 />
               ))}
             </div>
