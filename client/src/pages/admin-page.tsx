@@ -774,7 +774,7 @@ export default function AdminPage() {
   };
   
   // Open edit dialog
-  const handleEditShow = (show: TvShow) => {
+  const handleEditShow = async (show: TvShow) => {
     // Log the show object to debug what values we're getting from the API
     console.log("Show data for editing:", JSON.stringify(show, null, 2));
     
@@ -869,7 +869,7 @@ export default function AdminPage() {
     };
     
     // Call the fetch function
-    fetchCurrentShowData();
+    await fetchCurrentShowData();
   };
 
   // Convert form values back to API format
@@ -1163,6 +1163,10 @@ export default function AdminPage() {
           <TabsTrigger value="submissions">Show Submissions</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="homepage-categories">
+          <HomepageCategories />
+        </TabsContent>
         
         <TabsContent value="research">
           <Card>
