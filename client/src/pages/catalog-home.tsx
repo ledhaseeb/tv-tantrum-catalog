@@ -236,7 +236,7 @@ export default function CatalogHome() {
             <Carousel className="w-full">
               <CarouselContent className="-ml-2 md:-ml-4">
                 {popularShows?.map((show) => (
-                  <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
                     <DesktopGridShowCard show={show} onClick={() => {}} />
                   </CarouselItem>
                 ))}
@@ -279,7 +279,7 @@ export default function CatalogHome() {
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {toddlerShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
                       <DesktopGridShowCard show={show} onClick={() => {}} />
                     </CarouselItem>
                   ))}
@@ -318,7 +318,7 @@ export default function CatalogHome() {
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {preschoolShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
                       <DesktopGridShowCard show={show} onClick={() => {}} />
                     </CarouselItem>
                   ))}
@@ -357,7 +357,7 @@ export default function CatalogHome() {
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {elementaryShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
                       <DesktopGridShowCard show={show} onClick={() => {}} />
                     </CarouselItem>
                   ))}
@@ -401,7 +401,7 @@ export default function CatalogHome() {
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {calmShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
                       <DesktopGridShowCard show={show} onClick={() => {}} />
                     </CarouselItem>
                   ))}
@@ -440,7 +440,7 @@ export default function CatalogHome() {
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {activeShows?.map((show) => (
-                    <CarouselItem key={show.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={show.id} className="pl-2 md:pl-4 flex-shrink-0">
                       <DesktopGridShowCard show={show} onClick={() => {}} />
                     </CarouselItem>
                   ))}
