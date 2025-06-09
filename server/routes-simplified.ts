@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get homepage categories
   app.get('/api/homepage-categories', async (req, res) => {
     try {
-      const categories = []; // Simplified - no homepage categories needed for basic functionality
+      const categories = await storage.getHomepageCategories();
       res.json(categories);
     } catch (error) {
       console.error("Error fetching homepage categories:", error);
