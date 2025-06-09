@@ -245,6 +245,18 @@ export default function CatalogShowDetailWorking() {
           </Button>
         </Link>
 
+        {/* Test Share Button - Visible */}
+        <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg">
+          <p className="text-sm text-green-800 mb-2">Share Button Test:</p>
+          <Button 
+            onClick={() => setShareDialogOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            Test Share Button
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Show Image */}
           <div className="lg:col-span-1">
@@ -305,14 +317,15 @@ export default function CatalogShowDetailWorking() {
               </CardContent>
             </Card>
 
-            {/* Large Share Button */}
-            <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold">
-                  <Share2 className="w-6 h-6 mr-3" />
-                  Share This Show
-                </Button>
-              </DialogTrigger>
+            {/* Large Share Button - Always Visible */}
+            <div className="w-full mb-6">
+              <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold">
+                    <Share2 className="w-6 h-6 mr-3" />
+                    Share This Show
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Share "{show.name}"</DialogTitle>
