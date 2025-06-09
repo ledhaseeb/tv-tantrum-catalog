@@ -321,8 +321,9 @@ export default function CatalogShowDetailWorking({ showId: propShowId }: Catalog
               </CardContent>
             </Card>
 
-            {/* Large Share Button - Always Visible */}
-            <div className="w-full mb-6">
+            {/* Share Button Test Section */}
+            <div className="w-full mb-6 p-4 border-4 border-red-500 bg-yellow-100">
+              <p className="text-red-800 font-bold mb-2">SHARE BUTTON SECTION (should be visible)</p>
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold">
