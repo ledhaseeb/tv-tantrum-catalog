@@ -121,7 +121,7 @@ export function registerCatalogRoutes(app: Express) {
       const limitStr = req.query.limit;
       const limit = limitStr && typeof limitStr === 'string' ? parseInt(limitStr) : 10;
       
-      const shows = await catalogStorage.getPopularShows(limit);
+      const shows = await cachedCatalogStorage.getPopularShows(limit);
       res.json(shows);
     } catch (error) {
       console.error("Error fetching popular shows:", error);
