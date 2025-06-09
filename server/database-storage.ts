@@ -1400,7 +1400,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addTvShow(show: InsertTvShow): Promise<TvShow> {
-    const [newShow] = await db.insert(tvShows).values(show).returning();
+    // Remove the id field if present to let the database auto-generate it
+    const { id, ...showData } = show as any;
+    const [newShow] = await db.insert(tvShows).values(showData).returning();
     return newShow;
   }
 
