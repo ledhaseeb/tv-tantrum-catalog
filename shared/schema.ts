@@ -36,7 +36,7 @@ export const users = pgTable("users", {
 });
 
 // --- Core TV Shows Schema ---
-export const tvShows = pgTable("tv_shows", {
+export const tvShows = pgTable("catalog_tv_shows", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),

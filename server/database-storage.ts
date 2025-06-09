@@ -2000,6 +2000,16 @@ export class DatabaseStorage implements IStorage {
     return !!favorite;
   }
 
+  async getHomepageCategories(): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`SELECT * FROM homepage_categories WHERE is_active = true ORDER BY display_order`);
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching homepage categories:", error);
+      return [];
+    }
+  }
+
   async getSimilarShows(userId: number, limit: number = 5): Promise<TvShow[]> {
     // Get user's favorite shows
     const userFavorites = await this.getUserFavorites(userId);
