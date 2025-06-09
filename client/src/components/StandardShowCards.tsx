@@ -21,14 +21,14 @@ const CARD_VARIANTS = {
     themes: 1, // Max themes to show
   },
   
-  // Desktop grid cards - portrait ratio for full image display
+  // Desktop grid cards - true portrait ratio (taller than wide)
   desktopGrid: {
-    container: "h-[420px] w-64", // Taller for portrait images
-    image: "h-72", // Portrait height for full image visibility
-    content: "h-36", // Reduced content area
-    title: "text-base font-bold line-clamp-2",
-    badge: "text-sm",
-    themes: 2, // Max themes to show
+    container: "h-[500px] w-56", // Portrait: taller than wide
+    image: "h-80", // Tall portrait image area
+    content: "h-32", // Compact content area
+    title: "text-sm font-bold line-clamp-2",
+    badge: "text-xs",
+    themes: 1, // Max themes to show in compact space
   },
   
   // List view cards - responsive horizontal layout
