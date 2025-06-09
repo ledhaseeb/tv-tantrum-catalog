@@ -267,6 +267,11 @@ export default function CatalogShowDetailPage() {
               </Button>
             </Link>
 
+            {/* Top Ad Container */}
+            <div className="mb-8">
+              <AdContainer size="leaderboard" className="mx-auto" />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Show Image */}
               <div className="lg:col-span-1">
@@ -477,10 +482,8 @@ export default function CatalogShowDetailPage() {
                 <div className="mt-8 mb-6">
                   <AdContainer size="rectangle" className="mx-auto" />
                 </div>
-
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
