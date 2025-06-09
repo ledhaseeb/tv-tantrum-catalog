@@ -360,6 +360,11 @@ export default function CatalogShowDetailPage() {
               </Card>
             )}
 
+            {/* Middle Ad Container */}
+            <div className="my-8">
+              <AdContainer size="rectangle" className="mx-auto" />
+            </div>
+
             {/* Sensory Details */}
             <Card>
               <CardHeader>
