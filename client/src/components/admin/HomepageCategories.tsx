@@ -46,6 +46,7 @@ export default function HomepageCategories() {
   const queryClient = useQueryClient();
   const [editingCategory, setEditingCategory] = useState<HomepageCategory | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showCounts, setShowCounts] = useState<Record<number, number>>({});
 
   // Fetch categories
   const { data: categories = [], isLoading } = useQuery({

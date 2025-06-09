@@ -203,6 +203,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get shows for a specific homepage category (for preview)
+  app.get('/api/homepage-categories/:id/shows', async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const category = await storage.getHomepageCategoryById(categoryId);
+      
+      if (!category) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+
+      // Parse filter config and apply filters
+      const filterConfig = typeof category.filterConfig === 'string' 
+        ? JSON.parse(category.filterConfig) 
+        : category.filterConfig;
+
+      const shows = await storage.getAllTvShows({}, filterConfig);
+      res.json(shows);
+    } catch (error) {
+      console.error('Error fetching category shows:', error);
+      res.status(500).json({ message: 'Failed to fetch category shows' });
+    }
+  });
+
   // Admin authentication endpoint
   app.get('/api/admin/user', async (req, res) => {
     try {
