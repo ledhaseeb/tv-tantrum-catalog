@@ -39,7 +39,7 @@ import ColorPaletteCustomizer from "@/components/ColorPaletteCustomizer";
 import CatalogHome from "@/pages/catalog-home";
 import CatalogNavbar from "@/components/CatalogNavbar";
 import CatalogShowDetail from "@/pages/catalog-show-detail";
-import CatalogShowDetailWorking from "@/pages/catalog-show-detail-working";
+import ShowDetailSimple from "@/pages/show-detail-simple";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ApprovedRoute } from "@/lib/protected-route-approved";
 import { AdminRoute } from "@/lib/protected-route-admin";
