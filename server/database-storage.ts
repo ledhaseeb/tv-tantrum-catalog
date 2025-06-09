@@ -2003,7 +2003,18 @@ export class DatabaseStorage implements IStorage {
   async getHomepageCategories(): Promise<any[]> {
     try {
       const result = await db.execute(sql`SELECT * FROM homepage_categories WHERE is_active = true ORDER BY display_order`);
-      return result.rows;
+      
+      // Map snake_case database fields to camelCase for frontend
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        filterConfig: row.filter_config,
+        isActive: row.is_active,
+        displayOrder: row.display_order,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
     } catch (error) {
       console.error("Error fetching homepage categories:", error);
       return [];
