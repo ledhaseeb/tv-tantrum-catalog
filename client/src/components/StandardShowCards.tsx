@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TvShow } from "@shared/schema";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
 import { Link } from "wouter";
+import { CARD_SIZING } from "@/config/cardSizing";
 
 interface BaseShowCardProps {
   show: TvShow;
@@ -105,13 +106,13 @@ export function MobileGridShowCard({ show, onClick }: BaseShowCardProps) {
 }
 
 export function DesktopGridShowCard({ show, onClick }: BaseShowCardProps) {
-  const variant = CARD_VARIANTS.desktopGrid;
+  const config = CARD_SIZING.desktop;
   const normalizedShow = normalizeShowData(show);
   
   return (
     <Link href={`/show/${show.id}`}>
-      <Card className={`bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow ${variant.container}`}>
-        <div className={`relative ${variant.image} overflow-hidden bg-gray-50`}>
+      <Card className={`bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow ${config.totalHeight} ${config.totalWidth}`}>
+        <div className={`relative ${config.imageHeight} overflow-hidden bg-gray-50`}>
           <TvShowCardImage
             showId={show.id}
             showName={show.name}
@@ -121,27 +122,27 @@ export function DesktopGridShowCard({ show, onClick }: BaseShowCardProps) {
           />
         </div>
         
-        <CardContent className={`p-3 flex flex-col ${variant.content}`}>
-          <h3 className={`${variant.title} mb-3`}>{show.name}</h3>
+        <CardContent className={`${config.contentPadding} flex flex-col ${config.contentHeight}`}>
+          <h3 className={`${config.titleSize} font-bold line-clamp-2 mb-3`}>{show.name}</h3>
           
-          <Badge variant="outline" className={`bg-green-50 text-green-700 ${variant.badge} border-green-100 mb-3 w-fit`}>
+          <Badge variant="outline" className={`bg-green-50 text-green-700 ${config.badgeSize} border-green-100 mb-3 w-fit`}>
             Ages {normalizedShow.ageRange}
           </Badge>
           
           {show.themes && show.themes.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-3">
-              {show.themes.slice(0, variant.themes).map((theme, index) => (
+              {show.themes.slice(0, config.maxThemes).map((theme, index) => (
                 <Badge 
                   key={index} 
                   variant="secondary" 
-                  className={`${variant.badge} ${getThemeColor(theme)}`}
+                  className={`${config.badgeSize} ${getThemeColor(theme)}`}
                 >
                   {theme}
                 </Badge>
               ))}
-              {show.themes.length > variant.themes && (
-                <Badge variant="outline" className={variant.badge}>
-                  +{show.themes.length - variant.themes}
+              {show.themes.length > config.maxThemes && (
+                <Badge variant="outline" className={config.badgeSize}>
+                  +{show.themes.length - config.maxThemes}
                 </Badge>
               )}
             </div>
