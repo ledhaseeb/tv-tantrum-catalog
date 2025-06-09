@@ -120,9 +120,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false, co
   if (compact && viewMode === "grid") {
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
-          {/* Image with fixed height - matching first image proportions */}
-          <div className="relative h-48 overflow-hidden">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-96">
+          {/* Image with fixed height - proper proportions for full visibility */}
+          <div className="relative h-52 overflow-hidden">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
@@ -132,9 +132,9 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false, co
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow h-32">
-            {/* Title with ellipsis */}
-            <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
+          <CardContent className="p-3 flex flex-col flex-grow h-44">
+            {/* Title with ellipsis - allow 2 lines for longer names */}
+            <h3 className="text-sm font-bold line-clamp-2 mb-2">{show.name}</h3>
             
             {/* Age Badge */}
             <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
