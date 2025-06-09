@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from './db';
 import { ads, adTracking, insertAdTrackingSchema } from '@shared/schema';
-import { eq, and, gte, lte, or, isNull } from 'drizzle-orm';
+import { eq, and, gte, lte, or, isNull, sql } from 'drizzle-orm';
 
 const router = Router();
 
