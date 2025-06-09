@@ -75,11 +75,10 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     }
   };
 
-  // Render enhanced stimulation indicator with prominent styling
+  // Render stimulation indicator with dot-based design
   const renderStimulationIndicator = () => {
     const stimulationText = getStimulationText(normalizedShow.stimulationScore);
-    const percentage = getStimulationPercentage(normalizedShow.stimulationScore);
-    const barColor = getStimulationBarColor(normalizedShow.stimulationScore);
+    const score = normalizedShow.stimulationScore || 3;
     
     return (
       <div className="w-full bg-gray-50 rounded-lg p-3 border border-gray-200">
@@ -89,16 +88,27 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
             <span className="text-sm font-bold text-gray-800">Stimulation Level</span>
           </div>
         )}
-        <div className={`relative w-full bg-gray-300 rounded-full h-3 overflow-hidden shadow-inner ${isMobile ? 'mb-2' : ''}`}>
-          <div 
-            className="h-full transition-all duration-300 ease-out shadow-sm"
-            style={{ 
-              width: `${percentage}%`,
-              backgroundColor: barColor
-            }}
-          />
+        
+        {/* Stimulation Score Dots */}
+        <div className="flex justify-center gap-1 mb-2">
+          {[1, 2, 3, 4, 5].map((dot) => {
+            let bgColor = '';
+            if (dot === 1) bgColor = 'bg-green-500';
+            else if (dot === 2) bgColor = 'bg-green-400';
+            else if (dot === 3) bgColor = 'bg-yellow-500';
+            else if (dot === 4) bgColor = 'bg-orange-500';
+            else bgColor = 'bg-red-500';
+            
+            return (
+              <div 
+                key={dot} 
+                className={`w-3 h-3 rounded-full ${dot <= score ? bgColor : 'border border-gray-300'}`}
+              />
+            );
+          })}
         </div>
-        <div className="text-sm font-semibold text-center mt-2" style={{ color: barColor }}>
+        
+        <div className="text-sm font-semibold text-center">
           {stimulationText}
         </div>
       </div>
