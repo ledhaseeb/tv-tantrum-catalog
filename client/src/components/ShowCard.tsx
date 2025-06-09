@@ -121,8 +121,8 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false, co
     return (
       <Link href={`/show/${show.id}`}>
         <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-96">
-          {/* Image with fixed height - taller for better proportions */}
-          <div className="relative h-56 overflow-hidden">
+          {/* Image with fixed height - even taller to reduce text area */}
+          <div className="relative h-60 overflow-hidden">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
@@ -132,17 +132,17 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false, co
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow h-40">
+          <CardContent className="p-3 flex flex-col flex-grow h-36">
             {/* Title with ellipsis - single line for consistency */}
             <h3 className="text-sm font-bold line-clamp-1 mb-1">{show.name}</h3>
             
-            {/* Age Badge */}
-            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-1 w-fit">
+            {/* Age Badge - no bottom margin to bring closer to stimulation */}
+            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-0 w-fit">
               Ages {normalizedShow.ageRange}
             </Badge>
             
-            {/* Enhanced Stimulation Indicator - compact spacing */}
-            <div className="mt-auto">
+            {/* Enhanced Stimulation Indicator - directly below age with minimal gap */}
+            <div className="mt-1">
               {renderStimulationIndicator()}
             </div>
           </CardContent>
