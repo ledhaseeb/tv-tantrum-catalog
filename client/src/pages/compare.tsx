@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { getStimulationScoreColor } from "@/lib/showUtils";
 import RatingBar from "@/components/RatingBar";
+import SensoryBar from "@/components/SensoryBar";
 import { TvShow } from "@shared/schema";
 
 export default function Compare() {
@@ -431,7 +432,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`interaction-bar-${show.id}`}>
-                        {renderSegmentedBar((show as any).interactivity_level)}
+                        <SensoryBar level={(show as any).interactivity_level} />
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -464,7 +465,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`dialogue-bar-${show.id}`}>
-                        {renderSegmentedBar((show as any).dialogue_intensity)}
+                        <SensoryBar level={(show as any).dialogue_intensity} />
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -497,7 +498,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`sound-bar-${show.id}`}>
-                        {renderSegmentedBar((show as any).sound_effects_level)}
+                        <SensoryBar level={(show as any).sound_effects_level} />
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -530,7 +531,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`scene-bar-${show.id}`}>
-                        {renderSegmentedBar((show as any).scene_frequency)}
+                        <SensoryBar level={(show as any).scene_frequency} />
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
@@ -563,7 +564,7 @@ export default function Compare() {
                   <div className="grid grid-cols-3 gap-4">
                     {selectedShows.map(show => (
                       <div key={`tempo-bar-${show.id}`}>
-                        {renderSegmentedBar((show as any).music_tempo)}
+                        <SensoryBar level={(show as any).music_tempo} />
                       </div>
                     ))}
                     {selectedShows.length < 3 && (
