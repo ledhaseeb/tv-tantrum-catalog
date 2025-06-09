@@ -479,7 +479,7 @@ export default function Browse() {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-3 gap-4">
                     {currentShows.map((show, index) => (
                       <ShowCard 
                         key={show.id} 
