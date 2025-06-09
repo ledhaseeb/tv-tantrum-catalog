@@ -633,8 +633,24 @@ export default function AdminPage() {
       endYear: null,
       isOngoing: true,
       creator: '',
-      availableOn: []
-      // Note: we now use stimulationScore for overallRating in the backend
+      availableOn: [],
+      // Additional required fields
+      network: null,
+      productionCompany: null,
+      productionCountry: null,
+      language: null,
+      genre: null,
+      targetAudience: null,
+      viewerRating: null,
+      creativityRating: null,
+      isFeatured: false,
+      totalEpisodes: null,
+      subscriberCount: null,
+      videoCount: null,
+      isYouTubeChannel: false,
+      publishedAt: null,
+      channelDescription: null,
+      hasYoutubeData: false
     });
     
     // Reset lookup results when opening a new form
@@ -873,20 +889,47 @@ export default function AdminPage() {
     const wholeStimulationScore = Math.round(formValues.stimulationScore);
     console.log(`Rounded stimulation score: ${formValues.stimulationScore} → ${wholeStimulationScore}`);
     
-    // Create a new object with converted values
+    // Create a new object with converted values and all required fields
     return {
-      ...formValues,
-      // Ensure stimulation score is a whole number
+      name: formValues.name || '',
+      description: formValues.description || '',
+      ageRange: formValues.ageRange || '3-5 years',
+      episodeLength: formValues.episodeLength || 15,
+      creator: formValues.creator || null,
+      releaseYear: formValues.releaseYear || new Date().getFullYear(),
+      endYear: formValues.endYear || null,
+      isOngoing: formValues.isOngoing !== undefined ? formValues.isOngoing : true,
       stimulationScore: wholeStimulationScore,
-      // Ensure themes is an array
       themes: Array.isArray(formValues.themes) ? formValues.themes : [],
+      imageUrl: formValues.imageUrl || null,
+      availableOn: Array.isArray(formValues.availableOn) ? formValues.availableOn : [],
+      seasons: formValues.seasons || 1,
+      totalEpisodes: formValues.totalEpisodes || null,
+      network: formValues.network || null,
+      productionCompany: formValues.productionCompany || null,
+      productionCountry: formValues.productionCountry || null,
+      language: formValues.language || null,
+      genre: formValues.genre || null,
+      targetAudience: formValues.targetAudience || null,
+      viewerRating: formValues.viewerRating || null,
+      creativityRating: formValues.creativityRating || null,
+      isFeatured: formValues.isFeatured || false,
       // Convert form field values back to API format
       interactivityLevel: formValues.interactivityLevel === 'Medium' ? 'Moderate' : formValues.interactivityLevel,
       dialogueIntensity: formValues.dialogueIntensity === 'Medium' ? 'Moderate' : formValues.dialogueIntensity,
+      soundEffectsLevel: formValues.soundEffectsLevel === 'Medium' ? 'Moderate' : formValues.soundEffectsLevel,
       sceneFrequency: formValues.sceneFrequency === 'Medium' ? 'Moderate' : formValues.sceneFrequency,
       musicTempo: formValues.musicTempo === 'Medium' ? 'Moderate' : formValues.musicTempo,
       totalMusicLevel: formValues.totalMusicLevel === 'Medium' ? 'Moderate' : formValues.totalMusicLevel,
       totalSoundEffectTimeLevel: formValues.totalSoundEffectTimeLevel === 'Medium' ? 'Moderate' : formValues.totalSoundEffectTimeLevel,
+      animationStyle: formValues.animationStyle || null,
+      // YouTube data fields (optional)
+      subscriberCount: formValues.subscriberCount || null,
+      videoCount: formValues.videoCount || null,
+      isYouTubeChannel: formValues.isYouTubeChannel || false,
+      publishedAt: formValues.publishedAt || null,
+      channelDescription: formValues.channelDescription || null,
+      hasYoutubeData: formValues.hasYoutubeData || false,
     };
   };
   
@@ -1279,12 +1322,12 @@ export default function AdminPage() {
                           <TableCell>{show.stimulationScore}/5</TableCell>
                           <TableCell>
                             <Button
-                              variant={show.is_featured ? "default" : "outline"}
+                              variant={show.isFeatured ? "default" : "outline"}
                               size="sm"
-                              onClick={() => handleFeaturedToggle(show.id, !show.is_featured)}
-                              className={show.is_featured ? "bg-yellow-600 hover:bg-yellow-700" : ""}
+                              onClick={() => handleFeaturedToggle(show.id, !show.isFeatured)}
+                              className={show.isFeatured ? "bg-yellow-600 hover:bg-yellow-700" : ""}
                             >
-                              {show.is_featured ? "★ Featured" : "☆ Set Featured"}
+                              {show.isFeatured ? "★ Featured" : "☆ Set Featured"}
                             </Button>
                           </TableCell>
                           <TableCell>

@@ -161,6 +161,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add new TV show (Admin)
+  app.post('/api/shows', async (req, res) => {
+    try {
+      const showData = req.body;
+      const newShow = await storage.addTvShow(showData);
+      res.status(201).json(newShow);
+    } catch (error) {
+      console.error('Error adding TV show:', error);
+      res.status(500).json({ message: 'Failed to add TV show' });
+    }
+  });
+
+  // Update TV show (Admin)
+  app.put('/api/shows/:id', async (req, res) => {
+    try {
+      const showId = parseInt(req.params.id);
+      const showData = req.body;
+      const updatedShow = await storage.updateTvShow(showId, showData);
+      
+      if (!updatedShow) {
+        return res.status(404).json({ message: 'Show not found' });
+      }
+      
+      res.json(updatedShow);
+    } catch (error) {
+      console.error('Error updating TV show:', error);
+      res.status(500).json({ message: 'Failed to update TV show' });
+    }
+  });
+
+  // Delete TV show (Admin)
+  app.delete('/api/shows/:id', async (req, res) => {
+    try {
+      const showId = parseInt(req.params.id);
+      await storage.deleteTvShow(showId);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting TV show:', error);
+      res.status(500).json({ message: 'Failed to delete TV show' });
+    }
+  });
+
+  // Admin authentication endpoint
+  app.get('/api/admin/user', async (req, res) => {
+    try {
+      // Simple admin check - in production this would use proper session management
+      const adminUser = { 
+        id: 1, 
+        email: 'admin@example.com', 
+        isAdmin: true 
+      };
+      res.json(adminUser);
+    } catch (error) {
+      console.error('Error checking admin user:', error);
+      res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
