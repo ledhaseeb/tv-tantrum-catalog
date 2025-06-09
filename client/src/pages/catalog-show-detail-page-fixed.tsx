@@ -561,9 +561,9 @@ export default function CatalogShowDetailPage() {
             
             {/* Horizontal Scrollable Container */}
             <div className="overflow-x-auto pb-4">
-              <div className="flex gap-4 min-w-max">
-                {relatedShows.map((relatedShow: TvShow) => (
-                  <div key={relatedShow.id} className="flex-shrink-0 w-48">
+              <div className="flex gap-4">
+                {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
+                  <div key={relatedShow.id} className="flex-shrink-0 w-40 sm:w-44 md:w-48">
                     <ShowCard 
                       show={relatedShow}
                       viewMode="grid"
@@ -576,7 +576,7 @@ export default function CatalogShowDetailPage() {
             </div>
             
             {/* Scroll Indicator */}
-            {relatedShows.length > 3 && (
+            {relatedShows.length > 2 && (
               <div className="text-center mt-2">
                 <p className="text-xs text-gray-500">← Scroll to see more →</p>
               </div>
