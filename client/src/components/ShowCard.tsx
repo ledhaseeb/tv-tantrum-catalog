@@ -9,9 +9,10 @@ interface ShowCardProps {
   viewMode: "grid" | "list";
   onClick: () => void;
   isMobile?: boolean;
+  compact?: boolean;
 }
 
-export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
+export default function ShowCard({ show, viewMode, onClick, isMobile = false, compact = false }: ShowCardProps) {
   // Ensure we have valid show data
   if (!show || !show.id) {
     return null;
@@ -114,6 +115,62 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
       </div>
     );
   };
+
+  // Compact card for 4-column recommendation layouts
+  if (compact && viewMode === "grid") {
+    return (
+      <Link href={`/show/${show.id}`}>
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+          {/* Image with fixed height - tall for full visibility */}
+          <div className="relative h-56 overflow-hidden">
+            <TvShowCardImage
+              showId={show.id}
+              showName={show.name}
+              originalUrl={normalizedShow.imageUrl}
+              className="w-full h-full object-cover"
+              isInteractive={false}
+            />
+          </div>
+          
+          <CardContent className="p-2 flex flex-col flex-grow h-24">
+            {/* Title with ellipsis */}
+            <h3 className="text-xs font-bold line-clamp-1 mb-1">{show.name}</h3>
+            
+            {/* Age Badge */}
+            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-1 w-fit">
+              Ages {normalizedShow.ageRange}
+            </Badge>
+            
+            {/* Enhanced Stimulation Indicator - at bottom */}
+            <div className="mt-auto">
+              <div className="flex justify-center gap-1 mb-1">
+                {[1, 2, 3, 4, 5].map((dot) => {
+                  const score = normalizedShow.stimulationScore || 3;
+                  let bgColor = '';
+                  if (dot === 1) bgColor = 'bg-green-500';
+                  else if (dot === 2) bgColor = 'bg-green-400';
+                  else if (dot === 3) bgColor = 'bg-yellow-500';
+                  else if (dot === 4) bgColor = 'bg-orange-500';
+                  else bgColor = 'bg-red-500';
+                  
+                  return (
+                    <div 
+                      key={dot} 
+                      className={`w-2 h-2 rounded-full ${dot <= score ? bgColor : 'border border-gray-300'}`}
+                    />
+                  );
+                })}
+              </div>
+              
+              <div className="text-xs font-semibold text-center">
+                {getStimulationText(normalizedShow.stimulationScore)}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
 
   // Mobile portrait style card - consistent sizing
   if (isMobile && viewMode === "grid") {
