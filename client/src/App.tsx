@@ -68,9 +68,33 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <Switch>
         {/* All show detail routes use catalog page */}
-        <Route path="/show/:id" component={CatalogShowDetailPage} />
-        <Route path="/shows/:id" component={CatalogShowDetailPage} />
-        <Route path="/detail/:id" component={CatalogShowDetailPage} />
+        <Route path="/show/:id">
+          <div className="flex-grow flex flex-col">
+            <CatalogNavbar />
+            <div className="flex-grow">
+              <CatalogShowDetailPage />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/shows/:id">
+          <div className="flex-grow flex flex-col">
+            <CatalogNavbar />
+            <div className="flex-grow">
+              <CatalogShowDetailPage />
+            </div>
+            <Footer />
+          </div>
+        </Route>
+        <Route path="/detail/:id">
+          <div className="flex-grow flex flex-col">
+            <CatalogNavbar />
+            <div className="flex-grow">
+              <CatalogShowDetailPage />
+            </div>
+            <Footer />
+          </div>
+        </Route>
 
         {/* Catalog Home - Main landing page */}
         <Route path="/">
