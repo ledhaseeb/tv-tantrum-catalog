@@ -27,15 +27,19 @@ export default function CatalogShowDetailWorking() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
 
+  console.log('[ShowDetail] Component loaded, ID:', id, 'Params:', params);
+
   // Fetch show details
   const { data: show, isLoading, error } = useQuery({
     queryKey: ['catalog-tv-show', id],
     queryFn: async () => {
+      console.log('[ShowDetail] Fetching show with ID:', id);
       const response = await fetch(`/api/tv-shows/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch show details');
       }
       const rawData = await response.json();
+      console.log('[ShowDetail] Raw data received:', rawData);
       
       // Normalize the data structure
       const normalizedData = {
@@ -62,10 +66,13 @@ export default function CatalogShowDetailWorking() {
         hasYoutubeData: rawData.has_youtube_data || rawData.hasYoutubeData,
       };
       
+      console.log('[ShowDetail] Normalized data:', normalizedData);
       return normalizedData;
     },
     enabled: !!id && id > 0,
   });
+
+  console.log('[ShowDetail] Query state - isLoading:', isLoading, 'error:', error, 'show:', !!show);
 
   // Helper functions
   const getStimulationLabel = (score: number) => {
@@ -223,9 +230,21 @@ export default function CatalogShowDetailWorking() {
     );
   }
 
+  console.log('[ShowDetail] About to render, show exists:', !!show);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Debug Info */}
+        <div className="mb-4 p-4 bg-yellow-100 rounded-lg">
+          <h3 className="font-bold">Debug Info:</h3>
+          <p>ID: {id}</p>
+          <p>Loading: {isLoading.toString()}</p>
+          <p>Error: {error ? error.message : 'None'}</p>
+          <p>Show exists: {!!show ? 'Yes' : 'No'}</p>
+          <p>Show name: {show?.name || 'N/A'}</p>
+        </div>
+
         {/* Back Button */}
         <Link href="/">
           <Button variant="outline" className="mb-6">
