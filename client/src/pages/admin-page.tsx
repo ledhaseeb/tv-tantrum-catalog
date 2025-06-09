@@ -69,6 +69,7 @@ import {
 // Image upload functionality simplified for scaling
 import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import HomepageCategories from '@/components/admin/HomepageCategories';
 
 export default function AdminPage() {
   const { user, isAdmin } = useAuth();
@@ -1156,6 +1157,7 @@ export default function AdminPage() {
       <Tabs defaultValue="shows">
         <TabsList className="mb-4">
           <TabsTrigger value="shows">TV Shows</TabsTrigger>
+          <TabsTrigger value="homepage-categories">Homepage Categories</TabsTrigger>
           <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Show Submissions</TabsTrigger>
