@@ -129,42 +129,7 @@ export default function Compare() {
     return 3; // Default to moderate
   };
   
-  // Function to render segmented bar like on the details page
-  const renderSegmentedBar = (ratingText: string | null | undefined) => {
-    const level = getRatingLevel(ratingText);
-    const percentage = level * 20;
-    
-    return (
-      <div className="w-full h-4 relative">
-        <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden flex">
-          {[1, 2, 3, 4, 5].map((segment) => {
-            const color = 
-              segment === 1 ? 'bg-green-500' : 
-              segment === 2 ? 'bg-green-400' : 
-              segment === 3 ? 'bg-yellow-500' : 
-              segment === 4 ? 'bg-orange-500' : 
-              'bg-red-500';
-            
-            return (
-              <div
-                key={segment}
-                className={`h-full w-1/5 ${segment <= level ? color : 'bg-gray-200'}`}
-              />
-            );
-          })}
-        </div>
-        <div 
-          className="absolute h-full flex items-center" 
-          style={{ 
-            width: '2px', 
-            backgroundColor: 'black',
-            left: `calc(${percentage}% - 1px)`,
-            top: 0
-          }}
-        ></div>
-      </div>
-    );
-  };
+
 
   // Helper function to get stimulation score dots
   const getStimulationScoreDots = (score: number) => {

@@ -438,15 +438,7 @@ export default function CatalogShowDetailPage() {
                         <span className="text-sm font-medium text-gray-700">Interaction Level:</span>
                         <span className="text-sm text-gray-600">{show.interactivityLevel || 'Not specified'}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
-                        <div 
-                          className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-400 h-2 rounded-full"
-                        ></div>
-                        <div 
-                          className="absolute top-0 right-0 bg-gray-200 h-2 rounded-r-full"
-                          style={{ width: `${100 - getSensoryLevelPercentage(show.interactivityLevel)}%` }}
-                        ></div>
-                      </div>
+                      <SensoryBar level={show.interactivityLevel} />
                     </div>
 
                     {/* Animation Style */}

@@ -39,8 +39,13 @@ export default function SensoryBar({ level, className = "" }: SensoryBarProps) {
 
   return (
     <div className={`w-full bg-gray-200 rounded-full h-4 relative overflow-hidden ${className}`}>
-      {/* Smooth gradient background showing full spectrum */}
-      <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-lime-400 via-yellow-500 via-orange-500 to-red-500 h-4 rounded-full"></div>
+      {/* Custom gradient background using exact color scheme */}
+      <div 
+        className="absolute inset-0 h-4 rounded-full"
+        style={{
+          background: 'linear-gradient(to right, #22c55e 0%, #84cc16 25%, #eab308 50%, #f97316 75%, #dc2626 100%)'
+        }}
+      ></div>
       
       {/* Gray overlay to mask unused portion */}
       <div 
@@ -48,7 +53,7 @@ export default function SensoryBar({ level, className = "" }: SensoryBarProps) {
         style={{ width: `${100 - percentage}%` }}
       ></div>
       
-      {/* Optional indicator line at current level */}
+      {/* Indicator line at current level */}
       <div 
         className="absolute top-0 w-0.5 h-4 bg-gray-800 transition-all duration-300"
         style={{ left: `calc(${percentage}% - 1px)` }}
