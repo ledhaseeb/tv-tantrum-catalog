@@ -66,7 +66,7 @@ import {
   Key,
   Copy
 } from 'lucide-react';
-import { ImageUpload } from '@/components/image-upload';
+// Image upload functionality simplified for scaling
 import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
@@ -2070,10 +2070,15 @@ export default function AdminPage() {
               
               <div className="flex flex-col gap-4">
                 {/* Image Upload Component */}
-                <ImageUpload 
-                  imageUrl={formState.imageUrl} 
-                  onImageChange={(imageUrl) => setFormState({...formState, imageUrl})}
-                />
+                <div>
+                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Input
+                    id="imageUrl"
+                    value={formState.imageUrl || ''}
+                    onChange={(e) => setFormState({...formState, imageUrl: e.target.value})}
+                    placeholder="Enter image URL"
+                  />
+                </div>
                 
                 {/* OMDB Image Lookup Button */}
                 <div>
@@ -2717,9 +2722,10 @@ export default function AdminPage() {
                 <Label>Show Image</Label>
               </div>
               <div className="col-span-3">
-                <ImageUpload 
-                  imageUrl={newShowFormState.imageUrl} 
-                  onImageChange={(imageUrl) => setNewShowFormState({...newShowFormState, imageUrl})}
+                <Input
+                  value={newShowFormState.imageUrl || ''}
+                  onChange={(e) => setNewShowFormState({...newShowFormState, imageUrl: e.target.value})}
+                  placeholder="Enter image URL"
                 />
               </div>
             </div>
