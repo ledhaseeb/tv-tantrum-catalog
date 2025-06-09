@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'wouter';
 import { BookOpen, BookText, ArrowRight, Lock } from 'lucide-react';
+import AdContainer from '@/components/AdContainer';
 
 const Research = () => {
   const { user, isLoading: isLoadingAuth } = useAuth();
@@ -118,6 +119,11 @@ const Research = () => {
         </Badge>
       </div>
 
+      {/* Top Ad Container */}
+      <div className="mb-8">
+        <AdContainer size="leaderboard" className="mx-auto" />
+      </div>
+
       {/* Mobile: Dropdown selector */}
       <div className="block md:hidden mb-8">
         <Select value={activeCategory} onValueChange={setActiveCategory}>
@@ -208,8 +214,16 @@ const Research = () => {
             ))}
           </>
         ) : activeCategory === 'all' ? (
-          summaries && Array.isArray(summaries) ? summaries.map((summary: any) => (
-            <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+          summaries && Array.isArray(summaries) ? summaries.map((summary: any, index: number) => (
+            <React.Fragment key={summary.id}>
+              <ResearchCard summary={summary} onReadMore={handleReadMore} />
+              {/* Middle Ad Container after every 6 research cards */}
+              {(index + 1) % 6 === 0 && (
+                <div className="col-span-full my-6">
+                  <AdContainer size="rectangle" className="mx-auto" />
+                </div>
+              )}
+            </React.Fragment>
           )) : (
             <div className="col-span-full text-center py-12 text-gray-500">
               <BookText className="w-12 h-12 mx-auto mb-4 opacity-20" />
@@ -218,8 +232,16 @@ const Research = () => {
           )
         ) : (
           categorizedSummaries[activeCategory] && Array.isArray(categorizedSummaries[activeCategory]) 
-            ? categorizedSummaries[activeCategory].map((summary: any) => (
-                <ResearchCard key={summary.id} summary={summary} onReadMore={handleReadMore} />
+            ? categorizedSummaries[activeCategory].map((summary: any, index: number) => (
+                <React.Fragment key={summary.id}>
+                  <ResearchCard summary={summary} onReadMore={handleReadMore} />
+                  {/* Middle Ad Container after every 6 research cards */}
+                  {(index + 1) % 6 === 0 && (
+                    <div className="col-span-full my-6">
+                      <AdContainer size="rectangle" className="mx-auto" />
+                    </div>
+                  )}
+                </React.Fragment>
               ))
             : (
               <div className="col-span-full text-center py-12 text-gray-500">
@@ -228,6 +250,11 @@ const Research = () => {
               </div>
             )
         )}
+      </div>
+
+      {/* Bottom Ad Container */}
+      <div className="mt-12 mb-6">
+        <AdContainer size="leaderboard" className="mx-auto" />
       </div>
     </div>
   );
