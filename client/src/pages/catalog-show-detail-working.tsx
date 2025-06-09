@@ -78,6 +78,17 @@ export default function CatalogShowDetailWorking({ showId: propShowId }: Catalog
 
   console.log('[ShowDetail] Query state - isLoading:', isLoading, 'error:', error, 'show:', !!show);
 
+  // Early return check for debugging
+  if (error) {
+    console.error('[ShowDetail] Component error:', error);
+    return <div className="p-8 text-red-500 font-bold">ERROR: {error.message}</div>;
+  }
+
+  if (!show && !isLoading) {
+    console.log('[ShowDetail] No show data and not loading');
+    return <div className="p-8 text-red-500 font-bold">NO SHOW DATA</div>;
+  }
+
   // Helper functions
   const getStimulationLabel = (score: number) => {
     switch (score) {
