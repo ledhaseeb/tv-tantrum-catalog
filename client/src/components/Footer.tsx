@@ -30,7 +30,7 @@ export default function Footer() {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Explore</h3>
               <ul className="space-y-2">
@@ -51,6 +51,14 @@ export default function Footer() {
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Connect</h3>
               <ul className="space-y-2">
                 <li><a href="#" onClick={handleContactClick} className="text-white/80 hover:text-white cursor-pointer">Contact Us</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li><Link href="/privacy-policy" onClick={handleNavClick} className="text-white/80 hover:text-white">Privacy Policy</Link></li>
+                <li><Link href="/terms-of-service" onClick={handleNavClick} className="text-white/80 hover:text-white">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
