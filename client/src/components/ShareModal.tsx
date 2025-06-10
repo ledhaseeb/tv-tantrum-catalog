@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, Copy, Smartphone, Square, Zap } from 'lucide-react';
+import { Download, Copy, Smartphone, Square, Zap, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
 
@@ -16,6 +16,7 @@ interface ShareModalProps {
     description: string;
     stimulationScore?: number;
     imageUrl?: string;
+    ageRange?: string;
   };
 }
 
