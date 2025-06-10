@@ -409,7 +409,7 @@ router.get('/image-proxy', async (req, res) => {
     const contentType = response.headers.get('content-type') || 'image/jpeg';
     
     res.set('Content-Type', contentType);
-    res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.set('Cache-Control', 'public, max-age=604800'); // Cache for 7 days for viral traffic
     res.send(Buffer.from(imageBuffer));
   } catch (error) {
     console.error("Error proxying image:", error);
