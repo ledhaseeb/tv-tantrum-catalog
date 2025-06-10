@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { scrollToTop } from "../lib/scroll-utils";
+import { scrollToTop } from "@/lib/scroll-utils";
 
 export default function PrivacyPolicy() {
   useEffect(() => {
