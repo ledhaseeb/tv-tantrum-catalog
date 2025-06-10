@@ -27,10 +27,22 @@ import {
   BookOpen, 
   Zap,
   Tag,
-  Heart
+  Heart,
+  Share2,
+  Copy,
+  Facebook,
+  Twitter,
+  MessageCircle
 } from "lucide-react";
 import SensoryBar from "@/components/SensoryBar";
 import ShowCard from "@/components/ShowCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 interface TvShow {
   id: number;
@@ -58,6 +70,7 @@ export default function CatalogShowDetailPage() {
   console.log('🔥 CATALOG SHOW DETAIL PAGE COMPONENT LOADED 🔥');
   
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   console.log('CatalogShowDetailPage mounted with params:', { id }, 'parsed ID:', parseInt(id || '0'));
   console.log('Current URL pathname:', window.location.pathname);
 
@@ -74,6 +87,56 @@ export default function CatalogShowDetailPage() {
     
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
+
+  // Share functionality
+  const handleShare = async (platform: string, show: TvShow) => {
+    const currentUrl = window.location.href;
+    const shareText = `Check out "${show.name}" - Perfect for ages ${show.ageRange}! ${show.description.slice(0, 100)}...`;
+    
+    switch (platform) {
+      case 'copy':
+        try {
+          await navigator.clipboard.writeText(currentUrl);
+          toast({
+            title: "Link copied!",
+            description: "The show link has been copied to your clipboard.",
+          });
+        } catch (err) {
+          toast({
+            title: "Copy failed",
+            description: "Please copy the URL manually from your browser.",
+            variant: "destructive",
+          });
+        }
+        break;
+        
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank');
+        break;
+        
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`, '_blank');
+        break;
+        
+      case 'whatsapp':
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + currentUrl)}`, '_blank');
+        break;
+        
+      case 'native':
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: show.name,
+              text: shareText,
+              url: currentUrl,
+            });
+          } catch (err) {
+            // User cancelled or sharing failed
+          }
+        }
+        break;
+    }
+  };
 
   const {
     data: show,
@@ -344,13 +407,49 @@ export default function CatalogShowDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Back to Shows */}
-        <Link href="/">
-          <Button variant="outline" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Shows
-          </Button>
-        </Link>
+        {/* Header with Back Button and Share */}
+        <div className="flex justify-between items-center mb-6">
+          <Link href="/">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Shows
+            </Button>
+          </Link>
+          
+          {/* Share Button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => handleShare('copy', show)}>
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Link
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('facebook', show)}>
+                <Facebook className="w-4 h-4 mr-2" />
+                Share on Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('twitter', show)}>
+                <Twitter className="w-4 h-4 mr-2" />
+                Share on Twitter
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('whatsapp', show)}>
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Share on WhatsApp
+              </DropdownMenuItem>
+              {navigator.share && (
+                <DropdownMenuItem onClick={() => handleShare('native', show)}>
+                  <Share2 className="w-4 h-4 mr-2" />
+                  More Options
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         {/* Top Ad Container - Leaderboard */}
         <div className="mb-8">
