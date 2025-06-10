@@ -14,7 +14,7 @@
 
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +60,20 @@ export default function CatalogShowDetailPage() {
   const { id } = useParams<{ id: string }>();
   console.log('CatalogShowDetailPage mounted with params:', { id }, 'parsed ID:', parseInt(id || '0'));
   console.log('Current URL pathname:', window.location.pathname);
+
+  // Mobile detection hook
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   const {
     data: show,
@@ -559,15 +573,15 @@ export default function CatalogShowDetailPage() {
               Shows with similar themes, age range, and stimulation levels
             </p>
             
-            {/* Fixed 4-Column Grid - Always 4 cards in a row */}
-            <div className="grid grid-cols-4 gap-4">
+            {/* Responsive Grid - 2 columns on mobile, 4 on desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {relatedShows.slice(0, 4).map((relatedShow: TvShow) => (
                 <ShowCard 
                   key={relatedShow.id}
                   show={relatedShow}
                   viewMode="grid"
                   onClick={() => {}}
-                  isMobile={true}
+                  isMobile={isMobile}
                 />
               ))}
             </div>
