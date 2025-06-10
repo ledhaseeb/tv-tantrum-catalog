@@ -122,7 +122,7 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-72">
           {/* Image with reduced height to better fit poster aspect ratio */}
           <div className="relative h-40 overflow-hidden">
             <TvShowCardImage
@@ -134,7 +134,7 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
             />
           </div>
           
-          <CardContent className="p-3 flex flex-col flex-grow h-32">
+          <CardContent className="p-3 flex flex-col flex-grow h-28">
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
             
