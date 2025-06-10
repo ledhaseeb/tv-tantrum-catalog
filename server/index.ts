@@ -52,6 +52,12 @@ app.use(session({
   }
 }));
 
+// Serve ads.txt file for Google AdSense verification
+app.get('/ads.txt', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.send('google.com, pub-1980242774753631, DIRECT, f08c47fec0942fa0');
+});
+
 // Catalog API Routes
 const router = express.Router();
 
