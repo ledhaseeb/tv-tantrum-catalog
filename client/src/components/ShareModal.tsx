@@ -231,9 +231,9 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                   </div>
 
                   {/* Content - Compact */}
-                  <div className="p-4 flex-1 flex flex-col">
+                  <div className="p-3 flex-1 flex flex-col">
                     {/* Show Title and Age Range */}
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between mb-2">
                       <h3 className="font-bold text-gray-900 leading-tight text-lg flex-1 pr-2">
                         {show.name}
                       </h3>
@@ -245,19 +245,19 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
 
                     {/* Stimulation Score - Condensed */}
                     {show.stimulationScore && (
-                      <div className="bg-gray-50 rounded-lg p-3 mb-3 flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="bg-gray-50 rounded-lg p-2.5 mb-2 flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
                           <Badge className={`text-xs ${getStimulationBadgeColor(show.stimulationScore)}`}>
                             {getStimulationLabel(show.stimulationScore)}
                           </Badge>
                         </div>
                         
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-1.5">
                           <Zap className="w-4 h-4 text-yellow-600" />
                           <span className="font-semibold text-sm">Stimulation Level</span>
                         </div>
                         
-                        <div className="flex gap-1 mb-2">
+                        <div className="flex gap-1 mb-1.5">
                           {renderStimulationDots(show.stimulationScore)}
                         </div>
                         
@@ -268,7 +268,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                     )}
 
                     {/* Footer */}
-                    <div className="text-center mt-auto">
+                    <div className="text-center mt-2">
                       <p className="text-xs text-gray-500 font-medium">
                         More at <span className="font-bold text-blue-600">tvtantrum.com</span>
                       </p>
