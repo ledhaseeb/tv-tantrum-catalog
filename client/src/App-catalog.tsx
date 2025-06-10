@@ -20,6 +20,7 @@ import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import { initAdSense } from "./lib/adsense";
+import CookieConsent from "@/components/CookieConsent";
 
 // Create query client with sensible defaults
 const queryClient = new QueryClient({
@@ -66,6 +67,7 @@ export default function CatalogApp() {
               </Switch>
             </main>
             <Footer />
+            <CookieConsent />
           </div>
         </WouterRouter>
       </AuthProvider>
