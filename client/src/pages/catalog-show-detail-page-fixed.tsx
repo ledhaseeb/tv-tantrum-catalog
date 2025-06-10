@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import SensoryBar from "@/components/SensoryBar";
 import ShowCard from "@/components/ShowCard";
+import AdContainer from "@/components/AdContainer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -453,15 +454,10 @@ export default function CatalogShowDetailPage() {
 
         {/* Top Ad Container - Leaderboard */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-100 to-purple-100 border-2 border-dashed border-blue-400 rounded-lg p-6 text-center shadow-lg">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-lg font-bold text-blue-700">TOP AD SPACE</span>
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-            </div>
-            <p className="text-blue-600 font-medium">728x90 Leaderboard Advertisement</p>
-            <p className="text-sm text-blue-500 mt-1">Ready for AdSense integration</p>
-          </div>
+          <AdContainer 
+            size="leaderboard"
+            label="Top Advertisement"
+          />
         </div>
 
         {/* Main Content Grid */}
@@ -688,16 +684,11 @@ export default function CatalogShowDetailPage() {
         )}
 
         {/* Bottom Ad Container - Rectangle */}
-        <div className="mt-12 mb-8">
-          <div className="bg-gradient-to-tr from-orange-100 to-red-100 border-2 border-dashed border-orange-400 rounded-lg p-6 text-center shadow-lg w-full max-w-sm mx-auto">
-            <div className="flex items-center justify-center space-x-2 mb-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-              <span className="text-lg font-bold text-orange-700">BOTTOM AD SPACE</span>
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            </div>
-            <p className="text-orange-600 font-medium">300x250 Rectangle Advertisement</p>
-            <p className="text-sm text-orange-500 mt-1">Ready for AdSense integration</p>
-          </div>
+        <div className="mt-12 mb-8 flex justify-center">
+          <AdContainer 
+            size="rectangle"
+            label="Bottom Advertisement"
+          />
         </div>
       </div>
     </div>
