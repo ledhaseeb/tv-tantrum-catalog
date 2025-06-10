@@ -551,9 +551,9 @@ export default function CatalogShowDetailPage() {
                   {/* Share Button */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Share2 className="h-4 w-4" />
-                        <span className="sr-only">Share show</span>
+                      <Button variant="default" size="default" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2">
+                        <Share2 className="h-5 w-5 mr-2" />
+                        Share
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
