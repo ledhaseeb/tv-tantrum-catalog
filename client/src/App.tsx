@@ -69,7 +69,7 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <Switch>
         {/* Legal Pages - Must come before other routes */}
-        <Route path="/privacy-policy">
+        <Route path="/privacy-policy" component={() => (
           <div className="flex-grow flex flex-col">
             <CatalogNavbar />
             <div className="flex-grow">
@@ -77,8 +77,8 @@ function Router() {
             </div>
             <Footer />
           </div>
-        </Route>
-        <Route path="/terms-of-service">
+        )} />
+        <Route path="/terms-of-service" component={() => (
           <div className="flex-grow flex flex-col">
             <CatalogNavbar />
             <div className="flex-grow">
@@ -86,7 +86,7 @@ function Router() {
             </div>
             <Footer />
           </div>
-        </Route>
+        )} />
 
         {/* All show detail routes use catalog page */}
         <Route path="/show/:id" component={CatalogShowDetailPage} />
