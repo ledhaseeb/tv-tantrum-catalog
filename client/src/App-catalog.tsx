@@ -41,9 +41,11 @@ export default function CatalogApp() {
                 <Route path="/research" component={Research} />
                 <Route path="/research/:id" component={ResearchDetail} />
                 <Route path="/show/:id" component={CatalogShowDetailPage} />
-                <Route path="/admin" component={AdminPage} />
-                <Route path="/admin/login" component={AdminLogin} />
+                {/* Secure admin access with unique URL */}
+                <Route path="/tvtantrum-admin-secure-access-2024" component={AdminLogin} />
                 <Route path="/admin/dashboard" component={AdminDashboard} />
+                <Route path="/admin/login" component={AdminLogin} />
+                <Route path="/admin" component={AdminPage} />
                 <Route component={NotFound} />
               </Switch>
             </main>

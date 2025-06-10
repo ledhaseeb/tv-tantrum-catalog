@@ -1,66 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Home, Filter, BarChart2, Info, Settings, X, BookOpen, Lock } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Home, Filter, BarChart2, Info, X, BookOpen } from "lucide-react";
 
 export default function CatalogNavbar() {
   const [location] = useLocation();
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Check admin status on load
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        const response = await fetch('/api/admin/me', { credentials: 'include' });
-        if (response.ok) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        // Not admin, ignore
-      }
-    };
-    checkAdminStatus();
-  }, []);
-
-  // Handle admin login
-  const handleAdminLogin = async () => {
-    try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          email: 'admin@tvtantrum.com', 
-          password: adminPassword 
-        })
-      });
-
-      if (response.ok) {
-        setIsAdmin(true);
-        setShowAdminLogin(false);
-        setAdminPassword("");
-        window.location.href = '/admin/dashboard';
-      } else {
-        alert('Invalid admin password');
-      }
-    } catch (error) {
-      alert('Login failed');
-    }
-  };
 
   return (
     <div className="bg-primary shadow-lg sticky top-0 z-50">
@@ -109,50 +53,6 @@ export default function CatalogNavbar() {
           </div>
           
           <div className="flex items-center gap-4">
-            {/* Admin access for desktop */}
-            {isAdmin ? (
-              <Link 
-                href="/admin/dashboard"
-                className="hidden md:block text-white/80 hover:text-white font-medium px-3 py-2 rounded-md hover:bg-white/10 transition-colors flex items-center"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
-              </Link>
-            ) : (
-              <AlertDialog open={showAdminLogin} onOpenChange={setShowAdminLogin}>
-                <AlertDialogTrigger asChild>
-                  <button className="hidden md:block text-white/80 hover:text-white font-medium px-3 py-2 rounded-md hover:bg-white/10 transition-colors flex items-center">
-                    <Lock className="w-4 h-4 mr-2" />
-                    Admin
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Admin Access</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Enter the admin password to access the administration panel.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <div className="py-4">
-                    <input
-                      type="password"
-                      placeholder="Admin password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
-                    />
-                  </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleAdminLogin}>
-                      Login
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-
             {/* Mobile menu button */}
             <button
               onClick={() => setIsNavOpen(!isNavOpen)}
@@ -237,29 +137,6 @@ export default function CatalogNavbar() {
                     <BookOpen className="h-5 w-5 mr-3" />
                     Research
                   </Link>
-                  
-                  {/* Admin access for mobile */}
-                  {isAdmin ? (
-                    <Link 
-                      href="/admin/dashboard"
-                      onClick={() => setIsNavOpen(false)}
-                      className="flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors font-normal"
-                    >
-                      <Settings className="h-5 w-5 mr-3" />
-                      Admin
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setIsNavOpen(false);
-                        setShowAdminLogin(true);
-                      }}
-                      className="flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors w-full text-left font-normal"
-                    >
-                      <Lock className="h-5 w-5 mr-3" />
-                      Admin
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
