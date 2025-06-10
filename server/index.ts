@@ -58,6 +58,12 @@ app.get('/ads.txt', (req, res) => {
   res.send('google.com, pub-1980242774753631, DIRECT, f08c47fec0942fa0');
 });
 
+// Serve llms.txt file for AI system documentation
+app.get('/llms.txt', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.sendFile(join(__dirname, '../public/llms.txt'));
+});
+
 // Catalog API Routes
 const router = express.Router();
 
