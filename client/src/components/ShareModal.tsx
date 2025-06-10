@@ -322,7 +322,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                         
                         <div className="flex items-center gap-1 mb-2">
                           <Zap className="w-3 h-3 text-yellow-600" />
-                          <span className="font-semibold text-xs">Stimulation</span>
+                          <span className="font-semibold text-xs">Stimulation Level</span>
                         </div>
                         
                         <div className="flex gap-0.5 mb-2">
@@ -350,26 +350,31 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
           {/* Action Buttons */}
           <div className="flex gap-2 justify-center">
             <Button
-              onClick={generateImage}
-              disabled={isGenerating}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              {isGenerating ? 'Generating...' : 'Download Image'}
-            </Button>
-            <Button
               variant="outline"
-              onClick={copyToClipboard}
-              disabled={isGenerating}
+              onClick={async () => {
+                const currentUrl = window.location.href;
+                try {
+                  await navigator.clipboard.writeText(currentUrl);
+                  // Simple success indication - could add toast if needed
+                } catch (error) {
+                  // Fallback for older browsers
+                  const textArea = document.createElement('textarea');
+                  textArea.value = currentUrl;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                }
+              }}
               className="flex items-center gap-2"
             >
               <Copy className="w-4 h-4" />
-              Copy Image
+              Copy Link
             </Button>
           </div>
 
           <p className="text-xs text-gray-500 text-center">
-            Perfect for sharing on Instagram, Facebook, Twitter, or any social platform!
+            <strong>Tip:</strong> Screenshot this image and crop it in your photo app for easy sharing on Instagram, Facebook, Twitter, or any social platform!
           </p>
         </div>
       </DialogContent>

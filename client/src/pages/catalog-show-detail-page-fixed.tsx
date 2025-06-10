@@ -441,15 +441,15 @@ export default function CatalogShowDetailPage() {
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Link
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('facebook', show)}>
+              <DropdownMenuItem onClick={() => { handleShareModal(); handleShare('facebook', show); }}>
                 <Facebook className="w-4 h-4 mr-2" />
                 Share on Facebook
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('twitter', show)}>
+              <DropdownMenuItem onClick={() => { handleShareModal(); handleShare('twitter', show); }}>
                 <Twitter className="w-4 h-4 mr-2" />
                 Share on Twitter
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('whatsapp', show)}>
+              <DropdownMenuItem onClick={() => { handleShareModal(); handleShare('whatsapp', show); }}>
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Share on WhatsApp
               </DropdownMenuItem>
