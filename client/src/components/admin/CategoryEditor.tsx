@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ShowFilters from '@/components/ShowFilters';
-import SimpleShowCard from '@/components/SimpleShowCard';
+import ShowCard from '@/components/ShowCard';
 import { useQuery } from '@tanstack/react-query';
 import type { TvShow, HomepageCategory, InsertHomepageCategory } from '@shared/catalog-schema';
 
@@ -308,10 +308,9 @@ export default function CategoryEditor({ category, onSubmit, onCancel, isLoading
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {previewShows.slice(0, 12).map((show) => (
-                  <SimpleShowCard
+                  <ShowCard
                     key={show.id}
                     show={show}
-                    onClick={() => {}}
                   />
                 ))}
                 {previewShows.length > 12 && (

@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ThemeSelector } from '@/components/ThemeSelector';
+
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   Loader2, 
@@ -66,7 +66,7 @@ import {
   Key,
   Copy
 } from 'lucide-react';
-import { ImageUpload } from '@/components/image-upload';
+
 import { TvShow, User as UserType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
