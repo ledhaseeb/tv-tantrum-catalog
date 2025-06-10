@@ -104,8 +104,16 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes for better caching under high load
+      gcTime: 30 * 60 * 1000, // 30 minutes garbage collection time
+      retry: (failureCount, error) => {
+        // Don't retry 404s or client errors, only network/server errors
+        if (error.message.includes('404') || error.message.includes('401')) {
+          return false;
+        }
+        return failureCount < 2; // Max 2 retries for network issues
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     },
     mutations: {
       retry: false,

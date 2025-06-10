@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TvShow } from "@shared/schema";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
 import { Link } from "wouter";
+import { memo } from "react";
 
 interface ShowCardProps {
   show: TvShow;
@@ -11,7 +12,8 @@ interface ShowCardProps {
   isMobile?: boolean;
 }
 
-export default function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
+// Memoized component for better performance under high traffic
+function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) {
   // Ensure we have valid show data
   if (!show || !show.id) {
     return null;
@@ -273,3 +275,5 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     </Link>
   );
 }
+
+export default memo(ShowCard);
