@@ -232,20 +232,29 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
 
                   {/* Content - Compact */}
                   <div className="p-4 flex-1 flex flex-col">
-                    {/* Show Title */}
-                    <h3 className="font-bold text-gray-900 leading-tight text-lg mb-3">
-                      {show.name}
-                    </h3>
+                    {/* Show Title and Age Range */}
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-bold text-gray-900 leading-tight text-lg flex-1 pr-2">
+                        {show.name}
+                      </h3>
+                      <div className="flex items-center gap-1 text-sm text-gray-600 shrink-0">
+                        <Users className="w-4 h-4" />
+                        <span>Ages {show.ageRange}</span>
+                      </div>
+                    </div>
 
                     {/* Stimulation Score - Condensed */}
                     {show.stimulationScore && (
                       <div className="bg-gray-50 rounded-lg p-3 mb-3 flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Zap className="w-4 h-4 text-yellow-600" />
-                          <span className="font-semibold text-sm">Stimulation Level</span>
-                          <Badge variant="secondary" className="text-xs ml-auto">
+                          <Badge className={`text-xs ${getStimulationBadgeColor(show.stimulationScore)}`}>
                             {getStimulationLabel(show.stimulationScore)}
                           </Badge>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 mb-2">
+                          <Zap className="w-4 h-4 text-yellow-600" />
+                          <span className="font-semibold text-sm">Stimulation Level</span>
                         </div>
                         
                         <div className="flex gap-1 mb-2">
@@ -257,12 +266,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                         </p>
                       </div>
                     )}
-
-                    {/* Age Range */}
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                      <Users className="w-4 h-4" />
-                      <span>Ages {show.ageRange}</span>
-                    </div>
 
                     {/* Footer */}
                     <div className="text-center mt-auto">
