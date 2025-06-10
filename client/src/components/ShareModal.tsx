@@ -225,7 +225,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                     )}
                     
                     {/* TV Tantrum Brand - Centered at bottom of image */}
-                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg">
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded">
                       <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
                     </div>
                   </div>
