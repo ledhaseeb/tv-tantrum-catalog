@@ -589,9 +589,6 @@ export default function CatalogShowDetailPage() {
                   <span className="text-lg font-medium">
                     {getStimulationLabel(show.stimulationScore || 0)}
                   </span>
-                  <span className="text-sm text-gray-500">
-                    ({show.stimulationScore || 0}/5)
-                  </span>
                 </div>
               </CardContent>
             </Card>
