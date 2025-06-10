@@ -190,12 +190,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
               }}
             >
               {/* Show Image */}
-              <div className={`relative ${aspectRatio === 'portrait' ? 'h-48' : 'h-40'}`}>
+              <div className={`relative ${aspectRatio === 'portrait' ? 'h-48' : 'h-40'} bg-gray-50`}>
                 {show.imageUrl ? (
                   <img
                     src={show.imageUrl}
                     alt={show.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
