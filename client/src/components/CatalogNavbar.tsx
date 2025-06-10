@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Home, Filter, BarChart2, Info, X, BookOpen } from "lucide-react";
+import { scrollToTop } from "../lib/scroll-utils";
 
 export default function CatalogNavbar() {
   const [location] = useLocation();
   const [isNavOpen, setIsNavOpen] = useState(false);
+
+  const handleNavClick = () => {
+    scrollToTop('smooth');
+    setIsNavOpen(false);
+  };
 
   return (
     <div className="bg-primary shadow-lg sticky top-0 z-50">
@@ -12,7 +18,7 @@ export default function CatalogNavbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo and main navigation */}
           <div className="flex items-center flex-1">
-            <Link href="/" className="flex items-center space-x-2 text-white">
+            <Link href="/" onClick={handleNavClick} className="flex items-center space-x-2 text-white">
               <div className="bg-white/20 p-2 rounded-lg">
                 <Home className="h-6 w-6" />
               </div>
@@ -23,6 +29,7 @@ export default function CatalogNavbar() {
             <nav className="hidden md:flex items-center space-x-8 ml-10">
               <Link 
                 href="/browse"
+                onClick={handleNavClick}
                 className={`${location === '/browse' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <Filter className="w-4 h-4 mr-2" />
@@ -30,6 +37,7 @@ export default function CatalogNavbar() {
               </Link>
               <Link 
                 href="/compare"
+                onClick={handleNavClick}
                 className={`${location === '/compare' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <BarChart2 className="w-4 h-4 mr-2" />
@@ -37,6 +45,7 @@ export default function CatalogNavbar() {
               </Link>
               <Link 
                 href="/about"
+                onClick={handleNavClick}
                 className={`${location === '/about' ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <Info className="w-4 h-4 mr-2" />
@@ -44,6 +53,7 @@ export default function CatalogNavbar() {
               </Link>
               <Link 
                 href="/research"
+                onClick={handleNavClick}
                 className={`${location === '/research' || location?.startsWith('/research/') ? 'text-white border-b-2 border-white' : 'text-white/80 hover:text-white'} font-medium px-1 py-4 flex items-center`}
               >
                 <BookOpen className="w-4 h-4 mr-2" />
