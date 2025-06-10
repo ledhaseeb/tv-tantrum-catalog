@@ -109,7 +109,7 @@ export default function CatalogNavbar() {
                 <div className="space-y-2">
                   <Link 
                     href="/"
-                    onClick={() => setIsNavOpen(false)}
+                    onClick={handleNavClick}
                     className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/' ? 'font-bold bg-white/20' : 'font-normal'}`}
                   >
                     <Home className="h-5 w-5 mr-3" />
@@ -117,7 +117,7 @@ export default function CatalogNavbar() {
                   </Link>
                   <Link 
                     href="/browse"
-                    onClick={() => setIsNavOpen(false)}
+                    onClick={handleNavClick}
                     className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/browse' ? 'font-bold bg-white/20' : 'font-normal'}`}
                   >
                     <Filter className="h-5 w-5 mr-3" />
@@ -125,7 +125,7 @@ export default function CatalogNavbar() {
                   </Link>
                   <Link 
                     href="/compare"
-                    onClick={() => setIsNavOpen(false)}
+                    onClick={handleNavClick}
                     className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/compare' ? 'font-bold bg-white/20' : 'font-normal'}`}
                   >
                     <BarChart2 className="h-5 w-5 mr-3" />
@@ -133,7 +133,7 @@ export default function CatalogNavbar() {
                   </Link>
                   <Link 
                     href="/about"
-                    onClick={() => setIsNavOpen(false)}
+                    onClick={handleNavClick}
                     className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/about' ? 'font-bold bg-white/20' : 'font-normal'}`}
                   >
                     <Info className="h-5 w-5 mr-3" />
@@ -141,7 +141,7 @@ export default function CatalogNavbar() {
                   </Link>
                   <Link 
                     href="/research"
-                    onClick={() => setIsNavOpen(false)}
+                    onClick={handleNavClick}
                     className={`flex items-center px-4 py-3 text-white rounded-lg hover:bg-white/10 transition-colors ${location === '/research' || location?.startsWith('/research/') ? 'font-bold bg-white/20' : 'font-normal'}`}
                   >
                     <BookOpen className="h-5 w-5 mr-3" />

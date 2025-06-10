@@ -1,11 +1,22 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { handleContactNavigation, scrollToTop } from "../lib/scroll-utils";
 
 export default function Footer() {
   const { user, isApproved } = useAuth();
+  const [location, navigate] = useLocation();
   
   // Use the standard about page URL for all users
   const aboutPageUrl = "/about";
+
+  const handleNavClick = () => {
+    scrollToTop('smooth');
+  };
+
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleContactNavigation(navigate);
+  };
   
   return (
     <footer className="bg-primary text-white py-8 mt-12">
@@ -23,32 +34,32 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Explore</h3>
               <ul className="space-y-2">
-                <li><Link href="/" className="text-white/80 hover:text-white">Home</Link></li>
-                <li><Link href="/browse" className="text-white/80 hover:text-white">Browse Shows</Link></li>
-                <li><Link href="/compare" className="text-white/80 hover:text-white">Compare Shows</Link></li>
-                <li><Link href="/browse?sortBy=popular" className="text-white/80 hover:text-white">Popular Shows</Link></li>
+                <li><Link href="/" onClick={handleNavClick} className="text-white/80 hover:text-white">Home</Link></li>
+                <li><Link href="/browse" onClick={handleNavClick} className="text-white/80 hover:text-white">Browse Shows</Link></li>
+                <li><Link href="/compare" onClick={handleNavClick} className="text-white/80 hover:text-white">Compare Shows</Link></li>
+                <li><Link href="/browse?sortBy=popular" onClick={handleNavClick} className="text-white/80 hover:text-white">Popular Shows</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Resources</h3>
               <ul className="space-y-2">
-                <li><Link href={aboutPageUrl} className="text-white/80 hover:text-white">About Us</Link></li>
+                <li><Link href={aboutPageUrl} onClick={handleNavClick} className="text-white/80 hover:text-white">About Us</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Legal</h3>
               <ul className="space-y-2">
-                <li><Link href="/privacy-policy" className="text-white/80 hover:text-white">Privacy Policy</Link></li>
-                <li><Link href="/terms-of-service" className="text-white/80 hover:text-white">Terms of Service</Link></li>
+                <li><Link href="/privacy-policy" onClick={handleNavClick} className="text-white/80 hover:text-white">Privacy Policy</Link></li>
+                <li><Link href="/terms-of-service" onClick={handleNavClick} className="text-white/80 hover:text-white">Terms of Service</Link></li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4">Connect</h3>
               <ul className="space-y-2">
-                <li><Link href={aboutPageUrl} className="text-white/80 hover:text-white">Contact Us</Link></li>
+                <li><a href="#" onClick={handleContactClick} className="text-white/80 hover:text-white cursor-pointer">Contact Us</a></li>
               </ul>
             </div>
           </div>

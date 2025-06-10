@@ -18,6 +18,15 @@ export const scrollToElement = (elementId: string, behavior: 'smooth' | 'instant
   }
 };
 
+// Special function for contact button navigation
+export const handleContactNavigation = (navigate: (path: string) => void) => {
+  navigate('/about');
+  // Use setTimeout to ensure navigation completes before scrolling
+  setTimeout(() => {
+    scrollToElement('contact', 'smooth');
+  }, 100);
+};
+
 // Custom hook for scroll to top on route change
 export const useScrollToTop = () => {
   return scrollToTop;
