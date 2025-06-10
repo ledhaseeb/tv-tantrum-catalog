@@ -138,10 +138,10 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
             {/* Title with ellipsis */}
             <h3 className="text-sm font-bold line-clamp-1 mb-2">{show.name}</h3>
             
-            {/* Age Badge */}
-            <Badge variant="outline" className="bg-green-50 text-green-700 text-xs border-green-100 mb-2 w-fit">
+            {/* Age Text - no badge background */}
+            <div className="text-gray-600 text-xs mb-2 w-fit">
               Ages {normalizedShow.ageRange}
-            </Badge>
+            </div>
             
             {/* Enhanced Stimulation Indicator - at bottom */}
             <div className="mt-auto">
