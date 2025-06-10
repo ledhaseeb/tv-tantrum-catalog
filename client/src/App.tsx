@@ -26,8 +26,7 @@ import UserProfile from "@/pages/user-profile";
 import SubmitShow from "@/pages/submit-show";
 import Research from "@/pages/research";
 import ResearchDetail from "@/pages/research-detail";
-import PrivacyPolicy from "./pages/privacy-policy";
-import TermsOfService from "./pages/terms-of-service";
+
 import CookieConsent from "@/components/CookieConsent";
 import ResearchView from "@/pages/research-view";
 import SharePage from "@/pages/share";
@@ -67,9 +66,7 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
-        {/* Legal Pages - Must come before other routes */}
-        <Route path="/privacy-policy" component={PrivacyPolicy} />
-        <Route path="/terms-of-service" component={TermsOfService} />
+
 
         {/* All show detail routes use catalog page */}
         <Route path="/show/:id" component={CatalogShowDetailPage} />
