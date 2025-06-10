@@ -37,7 +37,6 @@ export default function Footer() {
                 <li><Link href="/" onClick={handleNavClick} className="text-white/80 hover:text-white">Home</Link></li>
                 <li><Link href="/browse" onClick={handleNavClick} className="text-white/80 hover:text-white">Browse Shows</Link></li>
                 <li><Link href="/compare" onClick={handleNavClick} className="text-white/80 hover:text-white">Compare Shows</Link></li>
-                <li><Link href="/browse?sortBy=popular" onClick={handleNavClick} className="text-white/80 hover:text-white">Popular Shows</Link></li>
               </ul>
             </div>
             
