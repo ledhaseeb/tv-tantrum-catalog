@@ -48,6 +48,17 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
     }
   };
 
+  const getStimulationBadgeColor = (score: number): string => {
+    switch (score) {
+      case 1: return 'bg-green-500 text-white';
+      case 2: return 'bg-green-500 text-white';
+      case 3: return 'bg-yellow-500 text-black';
+      case 4: return 'bg-orange-500 text-white';
+      case 5: return 'bg-red-500 text-white';
+      default: return 'bg-gray-500 text-white';
+    }
+  };
+
   const renderStimulationDots = (score: number) => {
     const getColorForIndex = (index: number, score: number) => {
       if (index >= score) return 'bg-gray-300';
@@ -199,8 +210,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
               {aspectRatio === 'portrait' ? (
                 // Portrait Layout - Vertical Stack with Better Space Usage
                 <>
-                  {/* Show Image - Reduced for more text space */}
-                  <div className="relative h-48 bg-gray-50">
+                  {/* Show Image - Increased size by ~10% */}
+                  <div className="relative h-52 bg-gray-50">
                     {show.imageUrl ? (
                       <img
                         src={show.imageUrl}
@@ -213,8 +224,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                       </div>
                     )}
                     
-                    {/* TV Tantrum Brand */}
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg">
+                    {/* TV Tantrum Brand - Centered at bottom of image */}
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg">
                       <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
                     </div>
                   </div>
@@ -266,6 +277,11 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                 <div className="flex h-full">
                   {/* Left Side - Image (50% width) */}
                   <div className="relative w-1/2 bg-gray-50">
+                    {/* TV Tantrum Brand - Centered at top of image */}
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md z-10">
+                      <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
+                    </div>
+                    
                     {show.imageUrl ? (
                       <img
                         src={show.imageUrl}
@@ -280,26 +296,30 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                   </div>
 
                   {/* Right Side - Content (50% width) */}
-                  <div className="w-1/2 p-3 flex flex-col relative">
-                    {/* TV Tantrum Brand - Top Right */}
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
-                      <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
+                  <div className="w-1/2 p-3 flex flex-col">
+                    {/* Show Title and Age Range */}
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-bold text-gray-900 leading-tight text-sm flex-1 pr-2">
+                        {show.name}
+                      </h3>
+                      <div className="flex items-center gap-1 text-xs text-gray-600 shrink-0">
+                        <Users className="w-3 h-3" />
+                        <span className="font-medium">Ages {show.ageRange}</span>
+                      </div>
                     </div>
-
-                    {/* Show Title */}
-                    <h3 className="font-bold text-gray-900 leading-tight text-sm mb-3 mt-6 pr-16">
-                      {show.name}
-                    </h3>
 
                     {/* Stimulation Score - Very Compact */}
                     {show.stimulationScore && (
                       <div className="bg-gray-50 rounded-lg p-2 mb-3 flex-1">
                         <div className="flex items-center gap-1 mb-1">
-                          <Zap className="w-3 h-3 text-yellow-600" />
-                          <span className="font-semibold text-xs">Stimulation</span>
-                          <Badge variant="secondary" className="text-xs ml-auto">
+                          <Badge className={`text-xs ${getStimulationBadgeColor(show.stimulationScore)}`}>
                             {getStimulationLabel(show.stimulationScore)}
                           </Badge>
+                        </div>
+                        
+                        <div className="flex items-center gap-1 mb-2">
+                          <Zap className="w-3 h-3 text-yellow-600" />
+                          <span className="font-semibold text-xs">Stimulation</span>
                         </div>
                         
                         <div className="flex gap-0.5 mb-2">
@@ -312,18 +332,10 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                       </div>
                     )}
 
-                    {/* Age Range */}
-                    <div className="flex items-center gap-1 text-xs text-gray-600 mb-3">
-                      <Users className="w-3 h-3" />
-                      <span>Ages {show.ageRange}</span>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="text-center mt-auto">
-                      <p className="text-xs text-gray-500 font-medium">
-                        More at <span className="font-bold text-blue-600">tvtantrum.com</span>
-                      </p>
-                    </div>
+                    {/* Description */}
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      {show.description?.substring(0, 120)}...
+                    </p>
                   </div>
                 </div>
               )}
