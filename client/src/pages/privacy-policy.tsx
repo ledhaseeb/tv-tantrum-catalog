@@ -1,10 +1,4 @@
-import { useEffect } from "react";
-import { scrollToTop } from "@/lib/scroll-utils";
-
 export default function PrivacyPolicy() {
-  useEffect(() => {
-    scrollToTop('instant');
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
