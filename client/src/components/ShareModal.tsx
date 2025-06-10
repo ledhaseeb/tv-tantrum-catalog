@@ -246,10 +246,13 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                     {/* Stimulation Score - Condensed */}
                     {show.stimulationScore && (
                       <div className="bg-gray-50 rounded-lg p-2.5 mb-2 flex-1">
-                        <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex items-center justify-between mb-1.5">
                           <Badge className={`text-xs ${getStimulationBadgeColor(show.stimulationScore)}`}>
                             {getStimulationLabel(show.stimulationScore)}
                           </Badge>
+                          <p className="text-xs text-gray-500 font-medium">
+                            More at <span className="font-bold text-blue-600">tvtantrum.com</span>
+                          </p>
                         </div>
                         
                         <div className="flex items-center gap-2 mb-1.5">
@@ -266,81 +269,71 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                         </p>
                       </div>
                     )}
-
-                    {/* Footer */}
-                    <div className="text-center mt-2">
-                      <p className="text-xs text-gray-500 font-medium">
-                        More at <span className="font-bold text-blue-600">tvtantrum.com</span>
-                      </p>
-                    </div>
                   </div>
                 </>
               ) : (
                 // Square Layout - Side by Side
-                <div className="flex h-full">
-                  {/* Left Side - Image (50% width) */}
-                  <div className="relative w-1/2 bg-gray-50">
-                    {/* TV Tantrum Brand - Centered at top of image */}
-                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md z-10">
-                      <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
+                <div className="flex flex-col h-full">
+                  <div className="flex flex-1">
+                    {/* Left Side - Image (50% width) */}
+                    <div className="relative w-1/2 bg-gray-50">
+                      {show.imageUrl ? (
+                        <img
+                          src={show.imageUrl}
+                          alt={show.name}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm font-medium text-center px-2">{show.name}</span>
+                        </div>
+                      )}
                     </div>
-                    
-                    {show.imageUrl ? (
-                      <img
-                        src={show.imageUrl}
-                        alt={show.name}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                        <span className="text-gray-500 text-sm font-medium text-center px-2">{show.name}</span>
+
+                    {/* Right Side - Content (50% width) */}
+                    <div className="w-1/2 p-3 flex flex-col">
+                      {/* Show Title and Age Range */}
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-bold text-gray-900 leading-tight text-sm flex-1 pr-2">
+                          {show.name}
+                        </h3>
+                        <div className="flex items-center gap-1 text-xs text-gray-600 shrink-0">
+                          <Users className="w-3 h-3" />
+                          <span className="font-medium">Ages {show.ageRange}</span>
+                        </div>
                       </div>
-                    )}
+
+                      {/* Stimulation Score - Very Compact */}
+                      {show.stimulationScore && (
+                        <div className="bg-gray-50 rounded-lg p-2 mb-3 flex-1">
+                          <div className="flex items-center gap-1 mb-1">
+                            <Badge className={`text-xs ${getStimulationBadgeColor(show.stimulationScore)}`}>
+                              {getStimulationLabel(show.stimulationScore)}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-1 mb-2">
+                            <Zap className="w-3 h-3 text-yellow-600" />
+                            <span className="font-semibold text-xs">Stimulation Level</span>
+                          </div>
+                          
+                          <div className="flex gap-0.5 mb-2">
+                            {renderStimulationDots(show.stimulationScore)}
+                          </div>
+                          
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            {getStimulationDescription(show.stimulationScore)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-
-                  {/* Right Side - Content (50% width) */}
-                  <div className="w-1/2 p-3 flex flex-col">
-                    {/* Show Title and Age Range */}
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-bold text-gray-900 leading-tight text-sm flex-1 pr-2">
-                        {show.name}
-                      </h3>
-                      <div className="flex items-center gap-1 text-xs text-gray-600 shrink-0">
-                        <Users className="w-3 h-3" />
-                        <span className="font-medium">Ages {show.ageRange}</span>
-                      </div>
-                    </div>
-
-                    {/* Stimulation Score - Very Compact */}
-                    {show.stimulationScore && (
-                      <div className="bg-gray-50 rounded-lg p-2 mb-3 flex-1">
-                        <div className="flex items-center gap-1 mb-1">
-                          <Badge className={`text-xs ${getStimulationBadgeColor(show.stimulationScore)}`}>
-                            {getStimulationLabel(show.stimulationScore)}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-1 mb-2">
-                          <Zap className="w-3 h-3 text-yellow-600" />
-                          <span className="font-semibold text-xs">Stimulation Level</span>
-                        </div>
-                        
-                        <div className="flex gap-0.5 mb-2">
-                          {renderStimulationDots(show.stimulationScore)}
-                        </div>
-                        
-                        <p className="text-xs text-gray-600 leading-relaxed">
-                          {getStimulationDescription(show.stimulationScore)}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="text-center mt-auto">
-                      <p className="text-xs text-gray-500 font-medium">
-                        More at <span className="font-bold text-blue-600">tvtantrum.com</span>
-                      </p>
-                    </div>
+                  
+                  {/* Footer - Underneath image */}
+                  <div className="text-center py-2 bg-gray-50 border-t">
+                    <p className="text-xs text-gray-500 font-medium">
+                      More at <span className="font-bold text-blue-600">tvtantrum.com</span>
+                    </p>
                   </div>
                 </div>
               )}
