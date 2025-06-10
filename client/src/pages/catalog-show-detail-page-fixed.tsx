@@ -532,9 +532,38 @@ export default function CatalogShowDetailPage() {
             {/* Stimulation Level */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Zap className="w-5 h-5 mr-2" />
-                  Stimulation Level
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Zap className="w-5 h-5 mr-2" />
+                    Stimulation Level
+                  </div>
+                  {/* Share Button */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Share2 className="h-4 w-4" />
+                        <span className="sr-only">Share show</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleShare('copy', show)}>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Link
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare('facebook', show)}>
+                        <Facebook className="w-4 h-4 mr-2" />
+                        Facebook
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare('twitter', show)}>
+                        <Twitter className="w-4 h-4 mr-2" />
+                        Twitter
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare('whatsapp', show)}>
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        WhatsApp
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardTitle>
               </CardHeader>
               <CardContent>
