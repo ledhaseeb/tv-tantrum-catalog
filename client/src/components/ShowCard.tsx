@@ -4,6 +4,7 @@ import { TvShow } from "@shared/schema";
 import { TvShowCardImage } from "@/components/ui/tv-show-image";
 import { Link } from "wouter";
 import { memo } from "react";
+import { scrollToTop } from "../lib/scroll-utils";
 
 interface ShowCardProps {
   show: TvShow;
@@ -18,6 +19,12 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
   if (!show || !show.id) {
     return null;
   }
+
+  // Handle click with scroll to top
+  const handleShowClick = () => {
+    scrollToTop('smooth');
+    if (onClick) onClick();
+  };
   
   // Normalize show data to handle API response field naming differences
   const normalizedShow = {
@@ -121,7 +128,7 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
   if (isMobile && viewMode === "grid") {
     
     return (
-      <Link href={`/show/${show.id}`}>
+      <Link href={`/show/${show.id}`} onClick={handleShowClick}>
         <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-72">
           {/* Image with reduced height to better fit poster aspect ratio */}
           <div className="relative h-40 overflow-hidden">
@@ -156,7 +163,7 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
   // List view card
   if (viewMode === "list") {
     return (
-      <Link href={`/show/${show.id}`}>
+      <Link href={`/show/${show.id}`} onClick={handleShowClick}>
         <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -222,7 +229,7 @@ function ShowCard({ show, viewMode, onClick, isMobile = false }: ShowCardProps) 
 
   // Default grid view card
   return (
-    <Link href={`/show/${show.id}`}>
+    <Link href={`/show/${show.id}`} onClick={handleShowClick}>
       <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-md transition-shadow">
         {/* Image */}
         <div className="relative">
