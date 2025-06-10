@@ -37,6 +37,7 @@ import {
 import SensoryBar from "@/components/SensoryBar";
 import ShowCard from "@/components/ShowCard";
 import AdContainer from "@/components/AdContainer";
+import ShareModal from "@/components/ShareModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +78,7 @@ export default function CatalogShowDetailPage() {
 
   // Mobile detection hook
   const [isMobile, setIsMobile] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
   useEffect(() => {
     const checkIsMobile = () => {
@@ -137,6 +139,11 @@ export default function CatalogShowDetailPage() {
         }
         break;
     }
+  };
+
+  // Open share modal
+  const handleShareModal = () => {
+    setIsShareModalOpen(true);
   };
 
   const {
@@ -426,6 +433,10 @@ export default function CatalogShowDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={handleShareModal}>
+                <Share2 className="w-4 h-4 mr-2" />
+                Create Share Image
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleShare('copy', show)}>
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Link
@@ -546,6 +557,10 @@ export default function CatalogShowDetailPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleShareModal}>
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Create Share Image
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleShare('copy', show)}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy Link
@@ -720,6 +735,15 @@ export default function CatalogShowDetailPage() {
           />
         </div>
       </div>
+
+      {/* Share Modal */}
+      {show && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          show={show}
+        />
+      )}
     </div>
   );
 }
