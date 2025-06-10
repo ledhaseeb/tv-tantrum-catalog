@@ -189,69 +189,141 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                 boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
               }}
             >
-              {/* Show Image */}
-              <div className={`relative ${aspectRatio === 'portrait' ? 'h-48' : 'h-40'} bg-gray-50`}>
-                {show.imageUrl ? (
-                  <img
-                    src={show.imageUrl}
-                    alt={show.name}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                    <span className="text-gray-500 text-lg font-medium">{show.name}</span>
+              {aspectRatio === 'portrait' ? (
+                // Portrait Layout - Vertical Stack with Better Space Usage
+                <>
+                  {/* Show Image - Larger */}
+                  <div className="relative h-64 bg-gray-50">
+                    {show.imageUrl ? (
+                      <img
+                        src={show.imageUrl}
+                        alt={show.name}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                        <span className="text-gray-500 text-lg font-medium">{show.name}</span>
+                      </div>
+                    )}
+                    
+                    {/* TV Tantrum Brand */}
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg">
+                      <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
+                    </div>
                   </div>
-                )}
-                
-                {/* TV Tantrum Brand */}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg">
-                  <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
-                </div>
-              </div>
 
-              {/* Content */}
-              <div className={`p-4 ${aspectRatio === 'portrait' ? 'space-y-3' : 'space-y-2'}`}>
-                {/* Show Title */}
-                <h3 className={`font-bold text-gray-900 leading-tight ${
-                  aspectRatio === 'portrait' ? 'text-lg' : 'text-base'
-                }`}>
-                  {show.name}
-                </h3>
+                  {/* Content - Compact */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    {/* Show Title */}
+                    <h3 className="font-bold text-gray-900 leading-tight text-lg mb-3">
+                      {show.name}
+                    </h3>
 
-                {/* Stimulation Score */}
-                {show.stimulationScore && (
-                  <Card className="bg-gray-50">
-                    <CardContent className="p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-4 h-4 text-yellow-600" />
-                        <span className="font-semibold text-sm">Stimulation Level</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="flex gap-1">
-                          {renderStimulationDots(show.stimulationScore)}
+                    {/* Stimulation Score - Condensed */}
+                    {show.stimulationScore && (
+                      <div className="bg-gray-50 rounded-lg p-3 mb-3 flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-yellow-600" />
+                            <span className="font-semibold text-sm">Stimulation Level</span>
+                          </div>
+                          <span className="font-bold text-lg text-gray-900">{show.stimulationScore}/5</span>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {getStimulationLabel(show.stimulationScore)}
-                        </Badge>
+                        
+                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                          <div 
+                            className="bg-gradient-to-r from-green-400 to-yellow-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${(show.stimulationScore / 5) * 100}%` }}
+                          ></div>
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          {getStimulationDescription(show.stimulationScore)}
+                        </p>
                       </div>
-                      
-                      <p className={`text-gray-600 leading-snug ${
-                        aspectRatio === 'portrait' ? 'text-xs' : 'text-xs'
-                      }`}>
-                        {getStimulationDescription(show.stimulationScore)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+                    )}
 
-                {/* Bottom Branding */}
-                <div className="text-center pt-2 border-t border-gray-100">
-                  <p className="text-xs text-gray-500 font-medium">
-                    Discover more shows at <span className="font-bold text-blue-600">tvtantrum.com</span>
-                  </p>
+                    {/* Age Range */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                      <Users className="w-4 h-4" />
+                      <span>Ages {show.ageRange}</span>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-center mt-auto">
+                      <p className="text-xs text-gray-500 font-medium">
+                        Discover more shows at <span className="font-bold text-blue-600">tvtantrum.com</span>
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // Square Layout - Side by Side
+                <div className="flex h-full">
+                  {/* Left Side - Image (60% width) */}
+                  <div className="relative w-3/5 bg-gray-50">
+                    {show.imageUrl ? (
+                      <img
+                        src={show.imageUrl}
+                        alt={show.name}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                        <span className="text-gray-500 text-sm font-medium text-center px-2">{show.name}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Side - Content (40% width) */}
+                  <div className="w-2/5 p-3 flex flex-col relative">
+                    {/* TV Tantrum Brand - Top Right */}
+                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
+                      <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
+                    </div>
+
+                    {/* Show Title */}
+                    <h3 className="font-bold text-gray-900 leading-tight text-sm mb-3 mt-6 pr-16">
+                      {show.name}
+                    </h3>
+
+                    {/* Stimulation Score - Very Compact */}
+                    {show.stimulationScore && (
+                      <div className="bg-gray-50 rounded-lg p-2 mb-3 flex-1">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Zap className="w-3 h-3 text-yellow-600" />
+                          <span className="font-semibold text-xs">Stimulation</span>
+                          <span className="font-bold text-sm text-gray-900 ml-auto">{show.stimulationScore}/5</span>
+                        </div>
+                        
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                          <div 
+                            className="bg-gradient-to-r from-green-400 to-yellow-500 h-1.5 rounded-full transition-all duration-300"
+                            style={{ width: `${(show.stimulationScore / 5) * 100}%` }}
+                          ></div>
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          {getStimulationDescription(show.stimulationScore)}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Age Range */}
+                    <div className="flex items-center gap-1 text-xs text-gray-600 mb-3">
+                      <Users className="w-3 h-3" />
+                      <span>Ages {show.ageRange}</span>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-center mt-auto">
+                      <p className="text-xs text-gray-500 font-medium">
+                        More at <span className="font-bold text-blue-600">tvtantrum.com</span>
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
