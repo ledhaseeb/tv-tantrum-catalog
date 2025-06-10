@@ -2042,10 +2042,10 @@ export default function AdminPage() {
                 Themes
               </Label>
               <div className="col-span-3">
-                <ThemeSelector
-                  selectedThemes={Array.isArray(formState.themes) ? formState.themes : []}
-                  onThemesChange={(themes) => setFormState({...formState, themes})}
-                  placeholder="Select or add themes..."
+                <Input
+                  placeholder="Enter themes separated by commas"
+                  value={Array.isArray(formState.themes) ? formState.themes.join(', ') : ''}
+                  onChange={(e) => setFormState({...formState, themes: e.target.value.split(',').map(t => t.trim()).filter(t => t)})}
                 />
               </div>
             </div>
@@ -2070,10 +2070,15 @@ export default function AdminPage() {
               
               <div className="flex flex-col gap-4">
                 {/* Image Upload Component */}
-                <ImageUpload 
-                  imageUrl={formState.imageUrl} 
-                  onImageChange={(imageUrl) => setFormState({...formState, imageUrl})}
-                />
+                <div>
+                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Input
+                    id="imageUrl"
+                    value={formState.imageUrl}
+                    onChange={(e) => setFormState({...formState, imageUrl: e.target.value})}
+                    placeholder="Enter image URL"
+                  />
+                </div>
                 
                 {/* OMDB Image Lookup Button */}
                 <div>
@@ -2607,10 +2612,10 @@ export default function AdminPage() {
                 Themes
               </Label>
               <div className="col-span-3">
-                <ThemeSelector
-                  selectedThemes={Array.isArray(newShowFormState.themes) ? newShowFormState.themes : []}
-                  onThemesChange={(themes) => setNewShowFormState({...newShowFormState, themes})}
-                  placeholder="Select or add themes..."
+                <Input
+                  placeholder="Enter themes separated by commas"
+                  value={Array.isArray(newShowFormState.themes) ? newShowFormState.themes.join(', ') : ''}
+                  onChange={(e) => setNewShowFormState({...newShowFormState, themes: e.target.value.split(',').map(t => t.trim()).filter(t => t)})}
                 />
               </div>
             </div>
@@ -2717,9 +2722,10 @@ export default function AdminPage() {
                 <Label>Show Image</Label>
               </div>
               <div className="col-span-3">
-                <ImageUpload 
-                  imageUrl={newShowFormState.imageUrl} 
-                  onImageChange={(imageUrl) => setNewShowFormState({...newShowFormState, imageUrl})}
+                <Input
+                  value={newShowFormState.imageUrl}
+                  onChange={(e) => setNewShowFormState({...newShowFormState, imageUrl: e.target.value})}
+                  placeholder="Enter image URL"
                 />
               </div>
             </div>

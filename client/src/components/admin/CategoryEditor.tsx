@@ -311,6 +311,8 @@ export default function CategoryEditor({ category, onSubmit, onCancel, isLoading
                   <ShowCard
                     key={show.id}
                     show={show}
+                    viewMode="grid"
+                    onClick={() => {}}
                   />
                 ))}
                 {previewShows.length > 12 && (
