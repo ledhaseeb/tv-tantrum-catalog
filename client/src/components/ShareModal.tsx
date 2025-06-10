@@ -49,12 +49,24 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
   };
 
   const renderStimulationDots = (score: number) => {
+    const getColorForIndex = (index: number, score: number) => {
+      if (index >= score) return 'bg-gray-300';
+      
+      // Color progression based on your grading system
+      switch (index) {
+        case 0: return 'bg-green-500'; // First dot always green
+        case 1: return 'bg-green-500'; // Second dot green for scores 2+
+        case 2: return score >= 3 ? 'bg-yellow-500' : 'bg-gray-300'; // Third dot yellow for scores 3+
+        case 3: return score >= 4 ? 'bg-orange-500' : 'bg-gray-300'; // Fourth dot orange for scores 4+
+        case 4: return score >= 5 ? 'bg-red-500' : 'bg-gray-300'; // Fifth dot red for score 5
+        default: return 'bg-gray-300';
+      }
+    };
+
     return Array.from({ length: 5 }, (_, i) => (
       <div
         key={i}
-        className={`w-3 h-3 rounded-full ${
-          i < score ? 'bg-yellow-500' : 'bg-gray-300'
-        }`}
+        className={`w-3 h-3 rounded-full ${getColorForIndex(i, score)}`}
       />
     ));
   };
@@ -187,8 +199,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
               {aspectRatio === 'portrait' ? (
                 // Portrait Layout - Vertical Stack with Better Space Usage
                 <>
-                  {/* Show Image - Larger */}
-                  <div className="relative h-64 bg-gray-50">
+                  {/* Show Image - Reduced for more text space */}
+                  <div className="relative h-48 bg-gray-50">
                     {show.imageUrl ? (
                       <img
                         src={show.imageUrl}
@@ -252,8 +264,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
               ) : (
                 // Square Layout - Side by Side
                 <div className="flex h-full">
-                  {/* Left Side - Image (60% width) */}
-                  <div className="relative w-3/5 bg-gray-50">
+                  {/* Left Side - Image (50% width) */}
+                  <div className="relative w-1/2 bg-gray-50">
                     {show.imageUrl ? (
                       <img
                         src={show.imageUrl}
@@ -267,8 +279,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                     )}
                   </div>
 
-                  {/* Right Side - Content (40% width) */}
-                  <div className="w-2/5 p-3 flex flex-col relative">
+                  {/* Right Side - Content (50% width) */}
+                  <div className="w-1/2 p-3 flex flex-col relative">
                     {/* TV Tantrum Brand - Top Right */}
                     <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
                       <span className="text-xs font-bold text-gray-800">tvtantrum.com</span>
