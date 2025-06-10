@@ -31,10 +31,14 @@ const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label =
 
   useEffect(() => {
     if (adsenseId && adRef.current) {
-      try {
-        pushAd();
-      } catch (error) {
-        console.error('AdSense error:', error);
+      // Check if container has width before pushing ad
+      const containerWidth = adRef.current.offsetWidth;
+      if (containerWidth > 0) {
+        try {
+          pushAd();
+        } catch (error) {
+          console.error('AdSense error:', error);
+        }
       }
     }
   }, [adsenseId]);
