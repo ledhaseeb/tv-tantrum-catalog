@@ -19,11 +19,11 @@ const AdContainer: React.FC<AdContainerProps> = ({ size, className = '', label =
   };
 
   return (
-    <div className={`${sizeClasses[size]} ${className} bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center shadow-sm`}>
+    <div className={`${sizeClasses[size]} ${className} bg-gray-50 border-2 border-gray-200 rounded-lg flex items-center justify-center shadow-sm`}>
       <div className="text-center p-4">
-        <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide">{label}</div>
-        <div className="text-sm text-blue-500 mt-1 font-medium">Ad Space Ready</div>
-        <div className="text-xs text-blue-400 mt-1">Size: {size}</div>
+        <div className="text-sm text-gray-500 font-semibold uppercase tracking-wide">{label}</div>
+        <div className="text-sm text-gray-400 mt-1 font-medium">Ad Space Ready</div>
+        <div className="text-xs text-gray-400 mt-1">Size: {size}</div>
       </div>
     </div>
   );
