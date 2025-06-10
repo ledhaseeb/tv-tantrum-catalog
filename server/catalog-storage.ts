@@ -205,13 +205,27 @@ export class CatalogStorage {
    * Get a single TV show by ID
    */
   async getTvShowById(id: number): Promise<TvShow | null> {
+    // Check cache first
+    const cacheKey = getCacheKey(CACHE_KEYS.TV_SHOW_BY_ID, id);
+    const cached = cache.get<TvShow>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const client = await pool.connect();
     try {
       const result = await client.query(
         'SELECT * FROM catalog_tv_shows WHERE id = $1',
         [id]
       );
-      return result.rows[0] || null;
+      const show = result.rows[0] || null;
+      
+      // Cache for 10 minutes - individual shows change less frequently
+      if (show) {
+        cache.set(cacheKey, show, CACHE_TTL.MEDIUM);
+      }
+      
+      return show;
     } finally {
       client.release();
     }
@@ -221,12 +235,25 @@ export class CatalogStorage {
    * Get featured show
    */
   async getFeaturedShow(): Promise<TvShow | null> {
+    // Check cache first
+    const cached = cache.get<TvShow>(CACHE_KEYS.FEATURED_SHOW);
+    if (cached) {
+      return cached;
+    }
+
     const client = await pool.connect();
     try {
       const result = await client.query(
         'SELECT * FROM catalog_tv_shows WHERE is_featured = true LIMIT 1'
       );
-      return result.rows[0] || null;
+      const show = result.rows[0] || null;
+      
+      // Cache for 30 minutes - featured show doesn't change often
+      if (show) {
+        cache.set(CACHE_KEYS.FEATURED_SHOW, show, CACHE_TTL.LONG);
+      }
+      
+      return show;
     } finally {
       client.release();
     }

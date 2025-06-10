@@ -3,11 +3,13 @@ import { createServer } from 'http';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import session from 'express-session';
+import compression from 'compression';
 import { setupVite, serveStatic } from './vite';
 import { catalogStorage } from './catalog-storage';
 import { Pool } from 'pg';
 import { setupSimpleAdminAuth } from './simple-admin';
 import adminRoutes from './admin-routes';
+import { cache, getCacheStats } from './cache';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,6 +22,20 @@ const originalDb = new Pool({
 
 const app = express();
 const server = createServer(app);
+
+// Performance optimization middleware
+app.use(compression({
+  level: 6, // Balanced compression level
+  threshold: 1024, // Only compress responses larger than 1KB
+  filter: (req, res) => {
+    // Don't compress if the request includes a Cache-Control: no-transform directive
+    if (req.headers['cache-control'] && req.headers['cache-control'].includes('no-transform')) {
+      return false;
+    }
+    // Use default compression filter for everything else
+    return compression.filter(req, res);
+  }
+}));
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -144,6 +160,13 @@ router.get('/tv-shows/:id', async (req, res) => {
       return res.status(404).json({ message: "Show not found" });
     }
     
+    // Cache individual show data for 10 minutes
+    res.set({
+      'Cache-Control': 'public, max-age=600, s-maxage=600',
+      'ETag': `"show-${id}-${Date.now()}"`,
+      'Vary': 'Accept-Encoding'
+    });
+    
     res.json(show);
   } catch (error) {
     console.error("Error fetching TV show:", error);
@@ -155,6 +178,13 @@ router.get('/tv-shows/:id', async (req, res) => {
 router.get('/themes', async (req, res) => {
   try {
     const themes = await catalogStorage.getThemes();
+    
+    // Cache themes for 30 minutes (they rarely change)
+    res.set({
+      'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+      'Vary': 'Accept-Encoding'
+    });
+    
     res.json(themes);
   } catch (error) {
     console.error("Error fetching themes:", error);
@@ -278,6 +308,47 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
 // setupSimpleAdminAuth(app);
 
 // Mount API routes BEFORE Vite middleware to prevent conflicts
+// Performance monitoring endpoint for high-traffic scaling
+app.get('/api/performance-stats', (req, res) => {
+  const stats = getCacheStats();
+  const uptime = process.uptime();
+  const memoryUsage = process.memoryUsage();
+  
+  res.json({
+    uptime: uptime,
+    memory: {
+      rss: Math.round(memoryUsage.rss / 1024 / 1024) + ' MB',
+      heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + ' MB',
+      heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + ' MB',
+      external: Math.round(memoryUsage.external / 1024 / 1024) + ' MB',
+    },
+    cache: {
+      keysCount: stats.keys,
+      hits: stats.stats.hits,
+      misses: stats.stats.misses,
+      hitRate: stats.stats.hits > 0 ? ((stats.stats.hits / (stats.stats.hits + stats.stats.misses)) * 100).toFixed(2) + '%' : '0%',
+      ksize: stats.stats.ksize,
+      vsize: stats.stats.vsize
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Cache management endpoint for scaling operations
+app.post('/api/cache/clear', (req, res) => {
+  const pattern = req.body.pattern;
+  if (pattern) {
+    // Clear specific cache patterns
+    const keys = cache.keys().filter(key => key.includes(pattern));
+    cache.del(keys);
+    res.json({ message: `Cleared ${keys.length} cache entries matching pattern: ${pattern}` });
+  } else {
+    // Clear all cache
+    cache.flushAll();
+    res.json({ message: 'All cache cleared' });
+  }
+});
+
 app.use('/api/admin', adminRoutes);
 app.use('/api', router);
 
