@@ -9,12 +9,18 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
 
-// Configure the pool with optimized settings to prevent timeouts
+// Configure the pool with optimized settings for high-traffic production
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
-  max: 5, // Reduce connection pool size to prevent overwhelming the DB
-  idleTimeoutMillis: 60000, // Increased to 60 seconds to allow for longer idle times
-  connectionTimeoutMillis: 10000, // Increased to 10 seconds to allow more time to establish connections
+  max: 20, // Increased pool size for high concurrent traffic
+  min: 5, // Maintain minimum connections for quick response
+  idleTimeoutMillis: 300000, // 5 minutes - longer idle time for connection reuse
+  connectionTimeoutMillis: 15000, // 15 seconds - increased timeout for reliability
+  acquireTimeoutMillis: 30000, // 30 seconds to acquire connection from pool
+  createTimeoutMillis: 30000, // 30 seconds to create new connection
+  destroyTimeoutMillis: 5000, // 5 seconds to destroy connection
+  reapIntervalMillis: 1000, // Check for idle connections every second
+  createRetryIntervalMillis: 200, // Retry connection creation every 200ms
   ssl: { rejectUnauthorized: false },
   application_name: 'tv-tantrum'
 };

@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { TvShow, Theme, Platform, ResearchSummary, User, HomepageCategory, InsertHomepageCategory } from '@shared/catalog-schema';
+import { cache, CACHE_KEYS, CACHE_TTL, getCacheKey, invalidatePattern } from "./cache";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -24,6 +25,15 @@ export class CatalogStorage {
     limit?: number;
     offset?: number;
   } = {}): Promise<TvShow[]> {
+    // Create cache key based on filters
+    const cacheKey = getCacheKey(CACHE_KEYS.TV_SHOWS_ALL, JSON.stringify(filters));
+    
+    // Check cache first
+    const cached = cache.get<TvShow[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const client = await pool.connect();
     try {
       let query = `
@@ -178,7 +188,12 @@ export class CatalogStorage {
       }
       
       const result = await client.query(query, queryParams);
-      return result.rows;
+      const shows = result.rows;
+      
+      // Cache the results for 5 minutes
+      cache.set(cacheKey, shows, CACHE_TTL.SHORT);
+      
+      return shows;
     } finally {
       client.release();
     }
