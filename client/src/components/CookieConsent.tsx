@@ -34,18 +34,17 @@ export default function CookieConsent() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Cookie Preferences</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Help us improve your experience</h3>
             <p className="text-gray-600 text-sm">
-              We use cookies to enhance your experience, analyze site usage, and provide personalized content. 
-              You can manage your preferences or accept all cookies.
-            </p>
-            <div className="mt-2">
-              <button
-                className="text-primary hover:text-primary/80 text-sm font-medium"
+              We use cookies to show you more relevant content and keep our free service running. Accepting helps us understand what parents find most useful so we can improve our recommendations. <button
+                className="text-primary hover:text-primary/80 font-medium underline"
                 onClick={() => window.open('/privacy-policy', '_blank')}
               >
-                Learn more in our Privacy Policy
+                Privacy details
               </button>
+            </p>
+            <div className="mt-2 text-xs text-gray-500">
+              ✓ Better show recommendations • ✓ Free service stays free • ✓ Data stays anonymous
             </div>
           </div>
           
@@ -56,7 +55,7 @@ export default function CookieConsent() {
               onClick={acceptNecessary}
               className="w-full sm:w-auto"
             >
-              Necessary Only
+              Decline
             </Button>
             <Button
               onClick={acceptAll}
