@@ -425,42 +425,10 @@ export default function CatalogShowDetailPage() {
           </Link>
           
           {/* Share Button */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={handleShareModal}>
-                <Share2 className="w-4 h-4 mr-2" />
-                Create Share Image
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('copy', show)}>
-                <Copy className="w-4 h-4 mr-2" />
-                Copy Link
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { handleShareModal(); handleShare('facebook', show); }}>
-                <Facebook className="w-4 h-4 mr-2" />
-                Share on Facebook
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { handleShareModal(); handleShare('twitter', show); }}>
-                <Twitter className="w-4 h-4 mr-2" />
-                Share on Twitter
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { handleShareModal(); handleShare('whatsapp', show); }}>
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Share on WhatsApp
-              </DropdownMenuItem>
-              {navigator.share && (
-                <DropdownMenuItem onClick={() => handleShare('native', show)}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  More Options
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button variant="outline" size="sm" onClick={handleShareModal}>
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
         </div>
 
         {/* Top Ad Container - Leaderboard */}
@@ -549,36 +517,15 @@ export default function CatalogShowDetailPage() {
                     Stimulation Level
                   </div>
                   {/* Share Button */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="default" size="default" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2">
-                        <Share2 className="h-5 w-5 mr-2" />
-                        Share
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleShareModal}>
-                        <Share2 className="w-4 h-4 mr-2" />
-                        Create Share Image
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare('copy', show)}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy Link
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare('facebook', show)}>
-                        <Facebook className="w-4 h-4 mr-2" />
-                        Facebook
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare('twitter', show)}>
-                        <Twitter className="w-4 h-4 mr-2" />
-                        Twitter
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleShare('whatsapp', show)}>
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        WhatsApp
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button 
+                    variant="default" 
+                    size="default" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
+                    onClick={handleShareModal}
+                  >
+                    <Share2 className="h-5 w-5 mr-2" />
+                    Share
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
