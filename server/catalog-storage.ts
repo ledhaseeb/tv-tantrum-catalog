@@ -36,8 +36,9 @@ export class CatalogStorage {
 
     const client = await pool.connect();
     try {
+      // Optimized query without DISTINCT for better performance
       let query = `
-        SELECT DISTINCT ts.* 
+        SELECT ts.* 
         FROM catalog_tv_shows ts
       `;
       
@@ -71,21 +72,21 @@ export class CatalogStorage {
         paramIndex++;
       }
       
-      // Age range filtering - more flexible age matching
+      // Age range filtering - optimized for performance
       if (filters.ageRange) {
-        // Extract numeric ages from age_range field (e.g., "2-5" -> min:2, max:5)
-        whereConditions.push(`
-          (
-            CASE 
-              WHEN ts.age_range ~ '^[0-9]+-[0-9]+$' THEN
-                CAST(split_part(ts.age_range, '-', 1) AS INTEGER) <= $${paramIndex + 1} AND
-                CAST(split_part(ts.age_range, '-', 2) AS INTEGER) >= $${paramIndex}
-              ELSE false
-            END
-          )
-        `);
-        queryParams.push(filters.ageRange.min, filters.ageRange.max);
-        paramIndex += 2;
+        // Simple string pattern matching for better performance
+        const agePatterns = [];
+        for (let min = filters.ageRange.min; min <= filters.ageRange.max; min++) {
+          for (let max = min; max <= Math.min(filters.ageRange.max + 5, 12); max++) {
+            agePatterns.push(`${min}-${max}`);
+          }
+        }
+        
+        if (agePatterns.length > 0) {
+          whereConditions.push(`ts.age_range = ANY($${paramIndex})`);
+          queryParams.push(agePatterns);
+          paramIndex++;
+        }
       }
       
       // Stimulation score range filtering
