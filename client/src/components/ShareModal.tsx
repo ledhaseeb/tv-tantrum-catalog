@@ -28,22 +28,22 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
 
   const getStimulationLabel = (score: number) => {
     switch (score) {
-      case 1: return 'Very Calm';
-      case 2: return 'Calm';
-      case 3: return 'Moderate';
-      case 4: return 'Active';
-      case 5: return 'Very Active';
+      case 1: return 'Low';
+      case 2: return 'Low-Medium';
+      case 3: return 'Medium';
+      case 4: return 'Medium-High';
+      case 5: return 'High';
       default: return 'Unknown';
     }
   };
 
   const getStimulationDescription = (score: number) => {
     switch (score) {
-      case 1: return 'Perfect for quiet time, bedtime routines, or when you need very gentle content';
-      case 2: return 'Great for relaxed viewing, suitable for wind-down time and calm activities';
-      case 3: return 'Balanced content that works well for regular viewing throughout the day';
-      case 4: return 'Engaging and energetic content, perfect for active play and learning time';
-      case 5: return 'High-energy content that will keep kids engaged and excited during active periods';
+      case 1: return 'Gentle pacing with minimal scene changes. Typically contains softer sounds and music. Calm dialogue and predictable content. Ideal for very young children, bedtime viewing, or children sensitive to stimulation.';
+      case 2: return 'Balanced pacing with occasional transitions. Typically contains mild sound effects and harmonious music. Engaging but not overwhelming content. Recommended for those longer viewing sessions and younger children.';
+      case 3: return 'Moderate pacing with regular scene changes. Typically contains moderate sound effects and varied music. Mix of calm and exciting moments. Suitable for most but monitor younger viewers for signs of overstimulation.';
+      case 4: return 'Fast-paced with frequent scene changes. Prominent sound effects and dynamic music. Energetic dialogue and action. Better shorter viewing sessions. May feel intense to sensitive or younger viewers.';
+      case 5: return 'Rapid pacing with very quick scene changes. Typically contains intense sound effect usage and fast music. Highly energetic content with many elements competing for attention. Use with caution.';
       default: return 'Stimulation level not available';
     }
   };
@@ -53,13 +53,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
       <div
         key={i}
         className={`w-3 h-3 rounded-full ${
-          i < score 
-            ? score <= 2 
-              ? 'bg-green-500' 
-              : score <= 3 
-                ? 'bg-yellow-500' 
-                : 'bg-red-500'
-            : 'bg-gray-200'
+          i < score ? 'bg-yellow-500' : 'bg-gray-300'
         }`}
       />
     ));
@@ -223,19 +217,16 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                     {/* Stimulation Score - Condensed */}
                     {show.stimulationScore && (
                       <div className="bg-gray-50 rounded-lg p-3 mb-3 flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-yellow-600" />
-                            <span className="font-semibold text-sm">Stimulation Level</span>
-                          </div>
-                          <span className="font-bold text-lg text-gray-900">{show.stimulationScore}/5</span>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Zap className="w-4 h-4 text-yellow-600" />
+                          <span className="font-semibold text-sm">Stimulation Level</span>
+                          <Badge variant="secondary" className="text-xs ml-auto">
+                            {getStimulationLabel(show.stimulationScore)}
+                          </Badge>
                         </div>
                         
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                          <div 
-                            className="bg-gradient-to-r from-green-400 to-yellow-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(show.stimulationScore / 5) * 100}%` }}
-                          ></div>
+                        <div className="flex gap-1 mb-2">
+                          {renderStimulationDots(show.stimulationScore)}
                         </div>
                         
                         <p className="text-xs text-gray-600 leading-relaxed">
@@ -294,14 +285,13 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                         <div className="flex items-center gap-1 mb-1">
                           <Zap className="w-3 h-3 text-yellow-600" />
                           <span className="font-semibold text-xs">Stimulation</span>
-                          <span className="font-bold text-sm text-gray-900 ml-auto">{show.stimulationScore}/5</span>
+                          <Badge variant="secondary" className="text-xs ml-auto">
+                            {getStimulationLabel(show.stimulationScore)}
+                          </Badge>
                         </div>
                         
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                          <div 
-                            className="bg-gradient-to-r from-green-400 to-yellow-500 h-1.5 rounded-full transition-all duration-300"
-                            style={{ width: `${(show.stimulationScore / 5) * 100}%` }}
-                          ></div>
+                        <div className="flex gap-0.5 mb-2">
+                          {renderStimulationDots(show.stimulationScore)}
                         </div>
                         
                         <p className="text-xs text-gray-600 leading-relaxed">
