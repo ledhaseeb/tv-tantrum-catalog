@@ -115,14 +115,14 @@ export default function ShowCard({ show, viewMode, onClick, isMobile = false }: 
     );
   };
 
-  // Mobile portrait style card - consistent sizing
+  // Mobile portrait style card - optimized sizing to prevent image cropping
   if (isMobile && viewMode === "grid") {
     
     return (
       <Link href={`/show/${show.id}`}>
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-96">
-          {/* Image with fixed height */}
-          <div className="relative h-64 overflow-hidden">
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer flex flex-col hover:shadow-md transition-shadow h-80">
+          {/* Image with reduced height to better fit poster aspect ratio */}
+          <div className="relative h-48 overflow-hidden">
             <TvShowCardImage
               showId={show.id}
               showName={show.name}
