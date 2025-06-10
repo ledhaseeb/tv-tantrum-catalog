@@ -14,9 +14,9 @@ import ResearchDetail from "@/pages/research-detail";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 
-import CatalogHome from "@/pages/catalog-home";
+import CatalogHomeResponsive from "@/pages/catalog-home-responsive";
 import CatalogNavbar from "@/components/CatalogNavbar";
-import CatalogShowDetailPage from "@/pages/catalog-show-detail-page";
+import CatalogShowDetailPage from "@/pages/catalog-show-detail-page-fixed";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
@@ -70,7 +70,7 @@ function Router() {
           <div className="flex-grow flex flex-col">
             <CatalogNavbar />
             <div className="flex-grow">
-              <CatalogHome />
+              <CatalogHomeResponsive />
             </div>
             <Footer />
           </div>
