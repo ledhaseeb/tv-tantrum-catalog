@@ -1,4 +1,4 @@
-import { Router, Route, Switch } from "wouter";
+import { Router as WouterRouter, Route, Switch } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/hooks/use-auth";
 import CatalogNavbar from "@/components/CatalogNavbar";
@@ -14,6 +14,12 @@ import AdminPage from "@/pages/admin-page";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
+import { useEffect } from "react";
+import { initGA } from "./lib/analytics";
+import { useAnalytics } from "./hooks/use-analytics";
+import { initAdSense } from "./lib/adsense";
 
 // Create query client with sensible defaults
 const queryClient = new QueryClient({
@@ -26,10 +32,18 @@ const queryClient = new QueryClient({
 });
 
 export default function CatalogApp() {
+  useEffect(() => {
+    // Initialize Google Analytics
+    initGA();
+    
+    // Initialize Google AdSense
+    initAdSense();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
+        <WouterRouter>
           <div className="min-h-screen flex flex-col">
             <CatalogNavbar />
             <main className="flex-1">
@@ -40,6 +54,8 @@ export default function CatalogApp() {
                 <Route path="/about" component={About} />
                 <Route path="/research" component={Research} />
                 <Route path="/research/:id" component={ResearchDetail} />
+                <Route path="/privacy-policy" component={PrivacyPolicy} />
+                <Route path="/terms-of-service" component={TermsOfService} />
                 <Route path="/show/:id" component={CatalogShowDetailPage} />
                 {/* Secure admin access with unique URL */}
                 <Route path="/tvtantrum-admin-secure-access-2024" component={AdminLogin} />
@@ -51,7 +67,7 @@ export default function CatalogApp() {
             </main>
             <Footer />
           </div>
-        </Router>
+        </WouterRouter>
       </AuthProvider>
     </QueryClientProvider>
   );
