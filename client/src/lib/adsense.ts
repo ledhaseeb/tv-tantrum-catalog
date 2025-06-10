@@ -7,6 +7,13 @@ export const initAdSense = () => {
     return;
   }
 
+  // Check if AdSense script is already loaded to prevent duplicates
+  const existingScript = document.querySelector(`script[src*="pagead2.googlesyndication.com"]`);
+  if (existingScript) {
+    console.log('AdSense script already loaded, skipping duplicate initialization');
+    return;
+  }
+
   // Add Google AdSense script to the head
   const script = document.createElement('script');
   script.async = true;
