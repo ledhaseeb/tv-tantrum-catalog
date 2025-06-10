@@ -270,7 +270,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                     {/* Footer */}
                     <div className="text-center mt-auto">
                       <p className="text-xs text-gray-500 font-medium">
-                        Discover more shows at <span className="font-bold text-blue-600">tvtantrum.com</span>
+                        More at <span className="font-bold text-blue-600">tvtantrum.com</span>
                       </p>
                     </div>
                   </div>
@@ -335,10 +335,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, show }) => {
                       </div>
                     )}
 
-                    {/* Description */}
-                    <p className="text-xs text-gray-700 leading-relaxed">
-                      {show.description?.substring(0, 120)}...
-                    </p>
+                    {/* Footer */}
+                    <div className="text-center mt-auto">
+                      <p className="text-xs text-gray-500 font-medium">
+                        More at <span className="font-bold text-blue-600">tvtantrum.com</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
