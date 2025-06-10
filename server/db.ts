@@ -9,20 +9,25 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
 
-// Configure the pool with optimized settings for high-traffic production
+// Configure the pool with optimized settings for viral traffic loads
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
-  max: 20, // Increased pool size for high concurrent traffic
-  min: 5, // Maintain minimum connections for quick response
-  idleTimeoutMillis: 300000, // 5 minutes - longer idle time for connection reuse
-  connectionTimeoutMillis: 15000, // 15 seconds - increased timeout for reliability
-  acquireTimeoutMillis: 30000, // 30 seconds to acquire connection from pool
-  createTimeoutMillis: 30000, // 30 seconds to create new connection
+  max: 50, // Dramatically increased for viral traffic (from 20)
+  min: 10, // Higher minimum connections for instant response
+  idleTimeoutMillis: 600000, // 10 minutes - keep connections alive longer
+  connectionTimeoutMillis: 20000, // 20 seconds - increased for viral load
+  acquireTimeoutMillis: 60000, // 60 seconds - longer wait for viral spikes
+  createTimeoutMillis: 40000, // 40 seconds to create new connection
   destroyTimeoutMillis: 5000, // 5 seconds to destroy connection
-  reapIntervalMillis: 1000, // Check for idle connections every second
-  createRetryIntervalMillis: 200, // Retry connection creation every 200ms
+  reapIntervalMillis: 2000, // Check for idle connections every 2 seconds
+  createRetryIntervalMillis: 100, // Faster retry for viral traffic (200ms -> 100ms)
   ssl: { rejectUnauthorized: false },
-  application_name: 'tv-tantrum'
+  application_name: 'tv-tantrum-viral',
+  // Additional optimizations for viral traffic
+  statement_timeout: 30000, // 30 second query timeout
+  query_timeout: 25000, // 25 second individual query timeout
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 0
 };
 
 export const pool = new Pool(poolConfig);

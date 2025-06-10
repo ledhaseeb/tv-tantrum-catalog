@@ -25,8 +25,8 @@ const server = createServer(app);
 
 // Performance optimization middleware
 app.use(compression({
-  level: 6, // Balanced compression level
-  threshold: 1024, // Only compress responses larger than 1KB
+  level: 9, // Maximum compression for viral traffic bandwidth savings
+  threshold: 512, // Compress smaller responses for mobile users
   filter: (req, res) => {
     // Don't compress if the request includes a Cache-Control: no-transform directive
     if (req.headers['cache-control'] && req.headers['cache-control'].includes('no-transform')) {
@@ -36,6 +36,40 @@ app.use(compression({
     return compression.filter(req, res);
   }
 }));
+
+// Request queuing middleware for viral traffic management
+let activeRequests = 0;
+const MAX_CONCURRENT_REQUESTS = 1000; // Increased for viral capacity
+
+app.use((req, res, next) => {
+  if (activeRequests >= MAX_CONCURRENT_REQUESTS) {
+    return res.status(503).json({ 
+      message: "Server at capacity, please try again shortly",
+      retryAfter: 5
+    });
+  }
+  
+  activeRequests++;
+  res.on('finish', () => {
+    activeRequests--;
+  });
+  
+  next();
+});
+
+// Performance monitoring middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (duration > 1000) { // Log slow requests
+      console.warn(`Slow request: ${req.method} ${req.path} - ${duration}ms`);
+    }
+  });
+  
+  next();
+});
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -70,6 +104,39 @@ const router = express.Router();
 // Health check
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Performance monitoring endpoint for viral traffic tracking
+router.get('/performance-stats', (req, res) => {
+  const memUsage = process.memoryUsage();
+  const cacheStats = cache.getStats();
+  
+  res.json({
+    timestamp: new Date().toISOString(),
+    server: {
+      activeRequests,
+      maxConcurrentRequests: MAX_CONCURRENT_REQUESTS,
+      uptime: process.uptime(),
+      memory: {
+        rss: Math.round(memUsage.rss / 1024 / 1024), // MB
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
+        external: Math.round(memUsage.external / 1024 / 1024) // MB
+      }
+    },
+    cache: {
+      keys: cache.keys().length,
+      hits: cacheStats.hits,
+      misses: cacheStats.misses,
+      hitRate: cacheStats.hits / (cacheStats.hits + cacheStats.misses) * 100,
+      vsize: cacheStats.vsize,
+      ksize: cacheStats.ksize
+    },
+    database: {
+      maxConnections: 50,
+      // Pool stats would require additional monitoring setup
+    }
+  });
 });
 
 // Get all TV shows with filtering
@@ -129,9 +196,34 @@ router.get('/tv-shows', async (req, res) => {
     if (req.query.limit) filters.limit = parseInt(req.query.limit as string);
     if (req.query.offset) filters.offset = parseInt(req.query.offset as string);
 
+    // Generate cache key from filters for viral traffic optimization
+    const cacheKey = `tv_shows:${JSON.stringify(filters)}`;
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      // Set aggressive cache headers for viral traffic
+      res.set({
+        'Cache-Control': 'public, max-age=1800, s-maxage=3600', // 30min client, 1hr CDN
+        'ETag': `"shows-${Date.now()}"`,
+        'Vary': 'Accept-Encoding'
+      });
+      return res.json(cached);
+    }
+
     console.log('API received filters:', filters);
     const shows = await catalogStorage.getTvShows(filters);
     console.log(`API returning ${shows.length} shows`);
+    
+    // Cache for 30 minutes to handle viral traffic
+    cache.set(cacheKey, shows, 1800);
+    
+    // Set aggressive cache headers
+    res.set({
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+      'ETag': `"shows-${Date.now()}"`,
+      'Vary': 'Accept-Encoding'
+    });
+    
     res.json(shows);
   } catch (error) {
     console.error("Error fetching TV shows:", error);
@@ -236,7 +328,29 @@ router.get('/research/:id', async (req, res) => {
 // Get active homepage categories (public endpoint)
 router.get('/homepage-categories', async (req, res) => {
   try {
+    const cacheKey = 'homepage_categories:active';
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      res.set({
+        'Cache-Control': 'public, max-age=3600, s-maxage=7200', // 1hr client, 2hr CDN
+        'ETag': `"categories-${Date.now()}"`,
+        'Vary': 'Accept-Encoding'
+      });
+      return res.json(cached);
+    }
+    
     const categories = await catalogStorage.getActiveHomepageCategories();
+    
+    // Cache for 1 hour - categories change infrequently
+    cache.set(cacheKey, categories, 3600);
+    
+    res.set({
+      'Cache-Control': 'public, max-age=3600, s-maxage=7200',
+      'ETag': `"categories-${Date.now()}"`,
+      'Vary': 'Accept-Encoding'
+    });
+    
     res.json(categories);
   } catch (error) {
     console.error("Error fetching homepage categories:", error);
@@ -248,7 +362,29 @@ router.get('/homepage-categories', async (req, res) => {
 router.get('/homepage-categories/:id/shows', async (req, res) => {
   try {
     const categoryId = parseInt(req.params.id);
+    const cacheKey = `category_shows:${categoryId}`;
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+      res.set({
+        'Cache-Control': 'public, max-age=1800, s-maxage=3600', // 30min client, 1hr CDN
+        'ETag': `"cat-shows-${categoryId}-${Date.now()}"`,
+        'Vary': 'Accept-Encoding'
+      });
+      return res.json(cached);
+    }
+    
     const shows = await catalogStorage.getHomepageCategoryShows(categoryId);
+    
+    // Cache for 30 minutes
+    cache.set(cacheKey, shows, 1800);
+    
+    res.set({
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+      'ETag': `"cat-shows-${categoryId}-${Date.now()}"`,
+      'Vary': 'Accept-Encoding'
+    });
+    
     res.json(shows);
   } catch (error) {
     console.error("Error fetching category shows:", error);

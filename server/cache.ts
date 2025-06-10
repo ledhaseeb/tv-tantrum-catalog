@@ -1,12 +1,13 @@
 import NodeCache from "node-cache";
 
-// Initialize cache with optimized settings for high-traffic
+// Initialize cache with optimized settings for viral traffic
 export const cache = new NodeCache({
-  stdTTL: 300, // 5 minutes default TTL
-  checkperiod: 60, // Check for expired keys every 60 seconds
+  stdTTL: 1800, // 30 minutes default TTL - longer for viral traffic
+  checkperiod: 300, // Check for expired keys every 5 minutes
   useClones: false, // Don't clone objects for better performance
   deleteOnExpire: true,
-  maxKeys: 10000, // Limit memory usage
+  maxKeys: 50000, // Much higher cache capacity for viral load
+  forceString: false, // Allow object storage for efficiency
 });
 
 // Cache keys and TTL configurations
