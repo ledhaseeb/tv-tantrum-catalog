@@ -10,5 +10,6 @@ coverage
 .replit
 replit.nix
 dist
-attached_assets
-migrations/run-migrations.js
+export-data.sql
+generate-hash.ts
+optimize-all-images.ts
