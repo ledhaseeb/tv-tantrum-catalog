@@ -454,7 +454,15 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
 
 // Setup admin authentication routes (temporarily disabled for development)
 // setupSimpleAdminAuth(app);
-
+// Add health check endpoint at root level for Railway
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    server: 'tv-tantrum',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 // Mount API routes BEFORE Vite middleware to prevent conflicts
 // Performance monitoring endpoint for high-traffic scaling
 app.get('/api/performance-stats', (req, res) => {
