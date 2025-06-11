@@ -1,0 +1,1814 @@
+[
+  {
+    "id": 328,
+    "name": "Creature Cases",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BY2Y5ZmI2ZDMtN2QxYi00ZjUwLWJiNGUtMzk4ZWZkOTEzMWNiXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-328-Creature_Cases.jpg"
+  },
+  {
+    "id": 322,
+    "name": "Blaze and the Monster Machines",
+    "imageUrl": "/media/tv-shows/show-322.jpg",
+    "filename": "show-322-Blaze_and_the_Monster_Machines.jpg"
+  },
+  {
+    "id": 145,
+    "name": "Minuscule",
+    "imageUrl": "/media/tv-shows/show-145.png",
+    "filename": "show-145-Minuscule.png"
+  },
+  {
+    "id": 10,
+    "name": "Angelina Ballerina",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNTZkMmQ1ODctZDJmNS00MGE2LTkwMTAtN2RkZjMxNzBiM2Y5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-10-Angelina_Ballerina.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Babar",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzJhZTMzOWYtZDhhOS00ZDU0LWI5YWItMzY3ZmNjNDRkZmM3XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-15-Babar.jpg"
+  },
+  {
+    "id": 86,
+    "name": "Franklin and Friends (2011)",
+    "imageUrl": "/media/tv-shows/show-86.webp",
+    "filename": "show-86-Franklin_and_Friends__2011_.webp"
+  },
+  {
+    "id": 29,
+    "name": "Blue's Clues",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYmFjN2RhZmEtNDI5Zi00MWI5LWE0M2QtZDlmYWM0ZTYyZDc5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-29-Blue_s_Clues.jpg"
+  },
+  {
+    "id": 108,
+    "name": "Hudson’s Playground",
+    "imageUrl": "/media/tv-shows/show-108.jpg",
+    "filename": "show-108-Hudson_s_Playground.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Art Kids TV",
+    "imageUrl": "/media/tv-shows/show-11.png",
+    "filename": "show-11-Art_Kids_TV.png"
+  },
+  {
+    "id": 39,
+    "name": "Caillou",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMjgyM2MzYmYtMjYxNy00NTAyLWEwMGItYzViZGZlOGU0YzQwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-39-Caillou.jpg"
+  },
+  {
+    "id": 111,
+    "name": "It's a Big Big World",
+    "imageUrl": "/media/tv-shows/show-111.jpeg",
+    "filename": "show-111-It_s_a_Big_Big_World.jpeg"
+  },
+  {
+    "id": 113,
+    "name": "JoJo & Gran Gran",
+    "imageUrl": "/media/tv-shows/show-113.jpg",
+    "filename": "show-113-JoJo___Gran_Gran.jpg"
+  },
+  {
+    "id": 120,
+    "name": "Kids 2 kids",
+    "imageUrl": "/media/tv-shows/show-120.png",
+    "filename": "show-120-Kids_2_kids.png"
+  },
+  {
+    "id": 26,
+    "name": "Bill Nye the Science Guy",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZjcxNTIyYTItNDVhMS00OWEyLTkxOTUtZTFkMWQxZjUyZjQ3XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-26-Bill_Nye_the_Science_Guy.jpg"
+  },
+  {
+    "id": 1,
+    "name": "A for Adley",
+    "imageUrl": "/media/tv-shows/show-1.png",
+    "filename": "show-1-A_for_Adley.png"
+  },
+  {
+    "id": 12,
+    "name": "Arthur",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNjcyZWUyODUtM2YxMi00NmMwLTliMTctZjg1NjBhZTVkYTM4XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-12-Arthur.jpg"
+  },
+  {
+    "id": 7,
+    "name": "Alphablocks",
+    "imageUrl": "/media/tv-shows/show-image-1748363963898-439445275-optimized.jpg",
+    "filename": "show-7-Alphablocks.jpg"
+  },
+  {
+    "id": 65,
+    "name": "DG Bible Songs",
+    "imageUrl": "/media/tv-shows/show-65.png",
+    "filename": "show-65-DG_Bible_Songs.png"
+  },
+  {
+    "id": 148,
+    "name": "Ms Moni",
+    "imageUrl": "/media/tv-shows/show-148.png",
+    "filename": "show-148-Ms_Moni.png"
+  },
+  {
+    "id": 23,
+    "name": "Beep and Mort",
+    "imageUrl": "/media/tv-shows/show-image-1748363904639-448473709-optimized.jpg",
+    "filename": "show-23-Beep_and_Mort.jpg"
+  },
+  {
+    "id": 6,
+    "name": "Alma's Way",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZGI3N2VlOWUtNDcxMC00M2ExLWI2MjYtODJhY2U4ZmVmNTFiXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-6-Alma_s_Way.jpg"
+  },
+  {
+    "id": 104,
+    "name": "Hero Elementary",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYTAwNDlhMzQtZGI0OC00MjQyLWE0NjUtNWMzNjliNmM3NGUyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-104-Hero_Elementary.jpg"
+  },
+  {
+    "id": 112,
+    "name": "Johnson & Friends",
+    "imageUrl": "/media/tv-shows/show-112.jpg",
+    "filename": "show-112-Johnson___Friends.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Amakandu",
+    "imageUrl": "/media/tv-shows/show-8.png",
+    "filename": "show-8-Amakandu.png"
+  },
+  {
+    "id": 233,
+    "name": "Super Simple Song",
+    "imageUrl": "/media/tv-shows/show-233.jpeg",
+    "filename": "show-233-Super_Simple_Song.jpeg"
+  },
+  {
+    "id": 121,
+    "name": "Kipper",
+    "imageUrl": "/media/tv-shows/show-121.jpg",
+    "filename": "show-121-Kipper.jpg"
+  },
+  {
+    "id": 122,
+    "name": "Kiri and Lou",
+    "imageUrl": "/media/tv-shows/show-122.jpg",
+    "filename": "show-122-Kiri_and_Lou.jpg"
+  },
+  {
+    "id": 50,
+    "name": "Clifford the Big Red Dog",
+    "imageUrl": "/media/tv-shows/show-image-1748363435146-24857565-optimized.jpg",
+    "filename": "show-50-Clifford_the_Big_Red_Dog.jpg"
+  },
+  {
+    "id": 52,
+    "name": "CoasterFan2105",
+    "imageUrl": "/media/tv-shows/show-52.jpg",
+    "filename": "show-52-CoasterFan2105.jpg"
+  },
+  {
+    "id": 46,
+    "name": "Chip and Potato",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzBiYzY2ZjYtYjViNC00OTgyLTk0OWEtN2RhZjdkZTQzZjg1XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-46-Chip_and_Potato.jpg"
+  },
+  {
+    "id": 117,
+    "name": "Katuri tv",
+    "imageUrl": "/media/tv-shows/show-117.webp",
+    "filename": "show-117-Katuri_tv.webp"
+  },
+  {
+    "id": 119,
+    "name": "Kid-E-Cats",
+    "imageUrl": "/media/tv-shows/show-119.jpeg",
+    "filename": "show-119-Kid-E-Cats.jpeg"
+  },
+  {
+    "id": 43,
+    "name": "Care Bears: Unlock the Magic",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTk2M2U5MWMtMjdiNy00N2ZiLWFkM2ItMTllMjRjNjc4ZTQxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-43-Care_Bears__Unlock_the_Magic.jpg"
+  },
+  {
+    "id": 47,
+    "name": "City of friends",
+    "imageUrl": "/media/tv-shows/show-47.jpg",
+    "filename": "show-47-City_of_friends.jpg"
+  },
+  {
+    "id": 114,
+    "name": "Juf Roos",
+    "imageUrl": "/media/tv-shows/show-114.jpeg",
+    "filename": "show-114-Juf_Roos.jpeg"
+  },
+  {
+    "id": 118,
+    "name": "Kazwa and Bilal",
+    "imageUrl": "/media/tv-shows/show-118.png",
+    "filename": "show-118-Kazwa_and_Bilal.png"
+  },
+  {
+    "id": 67,
+    "name": "Digimon: Digital Monsters",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZmZjN2I2OGEtMzJkMS00Y2I2LWI0ZGQtMjExNzY0Mzk1YjEwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-67-Digimon__Digital_Monsters.jpg"
+  },
+  {
+    "id": 134,
+    "name": "Lucas the spider(2021)",
+    "imageUrl": "/media/tv-shows/show-134.jpg",
+    "filename": "show-134-Lucas_the_spider_2021_.jpg"
+  },
+  {
+    "id": 72,
+    "name": "Doc McStuffins",
+    "imageUrl": "/media/tv-shows/show-72.jpg",
+    "filename": "show-72-Doc_McStuffins.jpg"
+  },
+  {
+    "id": 135,
+    "name": "Lyla in the loop",
+    "imageUrl": "/media/tv-shows/show-135.jpg",
+    "filename": "show-135-Lyla_in_the_loop.jpg"
+  },
+  {
+    "id": 241,
+    "name": "Team Umizoomi",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzA5MWM5ODctODk4My00MDY0LThlYWMtYTI1MGI5MmI3MzBlXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-241-Team_Umizoomi.jpg"
+  },
+  {
+    "id": 18,
+    "name": "Bananas in Pyjamas",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZjBmN2Y3Y2EtODlkNi00ZjMxLWE3NjQtZGQyMzQ4YjQ2N2Q1XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-18-Bananas_in_Pyjamas.jpg"
+  },
+  {
+    "id": 109,
+    "name": "If You Give a Mouse a Cookie",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYmQ0MTM2NmItNGRkMi00ZmY2LThjMWYtZmJhZmI2NmNhMzM5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-109-If_You_Give_a_Mouse_a_Cookie.jpg"
+  },
+  {
+    "id": 132,
+    "name": "Little Einsteins (2005-2009)",
+    "imageUrl": "/media/tv-shows/show-132.jpg",
+    "filename": "show-132-Little_Einsteins__2005-2009_.jpg"
+  },
+  {
+    "id": 146,
+    "name": "Mira, Royal Detective",
+    "imageUrl": "/media/tv-shows/show-146.jpg",
+    "filename": "show-146-Mira__Royal_Detective.jpg"
+  },
+  {
+    "id": 136,
+    "name": "Maddie's Do You Know?",
+    "imageUrl": "/media/tv-shows/show-136.jpeg",
+    "filename": "show-136-Maddie_s_Do_You_Know_.jpeg"
+  },
+  {
+    "id": 275,
+    "name": "Theodore Tugboat",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTI4MTEzMzU2MF5BMl5BanBnXkFtZTcwNTAzMjMyMQ@@._V1_SX300.jpg",
+    "filename": "show-275-Theodore_Tugboat.jpg"
+  },
+  {
+    "id": 250,
+    "name": "The Backyardigans",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNWM4ZGZiMmYtODQzYy00YjM4LTkyYmYtMDQ1OWZmMmNkMWQzXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-250-The_Backyardigans.jpg"
+  },
+  {
+    "id": 247,
+    "name": "The Adventures of Paddington Bear Original Series (1997–2000)",
+    "imageUrl": "/media/tv-shows/show-247.jpg",
+    "filename": "show-247-The_Adventures_of_Paddington_Bear_Original_Series_.jpg"
+  },
+  {
+    "id": 256,
+    "name": "The Cat in the Hat",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMzk0MTYxOTMtMjMzNi00NDk0LWFmMzUtY2NlMDZkZjAyNjJmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-256-The_Cat_in_the_Hat.jpg"
+  },
+  {
+    "id": 171,
+    "name": "Omar and hana",
+    "imageUrl": "/media/tv-shows/show-171.jpg",
+    "filename": "show-171-Omar_and_hana.jpg"
+  },
+  {
+    "id": 281,
+    "name": "Topsy and Tim",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOWNkNmUyYjktZmIyZi00MmNmLTljNTktMGUxNThkM2Y2MTg2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-281-Topsy_and_Tim.jpg"
+  },
+  {
+    "id": 31,
+    "name": "Bluey",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYWU1YmQzMjEtMDNjOS00MGIyLWExY2ItZDAzNmU5NWViMGZmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-31-Bluey.jpg"
+  },
+  {
+    "id": 138,
+    "name": "Maizen",
+    "imageUrl": "/media/tv-shows/show-138.jpg",
+    "filename": "show-138-Maizen.jpg"
+  },
+  {
+    "id": 16,
+    "name": "Babblarna",
+    "imageUrl": "/media/tv-shows/show-16.jpg",
+    "filename": "show-16-Babblarna.jpg"
+  },
+  {
+    "id": 142,
+    "name": "Miffy and friends",
+    "imageUrl": "/media/tv-shows/show-142.jpeg",
+    "filename": "show-142-Miffy_and_friends.jpeg"
+  },
+  {
+    "id": 282,
+    "name": "Tots TV",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BY2YyMGZkYzUtZGVjMS00ZjhmLTkwYTgtYzg3MWY0NWNkZGEyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-282-Tots_TV.jpg"
+  },
+  {
+    "id": 263,
+    "name": "The Land of Boggs",
+    "imageUrl": "/media/tv-shows/show-image-1748353729096-672601231-optimized.jpg",
+    "filename": "show-263-The_Land_of_Boggs.jpg"
+  },
+  {
+    "id": 269,
+    "name": "The New Adventures of Winnie the Pooh",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMGQwMTU4MWQtNzgxNC00ZWNjLTg2MGItNDFjYzNmMTYwZGQ0XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-269-The_New_Adventures_of_Winnie_the_Pooh.jpg"
+  },
+  {
+    "id": 266,
+    "name": "The Magic School Bus Rides Again",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTY0MjA5Mjc4Ml5BMl5BanBnXkFtZTgwNDE2NDMzNTM@._V1_SX300.jpg",
+    "filename": "show-266-The_Magic_School_Bus_Rides_Again.jpg"
+  },
+  {
+    "id": 297,
+    "name": "Work It Out Wombats",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BODA3ZjRmMjctMTE2YS00Y2EzLWEyYTktYWE4ZTU0ODFiZTM2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-297-Work_It_Out_Wombats.jpg"
+  },
+  {
+    "id": 87,
+    "name": "Frog and Toad",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BY2M3NzE1NTYtZGJjMS00NTVjLWI5YTktMDM5ZDRjZGJmMWY0XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-87-Frog_and_Toad.jpg"
+  },
+  {
+    "id": 82,
+    "name": "Ernst, Bobbie en de rest",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZjU0MTQ3ODEtNzJlYS00YzQ4LWIxN2MtY2I2NTFhY2IzZWQ2XkEyXkFqcGdeQXVyNzE2MTQyMzM@._V1_SX300.jpg",
+    "filename": "show-82-Ernst__Bobbie_en_de_rest.jpg"
+  },
+  {
+    "id": 296,
+    "name": "Woolly and Tig",
+    "imageUrl": "/media/tv-shows/show-image-1748363332028-669253900-optimized.jpg",
+    "filename": "show-296-Woolly_and_Tig.jpg"
+  },
+  {
+    "id": 284,
+    "name": "Trash truck",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BM2U3ZTM3ZDYtMGQyMi00ZTkxLTg1NDQtMGUxZmZjNTUyODUwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-284-Trash_truck.jpg"
+  },
+  {
+    "id": 243,
+    "name": "Teletubbies (2015-2018)",
+    "imageUrl": "/media/tv-shows/show-243.jpg",
+    "filename": "show-243-Teletubbies__2015-2018_.jpg"
+  },
+  {
+    "id": 74,
+    "name": "Dora the Explorer",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZWFiZmM2ZGQtZGE0OC00ZmI4LWI0NzAtM2QzZDg5ODdiYWQ5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-74-Dora_the_Explorer.jpg"
+  },
+  {
+    "id": 76,
+    "name": "Dragon Tales",
+    "imageUrl": "/media/tv-shows/show-76.jpg",
+    "filename": "show-76-Dragon_Tales.jpg"
+  },
+  {
+    "id": 144,
+    "name": "Minno - Bible Stories for Kids",
+    "imageUrl": "/media/tv-shows/show-144.png",
+    "filename": "show-144-Minno_-_Bible_Stories_for_Kids.png"
+  },
+  {
+    "id": 291,
+    "name": "Vooks",
+    "imageUrl": "/media/tv-shows/show-291.jpg",
+    "filename": "show-291-Vooks.jpg"
+  },
+  {
+    "id": 298,
+    "name": "Xavier Riddle and the Secret Museum",
+    "imageUrl": "/media/tv-shows/show-298.jpg",
+    "filename": "show-298-Xavier_Riddle_and_the_Secret_Museum.jpg"
+  },
+  {
+    "id": 295,
+    "name": "Wishenpoof",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BY2FjMmQyYWUtNTBiOC00ODJmLWFkZGYtMDgxZjRkMTgyNDE3XkEyXkFqcGdeQXVyNjI4OTg2Njg@._V1_SX300.jpg",
+    "filename": "show-295-Wishenpoof.jpg"
+  },
+  {
+    "id": 9,
+    "name": "Andy's Dinosaur Adventures",
+    "imageUrl": "/media/tv-shows/show-image-1748363891988-315172901-optimized.jpg",
+    "filename": "show-9-Andy_s_Dinosaur_Adventures.jpg"
+  },
+  {
+    "id": 294,
+    "name": "What's New, Scooby-Doo? ",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTIwN2U2OTctMTcxMi00NjllLWE5ZjktZmFiNzAxOWM3YWEwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-294-What_s_New__Scooby-Doo__.jpg"
+  },
+  {
+    "id": 137,
+    "name": "Maggie and the Ferocious Beast",
+    "imageUrl": "/media/tv-shows/show-137.jpg",
+    "filename": "show-137-Maggie_and_the_Ferocious_Beast.jpg"
+  },
+  {
+    "id": 150,
+    "name": "Mister Maker",
+    "imageUrl": "/media/tv-shows/show-150.jpg",
+    "filename": "show-150-Mister_Maker.jpg"
+  },
+  {
+    "id": 143,
+    "name": "Milo",
+    "imageUrl": "/media/tv-shows/show-143.jpg",
+    "filename": "show-143-Milo.jpg"
+  },
+  {
+    "id": 96,
+    "name": "Gracie's Corner",
+    "imageUrl": "/media/tv-shows/show-96.jpg",
+    "filename": "show-96-Gracie_s_Corner.jpg"
+  },
+  {
+    "id": 222,
+    "name": "Spidey and his amazing friends",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNzBmMzljNGItY2ZhZi00ZDY2LTk2ZTYtMmI3ZjRjYzdiMDE3XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-222-Spidey_and_his_amazing_friends.jpg"
+  },
+  {
+    "id": 283,
+    "name": "Tractor Ted",
+    "imageUrl": "/media/tv-shows/show-283.jpg",
+    "filename": "show-283-Tractor_Ted.jpg"
+  },
+  {
+    "id": 90,
+    "name": "Genevieve playhouse",
+    "imageUrl": "/media/tv-shows/show-90.png",
+    "filename": "show-90-Genevieve_playhouse.png"
+  },
+  {
+    "id": 285,
+    "name": "Tumble leaf",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNzMwODVmMDgtMWJmNC00ZGU4LTgxNGYtYThkYTM1YjZjZmE1XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-285-Tumble_leaf.jpg"
+  },
+  {
+    "id": 292,
+    "name": "Wacky Races",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZjRhMTFjZTQtOTc3MC00NzVjLThlN2ItMjA1MGI5M2Q1YjRhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-292-Wacky_Races.jpg"
+  },
+  {
+    "id": 73,
+    "name": "Doggyland",
+    "imageUrl": "/media/tv-shows/show-image-1748360048030-363098497-optimized.jpg",
+    "filename": "show-73-Doggyland.jpg"
+  },
+  {
+    "id": 33,
+    "name": "Bob the Builder",
+    "imageUrl": "/media/tv-shows/show-image-1748363632003-20712102-optimized.jpg",
+    "filename": "show-33-Bob_the_Builder.jpg"
+  },
+  {
+    "id": 106,
+    "name": "Hey Duggee",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTQ3NjYxNjYxNV5BMl5BanBnXkFtZTgwMzc1Mzg1NDE@._V1_SX300.jpg",
+    "filename": "show-106-Hey_Duggee.jpg"
+  },
+  {
+    "id": 77,
+    "name": "Duck & Goose",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYmNkZmUyNGEtMmY1Ni00NjRmLWEzMWQtMzY2ZjMzZTUzNmQ1XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-77-Duck___Goose.jpg"
+  },
+  {
+    "id": 240,
+    "name": "Tayo the Little Bus",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZTc3NDFmZWUtN2VhOC00MzA0LWFmM2EtNjZjMTVkMmRkODY2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-240-Tayo_the_Little_Bus.jpg"
+  },
+  {
+    "id": 66,
+    "name": "Diego",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzZjOGE1YTgtMGNjMC00ZTM5LTlhMDQtYmEwN2MzOGZlMWQ2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-66-Diego.jpg"
+  },
+  {
+    "id": 127,
+    "name": "Upin & Ipin",
+    "imageUrl": "/media/tv-shows/show-127.jpg",
+    "filename": "show-127-Upin___Ipin.jpg"
+  },
+  {
+    "id": 116,
+    "name": "KarazahChannel",
+    "imageUrl": "/media/tv-shows/show-116.png",
+    "filename": "show-116-KarazahChannel.png"
+  },
+  {
+    "id": 55,
+    "name": "Colourblocks",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMjA0NDBlMWUtNDIyMy00OTM1LWE3MjUtNjFkM2MyOTJlZjIxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-55-Colourblocks.jpg"
+  },
+  {
+    "id": 19,
+    "name": "Barbapapa",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYWM3MjQ0OWQtNGNlZC00OGE1LWFmMGMtNmQ0MGY0NTgxM2UxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-19-Barbapapa.jpg"
+  },
+  {
+    "id": 27,
+    "name": "Bing",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMjIzMDEyNjgwMF5BMl5BanBnXkFtZTgwNDQwNTI4MjE@._V1_SX300.jpg",
+    "filename": "show-27-Bing.jpg"
+  },
+  {
+    "id": 24,
+    "name": "Ben & Holly's Little Kingdom",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMGQyZGZmNTYtZmRhZi00ODE1LWJjMzEtMjM4YjVmYzE1MjhmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-24-Ben___Holly_s_Little_Kingdom.jpg"
+  },
+  {
+    "id": 49,
+    "name": "Clifford the Big Red Dog",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOWUwN2FiMDAtNDI5Zi00M2RjLWE3NzItMzVlYmZmNjBiZDdjXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-49-Clifford_the_Big_Red_Dog.jpg"
+  },
+  {
+    "id": 164,
+    "name": "Noddy, Toyland Detective",
+    "imageUrl": "/media/tv-shows/show-164.jpeg",
+    "filename": "show-164-Noddy__Toyland_Detective.jpeg"
+  },
+  {
+    "id": 38,
+    "name": "Builder Brothers' Dream Factory",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzJhYWZiZTYtZDJlMS00YjdiLTk5MDktMTFjNTNlZmZkOTk0XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-38-Builder_Brothers__Dream_Factory.jpg"
+  },
+  {
+    "id": 179,
+    "name": "Pete The Cat",
+    "imageUrl": "/media/tv-shows/show-179.jpg",
+    "filename": "show-179-Pete_The_Cat.jpg"
+  },
+  {
+    "id": 80,
+    "name": "Elmo's World",
+    "imageUrl": "/media/tv-shows/show-80.webp",
+    "filename": "show-80-Elmo_s_World.webp"
+  },
+  {
+    "id": 71,
+    "name": "Dinotrux",
+    "imageUrl": "/media/tv-shows/show-71.jpg",
+    "filename": "show-71-Dinotrux.jpg"
+  },
+  {
+    "id": 157,
+    "name": "Mr. Monkey, Monkey Mechanic",
+    "imageUrl": "/media/tv-shows/show-157.jpg",
+    "filename": "show-157-Mr__Monkey__Monkey_Mechanic.jpg"
+  },
+  {
+    "id": 154,
+    "name": "Moon and Me",
+    "imageUrl": "/media/tv-shows/show-154.jpg",
+    "filename": "show-154-Moon_and_Me.jpg"
+  },
+  {
+    "id": 20,
+    "name": "Barney & Friends",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMGMwMjVhNDctMjE5My00YjViLWFkMGItYzU3N2M3OTdkMDViXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-20-Barney___Friends.jpg"
+  },
+  {
+    "id": 81,
+    "name": "English Tree",
+    "imageUrl": "/media/tv-shows/show-81.jpg",
+    "filename": "show-81-English_Tree.jpg"
+  },
+  {
+    "id": 95,
+    "name": "Go, Dog. Go!",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMDM2YTM3MDYtMGFlYy00ZjRlLWI5MGEtYmQ4ZjVmNTc1YWJjXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-95-Go__Dog__Go_.jpg"
+  },
+  {
+    "id": 216,
+    "name": "Sid the Science Kid",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYjIzMjFjNjgtMTJmYy00YzYxLTg0YmEtYTc2YjNkOTcyN2I5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-216-Sid_the_Science_Kid.jpg"
+  },
+  {
+    "id": 160,
+    "name": "Nick Cope's Popcast",
+    "imageUrl": "/media/tv-shows/show-160.jpg",
+    "filename": "show-160-Nick_Cope_s_Popcast.jpg"
+  },
+  {
+    "id": 167,
+    "name": "Numberblocks (2017-present)",
+    "imageUrl": "/media/tv-shows/show-167.jpg",
+    "filename": "show-167-Numberblocks__2017-present_.jpg"
+  },
+  {
+    "id": 261,
+    "name": "The fixies",
+    "imageUrl": "/media/tv-shows/show-261.jpeg",
+    "filename": "show-261-The_fixies.jpeg"
+  },
+  {
+    "id": 213,
+    "name": "Sea of love",
+    "imageUrl": "/media/tv-shows/show-213.jpg",
+    "filename": "show-213-Sea_of_love.jpg"
+  },
+  {
+    "id": 45,
+    "name": "Charlie's Colorforms City",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZDM2NjFiZTAtMTg5MS00NDNkLWIzOTQtNzI4ZGEzZGRmOGQ1XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-45-Charlie_s_Colorforms_City.jpg"
+  },
+  {
+    "id": 205,
+    "name": "Rosie & Jim",
+    "imageUrl": "/media/tv-shows/show-image-1748363737979-980364607-optimized.jpg",
+    "filename": "show-205-Rosie___Jim.jpg"
+  },
+  {
+    "id": 32,
+    "name": "Bob the Builder",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNzUyYTZhNDYtMTEzNS00N2FhLTg3ZWUtNGQ3ODI4NDY1YzNhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-32-Bob_the_Builder.jpg"
+  },
+  {
+    "id": 225,
+    "name": "Star Wars: Young Jedi Adventures",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNTZmOTEyMDgtZThkYS00OTkzLTg2ZmYtMjBkMzkyYTE5M2E5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-225-Star_Wars__Young_Jedi_Adventures.jpg"
+  },
+  {
+    "id": 165,
+    "name": "Noodle & Pals",
+    "imageUrl": "/media/tv-shows/show-165.jpg",
+    "filename": "show-165-Noodle___Pals.jpg"
+  },
+  {
+    "id": 159,
+    "name": "Nanalan",
+    "imageUrl": "/media/tv-shows/show-159.jpeg",
+    "filename": "show-159-Nanalan.jpeg"
+  },
+  {
+    "id": 195,
+    "name": "Raa Raa the Noisy Lion",
+    "imageUrl": "/media/tv-shows/show-195.jpg",
+    "filename": "show-195-Raa_Raa_the_Noisy_Lion.jpg"
+  },
+  {
+    "id": 161,
+    "name": "Ninja Kids",
+    "imageUrl": "/media/tv-shows/show-161.png",
+    "filename": "show-161-Ninja_Kids.png"
+  },
+  {
+    "id": 187,
+    "name": "Planet earth",
+    "imageUrl": "/media/tv-shows/show-187.jpg",
+    "filename": "show-187-Planet_earth.jpg"
+  },
+  {
+    "id": 258,
+    "name": "The Crocodile Hunter",
+    "imageUrl": "/media/tv-shows/show-258.jpg",
+    "filename": "show-258-The_Crocodile_Hunter.jpg"
+  },
+  {
+    "id": 70,
+    "name": "Dinosaur train",
+    "imageUrl": "/media/tv-shows/show-70.jpg",
+    "filename": "show-70-Dinosaur_train.jpg"
+  },
+  {
+    "id": 163,
+    "name": "Noddy Original Series (1998)",
+    "imageUrl": "/media/tv-shows/show-163.jpg",
+    "filename": "show-163-Noddy_Original_Series__1998_.jpg"
+  },
+  {
+    "id": 199,
+    "name": "Reading rainbow",
+    "imageUrl": "/media/tv-shows/show-199.jpg",
+    "filename": "show-199-Reading_rainbow.jpg"
+  },
+  {
+    "id": 184,
+    "name": "Pip and Posy",
+    "imageUrl": "/media/tv-shows/show-184.jpeg",
+    "filename": "show-184-Pip_and_Posy.jpeg"
+  },
+  {
+    "id": 158,
+    "name": "MyGo! Sign Language for Kids",
+    "imageUrl": "/media/tv-shows/show-158.jpg",
+    "filename": "show-158-MyGo__Sign_Language_for_Kids.jpg"
+  },
+  {
+    "id": 177,
+    "name": "Peg+Cat",
+    "imageUrl": "/media/tv-shows/show-177.jpeg",
+    "filename": "show-177-Peg_Cat.jpeg"
+  },
+  {
+    "id": 89,
+    "name": "Gecko’s Garage",
+    "imageUrl": "/media/tv-shows/show-89.jpg",
+    "filename": "show-89-Gecko_s_Garage.jpg"
+  },
+  {
+    "id": 103,
+    "name": "Helper Cars",
+    "imageUrl": "/media/tv-shows/show-103.jpg",
+    "filename": "show-103-Helper_Cars.jpg"
+  },
+  {
+    "id": 214,
+    "name": "Sesame Street (1969-present)",
+    "imageUrl": "/media/tv-shows/show-214.jpeg",
+    "filename": "show-214-Sesame_Street__1969-present_.jpeg"
+  },
+  {
+    "id": 252,
+    "name": "The Berenstein Bears",
+    "imageUrl": "/media/tv-shows/show-252.jpg",
+    "filename": "show-252-The_Berenstein_Bears.jpg"
+  },
+  {
+    "id": 246,
+    "name": "The Adventures of Paddington (2019)",
+    "imageUrl": "/media/tv-shows/show-246.jpg",
+    "filename": "show-246-The_Adventures_of_Paddington__2019_.jpg"
+  },
+  {
+    "id": 245,
+    "name": "The Adventures of Abney & Teal",
+    "imageUrl": "/media/tv-shows/show-image-1748363793906-839023434-optimized.jpg",
+    "filename": "show-245-The_Adventures_of_Abney___Teal.jpg"
+  },
+  {
+    "id": 279,
+    "name": "Tinga Tinga Tales",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOTZkZjUzODEtODZhMC00YTUyLWE0ZjktODE5NGZhOWFiNzYzXkEyXkFqcGdeQXVyNjExODE1MDc@._V1_SX300.jpg",
+    "filename": "show-279-Tinga_Tinga_Tales.jpg"
+  },
+  {
+    "id": 254,
+    "name": "The Busy World of Richard Scarry",
+    "imageUrl": "/media/tv-shows/show-254.jpg",
+    "filename": "show-254-The_Busy_World_of_Richard_Scarry.jpg"
+  },
+  {
+    "id": 180,
+    "name": "Peter Rabbit",
+    "imageUrl": "/media/tv-shows/show-180.jpg",
+    "filename": "show-180-Peter_Rabbit.jpg"
+  },
+  {
+    "id": 175,
+    "name": "Pajanimals",
+    "imageUrl": "/media/tv-shows/show-175.jpg",
+    "filename": "show-175-Pajanimals.jpg"
+  },
+  {
+    "id": 88,
+    "name": "Gabby's Dollhouse",
+    "imageUrl": "/media/tv-shows/show-88.jpg",
+    "filename": "show-88-Gabby_s_Dollhouse.jpg"
+  },
+  {
+    "id": 289,
+    "name": "VeggieTales in the House",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMmZhM2QxNzctZGU4ZS00NmI3LWI3ZWYtNGE3MGI4MGJkYWVmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-289-VeggieTales_in_the_House.jpg"
+  },
+  {
+    "id": 272,
+    "name": "The Snoopy Show",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNmViOTc4NGQtYThkOC00YTRkLTlmN2UtODMyZmQxNmE1YzFiXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-272-The_Snoopy_Show.jpg"
+  },
+  {
+    "id": 48,
+    "name": "City Vehicles",
+    "imageUrl": "/media/tv-shows/show-48.png",
+    "filename": "show-48-City_Vehicles.png"
+  },
+  {
+    "id": 229,
+    "name": "Stillwater",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMmVkZDZhNWMtYzZmNC00MGY1LWJiMTYtMzgxMDgwNTY0ZjcwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-229-Stillwater.jpg"
+  },
+  {
+    "id": 183,
+    "name": "Pinkalicious & Peterrific",
+    "imageUrl": "/media/tv-shows/show-183.jpg",
+    "filename": "show-183-Pinkalicious___Peterrific.jpg"
+  },
+  {
+    "id": 94,
+    "name": "Go Go! Cory Carson",
+    "imageUrl": "/media/tv-shows/show-94.jpg",
+    "filename": "show-94-Go_Go__Cory_Carson.jpg"
+  },
+  {
+    "id": 36,
+    "name": "Brain Candy TV",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNzczMDNmMzktMGY4MC00NWFiLWJlNmMtMWJjOWIwMTY0NTNhXkEyXkFqcGdeQXVyOTk4NzI0OTY@._V1_SX300.jpg",
+    "filename": "show-36-Brain_Candy_TV.jpg"
+  },
+  {
+    "id": 278,
+    "name": "Time for school",
+    "imageUrl": "/media/tv-shows/show-image-1748363352439-799895271-optimized.jpg",
+    "filename": "show-278-Time_for_school.jpg"
+  },
+  {
+    "id": 267,
+    "name": "The Magic School Bus",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOWMxZTBkMWEtNWQzOS00NDZmLWJjNWQtYzljMjZmYjUzMDAyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-267-The_Magic_School_Bus.jpg"
+  },
+  {
+    "id": 288,
+    "name": "VeggieTales",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYjhmNmYyNDQtZTQ3Yi00OTcwLWIyODMtZDgyNmFlZjIyYWE4XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-288-VeggieTales.jpg"
+  },
+  {
+    "id": 197,
+    "name": "Rapunzel's Tangled Adventure",
+    "imageUrl": "/media/tv-shows/show-197.jpg",
+    "filename": "show-197-Rapunzel_s_Tangled_Adventure.jpg"
+  },
+  {
+    "id": 276,
+    "name": "Thomas & Friends ",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOTBiODYxNTgtY2UwMy00NjIxLWJmZWYtYzE1MTVkZmFjMGRhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-276-Thomas___Friends_.jpg"
+  },
+  {
+    "id": 149,
+    "name": "Ms Rachel",
+    "imageUrl": "/media/tv-shows/show-149.webp",
+    "filename": "show-149-Ms_Rachel.webp"
+  },
+  {
+    "id": 300,
+    "name": "Zoboomafoo (1999-2001)",
+    "imageUrl": "/media/tv-shows/show-300.jpg",
+    "filename": "show-300-Zoboomafoo__1999-2001_.jpg"
+  },
+  {
+    "id": 280,
+    "name": "Tom & Jerry",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BY2M1Mzc5NGItZmM0Yi00NDUzLWExYzUtMDlmZmFiM2Q0NDZmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-280-Tom___Jerry.jpg"
+  },
+  {
+    "id": 257,
+    "name": "The Clangers",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BODU4NTY5NTY1OV5BMl5BanBnXkFtZTcwNTQ1OTkxMQ@@._V1_SX300.jpg",
+    "filename": "show-257-The_Clangers.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Adventure Time",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMjkxMzIwNmQtMzM5Ni00YWJiLTg4YjQtNjBiN2IxMjZhMGQ2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-4-Adventure_Time.jpg"
+  },
+  {
+    "id": 265,
+    "name": "The Little Mermaid",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BY2IyMDJhODYtMTZjOS00YjI0LThiN2QtNGE3N2E3NTYzMTEwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-265-The_Little_Mermaid.jpg"
+  },
+  {
+    "id": 141,
+    "name": "Mickey Mouse Clubhouse",
+    "imageUrl": "/media/tv-shows/show-141.jpeg",
+    "filename": "show-141-Mickey_Mouse_Clubhouse.jpeg"
+  },
+  {
+    "id": 193,
+    "name": "Puffin Rock",
+    "imageUrl": "/media/tv-shows/show-193.jpg",
+    "filename": "show-193-Puffin_Rock.jpg"
+  },
+  {
+    "id": 287,
+    "name": "Ultimate Spiderman",
+    "imageUrl": "/media/tv-shows/show-287.jpeg",
+    "filename": "show-287-Ultimate_Spiderman.jpeg"
+  },
+  {
+    "id": 271,
+    "name": "The Oddbods Show",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMWZiZjc4YzktMWExMC00OTA2LWEwMDctOWM1MjI1NWE3MWJmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-271-The_Oddbods_Show.jpg"
+  },
+  {
+    "id": 220,
+    "name": "Sonic the Hedgehog",
+    "imageUrl": "/media/tv-shows/show-220.jpg",
+    "filename": "show-220-Sonic_the_Hedgehog.jpg"
+  },
+  {
+    "id": 239,
+    "name": "Tangled: Before Ever After",
+    "imageUrl": "/media/tv-shows/show-239.jpeg",
+    "filename": "show-239-Tangled__Before_Ever_After.jpeg"
+  },
+  {
+    "id": 264,
+    "name": "The Lion Guard",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMGY4NTUwZDUtMzQ5ZS00YzVmLTgyMzEtMTY5YzY2OWE2NWI4XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-264-The_Lion_Guard.jpg"
+  },
+  {
+    "id": 30,
+    "name": "Blue's Clues & You!",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNWE4NTQxODctMDc5ZS00MGYzLTlmMjctNzdjMGY4NTFiNWUxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-30-Blue_s_Clues___You_.jpg"
+  },
+  {
+    "id": 251,
+    "name": "The Bear Construction",
+    "imageUrl": "/media/tv-shows/show-251.png",
+    "filename": "show-251-The_Bear_Construction.png"
+  },
+  {
+    "id": 174,
+    "name": "Out of the Box",
+    "imageUrl": "/media/tv-shows/show-174.jpeg",
+    "filename": "show-174-Out_of_the_Box.jpeg"
+  },
+  {
+    "id": 206,
+    "name": "Rosie's Rules",
+    "imageUrl": "/media/tv-shows/show-206.jpg",
+    "filename": "show-206-Rosie_s_Rules.jpg"
+  },
+  {
+    "id": 190,
+    "name": "Pokemon",
+    "imageUrl": "/media/tv-shows/show-190.jpg",
+    "filename": "show-190-Pokemon.jpg"
+  },
+  {
+    "id": 176,
+    "name": "Paw patrol",
+    "imageUrl": "/media/tv-shows/show-176.webp",
+    "filename": "show-176-Paw_patrol.webp"
+  },
+  {
+    "id": 14,
+    "name": "Baba blast",
+    "imageUrl": "/media/tv-shows/show-14.jpg",
+    "filename": "show-14-Baba_blast.jpg"
+  },
+  {
+    "id": 169,
+    "name": "Oggy and the Cockroaches",
+    "imageUrl": "/media/tv-shows/show-169.jpg",
+    "filename": "show-169-Oggy_and_the_Cockroaches.jpg"
+  },
+  {
+    "id": 204,
+    "name": "Rolie Polie Olie",
+    "imageUrl": "/media/tv-shows/show-204.jpg",
+    "filename": "show-204-Rolie_Polie_Olie.jpg"
+  },
+  {
+    "id": 196,
+    "name": "Rainbow Ruby",
+    "imageUrl": "/media/tv-shows/show-196.jpg",
+    "filename": "show-196-Rainbow_Ruby.jpg"
+  },
+  {
+    "id": 203,
+    "name": "Robocar Poli",
+    "imageUrl": "/media/tv-shows/show-203.jpg",
+    "filename": "show-203-Robocar_Poli.jpg"
+  },
+  {
+    "id": 194,
+    "name": "Puppy Dog Pals",
+    "imageUrl": "/media/tv-shows/show-194.jpeg",
+    "filename": "show-194-Puppy_Dog_Pals.jpeg"
+  },
+  {
+    "id": 170,
+    "name": "Olivia",
+    "imageUrl": "/media/tv-shows/show-170.jpg",
+    "filename": "show-170-Olivia.jpg"
+  },
+  {
+    "id": 168,
+    "name": "Odd Squad",
+    "imageUrl": "/media/tv-shows/show-168.jpg",
+    "filename": "show-168-Odd_Squad.jpg"
+  },
+  {
+    "id": 156,
+    "name": "Mr Bean Cartoon",
+    "imageUrl": "/media/tv-shows/show-156.jpeg",
+    "filename": "show-156-Mr_Bean_Cartoon.jpeg"
+  },
+  {
+    "id": 260,
+    "name": "The Epic Tales of Captain Underpants",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTE0NjExODU0NDZeQTJeQWpwZ15BbWU4MDg5NTk3ODUz._V1_SX300.jpg",
+    "filename": "show-260-The_Epic_Tales_of_Captain_Underpants.jpg"
+  },
+  {
+    "id": 21,
+    "name": "Be Cool, Scooby-Doo!",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMzk0ZGQyMjgtYWU1OS00MjRlLThlOGQtYjI5NzA1ZGRjNWM4XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-21-Be_Cool__Scooby-Doo_.jpg"
+  },
+  {
+    "id": 139,
+    "name": "Marcus Level",
+    "imageUrl": "/media/tv-shows/show-139.jpeg",
+    "filename": "show-139-Marcus_Level.jpeg"
+  },
+  {
+    "id": 162,
+    "name": "Ninjago",
+    "imageUrl": "/media/tv-shows/show-162.jpg",
+    "filename": "show-162-Ninjago.jpg"
+  },
+  {
+    "id": 224,
+    "name": "SpongeBob SquarePants",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYjJmMjBkZjMtZThiZS00Nzk3LWJlN2UtYmE5ZjkyNjJiZjgxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-224-SpongeBob_SquarePants.jpg"
+  },
+  {
+    "id": 202,
+    "name": "Rhyme Time Town",
+    "imageUrl": "/media/tv-shows/show-202.jpg",
+    "filename": "show-202-Rhyme_Time_Town.jpg"
+  },
+  {
+    "id": 201,
+    "name": "Reef School",
+    "imageUrl": "/media/tv-shows/show-201.jpg",
+    "filename": "show-201-Reef_School.jpg"
+  },
+  {
+    "id": 223,
+    "name": "Spirit Riding Free",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNjliNDYxOWUtNTEwMi00ODYxLTkzZmQtZTI3ZTQ3MzFjNmQ5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-223-Spirit_Riding_Free.jpg"
+  },
+  {
+    "id": 78,
+    "name": "Ed Edd n Eddy",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOWNmY2Y0MDUtMmM4Zi00NGEzLWI1MjEtMDUzYmM2MzFjNTU2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-78-Ed_Edd_n_Eddy.jpg"
+  },
+  {
+    "id": 215,
+    "name": "Shaun the Sheep",
+    "imageUrl": "/media/tv-shows/show-215.jpg",
+    "filename": "show-215-Shaun_the_Sheep.jpg"
+  },
+  {
+    "id": 192,
+    "name": "Postman Pat: Special Delivery Service",
+    "imageUrl": "/media/tv-shows/show-192.jpg",
+    "filename": "show-192-Postman_Pat__Special_Delivery_Service.jpg"
+  },
+  {
+    "id": 221,
+    "name": "Spanish with liz",
+    "imageUrl": "/media/tv-shows/show-221.png",
+    "filename": "show-221-Spanish_with_liz.png"
+  },
+  {
+    "id": 61,
+    "name": "Daniel Tiger's Neighbourhood",
+    "imageUrl": "/media/tv-shows/show-61.jpg",
+    "filename": "show-61-Daniel_Tiger_s_Neighbourhood.jpg"
+  },
+  {
+    "id": 68,
+    "name": "Dino Dana",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTY4MDU0MDM5NV5BMl5BanBnXkFtZTgwMTkxMzE0MjI@._V1_SX300.jpg",
+    "filename": "show-68-Dino_Dana.jpg"
+  },
+  {
+    "id": 42,
+    "name": "Captain Planet and the Planeteers",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMzQxODk4YWEtOTNhYS00YzZlLWE0ZDktNDk3MzE4ODI4MzIyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-42-Captain_Planet_and_the_Planeteers.jpg"
+  },
+  {
+    "id": 210,
+    "name": "Sagwa, the Chinese Siamese Cat",
+    "imageUrl": "/media/tv-shows/show-210.jpeg",
+    "filename": "show-210-Sagwa__the_Chinese_Siamese_Cat.jpeg"
+  },
+  {
+    "id": 182,
+    "name": "Pingu",
+    "imageUrl": "/media/tv-shows/show-182.jpeg",
+    "filename": "show-182-Pingu.jpeg"
+  },
+  {
+    "id": 181,
+    "name": "Phineas and Ferb",
+    "imageUrl": "/media/tv-shows/show-181.jpeg",
+    "filename": "show-181-Phineas_and_Ferb.jpeg"
+  },
+  {
+    "id": 64,
+    "name": "De Zoete Zusjes",
+    "imageUrl": "/media/tv-shows/show-64.jpg",
+    "filename": "show-64-De_Zoete_Zusjes.jpg"
+  },
+  {
+    "id": 69,
+    "name": "Dino Ranch",
+    "imageUrl": "/media/tv-shows/show-69.jpg",
+    "filename": "show-69-Dino_Ranch.jpg"
+  },
+  {
+    "id": 131,
+    "name": "Little Bear",
+    "imageUrl": "/media/tv-shows/show-131.jpg",
+    "filename": "show-131-Little_Bear.jpg"
+  },
+  {
+    "id": 218,
+    "name": "Simon",
+    "imageUrl": "/media/tv-shows/show-218.jpeg",
+    "filename": "show-218-Simon.jpeg"
+  },
+  {
+    "id": 178,
+    "name": "Peppa pig",
+    "imageUrl": "/media/tv-shows/show-178.jpg",
+    "filename": "show-178-Peppa_pig.jpg"
+  },
+  {
+    "id": 75,
+    "name": "Dragon Ball",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMGQ0ZWE4NDYtYWY0Mi00MjE0LWI1MzctZDA1NGExYzE3N2FiXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-75-Dragon_Ball.jpg"
+  },
+  {
+    "id": 248,
+    "name": "The Adventures of Teddy Ruxpin",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTMxOTY3MjYwM15BMl5BanBnXkFtZTcwNzk0MTIzMQ@@._V1_SX300.jpg",
+    "filename": "show-248-The_Adventures_of_Teddy_Ruxpin.jpg"
+  },
+  {
+    "id": 219,
+    "name": "Something Special: Hello Mr Tumble",
+    "imageUrl": "/media/tv-shows/show-image-1748363853387-728180121-optimized.jpg",
+    "filename": "show-219-Something_Special__Hello_Mr_Tumble.jpg"
+  },
+  {
+    "id": 217,
+    "name": "Silly Miss Lily (Paisley's Corner)",
+    "imageUrl": "/media/tv-shows/show-217.png",
+    "filename": "show-217-Silly_Miss_Lily__Paisley_s_Corner_.png"
+  },
+  {
+    "id": 212,
+    "name": "Scooby-Doo, Where Are You! (1969–1970)",
+    "imageUrl": "/media/tv-shows/show-212.jpg",
+    "filename": "show-212-Scooby-Doo__Where_Are_You___1969_1970_.jpg"
+  },
+  {
+    "id": 208,
+    "name": "Rugrats (2021 Reboot)",
+    "imageUrl": "/media/tv-shows/show-208.jpg",
+    "filename": "show-208-Rugrats__2021_Reboot_.jpg"
+  },
+  {
+    "id": 54,
+    "name": "Codename: Kids Next Door",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTdkNmY4ZGMtZTk3YS00OWUxLTlmNTktZTAxNTg1MWM2YmM2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-54-Codename__Kids_Next_Door.jpg"
+  },
+  {
+    "id": 189,
+    "name": "Pocoyo",
+    "imageUrl": "/media/tv-shows/show-189.jpeg",
+    "filename": "show-189-Pocoyo.jpeg"
+  },
+  {
+    "id": 37,
+    "name": "Bubble Guppies",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNWVkM2EwNGMtOWRmNi00Y2IxLThlNDMtZWE4N2YyYmFiMDkzXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-37-Bubble_Guppies.jpg"
+  },
+  {
+    "id": 259,
+    "name": "The Enchanted World of Brambly Hedge",
+    "imageUrl": "/media/tv-shows/show-259.jpg",
+    "filename": "show-259-The_Enchanted_World_of_Brambly_Hedge.jpg"
+  },
+  {
+    "id": 28,
+    "name": "Blippi",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTc0Yzc5ZDgtZmU5YS00Y2MzLTg3MTMtY2UxMGZmMjM4OTQyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-28-Blippi.jpg"
+  },
+  {
+    "id": 124,
+    "name": "Lazytown",
+    "imageUrl": "/media/tv-shows/show-124.jpg",
+    "filename": "show-124-Lazytown.jpg"
+  },
+  {
+    "id": 60,
+    "name": "Cyberchase",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOWZhZTgxMDAtMGFlZi00NmM2LWFhNzYtZGE1NzM0ZmU1OGY5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-60-Cyberchase.jpg"
+  },
+  {
+    "id": 152,
+    "name": "Molly of Denali",
+    "imageUrl": "/media/tv-shows/show-152.jpeg",
+    "filename": "show-152-Molly_of_Denali.jpeg"
+  },
+  {
+    "id": 79,
+    "name": "Elena of Avalor",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMjY1NjNjOTktZjVhMy00ZDdkLTkzNmQtZDI5NmIwODA0MDQ2XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-79-Elena_of_Avalor.jpg"
+  },
+  {
+    "id": 232,
+    "name": "Super Monsters",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTYyODgxYzktNDZkNC00YThkLWJjNzgtMjFhZTlmMjZlNTI1XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-232-Super_Monsters.jpg"
+  },
+  {
+    "id": 211,
+    "name": "Sarah and Duck",
+    "imageUrl": "/media/tv-shows/show-211.jpeg",
+    "filename": "show-211-Sarah_and_Duck.jpeg"
+  },
+  {
+    "id": 130,
+    "name": "Little Angel",
+    "imageUrl": "/media/tv-shows/show-130.jpg",
+    "filename": "show-130-Little_Angel.jpg"
+  },
+  {
+    "id": 83,
+    "name": "Fireman Sam",
+    "imageUrl": "/media/tv-shows/show-image-1748360384586-67946245-optimized.jpg",
+    "filename": "show-83-Fireman_Sam.jpg"
+  },
+  {
+    "id": 84,
+    "name": "Fireman Sam",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYjExMzkwYmUtOTg0ZS00MWMzLWIwYzUtYzgyMzU4ZmYxM2U5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-84-Fireman_Sam.jpg"
+  },
+  {
+    "id": 140,
+    "name": "Masha and the Bear",
+    "imageUrl": "/media/tv-shows/show-140.jpg",
+    "filename": "show-140-Masha_and_the_Bear.jpg"
+  },
+  {
+    "id": 128,
+    "name": "LifeKids (Blinky’s Bible adventures)",
+    "imageUrl": "/media/tv-shows/show-128.png",
+    "filename": "show-128-LifeKids__Blinky_s_Bible_adventures_.png"
+  },
+  {
+    "id": 231,
+    "name": "Storybots",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYTBlYjhhYWYtMjcwMi00YTZiLThlNmMtOWJjNjVlY2JjMjQwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-231-Storybots.jpg"
+  },
+  {
+    "id": 237,
+    "name": "Superworm",
+    "imageUrl": "/media/tv-shows/show-237.jpg",
+    "filename": "show-237-Superworm.jpg"
+  },
+  {
+    "id": 236,
+    "name": "Superkitties",
+    "imageUrl": "/media/tv-shows/show-236.jpg",
+    "filename": "show-236-Superkitties.jpg"
+  },
+  {
+    "id": 242,
+    "name": "Teen Titans Go!",
+    "imageUrl": "/media/tv-shows/show-242.jpeg",
+    "filename": "show-242-Teen_Titans_Go_.jpeg"
+  },
+  {
+    "id": 98,
+    "name": "Guess How Much I Love You",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMzljMDViOTgtNmE2Yi00MjBkLTk2YWEtZTAxODIxNGEwZTNiXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-98-Guess_How_Much_I_Love_You.jpg"
+  },
+  {
+    "id": 286,
+    "name": "Tweedy & Fluff",
+    "imageUrl": "/media/tv-shows/show-image-1748363372438-580483907-optimized.jpg",
+    "filename": "show-286-Tweedy___Fluff.jpg"
+  },
+  {
+    "id": 97,
+    "name": "Grizzy and the Lemmings",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMGQ0NTE5YWUtMWZkNy00MjMwLTkwYWItYWY1Mzk5YTlhNGQ4XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-97-Grizzy_and_the_Lemmings.jpg"
+  },
+  {
+    "id": 166,
+    "name": "Noodle and Bun",
+    "imageUrl": "/media/tv-shows/show-166.jpg",
+    "filename": "show-166-Noodle_and_Bun.jpg"
+  },
+  {
+    "id": 230,
+    "name": "Story Time Book: Read-Along",
+    "imageUrl": "/media/tv-shows/show-image-1748357214154-714836840-optimized.jpg",
+    "filename": "show-230-Story_Time_Book__Read-Along.jpg"
+  },
+  {
+    "id": 227,
+    "name": "Steve & Maggie",
+    "imageUrl": "/media/tv-shows/show-227.jpg",
+    "filename": "show-227-Steve___Maggie.jpg"
+  },
+  {
+    "id": 226,
+    "name": "Stella and Sam",
+    "imageUrl": "/media/tv-shows/show-226.jpg",
+    "filename": "show-226-Stella_and_Sam.jpg"
+  },
+  {
+    "id": 238,
+    "name": "Takaro Tribe",
+    "imageUrl": "/media/tv-shows/show-238.jpg",
+    "filename": "show-238-Takaro_Tribe.jpg"
+  },
+  {
+    "id": 228,
+    "name": "Stick man",
+    "imageUrl": "/media/tv-shows/show-228.jpg",
+    "filename": "show-228-Stick_man.jpg"
+  },
+  {
+    "id": 107,
+    "name": "Horrid Henry",
+    "imageUrl": "/media/tv-shows/show-107.jpg",
+    "filename": "show-107-Horrid_Henry.jpg"
+  },
+  {
+    "id": 172,
+    "name": "One Piece",
+    "imageUrl": "/media/tv-shows/show-172.jpg",
+    "filename": "show-172-One_Piece.jpg"
+  },
+  {
+    "id": 63,
+    "name": "Davey and Goliath",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZTEwM2I4NWMtNjZmOS00OWE2LTk2MWItYWFhZDZmNWMwMjg4XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-63-Davey_and_Goliath.jpg"
+  },
+  {
+    "id": 102,
+    "name": "He-Man and the Masters of the Universe",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzAxYzg1YmUtMzJkOS00NGEyLTkyM2MtNTk1NzE4MTQ1MDUwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-102-He-Man_and_the_Masters_of_the_Universe.jpg"
+  },
+  {
+    "id": 188,
+    "name": "Play School",
+    "imageUrl": "/media/tv-shows/show-188.webp",
+    "filename": "show-188-Play_School.webp"
+  },
+  {
+    "id": 209,
+    "name": "Ryan's World",
+    "imageUrl": "/media/tv-shows/show-209.jpeg",
+    "filename": "show-209-Ryan_s_World.jpeg"
+  },
+  {
+    "id": 25,
+    "name": "Between the Lions",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYWYxZjQ3N2UtZDM5MS00YmYwLTg1MTctM2NiOTU0YWVjYTVhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-25-Between_the_Lions.jpg"
+  },
+  {
+    "id": 255,
+    "name": "The Care Bears",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BN2M3ZWU1YWEtZTQxYy00YTFhLWIzZmMtZDBjMWNiZjNhNDZiXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-255-The_Care_Bears.jpg"
+  },
+  {
+    "id": 249,
+    "name": "The adventures of the gummi bears",
+    "imageUrl": "/media/tv-shows/show-249.jpg",
+    "filename": "show-249-The_adventures_of_the_gummi_bears.jpg"
+  },
+  {
+    "id": 244,
+    "name": "Teletubbies (1997-2001)",
+    "imageUrl": "/media/tv-shows/show-244.jpg",
+    "filename": "show-244-Teletubbies__1997-2001_.jpg"
+  },
+  {
+    "id": 126,
+    "name": "Leo the wildlife ranger",
+    "imageUrl": "/media/tv-shows/show-126.webp",
+    "filename": "show-126-Leo_the_wildlife_ranger.webp"
+  },
+  {
+    "id": 273,
+    "name": "The Stinky & Dirty Show ",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNjMxODI5MjAwN15BMl5BanBnXkFtZTgwNTY2NTI2OTE@._V1_SX300.jpg",
+    "filename": "show-273-The_Stinky___Dirty_Show_.jpg"
+  },
+  {
+    "id": 270,
+    "name": "The Octonauts",
+    "imageUrl": "/media/tv-shows/show-270.jpg",
+    "filename": "show-270-The_Octonauts.jpg"
+  },
+  {
+    "id": 40,
+    "name": "Caitie's Classroom (SuperSimplePlay)",
+    "imageUrl": "/media/tv-shows/show-image-1748357689154-216615042-optimized.jpg",
+    "filename": "show-40-Caitie_s_Classroom__SuperSimplePlay_.jpg"
+  },
+  {
+    "id": 185,
+    "name": "Pipi Mā",
+    "imageUrl": "/media/tv-shows/show-185.jpg",
+    "filename": "show-185-Pipi_M_.jpg"
+  },
+  {
+    "id": 125,
+    "name": "Leo the Truck",
+    "imageUrl": "/media/tv-shows/show-125.jpg",
+    "filename": "show-125-Leo_the_Truck.jpg"
+  },
+  {
+    "id": 173,
+    "name": "Oswald",
+    "imageUrl": "/media/tv-shows/show-173.jpg",
+    "filename": "show-173-Oswald.jpg"
+  },
+  {
+    "id": 207,
+    "name": "Rugrats",
+    "imageUrl": "/media/tv-shows/show-207.jpg",
+    "filename": "show-207-Rugrats.jpg"
+  },
+  {
+    "id": 153,
+    "name": "Moominvalley",
+    "imageUrl": "/media/tv-shows/show-153.jpeg",
+    "filename": "show-153-Moominvalley.jpeg"
+  },
+  {
+    "id": 151,
+    "name": "Mister Rogers' Neighbourhood",
+    "imageUrl": "/media/tv-shows/show-151.jpg",
+    "filename": "show-151-Mister_Rogers__Neighbourhood.jpg"
+  },
+  {
+    "id": 105,
+    "name": "Hey Bear Sensory",
+    "imageUrl": "/media/tv-shows/show-105.jpg",
+    "filename": "show-105-Hey_Bear_Sensory.jpg"
+  },
+  {
+    "id": 262,
+    "name": "The Land Before Time ",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzY5MDJmNjUtNjYwNy00YjllLWE0ZGUtYjk2OTgxZmY3ZGE0XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-262-The_Land_Before_Time_.jpg"
+  },
+  {
+    "id": 299,
+    "name": "Zaky & friends",
+    "imageUrl": "/media/tv-shows/show-299.jpg",
+    "filename": "show-299-Zaky___friends.jpg"
+  },
+  {
+    "id": 59,
+    "name": "Curious George",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNTJjNDNlMmUtNzkxNi00ZDMwLThlMjItNDIyZGY5Y2U4MTk3XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-59-Curious_George.jpg"
+  },
+  {
+    "id": 290,
+    "name": "Vlad and Nikki",
+    "imageUrl": "/media/tv-shows/show-290.jpg",
+    "filename": "show-290-Vlad_and_Nikki.jpg"
+  },
+  {
+    "id": 235,
+    "name": "Superbook",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOTEzNDI2MzEwOV5BMl5BanBnXkFtZTgwMTQwNzQ4NDE@._V1_SX300.jpg",
+    "filename": "show-235-Superbook.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Adventure Agents",
+    "imageUrl": "/media/tv-shows/show-3.png",
+    "filename": "show-3-Adventure_Agents.png"
+  },
+  {
+    "id": 53,
+    "name": "Cocomelon",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMmM5OGI0YjAtZGFlMC00MThmLTgwM2MtZTdhYmQ3YzJlNmYwXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-53-Cocomelon.jpg"
+  },
+  {
+    "id": 234,
+    "name": "Super Why!",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYWE4ZmU2MjktZTZhOC00MjQ0LTlmMGEtZWFhYjUzMjNhMmE5XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-234-Super_Why_.jpg"
+  },
+  {
+    "id": 35,
+    "name": "Bounce Patrol",
+    "imageUrl": "/media/tv-shows/show-35.jpg",
+    "filename": "show-35-Bounce_Patrol.jpg"
+  },
+  {
+    "id": 293,
+    "name": "Wallykazam",
+    "imageUrl": "/media/tv-shows/show-293.jpg",
+    "filename": "show-293-Wallykazam.jpg"
+  },
+  {
+    "id": 186,
+    "name": "PJ Masks",
+    "imageUrl": "/media/tv-shows/show-186.jpeg",
+    "filename": "show-186-PJ_Masks.jpeg"
+  },
+  {
+    "id": 58,
+    "name": "Cowboy Jack",
+    "imageUrl": "/media/tv-shows/show-58.png",
+    "filename": "show-58-Cowboy_Jack.png"
+  },
+  {
+    "id": 191,
+    "name": "Postman Pat",
+    "imageUrl": "/media/tv-shows/show-191.jpg",
+    "filename": "show-191-Postman_Pat.jpg"
+  },
+  {
+    "id": 101,
+    "name": "Handyman Hal",
+    "imageUrl": "/media/tv-shows/show-image-1748362678049-718993150-optimized.jpg",
+    "filename": "show-101-Handyman_Hal.jpg"
+  },
+  {
+    "id": 92,
+    "name": "Gigantosaurus",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMWM4Y2MwYzUtZDQ5NC00NWFhLTg5ZjEtYmRiZWMxYzE0YWYyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-92-Gigantosaurus.jpg"
+  },
+  {
+    "id": 91,
+    "name": "Get Rolling with Otis",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BOWQ0Y2MxMmItZmZiMC00YTg4LWIwOGEtZDE1YTc2NjRkYmZmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-91-Get_Rolling_with_Otis.jpg"
+  },
+  {
+    "id": 274,
+    "name": "The Wiggles",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYTMwMTEyNjQtNTMzMy00MDU0LTg0NGUtODYyNGU5NmYyM2EyXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-274-The_Wiggles.jpg"
+  },
+  {
+    "id": 41,
+    "name": "Canticos",
+    "imageUrl": "/media/tv-shows/show-image-1748357858106-525834991-optimized.jpg",
+    "filename": "show-41-Canticos.jpg"
+  },
+  {
+    "id": 34,
+    "name": "Booba",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNmM3NGQ3OWQtMTcxMS00MTI1LWEyN2QtYWJkYjYyNDIzYzNhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-34-Booba.jpg"
+  },
+  {
+    "id": 115,
+    "name": "JunyTony - Songs and Stories",
+    "imageUrl": "/media/tv-shows/show-115.jpeg",
+    "filename": "show-115-JunyTony_-_Songs_and_Stories.jpeg"
+  },
+  {
+    "id": 200,
+    "name": "Ready, Steady, Wiggle!",
+    "imageUrl": "/media/tv-shows/show-200.jpg",
+    "filename": "show-200-Ready__Steady__Wiggle_.jpg"
+  },
+  {
+    "id": 155,
+    "name": "Mother goose club",
+    "imageUrl": "/media/tv-shows/show-155.jpg",
+    "filename": "show-155-Mother_goose_club.jpg"
+  },
+  {
+    "id": 123,
+    "name": "Laurie Berkner",
+    "imageUrl": "/media/tv-shows/show-123.jpg",
+    "filename": "show-123-Laurie_Berkner.jpg"
+  },
+  {
+    "id": 147,
+    "name": "Miss Katie Sings",
+    "imageUrl": "/media/tv-shows/show-147.jpg",
+    "filename": "show-147-Miss_Katie_Sings.jpg"
+  },
+  {
+    "id": 110,
+    "name": "In the Night Garden",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYjJlZDRlNjUtZGRjNS00YjBjLWFkYjEtZDU0OTM2OWY3NDIxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-110-In_the_Night_Garden.jpg"
+  },
+  {
+    "id": 44,
+    "name": "Casper Babypants",
+    "imageUrl": "/media/tv-shows/show-44.jpg",
+    "filename": "show-44-Casper_Babypants.jpg"
+  },
+  {
+    "id": 56,
+    "name": "Cosmic kids yoga",
+    "imageUrl": "/media/tv-shows/show-56.jpg",
+    "filename": "show-56-Cosmic_kids_yoga.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Badanamu",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTRhYzdkZDAtZDM2My00OWRlLWJhZjQtOWRiODhlNzgwMzRkXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-17-Badanamu.jpg"
+  },
+  {
+    "id": 99,
+    "name": "Gullah, Gullah Island",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BYzM2YWYzNTUtYTk4ZS00NGJhLThhMGItZWUwZTBlNjIxYmZhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-99-Gullah__Gullah_Island.jpg"
+  },
+  {
+    "id": 13,
+    "name": "Avatar: The Last Airbender",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMDMwMThjYWYtY2Q2OS00OGM2LTlkODQtNDJlZTZmMjAyYmFhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-13-Avatar__The_Last_Airbender.jpg"
+  },
+  {
+    "id": 22,
+    "name": "Bear in the Big Blue House",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMjdlMTRiM2UtMDFkOS00OTkxLTgxODAtNTk3MmUzM2U4ODRhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-22-Bear_in_the_Big_Blue_House.jpg"
+  },
+  {
+    "id": 62,
+    "name": "Danny Go!",
+    "imageUrl": "/media/tv-shows/show-image-1748363940496-353869218-optimized.jpg",
+    "filename": "show-62-Danny_Go_.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Ada Twist, Scientist",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMDZjOTE4MTgtYzE2ZC00YjZiLWJmZWEtM2YxYTAxZjVjZTBmXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-2-Ada_Twist__Scientist.jpg"
+  },
+  {
+    "id": 253,
+    "name": "The Big Comfy Couch",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNzFmNDM3YTQtNWZmOS00YWU1LWJiNDktMWM5MDQzYzIzMmFhXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-253-The_Big_Comfy_Couch.jpg"
+  },
+  {
+    "id": 129,
+    "name": "Listener Kids",
+    "imageUrl": "/media/tv-shows/show-129.jpg",
+    "filename": "show-129-Listener_Kids.jpg"
+  },
+  {
+    "id": 57,
+    "name": "Courage the Cowardly Dog",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMzdiMWI4OGMtZDc2MC00NDllLTgyMWUtN2ZmZjVlYWFkYjQxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-57-Courage_the_Cowardly_Dog.jpg"
+  },
+  {
+    "id": 100,
+    "name": "Gumby",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BNmEwYTY0MDMtY2FlMy00NzdhLTljZWUtNTg4NmIyM2FkN2U0XkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-100-Gumby.jpg"
+  },
+  {
+    "id": 93,
+    "name": "GirlsTtoyZZ",
+    "imageUrl": "/media/tv-shows/show-93.png",
+    "filename": "show-93-GirlsTtoyZZ.png"
+  },
+  {
+    "id": 133,
+    "name": "Llama Llama",
+    "imageUrl": "/media/tv-shows/show-133.jpg",
+    "filename": "show-133-Llama_Llama.jpg"
+  },
+  {
+    "id": 198,
+    "name": "RC Action Channel",
+    "imageUrl": "/media/tv-shows/show-198.png",
+    "filename": "show-198-RC_Action_Channel.png"
+  },
+  {
+    "id": 277,
+    "name": "Thomas & Friends: All Engines Go",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BMTc3NDM4ZjEtNGU1MS00NTc4LTg1MGEtM2IzODdmZDExMTkxXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-277-Thomas___Friends__All_Engines_Go.jpg"
+  },
+  {
+    "id": 85,
+    "name": "Franklin",
+    "imageUrl": "https://m.media-amazon.com/images/M/MV5BZTc5OTE3NjYtYzkzZC00NmM4LTgwNjMtNDAyNjMwYzk0MzExXkEyXkFqcGc@._V1_SX300.jpg",
+    "filename": "show-85-Franklin.jpg"
+  },
+  {
+    "id": 268,
+    "name": "The Mik Maks",
+    "imageUrl": "/media/tv-shows/show-268.jpg",
+    "filename": "show-268-The_Mik_Maks.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Akili and Me",
+    "imageUrl": "/media/tv-shows/show-image-1748363878084-27141263-optimized.jpg",
+    "filename": "show-5-Akili_and_Me.jpg"
+  },
+  {
+    "id": 51,
+    "name": "Cloudbabies",
+    "imageUrl": "/media/tv-shows/show-image-1748363923726-58960340-optimized.jpg",
+    "filename": "show-51-Cloudbabies.jpg"
+  }
+]
