@@ -4,3 +4,15 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.env
+.env.local
+.env.production
+.env.development
+*.log
+npm-debug.log*
+.replit
+replit.nix
+attached_assets/
+postgres/
+migrations/run-migrations.js
+export-data.sql
