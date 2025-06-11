@@ -14,10 +14,10 @@ import { cache, getCacheStats } from './cache';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Original database connection for image proxy
+// Database connection for image proxy
 const originalDb = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_ZH3VF9BEjlyk@ep-small-cloud-a46us4xp.us-east-1.aws.neon.tech/neondb?sslmode=require',
-  ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL || process.env.ORIGINAL_DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 const app = express();
@@ -456,6 +456,15 @@ app.get('/media/tv-shows/:filename', async (req, res) => {
 // setupSimpleAdminAuth(app);
 
 // Mount API routes BEFORE Vite middleware to prevent conflicts
+// Health check endpoint for Railway deployment
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    service: 'tv-tantrum-catalog'
+  });
+});
+
 // Performance monitoring endpoint for high-traffic scaling
 app.get('/api/performance-stats', (req, res) => {
   const stats = getCacheStats();
